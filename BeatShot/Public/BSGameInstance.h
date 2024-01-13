@@ -38,7 +38,10 @@ class BEATSHOT_API UBSGameInstance : public UGameInstance, public ISaveLoadInter
 	virtual void OnStart() override;
 
 	/** Runs a hardware benchmark if not done previously, loads video settings, initializes DLSS settings, and saves video settings. */
-	void InitVideoSettings();
+	void InitVideoSettings(UGameUserSettings* GameUserSettings, FPlayerSettings& PlayerSettings);
+	
+	/** Initializes the sound classes. */
+	void InitSoundSettings(const FPlayerSettings_VideoAndSound& VideoAndSoundSettings);
 
 public:
 	/** Handles game mode transitions initiated by Main Menu, Pause Menu, or Post Game Menu */

@@ -285,6 +285,19 @@ bool USpawnArea::IsBorderingIndex(const int32 InIndex) const
 	return AdjacentIndices.Contains(InIndex);
 }
 
+TSet<int32> USpawnArea::GetAdjacentIndices(const TSet<EBorderingDirection>& Directions) const
+{
+	TSet<int32> Out;
+	for (const EBorderingDirection Direction : Directions)
+	{
+		if (AdjacentIndexMap.Contains(Direction))
+		{
+			Out.Add(AdjacentIndexMap[Direction]);
+		}
+	}
+	return Out;
+}
+
 TSet<FVector> USpawnArea::GetUnoccupiedVertices(const float InMinDist, const FVector& InScale) const
 {
 	TSet<FVector> OutValid;

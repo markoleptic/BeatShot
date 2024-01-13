@@ -61,7 +61,6 @@ ATarget* ATargetManagerPreview::SpawnTarget(USpawnArea* InSpawnArea)
 		{
 			if (CreateTargetWidget.IsBound())
 			{
-				
 				if (UTargetWidget* TargetWidget = CreateTargetWidget.Execute())
 				{
 					const float Height = StaticExtents.Z + (GetBSConfig()->TargetConfig.FloorDistance - ClampedOverflowAmount) * 0.5f;

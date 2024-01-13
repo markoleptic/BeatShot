@@ -4,6 +4,7 @@
 // ReSharper disable CppMemberFunctionMayBeConst
 // ReSharper disable CppParameterMayBeConstPtrOrRef
 #include "Player/BSCheatManager.h"
+#if !UE_BUILD_SHIPPING
 #include "AbilitySystemComponent.h"
 #include "BSGameInstance.h"
 #include "Character/BSCharacter.h"
@@ -136,6 +137,7 @@ namespace BeatShotConsoleVariables
 		FString("day"),
 		TEXT("Set the time of day to either \"day\" or \"night\"."));
 }
+
 
 void UBSCheatManager::InitCheatManager()
 {
@@ -660,3 +662,4 @@ void UBSCheatManager::CVarOnChanged_SetTimeOfDay(IConsoleVariable* Variable)
 		}
 	}
 }
+#endif

@@ -51,10 +51,12 @@ void UBSGameInstance::OnLoadingScreenFadeOutComplete()
 	// No longer the initial loading screen
 	bIsInitialLoadingScreen = false;
 	
-	if (ABSPlayerController* PC = Cast<ABSPlayerController>(GetFirstLocalPlayerController(GetWorld())))
+	if (GetWorld()->GetMapName().Contains("MainMenu"))
 	{
-		PC->FadeScreenFromBlack();
-		PC->ShowMainMenu();
+		if (ABSPlayerController* PC = Cast<ABSPlayerController>(GetFirstLocalPlayerController(GetWorld())))
+		{
+			PC->FadeScreenFromBlack();
+		}
 	}
 }
 
@@ -83,31 +85,32 @@ void UBSGameInstance::PrepareLoadingScreen()
 void UBSGameInstance::OnStart()
 {
 	Super::OnStart();
-	InitVideoSettings();
-	UGameplayStatics::SetBaseSoundMix(GetWorld(), GlobalSoundMix);
-	UGameplayStatics::SetSoundMixClassOverride(GetWorld(), GlobalSoundMix, GlobalSound,
-		LoadPlayerSettings().VideoAndSound.GlobalVolume / 100, 1, 0.0f, true);
-	UGameplayStatics::SetSoundMixClassOverride(GetWorld(), GlobalSoundMix, MenuSound,
-		LoadPlayerSettings().VideoAndSound.MenuVolume / 100, 1, 0.0f, true);
+	FPlayerSettings PlayerSettings = LoadPlayerSettings();
+	InitVideoSettings(UGameUserSettings::GetGameUserSettings(), PlayerSettings);
+	InitSoundSettings(PlayerSettings.VideoAndSound);
 }
 
-void UBSGameInstance::InitVideoSettings()
+void UBSGameInstance::InitVideoSettings(UGameUserSettings* GameUserSettings, FPlayerSettings& PlayerSettings)
 {
-	UGameUserSettings* GameUserSettings = UGameUserSettings::GetGameUserSettings();
-
 	// Run hardware benchmark if first time launching game
-	if (!LoadPlayerSettings().User.bHasRanBenchmark)
+	if (!PlayerSettings.User.bHasRanBenchmark)
 	{
 		GameUserSettings->RunHardwareBenchmark();
 		GameUserSettings->ApplyHardwareBenchmarkResults();
-		FPlayerSettings_User Settings = LoadPlayerSettings().User;
-		Settings.bHasRanBenchmark = true;
-		SavePlayerSettings(Settings);
+		PlayerSettings.User.bHasRanBenchmark = true;
+		SavePlayerSettings(PlayerSettings.User);
 	}
+	InitDLSSSettings(PlayerSettings.VideoAndSound);
+	SavePlayerSettings(PlayerSettings.VideoAndSound);
+}
 
-	FPlayerSettings_VideoAndSound VideoSettings = LoadPlayerSettings().VideoAndSound;
-	InitDLSSSettings(VideoSettings);
-	SavePlayerSettings(VideoSettings);
+void UBSGameInstance::InitSoundSettings(const FPlayerSettings_VideoAndSound& VideoAndSoundSettings)
+{
+	UGameplayStatics::SetBaseSoundMix(GetWorld(), GlobalSoundMix);
+	UGameplayStatics::SetSoundMixClassOverride(GetWorld(), GlobalSoundMix, GlobalSound,
+		VideoAndSoundSettings.GlobalVolume / 100, 1, 0.0f, true);
+	UGameplayStatics::SetSoundMixClassOverride(GetWorld(), GlobalSoundMix, MenuSound,
+		VideoAndSoundSettings.MenuVolume / 100, 1, 0.0f, true);
 }
 
 void UBSGameInstance::SetBSConfig(const FBSConfig& InConfig)
@@ -194,12 +197,22 @@ void UBSGameInstance::SavePlayerScoresToDatabase(ABSPlayerController* PC, const 
 	if (!bWasValidToSave)
 	{
 		PC->OnPostScoresResponseReceived("SBW_DidNotSaveScores");
+		if (bQuitToDesktopAfterSave)
+		{
+			UKismetSystemLibrary::QuitGame(GetWorld(), UGameplayStatics::GetPlayerController(GetWorld(), 0),
+				EQuitPreference::Quit, false);
+		}
 		return;
 	}
 
 	// No account
 	if (LoadPlayerSettings().User.RefreshCookie.IsEmpty())
 	{
+		if (bQuitToDesktopAfterSave)
+		{
+			UKismetSystemLibrary::QuitGame(GetWorld(), UGameplayStatics::GetPlayerController(GetWorld(), 0),
+				EQuitPreference::Quit, false);
+		}
 		PC->OnPostScoresResponseReceived("SBW_NoAccount");
 		return;
 	}
@@ -213,15 +226,14 @@ void UBSGameInstance::SavePlayerScoresToDatabase(ABSPlayerController* PC, const 
 			TSharedPtr<FBSHttpResponse> PostScoresResponse = MakeShareable(new FBSHttpResponse());
 			PostScoresResponse->OnHttpResponseReceived.BindLambda([this, PostScoresResponse, PC]
 			{
+				check(PC);
 				if (PostScoresResponse->OK) // Successful scores post
 				{
 					SetAllPlayerScoresSavedToDatabase();
-					check(PC);
 					PC->OnPostScoresResponseReceived();
 				}
 				else // Unsuccessful scores post
 				{
-					check(PC);
 					PC->OnPostScoresResponseReceived("SBW_SavedScoresLocallyOnly");
 				}
 

@@ -15,12 +15,10 @@ class BEATSHOT_API UBSCheatManager : public UCheatManager
 	GENERATED_BODY()
 
 public:
+	#if !UE_BUILD_SHIPPING
 	virtual void InitCheatManager() override;
-
 	void CVarOnChanged_Cheat_AimBot(IConsoleVariable* Variable);
-
 	void CVarOnChanged_ClearDebug(IConsoleVariable* Variable);
-
 	void CVarOnChanged_PrintDebug_SpawnAreaStateInfo(IConsoleVariable* Variable);
 	void CVarOnChanged_PrintDebug_ChooseBestActionIndex(IConsoleVariable* Variable);
 	void CVarOnChanged_PrintDebug_GetMaxIndex(IConsoleVariable* Variable);
@@ -28,7 +26,6 @@ public:
 	void CVarOnChanged_PrintDebug_QTableUpdate(IConsoleVariable* Variable);
 	void CVarOnChanged_PrintDebug_QTableInit(IConsoleVariable* Variable);
 	void CVarOnChanged_PrintDebug_ActiveTargetPairs(IConsoleVariable* Variable);
-	
 	void CVarOnChanged_ShowDebug_TargetManager(IConsoleVariable* Variable);
 	void CVarOnChanged_ShowDebug_SpawnBox(IConsoleVariable* Variable);
 	void CVarOnChanged_ShowDebug_DirectionalBoxes(IConsoleVariable* Variable);
@@ -40,11 +37,10 @@ public:
 	void CVarOnChanged_ShowDebug_FilteredBordering(IConsoleVariable* Variable);
 	void CVarOnChanged_ShowDebug_Vertices_Dynamic(IConsoleVariable* Variable);
 	void CVarOnChanged_ShowDebug_Vertices(IConsoleVariable* Variable);
-	
 	void CVarOnChanged_ShowDebug_SpotLightFront(IConsoleVariable* Variable);
-
 	void CVarOnChanged_SetTimeOfDay(IConsoleVariable* Variable);
-
+	#endif
+	
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "BeatShot|Abilities")
 	TSubclassOf<UGameplayAbility> AimBotAbility;
 

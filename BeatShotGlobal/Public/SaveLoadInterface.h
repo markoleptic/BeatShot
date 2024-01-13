@@ -236,6 +236,9 @@ protected:
 	FOnPlayerSettingsChanged_CrossHair OnPlayerSettingsChangedDelegate_CrossHair;
 	/** The delegate that is broadcast when this class saves VideoAndSound settings */
 	FOnPlayerSettingsChanged_VideoAndSound OnPlayerSettingsChangedDelegate_VideoAndSound;
+
+	template <typename T>
+	void ProcessSetting(const T& Setting);
 };
 
 template <typename T>

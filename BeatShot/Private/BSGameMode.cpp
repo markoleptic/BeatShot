@@ -294,7 +294,6 @@ void ABSGameMode::EndGameMode(const bool bSaveScores, const ETransitionState Tra
 				Controller->OnScreenFadeToBlackFinish.BindLambda([this, Controller]
 				{
 					Controller->HidePostGameMenu();
-					Controller->HidePauseMenu();
 					Controller->HidePlayerHUD();
 					Controller->HideCrossHair();
 					InitializeGameMode(BSConfig);
@@ -588,7 +587,6 @@ void ABSGameMode::GoToMainMenu()
 	for (ABSPlayerController* Controller : Controllers)
 	{
 		Controller->HidePostGameMenu();
-		Controller->HidePauseMenu();
 		Controller->HidePlayerHUD();
 		Controller->HideCrossHair();
 	}

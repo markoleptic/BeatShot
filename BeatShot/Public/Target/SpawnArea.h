@@ -188,11 +188,14 @@ public:
 	/** Returns the time that this SpawnArea was flagged as recent */
 	double GetTimeSetRecent() const { return TimeSetRecent; }
 	
-	/** Returns the indices of the SpawnAreas adjacent to this SpawnArea,
-	 *  including their direction from this SpawnArea */
+	/** Returns a const reference to the map that maps the direction from this SpawnArea to adjacent SpawnArea indices */
 	const TMap<EBorderingDirection, int32>& GetAdjacentIndexMap() const { return AdjacentIndexMap; }
 
+	/** Returns a const reference to the set of SpawnArea indices adjacent to this SpawnArea */
 	const TSet<int32>& GetAdjacentIndices() const { return AdjacentIndices; }
+
+	/** Returns a set of SpawnArea indices adjacent to this SpawnArea that match the provided directions */
+	TSet<int32> GetAdjacentIndices(const TSet<EBorderingDirection>& Directions) const;
 	
 	/** Returns the vertices that this SpawnArea occupies in space based on target scale and other factors */
 	const TSet<FVector>& GetOccupiedVertices() const { return OccupiedVertices; }

@@ -74,6 +74,11 @@ void ABSPlayerController::BeginPlay()
 	GI->AddDelegateToOnPlayerSettingsChanged(OnPlayerSettingsChangedDelegate_VideoAndSound);
 	GI->GetPublicVideoAndSoundSettingsChangedDelegate().AddUObject(this, &ABSPlayerController::OnPlayerSettingsChanged);
 	GI->GetPublicGameSettingsChangedDelegate().AddUObject(this, &ABSPlayerController::OnPlayerSettingsChanged);
+
+	if (UGameplayStatics::GetCurrentLevelName(GetWorld()).Contains("MainMenu"))
+	{
+		ShowMainMenu();
+	}
 }
 
 void ABSPlayerController::PreProcessInput(const float DeltaTime, const bool bGamePaused)
@@ -145,7 +150,7 @@ void ABSPlayerController::ShowMainMenu()
 
 	if (AMainMenuGameMode* GameMode = Cast<AMainMenuGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
 	{
-		GameMode->BindGameModesWidgetToTargetManager(MainMenuWidget->GameModesWidget);
+		GameMode->SetupTargetManager(MainMenuWidget->GameModesWidget);
 	}
 
 	GI->AddDelegateToOnPlayerSettingsChanged(MainMenuWidget->SettingsMenuWidget->GetGameDelegate());
@@ -184,7 +189,6 @@ void ABSPlayerController::ShowPauseMenu()
 	PauseMenuWidget->ResumeGame.BindLambda([this]
 	{
 		HandlePause();
-		HidePauseMenu();
 	});
 
 	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
@@ -557,11 +561,11 @@ void ABSPlayerController::FadeScreenFromBlack()
 	{
 		CreateScreenFadeWidget(1.f);
 	}
-	if (!GetWorld()->GetMapName().Contains("Range"))
+	if (GetWorld()->GetMapName().Contains("MainMenu"))
 	{
 		if (AMainMenuGameMode* MainMenuGameMode = Cast<AMainMenuGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
 		{
-			MainMenuGameMode->FadeInMainMenuMusic(ScreenFadeWidgetAnimationDuration);
+			MainMenuGameMode->FadeInMainMenuMusic(2.f);
 		}
 	}
 	ScreenFadeWidget->FadeFromBlack(ScreenFadeWidgetAnimationDuration);

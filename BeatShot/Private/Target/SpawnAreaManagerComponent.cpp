@@ -14,8 +14,7 @@ const TArray PreferredSpawnAreaIncScales = {50, 45, 40, 30, 25, 20, 15, 10, 5};
 USpawnAreaManagerComponent::USpawnAreaManagerComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
-	BSConfig = nullptr;
-
+	
 	#if !UE_BUILD_SHIPPING
 	bPrintDebug_SpawnAreaStateInfo = false;
 	bDebug_SpawnableSpawnAreas = false;
@@ -26,22 +25,27 @@ USpawnAreaManagerComponent::USpawnAreaManagerComponent()
 	bDebug_Grid = false;
 	bDebug_FilterBordering = false;
 	#endif
-	
-	AreaKeyMap = TMap<FAreaKey, USpawnArea*>();
-	GuidMap = TMap<FGuid, USpawnArea*>();
-	IndexMap = TMap<int32, USpawnArea*>();
-	CachedManaged = TSet<USpawnArea*>();
-	CachedActivated = TSet<USpawnArea*>();
-	CachedRecent = TSet<USpawnArea*>();
-	CachedExtrema = TSet<USpawnArea*>();
-	MostRecentGridBlock = TSet<USpawnArea*>();
-	SpawnAreas = TSet<USpawnArea*>();
-	
-	MostRecentSpawnArea = nullptr;
-	OriginSpawnArea = nullptr;
+
+	BSConfig = nullptr;
 	Size = FIntVector3();
 	SpawnAreaInc = FIntVector3();
 	SpawnAreaScale = FVector();
+	Origin = FVector();
+	StaticExtents = FVector();
+	StaticExtrema = FExtrema();
+	
+	SpawnAreas = TSet<USpawnArea*>();
+	AreaKeyMap = TMap<FAreaKey, USpawnArea*>();
+	GuidMap = TMap<FGuid, USpawnArea*>();
+	IndexMap = TMap<int32, USpawnArea*>();
+	CachedExtrema = TSet<USpawnArea*>();
+	CachedManaged = TSet<USpawnArea*>();
+	CachedActivated = TSet<USpawnArea*>();
+	CachedRecent = TSet<USpawnArea*>();
+	MostRecentGridBlock = TSet<USpawnArea*>();
+	
+	MostRecentSpawnArea = nullptr;
+	OriginSpawnArea = nullptr;
 	bShouldAskRLCForSpawnAreas = false;
 }
 
@@ -244,22 +248,29 @@ void USpawnAreaManagerComponent::Clear()
 	bDebug_FilterBordering = false;
 	#endif 
 
+	Size = FIntVector3();
+	SpawnAreaInc = FIntVector3();
+	SpawnAreaScale = FVector();
+	Origin = FVector();
+	StaticExtents = FVector();
+	StaticExtrema = FExtrema();
+	
 	SpawnAreas.Empty();
 	AreaKeyMap.Empty();
 	GuidMap.Empty();
 	IndexMap.Empty();
+	CachedExtrema.Empty();
 	CachedManaged.Empty();
 	CachedActivated.Empty();
 	CachedRecent.Empty();
-	CachedExtrema.Empty();
 	MostRecentGridBlock.Empty();
-	SpawnAreas.Empty();
-
+	
 	MostRecentSpawnArea = nullptr;
 	OriginSpawnArea = nullptr;
-	Size = FIntVector3();
-	SpawnAreaInc = FIntVector3();
-	SpawnAreaScale = FVector();
+	
+	RemoveFromRecentDelegate.Unbind();
+	RequestRLCSpawnArea.Unbind();
+	
 	bShouldAskRLCForSpawnAreas = false;
 }
 
@@ -388,6 +399,85 @@ void USpawnAreaManagerComponent::HandleRecentTargetRemoval(USpawnArea* SpawnArea
 		}
 		break;
 	}
+}
+
+void USpawnAreaManagerComponent::OnExtremaChanged(const FExtrema& Extrema)
+{
+	TSet<USpawnArea*> RemovedSpawnAreas;
+
+	switch (GetTargetCfg().TargetDistributionPolicy)
+	{
+	case ETargetDistributionPolicy::None:
+	case ETargetDistributionPolicy::Grid:
+		return;
+	case ETargetDistributionPolicy::EdgeOnly:
+		{
+			const float MaxY = Extrema.Max.Y - SpawnAreaInc.Y;
+			const float MaxZ = Extrema.Max.Z - SpawnAreaInc.Z;
+
+			const float MinY = Extrema.Min.Y;
+			const float MinZ = Extrema.Min.Z;
+
+			TSet<USpawnArea*> Temp;
+
+			for (float Y = MinY; Y <= MaxY; Y += SpawnAreaInc.Y)
+			{
+				if (USpawnArea* SpawnArea_MinZ = FindSpawnArea(FVector(0, Y, MinZ)))
+				{
+					Temp.Add(SpawnArea_MinZ);
+				}
+				if (USpawnArea* SpawnArea_MaxZ = FindSpawnArea(FVector(0, Y, MaxZ)))
+				{
+					Temp.Add(SpawnArea_MaxZ);
+				}
+			}
+
+			for (float Z = MinZ; Z <= MaxZ; Z += SpawnAreaInc.Z)
+			{
+				if (USpawnArea* SpawnArea_MinY = FindSpawnArea(FVector(0, MinY, Z)))
+				{
+					Temp.Add(SpawnArea_MinY);
+				}
+				if (USpawnArea* SpawnArea_MaxY = FindSpawnArea(FVector(0, MaxY, Z)))
+				{
+					Temp.Add(SpawnArea_MaxY);
+				}
+			}
+
+			#if !UE_BUILD_SHIPPING
+			if (bDebug_RemovedFromExtremaChange)
+			{
+				RemovedSpawnAreas = SpawnAreas.Difference(Temp);
+			}
+			#endif
+
+			CachedExtrema = MoveTemp(Temp);
+		}
+		break;
+	case ETargetDistributionPolicy::HeadshotHeightOnly:
+	case ETargetDistributionPolicy::FullRange:
+		for (USpawnArea* SpawnArea : SpawnAreas)
+		{
+			const FVector Location = SpawnArea->GetBottomLeftVertex();
+			if (Location.Y < Extrema.Min.Y || Location.Y >= Extrema.Max.Y || Location.Z < Extrema.Min.Z || Location.Z >=
+				Extrema.Max.Z)
+			{
+				CachedExtrema.Remove(SpawnArea);
+
+				#if !UE_BUILD_SHIPPING
+				if (bDebug_RemovedFromExtremaChange) RemovedSpawnAreas.Add(SpawnArea);
+				#endif
+			}
+			else
+			{
+				CachedExtrema.Add(SpawnArea);
+			}
+		}
+		break;
+	}
+	#if !UE_BUILD_SHIPPING
+	if (bDebug_RemovedFromExtremaChange) DrawDebug_Boxes(RemovedSpawnAreas, FColor::Red, 4, 3);
+	#endif
 }
 
 /* ------------------------------- */
@@ -699,9 +789,9 @@ void USpawnAreaManagerComponent::RefreshRecentFlags()
 	#endif
 }
 
-/* ----------------------------------- */
-/* -- Finding Valid Spawn Locations -- */
-/* ----------------------------------- */
+/* --------------------------------------------------- */
+/* -- Finding Valid SpawnAreas for Spawn/Activation -- */
+/* --------------------------------------------------- */
 
 TSet<USpawnArea*> USpawnAreaManagerComponent::GetActivatableSpawnAreas(const int32 NumToActivate) const
 {
@@ -741,7 +831,7 @@ TSet<USpawnArea*> USpawnAreaManagerComponent::GetActivatableSpawnAreas(const int
 	case ETargetActivationSelectionPolicy::Bordering:
 		{
 			TSet<USpawnArea*> Filtered = ValidSpawnAreas;
-			RemoveNonBorderingIndices(Filtered, PreviousSpawnArea);
+			RemoveNonAdjacentIndices(Filtered, PreviousSpawnArea);
 			if (Filtered.Num() >= NumToActivate)
 			{
 				ValidSpawnAreas = MoveTemp(Filtered);
@@ -775,6 +865,21 @@ TSet<USpawnArea*> USpawnAreaManagerComponent::GetActivatableSpawnAreas(const int
 	}
 
 	return ChosenSpawnAreas;
+}
+
+TSet<USpawnArea*> USpawnAreaManagerComponent::GetSpawnableSpawnAreas(const TArray<FVector>& Scales,
+	const int32 NumToSpawn) const
+{
+	switch (GetTargetCfg().TargetDistributionPolicy)
+	{
+	case ETargetDistributionPolicy::Grid:
+		return GetSpawnableSpawnAreas_Grid(Scales, NumToSpawn);
+	case ETargetDistributionPolicy::None:
+	case ETargetDistributionPolicy::FullRange:
+	case ETargetDistributionPolicy::EdgeOnly:
+	case ETargetDistributionPolicy::HeadshotHeightOnly: default:
+		return GetSpawnableSpawnAreas_NonGrid(Scales, NumToSpawn);
+	}
 }
 
 USpawnArea* USpawnAreaManagerComponent::ChooseActivatableSpawnArea(const USpawnArea* PreviousSpawnArea,
@@ -825,19 +930,48 @@ USpawnArea* USpawnAreaManagerComponent::ChooseActivatableSpawnArea(const USpawnA
 	return nullptr;
 }
 
-TSet<USpawnArea*> USpawnAreaManagerComponent::GetSpawnableSpawnAreas(const TArray<FVector>& Scales,
-	const int32 NumToSpawn) const
+USpawnArea* USpawnAreaManagerComponent::ChooseSpawnableSpawnArea(const USpawnArea* PreviousSpawnArea,
+	const TSet<USpawnArea*>& ValidSpawnAreas) const
 {
-	switch (GetTargetCfg().TargetDistributionPolicy)
+	// 1st priority: origin if settings permit
+	if (GetTargetCfg().bSpawnAtOriginWheneverPossible)
 	{
-	case ETargetDistributionPolicy::Grid:
-		return GetSpawnableSpawnAreas_Grid(Scales, NumToSpawn);
-	case ETargetDistributionPolicy::None:
-	case ETargetDistributionPolicy::FullRange:
-	case ETargetDistributionPolicy::EdgeOnly:
-	case ETargetDistributionPolicy::HeadshotHeightOnly: default:
-		return GetSpawnableSpawnAreas_NonGrid(Scales, NumToSpawn);
+		USpawnArea* Candidate = GetOriginSpawnArea();
+		if (Candidate && ValidSpawnAreas.Contains(Candidate))
+		{
+			return Candidate;
+		}
 	}
+
+	// 2nd priority: Let RLC choose the SpawnArea if settings permit
+	if (bShouldAskRLCForSpawnAreas && RequestRLCSpawnArea.IsBound())
+	{
+		const int32 PreviousIndex = !PreviousSpawnArea ? -1 : PreviousSpawnArea->GetIndex();
+
+		// Transform to array of indices
+		TArray<int32> ValidIndices;
+		ValidIndices.Reserve(ValidIndices.Num());
+		Algo::Transform(ValidSpawnAreas, ValidIndices, [](const USpawnArea* SpawnArea)
+		{
+			return SpawnArea->GetIndex();
+		});
+
+		const int32 CandidateIndex = RequestRLCSpawnArea.Execute(PreviousIndex, ValidIndices);
+		if (IsSpawnAreaValid(CandidateIndex))
+		{
+			return IndexMap.FindRef(CandidateIndex);
+		}
+		UE_LOG(LogTargetManager, Warning, TEXT("Unable to Spawn at SpawnArea suggested by RLAgent."));
+	}
+
+	// 3rd priority: Randomly select an index from ValidSpawnAreas
+	if (!ValidSpawnAreas.IsEmpty())
+	{
+		return ValidSpawnAreas.Array()[FMath::RandRange(0, ValidSpawnAreas.Num() - 1)];
+	}
+
+	// No valid spawn area found
+	return nullptr;
 }
 
 TSet<USpawnArea*> USpawnAreaManagerComponent::GetSpawnableSpawnAreas_Grid(const TArray<FVector>& Scales,
@@ -854,7 +988,7 @@ TSet<USpawnArea*> USpawnAreaManagerComponent::GetSpawnableSpawnAreas_Grid(const 
 		|| GetTargetCfg().RuntimeTargetSpawningLocationSelectionMode ==
 		ERuntimeTargetSpawningLocationSelectionMode::Random)
 	{
-		const int32 Num = FMath::Min(ValidSpawnAreas.Num(), NumToSpawn);
+		const int32 Num = FMath::Min(Temp.Num(), NumToSpawn);
 		Temp.SetNum(Num);
 	}
 
@@ -874,7 +1008,8 @@ TSet<USpawnArea*> USpawnAreaManagerComponent::GetSpawnableSpawnAreas_Grid(const 
 		break;
 	case ERuntimeTargetSpawningLocationSelectionMode::Bordering:
 		{
-			FindBorderingGridUsingBFS(GetMostRecentSpawnArea(), ValidSpawnAreas, NumToSpawn);
+			FindAdjacentGridUsingDFS(ValidSpawnAreas, NumToSpawn);
+			
 		}
 		break;
 	case ERuntimeTargetSpawningLocationSelectionMode::RandomGridBlock:
@@ -900,15 +1035,16 @@ TSet<USpawnArea*> USpawnAreaManagerComponent::GetSpawnableSpawnAreas_Grid(const 
 	}
 
 	// Make sure number of elements is no more than number to spawn
-	ensure(ValidSpawnAreas.Num() <= NumToSpawn);
-	ensure(ValidSpawnAreas.Num() <= Scales.Num());
+	check(ValidSpawnAreas.Num() <= NumToSpawn);
+	
+	//check(ValidSpawnAreas.Intersect(GetRecentSpawnAreas()).IsEmpty());
 
 	// Set the target scales
 	int i = 0;
 	for (USpawnArea* SpawnArea : ValidSpawnAreas)
 	{
-		SpawnArea->SetTargetScale(Scales[i]);
-		i++;
+		SpawnArea->SetTargetScale(Scales[i++]);
+		if (i >= Scales.Num()) break;
 	}
 
 	return ValidSpawnAreas;
@@ -967,97 +1103,85 @@ TSet<USpawnArea*> USpawnAreaManagerComponent::GetSpawnableSpawnAreas_NonGrid(con
 	return ChosenSpawnAreas;
 }
 
-USpawnArea* USpawnAreaManagerComponent::ChooseSpawnableSpawnArea(const USpawnArea* PreviousSpawnArea,
-	const TSet<USpawnArea*>& ValidSpawnAreas) const
-{
-	// 1st priority: origin if settings permit
-	if (GetTargetCfg().bSpawnAtOriginWheneverPossible)
-	{
-		USpawnArea* Candidate = GetOriginSpawnArea();
-		if (Candidate && ValidSpawnAreas.Contains(Candidate))
-		{
-			return Candidate;
-		}
-	}
+/* ---------------------------------------------------------------- */
+/* -- Helper functions for Valid SpawnAreas for Spawn/Activation -- */
+/* ---------------------------------------------------------------- */
 
-	// 2nd priority: Let RLC choose the SpawnArea if settings permit
-	if (bShouldAskRLCForSpawnAreas && RequestRLCSpawnArea.IsBound())
-	{
-		const int32 PreviousIndex = !PreviousSpawnArea ? -1 : PreviousSpawnArea->GetIndex();
-
-		// Transform to array of indices
-		TArray<int32> ValidIndices;
-		ValidIndices.Reserve(ValidIndices.Num());
-		Algo::Transform(ValidSpawnAreas, ValidIndices, [](const USpawnArea* SpawnArea)
-		{
-			return SpawnArea->GetIndex();
-		});
-
-		const int32 CandidateIndex = RequestRLCSpawnArea.Execute(PreviousIndex, ValidIndices);
-		if (IsSpawnAreaValid(CandidateIndex))
-		{
-			return IndexMap.FindRef(CandidateIndex);
-		}
-		UE_LOG(LogTargetManager, Warning, TEXT("Unable to Spawn at SpawnArea suggested by RLAgent."));
-	}
-
-	// 3rd priority: Randomly select an index from ValidSpawnAreas
-	if (!ValidSpawnAreas.IsEmpty())
-	{
-		return ValidSpawnAreas.Array()[FMath::RandRange(0, ValidSpawnAreas.Num() - 1)];
-	}
-
-	// No valid spawn area found
-	return nullptr;
-}
-
-void USpawnAreaManagerComponent::FindBorderingGridUsingBFS(USpawnArea* StartNode, TSet<USpawnArea*>& ValidSpawnAreas,
+void USpawnAreaManagerComponent::FindAdjacentGridUsingDFS(TSet<USpawnArea*>& ValidSpawnAreas,
 	const int32 NumToSpawn) const
 {
-	// TODO: Can still get stuck pretty easily if in a corner
-	if (!StartNode)
-	{
-		if (ValidSpawnAreas.IsEmpty())
-		{
-			return;
-		}
-		StartNode = ValidSpawnAreas.Array()[FMath::RandRange(0, ValidSpawnAreas.Num() - 1)];
-	}
+	if (ValidSpawnAreas.IsEmpty()) return;
 
-	TQueue<std::pair<USpawnArea*, TSet<USpawnArea*>>> NodeQueue;
-	NodeQueue.Enqueue({StartNode, {StartNode}});
-	TSet<USpawnArea*> VisitedNodes;
-
-	while (!NodeQueue.IsEmpty())
+	TArray StartNodeCandidates = MostRecentGridBlock.IsEmpty()
+		? ValidSpawnAreas.Array()
+		: GetAdjacentSpawnAreas(MostRecentGridBlock, AllIndexTypes).Intersect(ValidSpawnAreas).Array();
+	
+	TSet<USpawnArea*> ValidPath;
+	
+	while (ValidPath.Num() < NumToSpawn)
 	{
-		std::pair<USpawnArea*, TSet<USpawnArea*>> Current;
-		if (NodeQueue.Dequeue(Current))
+		// Explore all candidate paths if necessary
+		if (StartNodeCandidates.IsEmpty()) break;
+		USpawnArea* StartNode = StartNodeCandidates[FMath::RandRange(0, StartNodeCandidates.Num() - 1)];
+		StartNodeCandidates.RemoveSwap(StartNode);
+
+		TSet<USpawnArea*> Visited;
+		TSet<USpawnArea*> CurrentPath;
+		TArray<USpawnArea*> Stack;
+		Stack.Push(StartNode);
+
+		while (!Stack.IsEmpty())
 		{
-			auto& [Vertex, Path] = Current;
-			if (Path.Num() + 1 >= NumToSpawn)
+			USpawnArea* Vertex = Stack.Pop(false);
+			if (Visited.Contains(Vertex)) continue;
+			
+			CurrentPath.Add(Vertex);
+
+			// Exit loop as soon as current path is filled with num to spawn elements
+			if (CurrentPath.Num() == NumToSpawn)
 			{
-				Path.Add(Vertex);
-				ValidSpawnAreas = MoveTemp(Path);
-				MostRecentGridBlock = ValidSpawnAreas;
-				return;
+				ValidPath = MoveTemp(CurrentPath);
+				break;
 			}
-
-			TArray<int32> BorderingIndices;
-			Vertex->GetAdjacentIndexMap().GenerateValueArray(BorderingIndices);
-			for (const int32 Index : BorderingIndices)
+			// If not possible to spawn NumToSpawn, keep track of best attempt
+			if (CurrentPath.Num() > ValidPath.Num())
+			{
+				ValidPath = CurrentPath;
+			}
+		
+			TArray<int32> AdjacentIndices = Vertex->GetAdjacentIndices().Array();
+			Algo::RandomShuffle(AdjacentIndices);
+	
+			for (const int32 Index : AdjacentIndices)
 			{
 				if (USpawnArea* Adjacent = IndexMap.FindRef(Index))
 				{
-					if (ValidSpawnAreas.Contains(Adjacent) && !VisitedNodes.Contains(Adjacent))
+					if (!Visited.Contains(Adjacent) && ValidSpawnAreas.Contains(Adjacent))
 					{
-						Path.Add(Adjacent);
-						NodeQueue.Enqueue({Adjacent, Path});
+						Stack.Push(Adjacent);
 					}
 				}
 			}
-			VisitedNodes.Add(Vertex);
+			Visited.Add(Vertex);
 		}
 	}
+	ValidSpawnAreas = MoveTemp(ValidPath);
+	MostRecentGridBlock = ValidSpawnAreas;
+}
+
+TSet<USpawnArea*> USpawnAreaManagerComponent::GetAdjacentSpawnAreas(TSet<USpawnArea*>& InSpawnAreas,
+	const TSet<EBorderingDirection>& Directions) const
+{
+	TSet<USpawnArea*> Out;
+	for (const USpawnArea* SpawnArea : InSpawnAreas)
+	{
+		for (const int32 Index : SpawnArea->GetAdjacentIndices(Directions))
+		{
+			Out.Add(IndexMap.FindRef(Index));
+		}
+	}
+	// Don't return any SpawnAreas in the original input
+	return Out.Difference(InSpawnAreas);
 }
 
 void USpawnAreaManagerComponent::FindGridBlockUsingLargestRect(TSet<USpawnArea*>& ValidSpawnAreas,
@@ -1490,171 +1614,41 @@ void USpawnAreaManagerComponent::RemoveOverlappingSpawnAreas(TSet<USpawnArea*>& 
 	#endif
 }
 
-void USpawnAreaManagerComponent::OnExtremaChanged(const FExtrema& Extrema)
-{
-	TSet<USpawnArea*> RemovedSpawnAreas;
-
-	switch (GetTargetCfg().TargetDistributionPolicy)
-	{
-	case ETargetDistributionPolicy::None:
-	case ETargetDistributionPolicy::Grid:
-		return;
-	case ETargetDistributionPolicy::EdgeOnly:
-		{
-			const float MaxY = Extrema.Max.Y - SpawnAreaInc.Y;
-			const float MaxZ = Extrema.Max.Z - SpawnAreaInc.Z;
-
-			const float MinY = Extrema.Min.Y;
-			const float MinZ = Extrema.Min.Z;
-
-			TSet<USpawnArea*> Temp;
-
-			for (float Y = MinY; Y <= MaxY; Y += SpawnAreaInc.Y)
-			{
-				if (USpawnArea* SpawnArea_MinZ = FindSpawnArea(FVector(0, Y, MinZ)))
-				{
-					Temp.Add(SpawnArea_MinZ);
-				}
-				if (USpawnArea* SpawnArea_MaxZ = FindSpawnArea(FVector(0, Y, MaxZ)))
-				{
-					Temp.Add(SpawnArea_MaxZ);
-				}
-			}
-
-			for (float Z = MinZ; Z <= MaxZ; Z += SpawnAreaInc.Z)
-			{
-				if (USpawnArea* SpawnArea_MinY = FindSpawnArea(FVector(0, MinY, Z)))
-				{
-					Temp.Add(SpawnArea_MinY);
-				}
-				if (USpawnArea* SpawnArea_MaxY = FindSpawnArea(FVector(0, MaxY, Z)))
-				{
-					Temp.Add(SpawnArea_MaxY);
-				}
-			}
-
-			#if !UE_BUILD_SHIPPING
-			if (bDebug_RemovedFromExtremaChange)
-			{
-				RemovedSpawnAreas = SpawnAreas.Difference(Temp);
-			}
-			#endif
-
-			CachedExtrema = MoveTemp(Temp);
-		}
-		break;
-	case ETargetDistributionPolicy::HeadshotHeightOnly:
-	case ETargetDistributionPolicy::FullRange:
-		for (USpawnArea* SpawnArea : SpawnAreas)
-		{
-			const FVector Location = SpawnArea->GetBottomLeftVertex();
-			if (Location.Y < Extrema.Min.Y || Location.Y >= Extrema.Max.Y || Location.Z < Extrema.Min.Z || Location.Z >=
-				Extrema.Max.Z)
-			{
-				CachedExtrema.Remove(SpawnArea);
-
-				#if !UE_BUILD_SHIPPING
-				if (bDebug_RemovedFromExtremaChange) RemovedSpawnAreas.Add(SpawnArea);
-				#endif
-			}
-			else
-			{
-				CachedExtrema.Add(SpawnArea);
-			}
-		}
-		break;
-	}
-	#if !UE_BUILD_SHIPPING
-	if (bDebug_RemovedFromExtremaChange) DrawDebug_Boxes(RemovedSpawnAreas, FColor::Red, 4, 3);
-	#endif
-}
-
-int32 USpawnAreaManagerComponent::RemoveNonBorderingIndices(TSet<USpawnArea*>& ValidSpawnAreas,
+int32 USpawnAreaManagerComponent::RemoveNonAdjacentIndices(TSet<USpawnArea*>& ValidSpawnAreas,
 	const USpawnArea* Current) const
 {
 	if (!Current) return 0;
-
-	TArray<int32> BorderingIndices;
-	Current->GetAdjacentIndexMap().GenerateValueArray(BorderingIndices);
-	const int32 PreviousSize = ValidSpawnAreas.Num();
-
-	#if UE_BUILD_SHIPPING
 	
+	const int32 PreviousSize = ValidSpawnAreas.Num();
 	TSet<USpawnArea*> BorderingSpawnAreas;
-	for (const int32 Index : BorderingIndices)
+	
+	#if UE_BUILD_SHIPPING
+	for (const int32 Index : Current->GetAdjacentIndices())
 	{
-		if (IndexMap.Contains(Index))
+		USpawnArea* SpawnArea = IndexMap[Index];
+		if (ValidSpawnAreas.Contains(SpawnArea))
 		{
-			USpawnArea* Found = IndexMap.FindRef(Index);
-			if (Found && ValidSpawnAreas.Contains(Found))
-			{
-				BorderingSpawnAreas.Add(Found);
-			}
+			BorderingSpawnAreas.Add(SpawnArea);
 		}
 	}
-	ValidSpawnAreas = MoveTemp(BorderingSpawnAreas);
-	
 	#else
-
-	TSet<USpawnArea*> BorderingSpawnAreas;
-	for (const int32 Index : BorderingIndices)
+	for (const int32 Index : Current->GetAdjacentIndices())
 	{
-		if (IndexMap.Contains(Index))
+		check(IndexMap.Contains(Index));
+		USpawnArea* SpawnArea = IndexMap[Index];
+		if (ValidSpawnAreas.Contains(SpawnArea))
 		{
-			USpawnArea* Found = IndexMap.FindRef(Index);
-			if (Found && ValidSpawnAreas.Contains(Found))
-			{
-				BorderingSpawnAreas.Add(Found);
-			}
+			BorderingSpawnAreas.Add(SpawnArea);
 		}
 	}
 	if (bDebug_FilterBordering)
 	{
 		DrawDebug_Boxes(ValidSpawnAreas.Difference(BorderingSpawnAreas), FColor::Yellow, 4, 3);
 	}
+	#endif
+	
 	ValidSpawnAreas = MoveTemp(BorderingSpawnAreas);
-
-	#endif
-
 	return PreviousSize - ValidSpawnAreas.Num();
-}
-
-TArray<int32> USpawnAreaManagerComponent::FilterIndices(TArray<USpawnArea*>& ValidSpawnAreas,
-	bool (USpawnArea::*FilterFunc)() const)
-{
-	TArray<int32> Removed;
-	ValidSpawnAreas = ValidSpawnAreas.FilterByPredicate([&](const USpawnArea* SpawnArea)
-	{
-		if ((SpawnArea->*FilterFunc)())
-		{
-			Removed.Add(SpawnArea->GetIndex());
-			return false;
-		}
-		return true;
-	});
-	return Removed;
-}
-
-TArray<int32> USpawnAreaManagerComponent::FilterIndices(TArray<USpawnArea*>& ValidSpawnAreas,
-	bool (USpawnArea::*FilterFunc)() const, const bool bShowDebug, const FColor& DebugColor) const
-{
-	TArray<int32> Removed;
-	ValidSpawnAreas = ValidSpawnAreas.FilterByPredicate([&](const USpawnArea* SpawnArea)
-	{
-		if ((SpawnArea->*FilterFunc)())
-		{
-			Removed.Add(SpawnArea->GetIndex());
-			return false;
-		}
-		return true;
-	});
-	#if !UE_BUILD_SHIPPING
-	if (bShowDebug)
-	{
-		DrawDebug_Boxes(Removed, DebugColor, 4, 3);
-	}
-	#endif
-	return Removed;
 }
 
 /* ------------- */
@@ -2067,6 +2061,44 @@ void USpawnAreaManagerComponent::EstimateDistances(FDFSLoopParams& Params)
 	}
 }
 
+TArray<int32> USpawnAreaManagerComponent::FilterIndices(TArray<USpawnArea*>& ValidSpawnAreas,
+	bool (USpawnArea::*FilterFunc)() const)
+{
+	TArray<int32> Removed;
+	ValidSpawnAreas = ValidSpawnAreas.FilterByPredicate([&](const USpawnArea* SpawnArea)
+	{
+		if ((SpawnArea->*FilterFunc)())
+		{
+			Removed.Add(SpawnArea->GetIndex());
+			return false;
+		}
+		return true;
+	});
+	return Removed;
+}
+
+TArray<int32> USpawnAreaManagerComponent::FilterIndices(TArray<USpawnArea*>& ValidSpawnAreas,
+	bool (USpawnArea::*FilterFunc)() const, const bool bShowDebug, const FColor& DebugColor) const
+{
+	TArray<int32> Removed;
+	ValidSpawnAreas = ValidSpawnAreas.FilterByPredicate([&](const USpawnArea* SpawnArea)
+	{
+		if ((SpawnArea->*FilterFunc)())
+		{
+			Removed.Add(SpawnArea->GetIndex());
+			return false;
+		}
+		return true;
+	});
+	#if !UE_BUILD_SHIPPING
+	if (bShowDebug)
+	{
+		DrawDebug_Boxes(Removed, DebugColor, 4, 3);
+	}
+	#endif
+	return Removed;
+}
+
 /* ----------- */
 /* -- Debug -- */
 /* ----------- */
@@ -2168,9 +2200,8 @@ void USpawnAreaManagerComponent::PrintDebug_SpawnArea(const USpawnArea* SpawnAre
 		*SpawnArea->Vertex_BottomLeft.ToCompactString(), *SpawnArea->CenterPoint.ToCompactString(),
 		*SpawnArea->ChosenPoint.ToCompactString());
 	FString String;
-	TArray<int32> InIndices;
-	SpawnArea->GetAdjacentIndexMap().GenerateValueArray(InIndices);
-	for (const int32 Border : InIndices)
+	
+	for (const int32 Border : SpawnArea->GetAdjacentIndices())
 	{
 		String.Append(" " + FString::FromInt(Border));
 	}

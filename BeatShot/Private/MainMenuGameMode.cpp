@@ -11,6 +11,7 @@
 AMainMenuGameMode::AMainMenuGameMode()
 {
 	MainMenuMusicComp = CreateDefaultSubobject<UAudioComponent>(TEXT("MainMenuMusicComp"));
+	MainMenuMusicComp->SetAutoActivate(false);
 	SetRootComponent(MainMenuMusicComp);
 }
 
@@ -19,7 +20,7 @@ void AMainMenuGameMode::BeginPlay()
 	Super::BeginPlay();
 }
 
-void AMainMenuGameMode::BindGameModesWidgetToTargetManager(UGameModesWidget* GameModesWidget)
+void AMainMenuGameMode::SetupTargetManager(UGameModesWidget* GameModesWidget)
 {
 	TargetManager = GetWorld()->SpawnActor<ATargetManagerPreview>(TargetManagerClass, FVector::Zero(),
 		FRotator::ZeroRotator);
@@ -52,7 +53,7 @@ void AMainMenuGameMode::StartSimulation()
 		return;
 	}
 
-	if (TargetManagerIsSimulating())
+	if (IsSimulating())
 	{
 		FinishSimulation();
 	}
@@ -63,7 +64,7 @@ void AMainMenuGameMode::StartSimulation()
 	}
 
 	TargetManager->RestartSimulation();
-	TargetManager->SetSimulatePlayerDestroyingTargets(true, 1.1f);
+	TargetManager->SetSimulatePlayerDestroyingTargets(true);
 	TargetManager->SetShouldSpawn(true);
 
 	// Bind the simulation timer
@@ -72,9 +73,9 @@ void AMainMenuGameMode::StartSimulation()
 
 	// Start timers
 	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
-	TimerManager.SetTimer(SimulationTimer, SimulationTimerDelegate, 15.f, false);
+	TimerManager.SetTimer(SimulationTimer, SimulationTimerDelegate, SimulationTimerDuration, false);
 	TimerManager.SetTimer(SimulationIntervalTimer, SimulationIntervalDelegate,
-		TargetManager->GetSimulation_TargetSpawnCD(), true, 1.f);
+		TargetManager->GetSimulation_TargetSpawnCD(), true, SimulationIntervalTimerInitialDelay);
 }
 
 void AMainMenuGameMode::OnSimulationInterval()
@@ -110,7 +111,7 @@ void AMainMenuGameMode::FinishSimulation()
 	}
 }
 
-bool AMainMenuGameMode::TargetManagerIsSimulating() const
+bool AMainMenuGameMode::IsSimulating() const
 {
 	return GetWorld()->GetTimerManager().IsTimerActive(SimulationTimer);
 }
@@ -122,18 +123,18 @@ void AMainMenuGameMode::OnGameModeBreakingChange(const bool bIsGameModeBreakingC
 		return;
 	}
 	bGameModeBreakingChangePresent = bIsGameModeBreakingChange;
-	if (bIsGameModeBreakingChange && TargetManagerIsSimulating())
+	if (bIsGameModeBreakingChange && IsSimulating())
 	{
 		FinishSimulation();
 	}
 }
 
-void AMainMenuGameMode::FadeInMainMenuMusic(const float FadeInLength)
+void AMainMenuGameMode::FadeInMainMenuMusic(const float FadeInDuration)
 {
-	MainMenuMusicComp->FadeIn(FadeInLength, 1.f, 0.f, EAudioFaderCurve::Linear);
+	MainMenuMusicComp->FadeIn(FadeInDuration, 1.f, 0.f, EAudioFaderCurve::SCurve);
 }
 
-void AMainMenuGameMode::FadeOutMainMenuMusic(const float FadeOutLength)
+void AMainMenuGameMode::FadeOutMainMenuMusic(const float FadeOutDuration)
 {
-	MainMenuMusicComp->FadeOut(FadeOutLength, 0.f, EAudioFaderCurve::Linear);
+	MainMenuMusicComp->FadeOut(FadeOutDuration, 0.f, EAudioFaderCurve::Linear);
 }

@@ -419,11 +419,14 @@ public:
 
 	/** Handles dealing with SpawnAreas that correspond to Damage Events */
 	void HandleTargetDamageEvent(const FTargetDamageEvent& DamageEvent);
-
+	
 	/** Calls FlagSpawnAreaAsRecent, and sets a timer for when the recent flag should be removed */
 	void HandleRecentTargetRemoval(USpawnArea* SpawnArea);
+	
+	/** Called when the BoxBounds of the TargetManager are changed to update CachedExtrema or CachedEdgeOnly sets */
+	void OnExtremaChanged(const FExtrema& Extrema);
 
-private:
+protected:
 	/** Sets InSpawnAreaInc, InSpawnAreaScale */
 	static void SetAppropriateSpawnMemoryValues(FIntVector3& InSpawnAreaInc, FVector& InSpawnAreaScale,
 		const FBSConfig* InCfg, const FVector& InStaticExtents);
@@ -519,6 +522,7 @@ public:
 	 *  recent flag if present. Calls SetOccupiedVertices if needed */
 	void FlagSpawnAreaAsActivated(const FGuid TargetGuid, const bool bCanActivateWhileActivated);
 
+protected:
 	/** Adds to Recent cache and flags the SpawnArea as recent */
 	void FlagSpawnAreaAsRecent(USpawnArea* SpawnArea);
 
@@ -533,17 +537,23 @@ public:
 	 *  a blocked SpawnArea. SpawnAreas empty their OccupiedVertices when their Recent Flag is removed */
 	void RemoveRecentFlagFromSpawnArea(USpawnArea* SpawnArea);
 
+public:
 	/** Removes the oldest SpawnArea recent flags if the max number of recent targets has been exceeded */
 	void RefreshRecentFlags();
 
-	/* ----------------------------------- */
-	/* -- Finding Valid Spawn Locations -- */
-	/* ----------------------------------- */
+	/* --------------------------------------------------- */
+	/* -- Finding Valid SpawnAreas for Spawn/Activation -- */
+	/* --------------------------------------------------- */
 
 	/** Returns an array of valid SpawnAreas filtered from the SpawnAreas array. Only considers SpawnAreas that
 	 *  are linked to a managed target since activatable requires being managed. Also considers the
 	 *  Target Activation Selection Policy */
 	TSet<USpawnArea*> GetActivatableSpawnAreas(const int32 NumToActivate) const;
+
+	/** Returns an array of valid SpawnAreas filtered from the SpawnAreas array. Broadest search since SpawnAreas
+	 *  do not have to be linked to a managed target to be considered. Also considers the Target Distribution Policy
+	 *  and Bounds Scaling Policy */
+	TSet<USpawnArea*> GetSpawnableSpawnAreas(const TArray<FVector>& Scales, int32 NumToSpawn) const;
 
 protected:
 	/** Uses a priority list to return a SpawnArea to activate. Always verifies that the candidate has a valid Guid,
@@ -551,13 +561,12 @@ protected:
 	 *  component (setting permitting), and lastly chooses a random index of ValidSpawnAreas. */
 	USpawnArea* ChooseActivatableSpawnArea(const USpawnArea* PreviousSpawnArea,
 		const TSet<USpawnArea*>& ValidSpawnAreas) const;
-	
-public:
-	/** Returns an array of valid SpawnAreas filtered from the SpawnAreas array. Broadest search since SpawnAreas
-	 *  do not have to be linked to a managed target to be considered. Also considers the Target Distribution Policy
-	 *  and Bounds Scaling Policy */
-	TSet<USpawnArea*> GetSpawnableSpawnAreas(const TArray<FVector>& Scales, int32 NumToSpawn) const;
 
+	/** Uses a priority list to return a SpawnArea to spawn. Priority is origin (setting permitting), reinforcement
+	 *  learning component (setting permitting), and lastly chooses a random index of ValidSpawnAreas. */
+	USpawnArea* ChooseSpawnableSpawnArea(const USpawnArea* PreviousSpawnArea,
+		const TSet<USpawnArea*>& ValidSpawnAreas) const;
+	
 	/** Handles selecting SpawnAreas for runtime Grid distributions, based on the
 	 *  RuntimeTargetSpawningLocationSelectionMode. Can call FindRandomBorderingGrid, FindGridBlockUsingLargestRect,
 	 *  or none if random */
@@ -566,18 +575,14 @@ public:
 	/** Handles selecting SpawnAreas for runtime target distribution that are not Grid. Similar loop to
 	 *  GetActivatableSpawnAreas */
 	TSet<USpawnArea*> GetSpawnableSpawnAreas_NonGrid(const TArray<FVector>& Scales, int32 NumToSpawn) const;
-	
-protected:
-	/** Uses a priority list to return a SpawnArea to spawn. Priority is origin (setting permitting), reinforcement
-	 *  learning component (setting permitting), and lastly chooses a random index of ValidSpawnAreas. */
-	USpawnArea* ChooseSpawnableSpawnArea(const USpawnArea* PreviousSpawnArea,
-		const TSet<USpawnArea*>& ValidSpawnAreas) const;
-	
-public:
-	/** Performs a breadth-first search of ValidSpawnAreas, returning a set of SpawnAreas that are all bordering at
+
+	/** Performs a depth-first search of ValidSpawnAreas, returning a set of SpawnAreas that are all bordering at
 	 *  least one another */
-	void FindBorderingGridUsingBFS(USpawnArea* StartNode, TSet<USpawnArea*>& ValidSpawnAreas,
-		const int32 NumToSpawn) const;
+	void FindAdjacentGridUsingDFS(TSet<USpawnArea*>& ValidSpawnAreas, const int32 NumToSpawn) const;
+
+	/** Returns a set of SpawnAreas bordering the inSpawnAreas according to Directions .*/
+	TSet<USpawnArea*> GetAdjacentSpawnAreas(TSet<USpawnArea*>& InSpawnAreas,
+		const TSet<EBorderingDirection>& Directions) const;
 
 	/** Performs the actual ValidSpawnAreas editing by calling FindLargestValidRectangle and ChooseRectIndices.
 	 *  Always empties ValidSpawnAreas before looping through the rectangle. Updates MostRecentGridBlock */
@@ -604,11 +609,7 @@ public:
 	 *  to the indices are added to ValidSpawnAreas */
 	void FindGridBlockUsingDFS(TSet<USpawnArea*>& ValidSpawnAreas, const TArray<int32>& IndexValidity,
 		const TSet<EBorderingDirection>& Directions, const int32 BlockSize) const;
-
-	/** Called when the BoxBounds of the TargetManager are changed to update CachedExtrema or CachedEdgeOnly sets */
-	void OnExtremaChanged(const FExtrema& Extrema);
-
-private:
+	
 	/** Removes all SpawnAreas that are occupied by activated, recent targets, and possibly managed targets.
 	 *  Recalculates occupied vertices for each spawn area if necessary. Only called when finding Spawnable
 	 *  Non-Grid SpawnAreas since grid-based will never have to worry about overlapping. */
@@ -616,14 +617,7 @@ private:
 		const FVector& NewTargetScale) const;
 
 	/** Filters out any SpawnAreas that aren't bordering Current */
-	int32 RemoveNonBorderingIndices(TSet<USpawnArea*>& ValidSpawnAreas, const USpawnArea* Current) const;
-
-	/** General SpawnAreas filter function that takes in a filter function to apply */
-	static TArray<int32> FilterIndices(TArray<USpawnArea*>& ValidSpawnAreas, bool (USpawnArea::*FilterFunc)() const);
-
-	/** Debug version of FilterIndices */
-	TArray<int32> FilterIndices(TArray<USpawnArea*>& ValidSpawnAreas, bool (USpawnArea::*FilterFunc)() const,
-		const bool bShowDebug, const FColor& DebugColor) const;
+	int32 RemoveNonAdjacentIndices(TSet<USpawnArea*>& ValidSpawnAreas, const USpawnArea* Current) const;
 
 	/* ------------- */
 	/* -- Utility -- */
@@ -679,6 +673,13 @@ private:
 	 *  Performs a depth-first search to find unique combinations of SpawnArea indices (Params.Blocks) of a
 	 *  specific size. Checks to see if the SpawnArea is a valid index using Params.Valid. */
 	void FindValidIndexCombinationsDFS(const int32 StartIndex, FDFSLoopParams& Params) const;
+	
+	/** General SpawnAreas filter function that takes in a filter function to apply */
+	static TArray<int32> FilterIndices(TArray<USpawnArea*>& ValidSpawnAreas, bool (USpawnArea::*FilterFunc)() const);
+
+	/** Debug version of FilterIndices */
+	TArray<int32> FilterIndices(TArray<USpawnArea*>& ValidSpawnAreas, bool (USpawnArea::*FilterFunc)() const,
+		const bool bShowDebug, const FColor& DebugColor) const;
 
 public:
 	/** Gathers all total hits and total spawns for the game mode session and converts them into a 5X5 matrix using

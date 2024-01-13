@@ -24,47 +24,63 @@ public:
 
 	virtual void BeginPlay() override;
 
-	/** Enables communication between GameModesWidget and TargetManager */
-	void BindGameModesWidgetToTargetManager(UGameModesWidget* GameModesWidget);
+	/** Enables communication between GameModesWidget and TargetManager. */
+	void SetupTargetManager(UGameModesWidget* GameModesWidget);
 
-	/** Called when the GameModesWidget wants to start or stop previewing a game mode */
+	/** Called when the GameModesWidget wants to start or stop previewing a game mode. */
 	void OnRequestSimulationStateChange(const bool bSimulate);
 
-	/** Starts timers, binds timer delegates, restarts TargetManager */
+	/** Starts timers, binds timer delegates, restarts TargetManager. */
 	void StartSimulation();
 
-	/** Manually calls OnAudioAnalyzerTick in TargetManager at fixed intervals */
+	/** Manually calls OnAudioAnalyzerTick in TargetManager at fixed intervals. */
 	void OnSimulationInterval();
 
-	/** Clears the timers and calls FinishSimulation on TargetManager */
+	/** Clears the timers and calls FinishSimulation on TargetManager. */
 	void FinishSimulation();
 
-	/** Returns whether or not the SimulationTimer is active */
-	bool TargetManagerIsSimulating() const;
+	/** Returns whether or not the SimulationTimer is active. */
+	bool IsSimulating() const;
 
-	/** Called when the GameModesWidget contains at least one breaking game mode option, or none */
+	/** Called when the GameModesWidget contains at least one breaking game mode option, or none. */
 	void OnGameModeBreakingChange(const bool bIsGameModeBreakingChange);
 
-	void FadeInMainMenuMusic(const float FadeInLength);
+	/** Fades in the main menu music over FadeInDuration. */
+	void FadeInMainMenuMusic(const float FadeInDuration);
 
-	void FadeOutMainMenuMusic(const float FadeOutLength);
+	/** Fades out the main menu music over FadeOutDuration. */
+	void FadeOutMainMenuMusic(const float FadeOutDuration);
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
 	UAudioComponent* MainMenuMusicComp;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Classes")
 	TSubclassOf<ATargetManagerPreview> TargetManagerClass;
 
-	/** The spawned TargetManager that provides preview logic for CustomGameModesWidget_Preview */
+	/** The spawned TargetManager that provides preview logic for CustomGameModesWidget_Preview. */
 	UPROPERTY()
 	TObjectPtr<ATargetManagerPreview> TargetManager;
 
+	/** Delegate that binds the SimulationIntervalTimer to the OnSimulationInterval function. */
 	FTimerDelegate SimulationIntervalDelegate;
+
+	/** Looping timer that executes every TargetSpawnCD duration. */
 	FTimerHandle SimulationIntervalTimer;
 
+	/** Delegate that binds the SimulationTimer to the FinishSimulation function. */
 	FTimerDelegate SimulationTimerDelegate;
+
+	/** Timer that spans the length of the simulation. */
 	FTimerHandle SimulationTimer;
 
-	/** Whether or not GameModesWidget has at least one breaking game mode option, or none. Prevents simulation if true */
+	/** Whether or not GameModesWidget has at least one breaking game mode option, or none.
+	 *  Prevents simulation if true. */
 	bool bGameModeBreakingChangePresent = false;
+
+	/** The duration of a game mode simulation. */
+	const float SimulationTimerDuration = 15.f;
+
+	/** The initial delay of the simulation interval timer. */
+	const float SimulationIntervalTimerInitialDelay = 1.f;
 };
