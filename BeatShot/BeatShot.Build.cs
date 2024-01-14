@@ -18,12 +18,12 @@ public class BeatShot : ModuleRules
 			"BeatShotGlobal", "NumCpp", "OnlineSubsystem", "OnlineSubsystemUtils",
 			"Steamworks", "GameplayAbilities", "GameplayTags", "GameplayTasks", "NetCore", "PhysicsCore",
 			"ModularGameplay", "Text3D", "DLSSBlueprint", "NISBlueprint",
-			"StreamlineBlueprint","Slate", "SlateCore", "MoviePlayer"
+			"StreamlineBlueprint","Slate", "SlateCore", "MoviePlayer", "FunctionalTesting"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new[]
 		{
-			"ParallelcubeAudioAnalyzer", "ParallelcubeTaglib", "EnhancedInput", "MoviePlayer"
+			"ParallelcubeAudioAnalyzer", "ParallelcubeTaglib", "EnhancedInput", "MoviePlayer", "UnrealEd"
 		});
 
 		PublicIncludePaths.AddRange(new[]

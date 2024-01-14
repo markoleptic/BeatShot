@@ -16,6 +16,51 @@
 #include "Kismet/KismetMathLibrary.h"
 
 
+FTargetDamageEvent::FTargetDamageEvent(const FDamageEventData& InData, const float InTimeAlive, const ATarget* InTarget)
+{
+	// For testing and main menu purposes
+	if (InData.EffectSpec->GetDynamicAssetTags().HasTagExact(FBSGameplayTags::Get().Target_TreatAsExternalDamage))
+	{
+		bDamagedSelf = false;
+		DamageType = InTarget->GetTargetDamageType();
+		TimeAlive = InTimeAlive;
+	}
+	else
+	{
+		bDamagedSelf = InData.DamageType == ETargetDamageType::Self;
+		DamageType = InData.DamageType;
+		TimeAlive = InData.DamageType == ETargetDamageType::Self ? -1.f : InTimeAlive; // Override to -1 if damaged self
+	}
+	
+	DamageCauser = InData.EffectCauser;
+	bOutOfHealth = InData.NewValue <= 0.f;
+	Guid = InTarget->GetGuid();
+	CurrentHealth = InData.NewValue;
+	DamageDelta = abs(InData.OldValue - InData.NewValue);
+	Transform = InTarget->GetActorTransform();
+
+	// Variables not changed on construction
+	bWillDeactivate = false;
+	bWillDestroy = false;
+	VulnerableToDamageTypes = TArray<ETargetDamageType>();
+	TotalPossibleTrackingDamage = 0.f;
+	Streak = -1;
+}
+
+void FTargetDamageEvent::SetTargetData(const bool bDeactivate, const bool bDestroy,
+	const TArray<ETargetDamageType>& InTypes)
+{
+	bWillDeactivate = bDeactivate;
+	bWillDestroy = bDestroy;
+	VulnerableToDamageTypes = InTypes;
+}
+
+void FTargetDamageEvent::SetTargetManagerData(const int32 InStreak, const float InTotalPossibleTrackingDamage)
+{
+	TotalPossibleTrackingDamage = InTotalPossibleTrackingDamage;
+	Streak = InStreak;
+}
+
 ATarget::ATarget()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -376,18 +421,18 @@ void ATarget::OnIncomingDamageTaken(const FDamageEventData& InData)
 	FTimerManager& TimerManager = GetWorldTimerManager();
 	const float ElapsedTime = TimerManager.GetTimerElapsed(ExpirationTimer);
 
+	// TODO: why dis here
 	if (InData.DamageType != ETargetDamageType::Tracking) TimerManager.ClearTimer(ExpirationTimer);
 	
-	FTargetDamageEvent Event = FTargetDamageEvent(ElapsedTime, InData.OldValue, InData.NewValue, GetActorTransform(),
-		GetGuid(), InData.DamageType);
-	Event.DamageCauser = InData.EffectCauser;
+	FTargetDamageEvent Event(InData, ElapsedTime, this);
+
 	const bool bDeactivate = ShouldDeactivate(Event.bDamagedSelf, Event.CurrentHealth);
 	const bool bDestroy = ShouldDestroy(Event.bDamagedSelf, Event.bOutOfHealth);
 
-	TArray<ETargetDamageType> DamageTypes;
-	DamageTypes.Add(ETargetDamageType::Self);
-	DamageTypes.Add(GetTargetDamageType());
-	Event.SetTargetData(bDeactivate, bDestroy, DamageTypes);
+	TArray<ETargetDamageType> VulnerableDamageTypes;
+	VulnerableDamageTypes.Add(ETargetDamageType::Self);
+	VulnerableDamageTypes.Add(GetTargetDamageType());
+	Event.SetTargetData(bDeactivate, bDestroy, VulnerableDamageTypes);
 	OnTargetDamageEvent.Broadcast(Event);
 	
 	ColorWhenDamageTaken = TargetColorChangeMaterial->K2_GetVectorParameterValue("BaseColor");
@@ -409,7 +454,7 @@ void ATarget::OnLifeSpanExpired()
 	DamageSelf();
 }
 
-void ATarget::DamageSelf()
+void ATarget::DamageSelf(const bool bTreatAsExternalDamage)
 {
 	if (UAbilitySystemComponent* Comp = GetAbilitySystemComponent())
 	{
@@ -417,7 +462,11 @@ void ATarget::DamageSelf()
 		EffectContextHandle.Get()->AddInstigator(this, this);
 		const FGameplayEffectSpecHandle Handle = Comp->MakeOutgoingSpec(GE_ExpirationHealthPenalty, 1.f,
 			EffectContextHandle);
-		const FGameplayEffectSpec* Spec = Handle.Data.Get();
+		FGameplayEffectSpec* Spec = Handle.Data.Get();
+		if (bTreatAsExternalDamage)
+		{
+			Spec->AddDynamicAssetTag(FBSGameplayTags::Get().Target_TreatAsExternalDamage);
+		}
 		Comp->ApplyGameplayEffectSpecToSelf(*Spec);
 	}
 }

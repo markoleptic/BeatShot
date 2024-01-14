@@ -99,7 +99,7 @@ bool ATargetPreview::ActivateTarget(const float Lifespan)
 
 void ATargetPreview::OnSimulatePlayerDestroyingTimerExpired()
 {
-	DamageSelf();
+	DamageSelf(true);
 }
 
 void ATargetPreview::OnIncomingDamageTaken(const FDamageEventData& InData)
@@ -111,30 +111,27 @@ void ATargetPreview::OnIncomingDamageTaken(const FDamageEventData& InData)
 	
 	FTimerManager& TimerManager = GetWorldTimerManager();
 	const float ElapsedTime = TimerManager.GetTimerElapsed(ExpirationTimer);
-
-	// Always damaging self in Preview Class, so use different comparison than base class
-	const bool bExpired = !TimerManager.IsTimerActive(ExpirationTimer);
 	TimerManager.ClearTimer(ExpirationTimer);
 	
-	const float TimeAlive = bExpired ? -1.f : ElapsedTime;
-	const bool bOutOfHealth = InData.NewValue <= 0.f;
-	
 	// Replace self damage with game mode damage type
-	FTargetDamageEvent Event = FTargetDamageEvent(TimeAlive, InData.OldValue, InData.NewValue, GetActorTransform(),
-		GetGuid(), Config.TargetDamageType);
+	FTargetDamageEvent Event(InData, ElapsedTime, this);
 
-	const bool bDeactivate = ShouldDeactivate(bExpired, Event.CurrentHealth);
-	const bool bDestroy = ShouldDestroy(bExpired, bOutOfHealth);
+	const bool bDeactivate = ShouldDeactivate(Event.bDamagedSelf, Event.CurrentHealth);
+	const bool bDestroy = ShouldDestroy(Event.bDamagedSelf, Event.bOutOfHealth);
 	
-	TArray<ETargetDamageType> DamageTypes;
-	DamageTypes.Add(ETargetDamageType::Self);
-	DamageTypes.Add(GetTargetDamageType());
-	Event.SetTargetData(bDeactivate, bDestroy, DamageTypes);
+	TArray<ETargetDamageType> VulnerableDamageTypes;
+	VulnerableDamageTypes.Add(ETargetDamageType::Self);
+	VulnerableDamageTypes.Add(GetTargetDamageType());
+	Event.SetTargetData(bDeactivate, bDestroy, VulnerableDamageTypes);
 	OnTargetDamageEvent.Broadcast(Event);
 	
 	ColorWhenDamageTaken = TargetColorChangeMaterial->K2_GetVectorParameterValue("BaseColor");
 	if (bDeactivate) HandleDeactivation(Event.bDamagedSelf, Event.bOutOfHealth, bDestroy);
-	if (bDestroy) Destroy();
+	
+	if (bDestroy)
+	{
+		Destroy();
+	}
 	else
 	{
 		CheckForHealthReset(Event.bOutOfHealth);

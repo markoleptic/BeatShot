@@ -28,6 +28,7 @@ struct FTargetDamageEvent
 {
 	GENERATED_BODY()
 
+	/** The physical actor tied to this damage event */
 	UPROPERTY()
 	AActor* DamageCauser;
 
@@ -92,41 +93,13 @@ struct FTargetDamageEvent
 		Streak = -1;
 	}
 
-	FTargetDamageEvent(const float InTimeAlive, const float OldValue, const float NewValue, const FTransform& InTransform,
-		const FGuid& InGuid, const ETargetDamageType InDamageType)
-	{
-		DamageCauser = nullptr;
-		bDamagedSelf = InDamageType == ETargetDamageType::Self;
-		bOutOfHealth = NewValue <= 0.f;
-		DamageType = InDamageType;
-		Guid = InGuid;
-		CurrentHealth = NewValue;
-		DamageDelta = abs(OldValue - NewValue);
-		TimeAlive = InDamageType == ETargetDamageType::Self ? -1.f : InTimeAlive; // Override to -1 if damaged self
-		Transform = InTransform;
-
-		// Variables not changed on construction
-		bWillDeactivate = false;
-		bWillDestroy = false;
-		VulnerableToDamageTypes = TArray<ETargetDamageType>();
-		TotalPossibleTrackingDamage = 0.f;
-		Streak = -1;
-	}
+	FTargetDamageEvent(const FDamageEventData& InData, const float InTimeAlive, const ATarget* InTarget);
 
 	/** Called by the Target to set data that only it will have access to */
-	void SetTargetData(const bool bDeactivate, const bool bDestroy, const TArray<ETargetDamageType>& InTypes)
-	{
-		bWillDeactivate = bDeactivate;
-		bWillDestroy = bDestroy;
-		VulnerableToDamageTypes = InTypes;
-	}
+	void SetTargetData(const bool bDeactivate, const bool bDestroy, const TArray<ETargetDamageType>& InTypes);
 
 	/** Called by the TargetManager to set data that only it will have access to */
-	void SetTargetManagerData(const int32 InStreak, const float InTotalPossibleTrackingDamage)
-	{
-		TotalPossibleTrackingDamage = InTotalPossibleTrackingDamage;
-		Streak = InStreak;
-	}
+	void SetTargetManagerData(const int32 InStreak, const float InTotalPossibleTrackingDamage);
 
 	FORCEINLINE bool operator ==(const FTargetDamageEvent& Other) const
 	{
@@ -154,6 +127,8 @@ class BEATSHOT_API ATarget : public AActor, public IAbilitySystemInterface, publ
 	GENERATED_BODY()
 
 	friend class ATargetManager;
+	friend class FSimulateTargetHit;
+	friend class ATargetManagerFunctionalTest;
 
 protected:
 	UPROPERTY()
@@ -261,7 +236,7 @@ protected:
 	virtual void OnLifeSpanExpired();
 
 	/** Apply damage to self using a GE, for example when the ExpirationTimer timer expires */
-	void DamageSelf();
+	void DamageSelf(const bool bTreatAsExternalDamage = false);
 
 	/** Reset the health of the target using a GE */
 	void ResetHealth();

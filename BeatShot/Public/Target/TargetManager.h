@@ -29,6 +29,8 @@ class BEATSHOT_API ATargetManager : public AActor, public ISaveLoadInterface
 
 	friend class ABSGameMode;
 	friend class UBSCheatManager;
+	friend class FRunAllDefaultGameModesTest;
+	friend class ATargetManagerFunctionalTest;
 
 public:
 	ATargetManager();
@@ -101,6 +103,9 @@ public:
 	void Init(FBSConfig* InBSConfig, const FPlayerSettings_Game& InPlayerSettings);
 
 	void TestRLComponent(int32 NumIterations);
+
+	/** Resets all state and destroys all actors. Calls clear on Components who also manage state. */
+	void Clear();
 
 protected:
 	/** Main initialization function */
@@ -255,10 +260,7 @@ protected:
 	FBSConfig* GetBSConfig() const { return BSConfig; }
 
 	/** Returns a copy of ManagedTargets */
-	TMap<FGuid, ATarget*> GetManagedTargets() const { return ManagedTargets; }
-
-	/** Returns the SphereTarget that has the matching Guid, or nullptr if not found in ManagedTargets */
-	ATarget* FindManagedTargetByGuid(const FGuid Guid) const;
+	TArray<ATarget*> GetManagedTargets() const;
 
 	/** Evaluates the specified curve at InTime */
 	float GetCurveTableValue(const bool bIsSpawnArea, const int32 InTime) const;
@@ -313,6 +315,8 @@ protected:
 	 *  references to spawned targets are stored */
 	UPROPERTY()
 	TMap<FGuid, ATarget*> ManagedTargets;
+
+	mutable FCriticalSection ManagedTargetCritSection;
 
 	/** The total amount of ticks while at least one tracking target was damageable */
 	double TotalPossibleDamage;

@@ -95,6 +95,7 @@ struct FBSGameplayTags
 	FGameplayTag Target_State_Tracking;
 	FGameplayTag Target_State_Charged;
 	FGameplayTag Target_ResetHealth;
+	FGameplayTag Target_TreatAsExternalDamage;
 
 	FGameplayTag Cheat;
 	FGameplayTag Cheat_AimBot;

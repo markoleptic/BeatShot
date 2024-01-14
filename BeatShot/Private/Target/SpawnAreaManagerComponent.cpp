@@ -268,7 +268,7 @@ void USpawnAreaManagerComponent::Clear()
 	MostRecentSpawnArea = nullptr;
 	OriginSpawnArea = nullptr;
 	
-	RemoveFromRecentDelegate.Unbind();
+	GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
 	RequestRLCSpawnArea.Unbind();
 	
 	bShouldAskRLCForSpawnAreas = false;

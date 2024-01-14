@@ -70,14 +70,14 @@ void ATargetManager::Destroyed()
 	{
 		SetShouldSpawn(false);
 	}
-
-	if (!GetManagedTargets().IsEmpty())
+	
+	if (!ManagedTargets.IsEmpty())
 	{
-		for (const TPair<FGuid, ATarget*> Pair : GetManagedTargets())
+		for (ATarget* Target : GetManagedTargets())
 		{
-			if (Pair.Value)
+			if (Target)
 			{
-				Pair.Value->Destroy();
+				Target->Destroy();
 			}
 		}
 		ManagedTargets.Empty();
@@ -92,7 +92,7 @@ void ATargetManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (TrackingTargetIsDamageable())
+	if (ShouldSpawn && TrackingTargetIsDamageable())
 	{
 		UpdateTotalPossibleDamage();
 	}
@@ -100,29 +100,18 @@ void ATargetManager::Tick(float DeltaTime)
 
 void ATargetManager::Init(const FBSConfig& InBSConfig, const FPlayerSettings_Game& InPlayerSettings)
 {
-	if (ShouldSpawn)
-	{
-		SetShouldSpawn(false);
-	}
-
-	// Initialize local copy of BSConfig
+	Clear();
 	BSConfigLocal = InBSConfig;
 	BSConfig = &BSConfigLocal;
 	PlayerSettings = InPlayerSettings;
-
 	Init_Internal();
 }
 
 void ATargetManager::Init(FBSConfig* InBSConfig, const FPlayerSettings_Game& InPlayerSettings)
 {
-	if (ShouldSpawn)
-	{
-		SetShouldSpawn(false);
-	}
-	// Initialize pointer to another BSConfig
+	Clear();
 	BSConfig = InBSConfig;
 	PlayerSettings = InPlayerSettings;
-
 	Init_Internal();
 }
 
@@ -138,21 +127,24 @@ void ATargetManager::TestRLComponent(int32 NumIterations)
 	}
 }
 
-void ATargetManager::Init_Internal()
+void ATargetManager::Clear()
 {
-	// Clean Up
-	if (!GetManagedTargets().IsEmpty())
+	ShouldSpawn = false;
+	if (!ManagedTargets.IsEmpty())
 	{
-		for (const TPair<FGuid, ATarget*> Pair : GetManagedTargets())
+		for (ATarget* Target : GetManagedTargets())
 		{
-			if (Pair.Value)
+			if (Target)
 			{
-				Pair.Value->Destroy();
+				Target->Destroy();
 			}
 		}
 		ManagedTargets.Empty();
 	}
 	CurrentStreak = 0;
+	BSConfigLocal = FBSConfig();
+	BSConfig = nullptr;
+	PlayerSettings = FPlayerSettings_Game();
 	LastTargetDamageType = ETargetDamageType::Tracking;
 	CurrentTargetScale = FVector(1.f);
 	StaticExtrema = FExtrema();
@@ -161,8 +153,15 @@ void ATargetManager::Init_Internal()
 	DynamicLookUpValue_TargetScale = 0;
 	DynamicLookUpValue_SpawnAreaScale = 0;
 	TotalPossibleDamage = 0.f;
-	SpawnAreaManager->Clear();
+	bLastSpawnedTargetDirectionChangeHorizontal = false;
+	bLastActivatedTargetDirectionChangeHorizontal = false;
 
+	RLComponent->Clear();
+	SpawnAreaManager->Clear();
+}
+
+void ATargetManager::Init_Internal()
+{
 	// Initialize target colors
 	GetBSConfig()->InitColors(PlayerSettings.bUseSeparateOutlineColor, PlayerSettings.InactiveTargetColor,
 		PlayerSettings.TargetOutlineColor, PlayerSettings.StartTargetColor, PlayerSettings.PeakTargetColor,
@@ -254,9 +253,9 @@ void ATargetManager::SetShouldSpawn(const bool bShouldSpawn)
 	{
 		if (GetBSConfig()->TargetConfig.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::HideTarget))
 		{
-			for (const TPair<FGuid, ATarget*>& Pair : GetManagedTargets())
+			for (ATarget* Target : GetManagedTargets())
 			{
-				Pair.Value->SetActorHiddenInGame(true);
+				Target->SetActorHiddenInGame(true);
 			}
 		}
 	}
@@ -265,11 +264,11 @@ void ATargetManager::SetShouldSpawn(const bool bShouldSpawn)
 
 void ATargetManager::OnPlayerStopTrackingTarget()
 {
-	for (const TPair<FGuid, ATarget*>& Pair : GetManagedTargets())
+	for (ATarget* Target : GetManagedTargets())
 	{
-		if (Pair.Value && !Pair.Value->IsImmuneToTrackingDamage())
+		if (Target && !Target->IsImmuneToTrackingDamage())
 		{
-			Pair.Value->SetTargetColor(GetBSConfig()->TargetConfig.NotTakingTrackingDamageColor);
+			Target->SetTargetColor(GetBSConfig()->TargetConfig.NotTakingTrackingDamageColor);
 		}
 	}
 }
@@ -290,21 +289,21 @@ void ATargetManager::OnAudioAnalyzerBeat()
 ATarget* ATargetManager::SpawnTarget(USpawnArea* InSpawnArea)
 {
 	if (!InSpawnArea) return nullptr;
-
-	const FVector Loc = InSpawnArea->GetChosenPoint();
-	const FVector Scale = InSpawnArea->GetTargetScale();
-	const FTransform TForm = FTransform(FRotator(0), Loc, Scale);
-	ATarget* Target = GetWorld()->SpawnActorDeferred<ATarget>(TargetToSpawn, TForm, this, nullptr,
-		ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
-
-	Target->Init(GetBSConfig()->TargetConfig);
+	
+	const FTransform TForm(FRotator(0), InSpawnArea->GetChosenPoint(), InSpawnArea->GetTargetScale());
+	FActorSpawnParameters SpawnInfo;
+	SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	SpawnInfo.Owner = this;
+	SpawnInfo.CustomPreSpawnInitalization = [this] (AActor* SpawnedActor)
+	{
+		Cast<ATarget>(SpawnedActor)->Init(GetBSConfig()->TargetConfig);
+	};
+	ATarget* Target = GetWorld()->SpawnActor<ATarget>(TargetToSpawn, TForm, SpawnInfo);
 	Target->SetTargetDamageType(FindNextTargetDamageType());
 	Target->OnTargetDamageEvent.AddDynamic(this, &ATargetManager::OnTargetDamageEvent);
 	Target->OnDeactivationResponse_ChangeDirection.AddUObject(this, &ATargetManager::ChangeTargetDirection);
 	Target->OnDeactivationResponse_Reactivate.AddUObject(this, &ATargetManager::OnReactivationRequested);
 	AddToManagedTargets(Target, InSpawnArea);
-	
-	Target->FinishSpawning(FTransform(), true);
 
 	if (!Target) return nullptr;
 	
@@ -494,19 +493,20 @@ int32 ATargetManager::HandleTargetActivation()
 	int32 NumActivated = 0;
 	for (const USpawnArea* SpawnArea : FindNextSpawnAreasForActivation(NumToActivate))
 	{
-		ATarget* Target = FindManagedTargetByGuid(SpawnArea->GetGuid());
-		if (!Target)
+		if (ATarget* Target = ManagedTargets.FindRef(SpawnArea->GetGuid()))
 		{
-			UE_LOG(LogTargetManager, Warning, TEXT("Failed to find target guid for activation."));
-			continue;
-		}
-		if (ActivateTarget(Target))
-		{
-			NumActivated++;
+			if (ActivateTarget(Target))
+			{
+				NumActivated++;
+			}
+			else
+			{
+				UE_LOG(LogTargetManager, Warning, TEXT("Failed to activate target."));
+			}
 		}
 		else
 		{
-			UE_LOG(LogTargetManager, Warning, TEXT("Failed to activate target."));
+			UE_LOG(LogTargetManager, Warning, TEXT("Failed to find target guid for activation."));
 		}
 	}
 	return NumActivated;
@@ -523,8 +523,10 @@ void ATargetManager::HandlePermanentlyActiveTargetActivation() const
 
 	for (const USpawnArea* SpawnArea : SpawnAreas)
 	{
-		if (ATarget* Target = FindManagedTargetByGuid(SpawnArea->GetGuid()))
+		if (ATarget* Target = ManagedTargets.FindRef(SpawnArea->GetGuid()))
+		{
 			ActivateTarget(Target);
+		}
 	}
 }
 
@@ -561,7 +563,9 @@ void ATargetManager::HandleActivateAlreadyActivated()
 	for (const int32 Index : ChosenIndices)
 	{
 		if (SpawnAreas.IsValidIndex(Index))
-			ActivateTarget(FindManagedTargetByGuid(SpawnAreas[Index]->GetGuid()));
+		{
+			ActivateTarget(ManagedTargets.FindRef(SpawnAreas[Index]->GetGuid()));
+		}
 	}
 }
 
@@ -1138,29 +1142,32 @@ void ATargetManager::OnReactivationRequested(ATarget* Target)
 void ATargetManager::UpdateTotalPossibleDamage()
 {
 	TotalPossibleDamage++;
-	for (const TPair<FGuid, ATarget*>& Pair : GetManagedTargets())
+	for (const ATarget* Target : GetManagedTargets())
 	{
-		SpawnAreaManager->UpdateTotalTrackingDamagePossible(Pair.Value->GetActorLocation());
+		if (Target) SpawnAreaManager->UpdateTotalTrackingDamagePossible(Target->GetActorLocation());
 	}
 }
 
 bool ATargetManager::TrackingTargetIsDamageable() const
 {
+	if (!GetBSConfig()) return false;
 	if (GetBSConfig()->TargetConfig.TargetDamageType == ETargetDamageType::Hit || GetManagedTargets().IsEmpty())
 	{
 		return false;
 	}
-	for (const TPair<FGuid, ATarget*>& Pair : GetManagedTargets())
+	for (const ATarget* Target : GetManagedTargets())
 	{
-		if (!Pair.Value->IsImmuneToTrackingDamage()) return true;
+		if (Target && !Target->IsImmuneToTrackingDamage()) return true;
 	}
 	return false;
 }
 
-ATarget* ATargetManager::FindManagedTargetByGuid(const FGuid Guid) const
+TArray<ATarget*> ATargetManager::GetManagedTargets() const
 {
-	const auto Found = ManagedTargets.Find(Guid);
-	return Found ? *Found : nullptr;
+	TArray<ATarget*> Out;
+	FScopeLock Lock(&ManagedTargetCritSection);
+	ManagedTargets.GenerateValueArray(Out);
+	return Out;
 }
 
 float ATargetManager::GetCurveTableValue(const bool bIsSpawnArea, const int32 InTime) const
@@ -1188,9 +1195,9 @@ void ATargetManager::UpdatePlayerSettings(const FPlayerSettings_Game& InPlayerSe
 	PlayerSettings = InPlayerSettings;
 	if (!ManagedTargets.IsEmpty())
 	{
-		for (const TPair<FGuid, ATarget*>& Pair : GetManagedTargets())
+		for (ATarget* Target : GetManagedTargets())
 		{
-			Pair.Value->UpdatePlayerSettings(PlayerSettings);
+			Target->UpdatePlayerSettings(PlayerSettings);
 		}
 	}
 }

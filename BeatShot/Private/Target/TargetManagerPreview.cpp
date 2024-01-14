@@ -23,17 +23,7 @@ void ATargetManagerPreview::RestartSimulation()
 
 void ATargetManagerPreview::FinishSimulation()
 {
-	if (!GetManagedTargets().IsEmpty())
-	{
-		for (const TPair<FGuid, ATarget*> Pair : GetManagedTargets())
-		{
-			if (Pair.Value)
-			{
-				Pair.Value->Destroy();
-			}
-		}
-		ManagedTargets.Empty();
-	}
+	Clear();
 }
 
 float ATargetManagerPreview::GetSimulation_TargetSpawnCD() const

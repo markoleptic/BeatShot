@@ -190,6 +190,9 @@ public:
 	/** Initializes the QTable, called by TargetManager */
 	void Init(const FRLAgentParams& AgentParams);
 
+	/** Resets the state of the component, aside from debug variables. */
+	void Clear();
+
 	/** Adds two activated spawned targets to ActiveTargetPairs */
 	void AddToActiveTargetPairs(const int32 SpawnAreaIndex_First, const int32 SpawnAreaIndex_Second);
 

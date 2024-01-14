@@ -13,6 +13,9 @@ UReinforcementLearningComponent::UReinforcementLearningComponent()
 	HyperParameterMode = EReinforcementLearningHyperParameterMode::None;
 	QTable = nc::NdArray<float>();
 	TrainingSamples = nc::NdArray<int32>();
+	SpawnAreaToQTableIndexMap = TArray<FSpawnAreaQTableIndexPair>();
+	QTableToSpawnAreaIndexMap = TMap<int32, FGenericIndexMapping>();
+	ActiveTargetPairs = TArray<FTargetPair>();
 	Alpha = 0;
 	Gamma = 0;
 	Epsilon = 0;
@@ -44,8 +47,6 @@ void UReinforcementLearningComponent::BeginPlay()
 
 void UReinforcementLearningComponent::DestroyComponent(bool bPromoteChildren)
 {
-	TargetPairs.Empty();
-	ActiveTargetPairs.Empty();
 	Super::DestroyComponent(bPromoteChildren);
 }
 
@@ -118,6 +119,24 @@ void UReinforcementLearningComponent::Init(const FRLAgentParams& AgentParams)
 		UE_LOG(LogTargetManager, Display, TEXT("QTable Training Samples: %lld"), TotalTrainingSamples);
 	}
 	#endif
+}
+
+void UReinforcementLearningComponent::Clear()
+{
+	ReinforcementLearningMode = EReinforcementLearningMode::None;
+	HyperParameterMode = EReinforcementLearningHyperParameterMode::None;
+	QTable = nc::NdArray<float>();
+	TrainingSamples = nc::NdArray<int32>();
+	SpawnAreaToQTableIndexMap.Empty();
+	QTableToSpawnAreaIndexMap.Empty();
+	TargetPairs.Empty();
+	ActiveTargetPairs.Empty();
+	Alpha = 0;
+	Gamma = 0;
+	Epsilon = 0;
+	TotalTrainingSamples = 0;
+	M = DefaultNumberOfQTableRows;
+	N = DefaultNumberOfQTableColumns;;
 }
 
 // Main QTable functions

@@ -99,6 +99,7 @@ void FBSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(Target_State_Tracking, "Target.State.Tracking", "");
 	AddTag(Target_State_Charged, "Target.State.Charged", "");
 	AddTag(Target_ResetHealth, "Target.ResetHealth", "");
+	AddTag(Target_TreatAsExternalDamage, "Target.TreatAsExternalDamage", "");
 
 	AddTag(Cheat, "Cheat", "");
 	AddTag(Cheat_AimBot, "Cheat.AimBot", "");
