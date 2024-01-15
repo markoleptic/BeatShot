@@ -25,7 +25,7 @@ UBSGameModeDataAsset* UCGMW_Base::GetGameModeDataAsset() const
 	return GameModeDataAsset ? GameModeDataAsset.Get() : nullptr;
 }
 
-void UCGMW_Base::Init(FBSConfig* InConfig, const TObjectPtr<UBSGameModeDataAsset> InGameModeDataAsset)
+void UCGMW_Base::Init(TSharedPtr<FBSConfig> InConfig, const TObjectPtr<UBSGameModeDataAsset> InGameModeDataAsset)
 {
 	BSConfig = InConfig;
 	GameModeDataAsset = InGameModeDataAsset;

@@ -115,7 +115,7 @@ class USERINTERFACE_API UGameModesWidget : public UUserWidget, public ISaveLoadI
 
 public:
 	/** Returns BSConfig */
-	FBSConfig* GetConfigPointer() const { return BSConfig; }
+	TSharedPtr<FBSConfig> GetBSConfig() const { return BSConfig; }
 
 	/** Ends the game mode preview */
 	void StopGameModePreview();
@@ -246,7 +246,7 @@ private:
 	void OnCarouselWidgetIndexChanged_CreatorProperty(UCommonWidgetCarousel* InCarousel, const int32 NewIndex);
 
 	/** Initializes all Custom game mode options based on the BSConfig */
-	void PopulateGameModeOptions(const FBSConfig& InBSConfig);
+	void PopulateGameModeOptions(const FBSConfig& InConfig);
 
 	/** Retrieves all Custom game mode options and returns a BSConfig with those options */
 	FBSConfig GetCustomGameModeOptions() const;
@@ -333,11 +333,8 @@ private:
 	/** The difficulty for a selected Preset Game Mode */
 	EGameModeDifficulty PresetSelection_Difficulty;
 
-	/** The custom game mode config */
-	FBSConfig GameModeConfig;
-
 	/** Pointer to the custom game mode config, shared with all CustomGameModeWidgets and their children */
-	FBSConfig* BSConfig;
+	TSharedPtr<FBSConfig> BSConfig;
 
 	/** Whether or not one of the custom game modes widgets has at least one breaking game mode option, or none */
 	bool bGameModeBreakingOptionPresent = false;

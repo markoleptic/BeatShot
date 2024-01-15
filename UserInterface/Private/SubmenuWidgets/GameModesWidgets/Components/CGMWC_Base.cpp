@@ -53,9 +53,9 @@ void UCGMWC_Base::UpdateAllOptionsValid()
 	}
 }
 
-void UCGMWC_Base::InitComponent(FBSConfig* InConfigPtr, const int32 InIndex)
+void UCGMWC_Base::InitComponent(TSharedPtr<FBSConfig> InConfig, const int32 InIndex)
 {
-	BSConfig = InConfigPtr;
+	BSConfig = InConfig;
 	UpdateOptionsFromConfig();
 	bIsInitialized = true;
 	Index = InIndex;

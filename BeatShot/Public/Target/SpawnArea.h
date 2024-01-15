@@ -150,7 +150,7 @@ class BEATSHOT_API USpawnArea : public UObject
 	 *  between targets, minimum overlap radius, and size of the SpawnArea.
 	 *
 	 *  OccupiedVertices are set when finding multiple spawn locations (RemoveOverlappingSpawnAreas) or when flagged as
-	 *  managed or activated. Only updated if empty or the target scale changes */
+	 *  managed or activated. Only updated if the target scale changes */
 	TSet<FVector> OccupiedVertices;
 
 	/** NumHorizontalTargets * NumVerticalTargets */
@@ -251,14 +251,14 @@ private:
 	/** Returns a random non-overlapping point within the SpawnArea */
 	FVector GenerateRandomPointInSpawnArea() const;
 
-	/** Flags this SpawnArea as corresponding to a target being managed by TargetManager */
+	/** Flags this SpawnArea as corresponding to a target being managed by TargetManager. If false,
+	 *  clears Occupied Vertices */
 	void SetIsManaged(const bool bManaged);
 
 	/** Sets the activated state and the persistently activated state for this SpawnArea */
 	void SetIsActivated(const bool bActivated, const bool bAllow = false);
 
-	/** Flags this SpawnArea as recent, and records the time it was set as recent. If false, removes flag and
-	 *  clears OccupiedVertices */
+	/** Flags this SpawnArea as recent, and records the time it was set as recent. */
 	void SetIsRecent(const bool bSetIsRecent);
 
 	/** Sets the value of OccupiedVertices */

@@ -2,8 +2,9 @@
 
 
 #include "MainMenuGameMode.h"
+
+#include "BSGameInstance.h"
 #include "Components/AudioComponent.h"
-#include "Player/BSPlayerController.h"
 #include "SubMenuWidgets/GameModesWidgets/GameModesWidget.h"
 #include "SubMenuWidgets/GameModesWidgets/CGMW_CreatorView.h"
 #include "Target/TargetManagerPreview.h"
@@ -18,14 +19,23 @@ AMainMenuGameMode::AMainMenuGameMode()
 void AMainMenuGameMode::BeginPlay()
 {
 	Super::BeginPlay();
+	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	GI->GetPublicGameSettingsChangedDelegate().AddUObject(this, &ThisClass::OnPlayerSettingsChanged_Game);
+}
+
+void AMainMenuGameMode::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings)
+{
+	PlayerSettings_Game = GameSettings;
 }
 
 void AMainMenuGameMode::SetupTargetManager(UGameModesWidget* GameModesWidget)
 {
+	PlayerSettings_Game = LoadPlayerSettings().Game;
+	BSConfig = GameModesWidget->GetBSConfig();
 	TargetManager = GetWorld()->SpawnActor<ATargetManagerPreview>(TargetManagerClass, FVector::Zero(),
 		FRotator::ZeroRotator);
 	TargetManager->InitBoxBoundsWidget(GameModesWidget->CustomGameModesWidget_CreatorView->Widget_Preview);
-	TargetManager->Init(GameModesWidget->GetConfigPointer(), LoadPlayerSettings().Game);
+	TargetManager->Init(BSConfig, PlayerSettings_Game);
 	TargetManager->CreateTargetWidget.BindUObject(GameModesWidget->CustomGameModesWidget_CreatorView->Widget_Preview,
 		&UCGMWC_Preview::ConstructTargetWidget);
 
@@ -63,19 +73,15 @@ void AMainMenuGameMode::StartSimulation()
 		return;
 	}
 
-	TargetManager->RestartSimulation();
+	TargetManager->Init(BSConfig, PlayerSettings_Game);
 	TargetManager->SetSimulatePlayerDestroyingTargets(true);
 	TargetManager->SetShouldSpawn(true);
-
-	// Bind the simulation timer
-	SimulationTimerDelegate.BindUObject(this, &ThisClass::FinishSimulation);
-	SimulationIntervalDelegate.BindUObject(this, &ThisClass::OnSimulationInterval);
-
+	
 	// Start timers
 	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
-	TimerManager.SetTimer(SimulationTimer, SimulationTimerDelegate, SimulationTimerDuration, false);
-	TimerManager.SetTimer(SimulationIntervalTimer, SimulationIntervalDelegate,
-		TargetManager->GetSimulation_TargetSpawnCD(), true, SimulationIntervalTimerInitialDelay);
+	TimerManager.SetTimer(SimulationTimer, this, &ThisClass::FinishSimulation, SimulationTimerDuration, false);
+	TimerManager.SetTimer(SimulationIntervalTimer, this, &ThisClass::OnSimulationInterval,
+		BSConfig->TargetConfig.TargetSpawnCD, true, SimulationIntervalTimerInitialDelay);
 }
 
 void AMainMenuGameMode::OnSimulationInterval()
@@ -88,27 +94,13 @@ void AMainMenuGameMode::OnSimulationInterval()
 
 void AMainMenuGameMode::FinishSimulation()
 {
-	// Unbind delegates
-	if (SimulationTimerDelegate.IsBound())
-	{
-		SimulationTimerDelegate.Unbind();
-	}
-	if (SimulationIntervalDelegate.IsBound())
-	{
-		SimulationIntervalDelegate.Unbind();
-	}
-
-	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
-
-	// Clear Timers
-	TimerManager.ClearTimer(SimulationIntervalTimer);
-	TimerManager.ClearTimer(SimulationTimer);
-
 	if (TargetManager)
 	{
-		TargetManager->SetShouldSpawn(false);
-		TargetManager->FinishSimulation();
+		TargetManager->Clear();
 	}
+	
+	// Clear Timers
+	GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
 }
 
 bool AMainMenuGameMode::IsSimulating() const

@@ -434,8 +434,10 @@ void ATarget::OnIncomingDamageTaken(const FDamageEventData& InData)
 	VulnerableDamageTypes.Add(GetTargetDamageType());
 	Event.SetTargetData(bDeactivate, bDestroy, VulnerableDamageTypes);
 	OnTargetDamageEvent.Broadcast(Event);
-	
-	ColorWhenDamageTaken = TargetColorChangeMaterial->K2_GetVectorParameterValue("BaseColor");
+	if (TargetColorChangeMaterial)
+	{
+		ColorWhenDamageTaken = TargetColorChangeMaterial->K2_GetVectorParameterValue("BaseColor");
+	}
 	if (bDeactivate) HandleDeactivation(Event.bDamagedSelf, Event.bOutOfHealth, bDestroy);
 
 	if (bDestroy)
@@ -825,10 +827,12 @@ void ATarget::PlayExplosionEffect(const FVector& ExplosionLocation, const float 
 {
 	if (TargetExplosion && Config.TargetDamageType == ETargetDamageType::Hit)
 	{
-		UNiagaraComponent* ExplosionComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), TargetExplosion,
-			ExplosionLocation);
-		ExplosionComp->SetFloatParameter(FName("SphereRadius"), SphereRadius);
-		ExplosionComp->SetColorParameter(FName("SphereColor"), InColorWhenDestroyed);
+		if (UNiagaraComponent* ExplosionComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), TargetExplosion,
+			ExplosionLocation))
+		{
+			ExplosionComp->SetFloatParameter(FName("SphereRadius"), SphereRadius);
+			ExplosionComp->SetColorParameter(FName("SphereColor"), InColorWhenDestroyed);
+		}
 	}
 }
 

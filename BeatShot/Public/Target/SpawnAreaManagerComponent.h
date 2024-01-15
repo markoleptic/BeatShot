@@ -393,7 +393,7 @@ public:
 	virtual void DestroyComponent(bool bPromoteChildren) override;
 
 	/** Initializes basic variables in SpawnAreaManagerComponent */
-	void Init(FBSConfig* InBSConfig, const FVector& InOrigin, const FVector& InStaticExtents,
+	void Init(const TSharedPtr<FBSConfig>& InConfig, const FVector& InOrigin, const FVector& InStaticExtents,
 		const FExtrema& InStaticExtrema);
 
 	/** Resets all variables */
@@ -411,9 +411,6 @@ public:
 	/** Sets whether or not to request a SpawnArea selection from the RLC */
 	void SetShouldAskRLCForSpawnAreas(const bool bShould) { bShouldAskRLCForSpawnAreas = bShould; }
 
-	/** Sets the most recently activated SpawnArea. Should be called from TargetManager at end of ActivateTarget */
-	void SetMostRecentSpawnArea(USpawnArea* SpawnArea) { MostRecentSpawnArea = SpawnArea; }
-
 	/** Finds a SpawnArea with the matching location and increments TotalTrackingDamagePossible */
 	void UpdateTotalTrackingDamagePossible(const FVector& InLocation) const;
 
@@ -427,8 +424,11 @@ public:
 	void OnExtremaChanged(const FExtrema& Extrema);
 
 protected:
+	/** Sets the most recently activated SpawnArea. Called at end of FlagSpawnAreaAsActivated. */
+	void SetMostRecentSpawnArea(USpawnArea* SpawnArea) { MostRecentSpawnArea = SpawnArea; }
+	
 	/** Sets InSpawnAreaInc, InSpawnAreaScale */
-	static void SetAppropriateSpawnMemoryValues(FIntVector3& InSpawnAreaInc, FVector& InSpawnAreaScale,
+	static void SetAppropriateSpawnMemoryValues(FIntVector3& OutSpawnAreaInc, FVector& OutSpawnAreaScale,
 		const FBSConfig* InCfg, const FVector& InStaticExtents);
 
 	/** Initializes the SpawnCounter array */
@@ -436,12 +436,9 @@ protected:
 
 	/** Returns whether or not to consider Managed SpawnAreas as invalid choices for activation */
 	bool ShouldConsiderManagedAsInvalid() const;
-
-	/** Returns true if bSpawnEveryOtherTargetInCenter is true and the previous SpawnArea is not the Origin SpawnArea */
-	bool ShouldForceSpawnAtOrigin() const;
 	
 	/** Returns pointer to TargetManager's BSConfig */
-	FBSConfig* GetBSConfig() const { return BSConfig; }
+	TSharedPtr<FBSConfig> GetBSConfig() const { return BSConfig; }
 
 	/** Returns pointer to TargetManager's BSConfig.TargetConfig */
 	const FBS_TargetConfig& GetTargetCfg() const { return BSConfig->TargetConfig; }
@@ -520,7 +517,7 @@ public:
 
 	/** Adds to Activated cache, removes from Deactivate cache, and flags the SpawnArea as activated and removes the
 	 *  recent flag if present. Calls SetOccupiedVertices if needed */
-	void FlagSpawnAreaAsActivated(const FGuid TargetGuid, const bool bCanActivateWhileActivated);
+	void FlagSpawnAreaAsActivated(const FGuid TargetGuid, const FVector& TargetScale);
 
 protected:
 	/** Adds to Recent cache and flags the SpawnArea as recent */
@@ -549,7 +546,7 @@ public:
 	 *  are linked to a managed target since activatable requires being managed. Also considers the
 	 *  Target Activation Selection Policy */
 	TSet<USpawnArea*> GetActivatableSpawnAreas(const int32 NumToActivate) const;
-
+	
 	/** Returns an array of valid SpawnAreas filtered from the SpawnAreas array. Broadest search since SpawnAreas
 	 *  do not have to be linked to a managed target to be considered. Also considers the Target Distribution Policy
 	 *  and Bounds Scaling Policy */
@@ -560,12 +557,12 @@ protected:
 	 *  meaning that it corresponds to a valid target. Priority is origin (setting permitting), reinforcement learning
 	 *  component (setting permitting), and lastly chooses a random index of ValidSpawnAreas. */
 	USpawnArea* ChooseActivatableSpawnArea(const USpawnArea* PreviousSpawnArea,
-		const TSet<USpawnArea*>& ValidSpawnAreas) const;
+		const TSet<USpawnArea*>& ValidSpawnAreas, const TSet<USpawnArea*>& SelectedSpawnAreas) const;
 
 	/** Uses a priority list to return a SpawnArea to spawn. Priority is origin (setting permitting), reinforcement
 	 *  learning component (setting permitting), and lastly chooses a random index of ValidSpawnAreas. */
 	USpawnArea* ChooseSpawnableSpawnArea(const USpawnArea* PreviousSpawnArea,
-		const TSet<USpawnArea*>& ValidSpawnAreas) const;
+		const TSet<USpawnArea*>& ValidSpawnAreas, const TSet<USpawnArea*>& SelectedSpawnAreas) const;
 	
 	/** Handles selecting SpawnAreas for runtime Grid distributions, based on the
 	 *  RuntimeTargetSpawningLocationSelectionMode. Can call FindRandomBorderingGrid, FindGridBlockUsingLargestRect,
@@ -614,7 +611,7 @@ protected:
 	 *  Recalculates occupied vertices for each spawn area if necessary. Only called when finding Spawnable
 	 *  Non-Grid SpawnAreas since grid-based will never have to worry about overlapping. */
 	void RemoveOverlappingSpawnAreas(TSet<USpawnArea*>& ValidSpawnAreas, const TSet<USpawnArea*>& ChosenSpawnAreas,
-		const FVector& NewTargetScale) const;
+		const FVector& NewScale) const;
 
 	/** Filters out any SpawnAreas that aren't bordering Current */
 	int32 RemoveNonAdjacentIndices(TSet<USpawnArea*>& ValidSpawnAreas, const USpawnArea* Current) const;
@@ -715,8 +712,7 @@ public:
 
 	/** Draws a debug sphere where the overlapping vertices were traced from, and draws debug points for
 	 *  the vertices if they were recalculated */
-	void DrawVerticesOverlap(const TSet<USpawnArea*>& InSpawnAreas, const FVector& Scale, const TSet<FVector>& Valid,
-		const TSet<FVector>& Invalid) const;
+	void DrawVerticesOverlap(const TSet<USpawnArea*>& InSpawnAreas) const;
 
 	/** Prints debug info about a SpawnArea */
 	static void PrintDebug_SpawnArea(const USpawnArea* SpawnArea);
@@ -749,7 +745,7 @@ public:
 	/** Toggles showing yellow debug boxes for filtered bordering SpawnAreas */
 	bool bDebug_FilterBordering;
 
-	/** Shows the overlapping vertices generated when flagging as managed or activated as red DebugPoints.
+	/** Shows the overlapping vertices generated when flagging as activated as red DebugPoints.
 	 *  Draws a magenta Debug Sphere showing the target that was used to generate the overlapping points.
 	 *  Draws red Debug Boxes for the removed overlapping vertices, and green Debug Boxes for valid */
 	bool bDebug_Vertices;
@@ -769,7 +765,7 @@ private:
 	bool bShouldAskRLCForSpawnAreas;
 	
 	/** Pointer to TargetManager's BSConfig */
-	FBSConfig* BSConfig;
+	TSharedPtr<FBSConfig> BSConfig;
 
 	/** The total amount of (-, horizontal, vertical) SpawnAreas in SpawnAreas */
 	FIntVector3 Size;

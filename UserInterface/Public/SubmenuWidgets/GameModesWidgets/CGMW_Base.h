@@ -72,7 +72,7 @@ class USERINTERFACE_API UCGMW_Base : public UUserWidget, public ISaveLoadInterfa
 
 public:
 	/** Sets the value of BSConfig and GameModeDataAsset. Calls InitComponent on all widgets in ChildWidgets array */
-	virtual void Init(FBSConfig* InConfig, const TObjectPtr<UBSGameModeDataAsset> InGameModeDataAsset);
+	virtual void Init(TSharedPtr<FBSConfig> InConfig, const TObjectPtr<UBSGameModeDataAsset> InGameModeDataAsset);
 
 	/** Calls UpdateOptionsFromConfig on all widgets in ChildWidgets array and calls UpdateAllChildWidgetOptionsValid */
 	UFUNCTION()
@@ -108,8 +108,6 @@ public:
 	/** Broadcast when a widget wants to refresh the preview after a change to the config */
 	FRequestGameModePreviewUpdate RequestGameModePreviewUpdate;
 
-	FBSConfig* GetBSConfig() const { return BSConfig; }
-
 protected:
 	/** Adds child widgets to ChildWidgets array, binds to Widget_Start's RequestGameModeTemplateUpdate */
 	virtual void NativeConstruct() override;
@@ -142,8 +140,8 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UBSGameModeDataAsset> GameModeDataAsset;
 
-	/** Pointer to Game Mode Config held in controlling GameModesWidget*/
-	FBSConfig* BSConfig;
+	/** Pointer to Game Mode Config held in controlling GameModesWidget. */
+	TSharedPtr<FBSConfig> BSConfig;
 
 	/** Maps each child widget to struct representing if all its custom game mode options are valid */
 	TMap<TObjectPtr<UCGMWC_Base>, FCustomGameModeCategoryInfo*> ChildWidgetValidityMap;

@@ -42,7 +42,6 @@ ATargetManager::ATargetManager()
 	RLComponent = CreateDefaultSubobject<UReinforcementLearningComponent>(TEXT("Reinforcement Learning Component"));
 
 	CurrentStreak = 0;
-	BSConfigLocal = FBSConfig();
 	BSConfig = nullptr;
 	PlayerSettings = FPlayerSettings_Game();
 	ShouldSpawn = false;
@@ -66,10 +65,7 @@ void ATargetManager::BeginPlay()
 
 void ATargetManager::Destroyed()
 {
-	if (ShouldSpawn)
-	{
-		SetShouldSpawn(false);
-	}
+	SetShouldSpawn(false);
 	
 	if (!ManagedTargets.IsEmpty())
 	{
@@ -82,9 +78,7 @@ void ATargetManager::Destroyed()
 		}
 		ManagedTargets.Empty();
 	}
-
-	BSConfig = nullptr;
-
+	
 	Super::Destroyed();
 }
 
@@ -98,70 +92,12 @@ void ATargetManager::Tick(float DeltaTime)
 	}
 }
 
-void ATargetManager::Init(const FBSConfig& InBSConfig, const FPlayerSettings_Game& InPlayerSettings)
+void ATargetManager::Init(const TSharedPtr<FBSConfig>& InConfig, const FPlayerSettings_Game& InPlayerSettings)
 {
 	Clear();
-	BSConfigLocal = InBSConfig;
-	BSConfig = &BSConfigLocal;
+	BSConfig = InConfig;
 	PlayerSettings = InPlayerSettings;
-	Init_Internal();
-}
-
-void ATargetManager::Init(FBSConfig* InBSConfig, const FPlayerSettings_Game& InPlayerSettings)
-{
-	Clear();
-	BSConfig = InBSConfig;
-	PlayerSettings = InPlayerSettings;
-	Init_Internal();
-}
-
-void ATargetManager::TestRLComponent(int32 NumIterations)
-{
-	while (NumIterations > 0)
-	{
-		if (!ShouldSpawn) return;
-		HandleRuntimeSpawning();
-		HandleTargetActivation();
-		SpawnAreaManager->RefreshRecentFlags();
-		NumIterations--;
-	}
-}
-
-void ATargetManager::Clear()
-{
-	ShouldSpawn = false;
-	if (!ManagedTargets.IsEmpty())
-	{
-		for (ATarget* Target : GetManagedTargets())
-		{
-			if (Target)
-			{
-				Target->Destroy();
-			}
-		}
-		ManagedTargets.Empty();
-	}
-	CurrentStreak = 0;
-	BSConfigLocal = FBSConfig();
-	BSConfig = nullptr;
-	PlayerSettings = FPlayerSettings_Game();
-	LastTargetDamageType = ETargetDamageType::Tracking;
-	CurrentTargetScale = FVector(1.f);
-	StaticExtrema = FExtrema();
-	StaticExtents = FVector();
-	CurrentStreak = 0;
-	DynamicLookUpValue_TargetScale = 0;
-	DynamicLookUpValue_SpawnAreaScale = 0;
-	TotalPossibleDamage = 0.f;
-	bLastSpawnedTargetDirectionChangeHorizontal = false;
-	bLastActivatedTargetDirectionChangeHorizontal = false;
-
-	RLComponent->Clear();
-	SpawnAreaManager->Clear();
-}
-
-void ATargetManager::Init_Internal()
-{
+	
 	// Initialize target colors
 	GetBSConfig()->InitColors(PlayerSettings.bUseSeparateOutlineColor, PlayerSettings.InactiveTargetColor,
 		PlayerSettings.TargetOutlineColor, PlayerSettings.StartTargetColor, PlayerSettings.PeakTargetColor,
@@ -169,10 +105,10 @@ void ATargetManager::Init_Internal()
 		PlayerSettings.NotTakingTrackingDamageColor);
 
 	// Set SpawnBox location & BoxExtent, StaticExtents, and StaticExtrema
-	SpawnBox->SetRelativeLocation(GenerateStaticLocation(GetBSConfig()));
-	StaticExtents = GenerateStaticExtents(GetBSConfig());
+	SpawnBox->SetRelativeLocation(GenerateStaticLocation(GetBSConfig().Get()));
+	StaticExtents = GenerateStaticExtents(GetBSConfig().Get());
 	SpawnBox->SetBoxExtent(StaticExtents);
-	StaticExtrema = GenerateStaticExtrema(GetBSConfig(), GetSpawnBoxOrigin(), StaticExtents);
+	StaticExtrema = GenerateStaticExtrema(GetBSConfig().Get(), GetSpawnBoxOrigin(), StaticExtents);
 
 	// Initialize the CompositeCurveTables in case they need to be modified
 	Init_Tables();
@@ -247,6 +183,38 @@ void ATargetManager::Init_Tables()
 		GetBSConfig()->DynamicTargetScaling.EndThreshold);
 }
 
+void ATargetManager::Clear()
+{
+	ShouldSpawn = false;
+	if (!ManagedTargets.IsEmpty())
+	{
+		for (ATarget* Target : GetManagedTargets())
+		{
+			if (Target)
+			{
+				Target->Destroy();
+			}
+		}
+		ManagedTargets.Empty();
+	}
+	CurrentStreak = 0;
+	BSConfig = nullptr;
+	PlayerSettings = FPlayerSettings_Game();
+	LastTargetDamageType = ETargetDamageType::Tracking;
+	CurrentTargetScale = FVector(1.f);
+	StaticExtrema = FExtrema();
+	StaticExtents = FVector();
+	CurrentStreak = 0;
+	DynamicLookUpValue_TargetScale = 0;
+	DynamicLookUpValue_SpawnAreaScale = 0;
+	TotalPossibleDamage = 0.f;
+	bLastSpawnedTargetDirectionChangeHorizontal = false;
+	bLastActivatedTargetDirectionChangeHorizontal = false;
+
+	RLComponent->Clear();
+	SpawnAreaManager->Clear();
+}
+
 void ATargetManager::SetShouldSpawn(const bool bShouldSpawn)
 {
 	if (bShouldSpawn)
@@ -283,7 +251,6 @@ void ATargetManager::OnAudioAnalyzerBeat()
 
 	HandleRuntimeSpawning();
 	HandleTargetActivation();
-	SpawnAreaManager->RefreshRecentFlags();
 }
 
 ATarget* ATargetManager::SpawnTarget(USpawnArea* InSpawnArea)
@@ -349,24 +316,24 @@ bool ATargetManager::ActivateTarget(ATarget* InTarget) const
 	}
 	
 	// Only perform some Activation Responses if already activated
-	const bool bPreTargetActivationState = InTarget->IsActivated();
+	const bool bAlreadyActivated = InTarget->IsActivated();
 
 	// Make sure it isn't hidden
-	if (!bPreTargetActivationState && InTarget->IsHidden())
+	if (!bAlreadyActivated && InTarget->IsHidden())
 	{
 		InTarget->SetActorHiddenInGame(false);
 	}
-	if (!bPreTargetActivationState && GetBSConfig()->TargetConfig.TargetActivationResponses.Contains(
+	if (!bAlreadyActivated && GetBSConfig()->TargetConfig.TargetActivationResponses.Contains(
 		ETargetActivationResponse::AddImmunity))
 	{
 		InTarget->ApplyImmunityEffect();
 	}
-	if (!bPreTargetActivationState && GetBSConfig()->TargetConfig.TargetActivationResponses.Contains(
+	if (!bAlreadyActivated && GetBSConfig()->TargetConfig.TargetActivationResponses.Contains(
 		ETargetActivationResponse::RemoveImmunity))
 	{
 		InTarget->RemoveImmunityEffect();
 	}
-	if (!bPreTargetActivationState && GetBSConfig()->TargetConfig.TargetActivationResponses.Contains(
+	if (!bAlreadyActivated && GetBSConfig()->TargetConfig.TargetActivationResponses.Contains(
 		ETargetActivationResponse::ToggleImmunity))
 	{
 		InTarget->IsImmuneToDamage() ? InTarget->RemoveImmunityEffect() : InTarget->ApplyImmunityEffect();
@@ -386,29 +353,29 @@ bool ATargetManager::ActivateTarget(ATarget* InTarget) const
 		ChangeTargetDirection(InTarget, 1);
 	}
 
-	if (!bPreTargetActivationState && InTarget->HasBeenActivatedBefore() && GetBSConfig()->TargetConfig.
+	// TODO: Overall weird and confusing setting, probably remove or refactor
+	if (!bAlreadyActivated && InTarget->HasBeenActivatedBefore() && GetBSConfig()->TargetConfig.
 		TargetActivationResponses.Contains(ETargetActivationResponse::ApplyConsecutiveTargetScale))
 	{
 		InTarget->SetTargetScale(FindNextSpawnedTargetScale());
 	}
-	const bool bPostTargetActivationState = InTarget->ActivateTarget(GetBSConfig()->TargetConfig.TargetMaxLifeSpan);
-	const bool bIsReactivation = bPreTargetActivationState && bPostTargetActivationState;
+	
+	const bool bActivated = InTarget->ActivateTarget(GetBSConfig()->TargetConfig.TargetMaxLifeSpan);
 
 	// Don't continue if failed to activate
-	if (!bPostTargetActivationState) return false;
+	if (!bActivated) return false;
 
-	// Get previous SpawnArea
+	// Cache the previous SpawnArea
 	const USpawnArea* Previous = SpawnAreaManager->GetMostRecentSpawnArea();
 
-	SpawnAreaManager->FlagSpawnAreaAsActivated(InTarget->GetGuid(),
-		GetBSConfig()->TargetConfig.bAllowActivationWhileActivated);
-	SpawnAreaManager->SetMostRecentSpawnArea(SpawnAreaManager->FindSpawnArea(InTarget->GetGuid()));
+	// Update SpawnArea and scale
+	SpawnAreaManager->FlagSpawnAreaAsActivated(InTarget->GetGuid(), InTarget->GetTargetScale_Current());
 
 	OnTargetActivated.Broadcast(InTarget->GetTargetDamageType());
 	OnTargetActivated_AimBot.Broadcast(InTarget);
 	
 	// Don't continue if the target was already activated and succeeded the reactivation
-	if (bIsReactivation)
+	if (bAlreadyActivated && bActivated)
 	{
 		UE_LOG(LogTargetManager, Display, TEXT("Reactivated Target"));
 		return true;
@@ -1021,7 +988,7 @@ void ATargetManager::UpdateSpawnVolume(const float Factor) const
 {
 	const FVector Origin = GetSpawnBoxOrigin();
 	const FVector VolumeLocation = GenerateSpawnVolumeLocation(Origin, GetSpawnBoxExtents(), StaticExtents, Factor);
-	const FVector VolumeExtents = GenerateSpawnVolumeExtents(GetBSConfig(), GetSpawnBoxExtents(), StaticExtents, Factor);
+	const FVector VolumeExtents = GenerateSpawnVolumeExtents(GetBSConfig().Get(), GetSpawnBoxExtents(), StaticExtents, Factor);
 
 	SpawnVolume->SetRelativeLocation(VolumeLocation);
 	SpawnVolume->SetBoxExtent(VolumeExtents);

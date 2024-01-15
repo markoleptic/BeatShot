@@ -23,6 +23,7 @@ public:
 	AMainMenuGameMode();
 
 	virtual void BeginPlay() override;
+	virtual void OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings) override;
 
 	/** Enables communication between GameModesWidget and TargetManager. */
 	void SetupTargetManager(UGameModesWidget* GameModesWidget);
@@ -62,14 +63,14 @@ protected:
 	UPROPERTY()
 	TObjectPtr<ATargetManagerPreview> TargetManager;
 
-	/** Delegate that binds the SimulationIntervalTimer to the OnSimulationInterval function. */
-	FTimerDelegate SimulationIntervalDelegate;
+	/** Pointer to the game mode config, shared between GameModesWidget and TargetManager. */
+	TSharedPtr<FBSConfig> BSConfig;
+	
+	/** Game settings to pass to the TargetManager. */
+	FPlayerSettings_Game PlayerSettings_Game;
 
 	/** Looping timer that executes every TargetSpawnCD duration. */
 	FTimerHandle SimulationIntervalTimer;
-
-	/** Delegate that binds the SimulationTimer to the FinishSimulation function. */
-	FTimerDelegate SimulationTimerDelegate;
 
 	/** Timer that spans the length of the simulation. */
 	FTimerHandle SimulationTimer;

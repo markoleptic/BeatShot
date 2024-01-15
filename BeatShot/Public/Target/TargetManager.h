@@ -30,7 +30,11 @@ class BEATSHOT_API ATargetManager : public AActor, public ISaveLoadInterface
 	friend class ABSGameMode;
 	friend class UBSCheatManager;
 	friend class FRunAllDefaultGameModesTest;
-	friend class ATargetManagerFunctionalTest;
+	friend class ABeatShotGameModeFunctionalTest;
+	friend class FInitTargetManager;
+	friend class FBSAutomationTestBase;
+	friend class FBSTestAllGameModes;
+	friend class FSimulateTargetHit;
 
 public:
 	ATargetManager();
@@ -96,21 +100,13 @@ protected:
 	UCompositeCurveTable* CCT_TargetScale;
 
 public:
-	/** Called from BSGameMode */
-	void Init(const FBSConfig& InBSConfig, const FPlayerSettings_Game& InPlayerSettings);
-
-	/** Called from MainMenuGameMode */
-	void Init(FBSConfig* InBSConfig, const FPlayerSettings_Game& InPlayerSettings);
-
-	void TestRLComponent(int32 NumIterations);
-
+	/** Initializes  */
+	void Init(const TSharedPtr<FBSConfig>& InConfig, const FPlayerSettings_Game& InPlayerSettings);
+	
 	/** Resets all state and destroys all actors. Calls clear on Components who also manage state. */
 	void Clear();
 
 protected:
-	/** Main initialization function */
-	void Init_Internal();
-
 	/** Initializes the Composite Curve Tables */
 	void Init_Tables();
 
@@ -256,8 +252,8 @@ protected:
 	/** Returns true if a target exists that is vulnerable to tracking damage */
 	bool TrackingTargetIsDamageable() const;
 
-	/** Returns BSConfig pointer */
-	FBSConfig* GetBSConfig() const { return BSConfig; }
+	/** Returns BSConfig shared pointer */
+	TSharedPtr<FBSConfig> GetBSConfig() const { return BSConfig; }
 
 	/** Returns a copy of ManagedTargets */
 	TArray<ATarget*> GetManagedTargets() const;
@@ -278,8 +274,7 @@ public:
 
 protected:
 	/** Initialized at start of game mode by DefaultGameMode */
-	FBSConfig BSConfigLocal;
-	FBSConfig* BSConfig;
+	TSharedPtr<FBSConfig> BSConfig;
 
 	/** Settings that get updated by DefaultGameMode if they change */
 	FPlayerSettings_Game PlayerSettings;

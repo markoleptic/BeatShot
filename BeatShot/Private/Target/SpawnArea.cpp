@@ -226,7 +226,6 @@ void USpawnArea::SetIsRecent(const bool bSetIsRecent)
 	else
 	{
 		TimeSetRecent = DBL_MAX;
-		SetOccupiedVertices(TSet<FVector>());
 	}
 }
 

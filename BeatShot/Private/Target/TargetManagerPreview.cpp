@@ -16,25 +16,6 @@ void ATargetManagerPreview::InitBoxBoundsWidget(
 	GameModePreviewWidget = InGameModePreviewWidget;
 }
 
-void ATargetManagerPreview::RestartSimulation()
-{
-	Init(BSConfig, PlayerSettings);
-}
-
-void ATargetManagerPreview::FinishSimulation()
-{
-	Clear();
-}
-
-float ATargetManagerPreview::GetSimulation_TargetSpawnCD() const
-{
-	if (BSConfig)
-	{
-		return BSConfig->TargetConfig.TargetSpawnCD;
-	}
-	return -1.f;
-}
-
 void ATargetManagerPreview::SetSimulatePlayerDestroyingTargets(const bool bInSimulatePlayerDestroyingTargets,
 	const float InDestroyChance)
 {

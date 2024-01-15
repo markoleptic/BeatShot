@@ -42,8 +42,7 @@ void UGameModesWidget::NativeConstruct()
 	CarouselNavBar_CreatorProperty->SetNavButtonText(NavBarButtonText_CreatorProperty);
 	CarouselNavBar_CreatorProperty->SetLinkedCarousel(Carousel_CreatorProperty);
 
-	GameModeConfig = FBSConfig();
-	BSConfig = &GameModeConfig;
+	BSConfig = MakeShareable(new FBSConfig());
 
 	CustomGameModesWidget_Current = CustomGameModesWidget_CreatorView;
 
@@ -670,15 +669,15 @@ void UGameModesWidget::OnButtonClicked_RemoveAllCustom()
 	PopupMessageWidget->FadeIn();
 }
 
-void UGameModesWidget::PopulateGameModeOptions(const FBSConfig& InBSConfig)
+void UGameModesWidget::PopulateGameModeOptions(const FBSConfig& InConfig)
 {
-	GameModeConfig = InBSConfig;
+	*BSConfig = InConfig;
 
 	// Override Difficulty for Custom Modes to always be None
-	if (IsCustomGameMode(GameModeConfig.DefiningConfig.CustomGameModeName))
+	if (IsCustomGameMode(BSConfig->DefiningConfig.CustomGameModeName))
 	{
-		GameModeConfig.DefiningConfig.Difficulty = EGameModeDifficulty::None;
-		const FStartWidgetProperties Update = FStartWidgetProperties(GameModeConfig.DefiningConfig, true);
+		BSConfig->DefiningConfig.Difficulty = EGameModeDifficulty::None;
+		const FStartWidgetProperties Update = FStartWidgetProperties(BSConfig->DefiningConfig, true);
 		CustomGameModesWidget_CreatorView->SetStartWidgetProperties(Update);
 		CustomGameModesWidget_PropertyView->SetStartWidgetProperties(Update);
 	}
@@ -691,7 +690,7 @@ void UGameModesWidget::PopulateGameModeOptions(const FBSConfig& InBSConfig)
 
 FBSConfig UGameModesWidget::GetCustomGameModeOptions() const
 {
-	FBSConfig ReturnStruct = GameModeConfig;
+	FBSConfig ReturnStruct(*BSConfig.Get());
 
 	if (!CustomGameModesWidget_Current->GetNewCustomGameModeName().IsEmpty())
 	{

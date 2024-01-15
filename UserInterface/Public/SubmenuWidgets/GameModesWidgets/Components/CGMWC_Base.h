@@ -57,7 +57,7 @@ protected:
 
 public:
 	/** Sets BSConfig, sets the pointer to next widget in linked list, and calls UpdateOptionsFromConfig */
-	virtual void InitComponent(FBSConfig* InConfigPtr, const int32 InIndex);
+	virtual void InitComponent(TSharedPtr<FBSConfig> InConfig, const int32 InIndex);
 
 	/** Sets all custom game mode option values using the BSConfig pointer. Only changes the values if different. Only called during transitions */
 	virtual void UpdateOptionsFromConfig();
@@ -118,8 +118,8 @@ protected:
 
 	void SetMenuOptionEnabledStateAndAddTooltip(UMenuOptionWidget* Widget, const EMenuOptionEnabledState State, const FString& Key = FString());
 
-	/** Pointer to the game mode config inside GameModesWidget */
-	FBSConfig* BSConfig;
+	/** Shared pointer to the game mode config inside GameModesWidget */
+	TSharedPtr<FBSConfig> BSConfig;
 
 	/** Pointer to next widget in linked list. Used for CreatorView */
 	UPROPERTY()

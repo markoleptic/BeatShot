@@ -19,15 +19,6 @@ public:
 	/** Initializes the BoxBounds widget. */
 	void InitBoxBoundsWidget(const TObjectPtr<UCGMWC_Preview> InGameModePreviewWidget);
 
-	/** Reinitialize the TargetManager by calling Init. */
-	void RestartSimulation();
-
-	/** Empties ManagedTargets and removes all TargetWidgets from Viewport. */
-	void FinishSimulation();
-
-	/** Returns the TargetSpawnCD. */
-	float GetSimulation_TargetSpawnCD() const;
-
 	/** Sets the values of bSimulatePlayerDestroying and DestroyChance */
 	void SetSimulatePlayerDestroyingTargets(const bool bInSimulatePlayerDestroyingTargets,
 		const float InDestroyChance = 1.f);

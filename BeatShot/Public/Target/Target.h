@@ -128,7 +128,9 @@ class BEATSHOT_API ATarget : public AActor, public IAbilitySystemInterface, publ
 
 	friend class ATargetManager;
 	friend class FSimulateTargetHit;
-	friend class ATargetManagerFunctionalTest;
+	friend class ABeatShotGameModeFunctionalTest;
+	friend class FInitTargetManager;
+	friend class FBSTestAllGameModes;
 
 protected:
 	UPROPERTY()

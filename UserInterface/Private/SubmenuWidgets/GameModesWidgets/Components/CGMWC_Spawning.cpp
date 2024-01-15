@@ -142,17 +142,7 @@ void UCGMWC_Spawning::UpdateDependentOptions_TargetSpawningPolicy(const ETargetS
 	{
 		CheckBoxOption_BatchSpawning->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		CheckBoxOption_SpawnAtOriginWheneverPossible->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-		// Do not allow force spawning every other target in center if these conditions are not true
-		if (!bUseBatchSpawning && !bAllowSpawnWithoutActivation)
-		{
-			CheckBoxOption_SpawnEveryOtherTargetInCenter->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		}
-		else
-		{
-			CheckBoxOption_SpawnEveryOtherTargetInCenter->SetVisibility(ESlateVisibility::Collapsed);
-		}
-
+		CheckBoxOption_SpawnEveryOtherTargetInCenter->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		SliderTextBoxOption_NumUpfrontTargetsToSpawn->SetVisibility(ESlateVisibility::Collapsed);
 		SliderTextBoxOption_NumRuntimeTargetsToSpawn->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
@@ -185,7 +175,6 @@ void UCGMWC_Spawning::UpdateDependentOptions_TargetSpawningPolicy(const ETargetS
 		CheckBoxOption_BatchSpawning->SetVisibility(ESlateVisibility::Collapsed);
 		CheckBoxOption_SpawnAtOriginWheneverPossible->SetVisibility(ESlateVisibility::Collapsed);
 		CheckBoxOption_SpawnEveryOtherTargetInCenter->SetVisibility(ESlateVisibility::Collapsed);
-
 		SliderTextBoxOption_NumUpfrontTargetsToSpawn->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		SliderTextBoxOption_NumRuntimeTargetsToSpawn->SetVisibility(ESlateVisibility::Collapsed);
 

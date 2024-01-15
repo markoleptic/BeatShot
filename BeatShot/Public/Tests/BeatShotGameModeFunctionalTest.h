@@ -6,18 +6,18 @@
 #include "BSGameModeDataAsset.h"
 #include "FunctionalTest.h"
 #include "SaveGamePlayerSettings.h"
-#include "TargetManagerFunctionalTest.generated.h"
+#include "BeatShotGameModeFunctionalTest.generated.h"
 
 class UBSGameModeDataAsset;
 class ATargetManager;
 
 UCLASS()
-class BEATSHOT_API ATargetManagerFunctionalTest : public AFunctionalTest
+class BEATSHOT_API ABeatShotGameModeFunctionalTest : public AFunctionalTest
 {
 	GENERATED_BODY()
 
 public:
-	ATargetManagerFunctionalTest();
+	ABeatShotGameModeFunctionalTest();
 
 protected:
 	// AFunctionalTest
@@ -28,13 +28,16 @@ protected:
 	virtual void CleanUp() override;
 	// ~AFunctionalTest
 
-	/** Calls OnAudioAnalyzerBeat function of Target Manager. Callback function for BeatTimer. */
+	/** Fills GameModeConfigs array with configs for all difficulties. */
+	void PopulateGameModeConfigs();
+
+	/** Calls OnAudioAnalyzerBeat function of target manager. Callback function for BeatTimer. */
 	void OnAudioAnalyzerBeat();
 
-	/** Initializes Target Manager and starts timers. */
-	void StartGameMode(const FBSConfig& InConfig);
+	/** Initializes target manager and starts timers. */
+	void StartGameMode();
 
-	/** Clears Target Manager, clears timers, calls StartGameMode if not finished.
+	/** Clears target manager, clears timers, calls StartGameMode if not finished.
 	 *  Callback function for GameModeTimer. */
 	void StopGameMode();
 
@@ -47,16 +50,25 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<UBSGameModeDataAsset> GameModeDataAsset;
 
+	/** The game mode to test */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	EBaseGameMode GameModeToTest = EBaseGameMode::None;
+
 	/** The length of time to test each individual game mode and difficulty. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float GameModeDuration = 10.f;
 	
-	/** How frequently to call the OnAudioAnalyzerBeat function of Target Manager, effectively spawning or activating
+	/** How frequently to call the OnAudioAnalyzerBeat function of target manager, effectively spawning or activating
 	 *  targets. Targets will be destroyed at this same frequency, offset by half. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float BeatFrequency = 0.1f;
+
+	/** Initial offset applied to the BeatTimer and DestroyTimer. DestroyTimer will get an additional offset of half
+	 *  the BeatFrequency. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float InitialDelay = 0.1f;
 	
-	/** The spawned Target Manager */
+	/** The spawned target manager. */
 	UPROPERTY()
 	TObjectPtr<ATargetManager> TargetManager;
 
@@ -72,9 +84,12 @@ protected:
 	/** Looping timer slightly offset from BeatTimer that destroys activated targets. */
 	FTimerHandle DestroyTimer;
 
-	/** The game modes to test, obtained from GameModeDataAsset. */
-	TArray<FBSConfig> DefaultGameModes;
+	/** The current game mode config shared with the target manager. */
+	TSharedPtr<FBSConfig> GameModeConfig;
 
-	/** The current index of the DefaultGameModes array. */
+	/** All difficulties for the selected GameModeToTest. */
+	TArray<FBSConfig> GameModeConfigs;
+
+	/** The current index inside GameModeConfigs. */
 	int32 CurrentIndex = 0;
 };

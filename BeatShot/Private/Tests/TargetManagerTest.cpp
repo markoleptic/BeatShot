@@ -9,22 +9,19 @@
 #include "Tests/AutomationCommon.h"
 
 /** This didn't end up working properly, but TargetManagerFunctionalTest did. */
+/** This is very cursed and bad. */
 
 const TCHAR* GameModeDataAssetPath = TEXT("/Game/Blueprints/GameModes/DA_DefaultGameModes.DA_DefaultGameModes");
 const TCHAR* TargetManagerAssetPath = TEXT("/Game/Blueprints/Targets/BP_TargetManager.BP_TargetManager");
 
-IMPLEMENT_SIMPLE_AUTOMATION_TEST(FRunAllDefaultGameModesTest, "TargetManager.RunAllDefaultGameModes",
-	EAutomationTestFlags::CommandletContext | EAutomationTestFlags::EditorContext | EAutomationTestFlags::
-	HighPriorityAndAbove | EAutomationTestFlags::ProductFilter)
-
-DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FOnAudioAnalyzerBeat, ATargetManager*, TargetManager);
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FOnAudioAnalyzerBeat, TSharedPtr<ATargetManager>, TargetManager);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FLoadTargetManager, UObject*, TargetManager);
 
-DEFINE_LATENT_AUTOMATION_COMMAND_TWO_PARAMETER(FInitTargetManager, ATargetManager*, TargetManager, const FBSConfig&,
+DEFINE_LATENT_AUTOMATION_COMMAND_TWO_PARAMETER(FInitTargetManager, TSharedPtr<ATargetManager>, TargetManager, FBSConfig,
 	Config);
 
-DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FSimulateTargetHit, TArray<ATarget*>, InManagedTargets);
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FSimulateTargetHit, TSharedPtr<ATargetManager>, TargetManager);
 
 bool FLoadTargetManager::Update()
 {
@@ -35,99 +32,177 @@ bool FLoadTargetManager::Update()
 
 bool FOnAudioAnalyzerBeat::Update()
 {
+	if (!TargetManager) return false;
 	TargetManager->OnAudioAnalyzerBeat();
-	ADD_LATENT_AUTOMATION_COMMAND(FWaitLatentCommand(0.05f));
 	return true;
 }
 
 bool FInitTargetManager::Update()
 {
+	if (!TargetManager) return false;
 	const FPlayerSettings_Game PlayerSettings_Game;
-	TargetManager->Init(Config, PlayerSettings_Game);
-	ADD_LATENT_AUTOMATION_COMMAND(FWaitLatentCommand(0.05f));
+	TSharedPtr<FBSConfig> ConfigPtr = MakeShareable(new FBSConfig(Config));
+	TargetManager->Init(ConfigPtr, PlayerSettings_Game);
+	TargetManager->SpawnAreaManager->bPrintDebug_SpawnAreaStateInfo = true;
+	TargetManager->SetShouldSpawn(true);
 	return true;
 }
 
 bool FSimulateTargetHit::Update()
 {
-	for (ATarget* Target : InManagedTargets)
+	if (TargetManager->GetManagedTargets().IsEmpty()) return false;
+	for (ATarget* Target : TargetManager->GetManagedTargets())
 	{
-		Target->DamageSelf();
+		Target->DamageSelf(true);
 	}
-	ADD_LATENT_AUTOMATION_COMMAND(FWaitLatentCommand(0.05f));
 	return true;
 }
 
-bool FRunAllDefaultGameModesTest::RunTest(const FString& Parameters)
+
+class FBSAutomationTestBase
 {
-	FString MapName = Parameters;
-	UWorld* World = FAutomationEditorCommonUtils::CreateNewMap();
-
-	static const FPlayerSettings_Game PlayerSettings_Game = FPlayerSettings_Game();
-
-	UObject* LoadedObject = StaticFindObject(UBSGameModeDataAsset::StaticClass(), nullptr, GameModeDataAssetPath, true);
-	TestNotNull("Null StaticFindObject", LoadedObject);
-	if (!LoadedObject) return false;
-
-	static UBSGameModeDataAsset* GameModeDataAsset = Cast<UBSGameModeDataAsset>(LoadedObject);
-	TestNotNull("Null GameModeDataAsset", GameModeDataAsset);
-	if (!GameModeDataAsset) return false;
-
-	UObject* TargetManagerObj = StaticLoadObject(UObject::StaticClass(), nullptr, TargetManagerAssetPath);
-	ADD_LATENT_AUTOMATION_COMMAND(FWaitLatentCommand(2.0f));
-	TestNotNull("Null TargetManagerObj", TargetManagerObj);
-	if (!TargetManagerObj) return false;
-
-	UBlueprint* GeneratedBP = Cast<UBlueprint>(TargetManagerObj);
-	TestNotNull("Null GeneratedBP", GeneratedBP);
-	FActorSpawnParameters Sp = FActorSpawnParameters();
-	ATargetManager* TargetManager = World->SpawnActor<ATargetManager>(GeneratedBP->GeneratedClass,
-		DefaultTargetManagerLocation, FRotator::ZeroRotator, Sp);
-	TestNotNull("Null TargetManager", TargetManager);
-	ADD_LATENT_AUTOMATION_COMMAND(FWaitLatentCommand(1.0f));
-
-	AddInfo("Everything is not null poggers");
-
-	FDamageEventData DamageEventData;
-	DamageEventData.EffectCauser = TargetManager;
-	DamageEventData.EffectInstigator = TargetManager;
-	FBS_DefiningConfig BS_DefiningConfig;
-	BS_DefiningConfig.Difficulty = EGameModeDifficulty::Normal;
-	BS_DefiningConfig.BaseGameMode = EBaseGameMode::MultiBeat;
-	BS_DefiningConfig.GameModeType = EGameModeType::Preset;
-	const FBSConfig* Found = GameModeDataAsset->GetDefaultGameModesMap().Find(BS_DefiningConfig);
-
-	ADD_LATENT_AUTOMATION_COMMAND(FInitTargetManager(TargetManager, *Found));
-	TargetManager->SpawnAreaManager->bPrintDebug_SpawnAreaStateInfo = true;
-	TargetManager->SetShouldSpawn(true);
-
-	ADD_LATENT_AUTOMATION_COMMAND(FOnAudioAnalyzerBeat(TargetManager));
-	ADD_LATENT_AUTOMATION_COMMAND(FSimulateTargetHit(TargetManager->GetManagedTargets()));
-
-	/*for (const TPair<FBS_DefiningConfig, FBSConfig>& Pair : GameModeDataAsset->GetDefaultGameModesMap())
+public:
+	FBSAutomationTestBase() : TestRunner(nullptr), World(nullptr), InitialFrameCounter(0)
 	{
-		if (Len > 0) break;
-		AddInfo("Testing: " + UEnum::GetDisplayValueAsText(Pair.Key.BaseGameMode).ToString());
-		AddInfo("------------------------------------------------------------------------");
-		TargetManager->Init(Pair.Value, PlayerSettings_Game);
-		AddCommand(new FWaitLatentCommand(1.f));
-		TargetManager->SpawnAreaManager->bPrintDebug_SpawnAreaStateInfo = true;
-		TargetManager->SetShouldSpawn(true);
-		DamageEventData.DamageType = Pair.Value.TargetConfig.TargetDamageType;
-		DamageEventData.OldValue = Pair.Value.TargetConfig.MaxHealth;
-		DamageEventData.NewValue = 0;
-		
-		for (int i = 0; i < 5; i++)
-		{
-			AddCommand(new FOnAudioAnalyzerBeat(TargetManager));
-			AddCommand(new FWaitLatentCommand(0.1f));
-			TestFalse("Empty ManagedTargets", TargetManager->GetManagedTargets().IsEmpty());
-			AddCommand(new FWaitLatentCommand(0.1f));
-			AddCommand(new FSimulateTargetHit(DamageEventData, TargetManager->GetManagedTargets()));
-			AddCommand(new FWaitLatentCommand(0.1f));
-		}
-		Len++;
-	}*/
+	}
 
-	return true;
+	FAutomationTestBase& GetTestRunner() const
+	{
+		check(TestRunner);
+		return *TestRunner;
+	}
+
+	virtual void SetTestRunner(FAutomationTestBase& AutomationTestInstance) { TestRunner = &AutomationTestInstance; }
+
+	void TickWorld(float Time)
+	{
+		const float step = 0.1f;
+		while (Time > 0.f)
+		{
+			World->Tick(ELevelTick::LEVELTICK_All, FMath::Min(Time, step));
+			Time -= step;
+		}
+	}
+
+protected:
+	FAutomationTestBase* TestRunner;
+	UWorld* World;
+	uint64 InitialFrameCounter;
+
+public:
+	// interface
+	virtual ~FBSAutomationTestBase()
+	{
+		World->DestroyWorld(false);
+	};
+
+	virtual bool Init()
+	{
+		World = FAutomationEditorCommonUtils::CreateNewMap();
+		return true;
+	}
+
+	virtual bool QueueLatentCommands() { return false; }
+	virtual bool InstantTest() { return false; }
+
+	virtual void FinishTest()
+	{
+	}
+};
+
+class FBSTestAllGameModes : public FBSAutomationTestBase
+{
+	TSharedPtr<ATargetManager> TargetManager;
+
+	UBSGameModeDataAsset* GameModeDataAsset;
+
+public:
+	FBSTestAllGameModes(): TargetManager(nullptr), GameModeDataAsset(nullptr)
+	{
+	}
+
+	virtual bool Init() override
+	{
+		FBSAutomationTestBase::Init();
+
+		UObject* LoadedObject = StaticFindObject(UBSGameModeDataAsset::StaticClass(), nullptr, GameModeDataAssetPath,
+			true);
+		if (!LoadedObject) return false;
+
+		GameModeDataAsset = Cast<UBSGameModeDataAsset>(LoadedObject);
+		if (!GameModeDataAsset) return false;
+
+		UObject* TargetManagerObj = StaticLoadObject(UObject::StaticClass(), nullptr, TargetManagerAssetPath);
+		if (!TargetManagerObj) return false;
+
+		const UBlueprint* GeneratedBP = Cast<UBlueprint>(TargetManagerObj);
+
+		const FActorSpawnParameters SpawnInfo = FActorSpawnParameters();
+		TargetManager = MakeShareable(World->SpawnActor<ATargetManager>(GeneratedBP->GeneratedClass,
+			DefaultTargetManagerLocation, FRotator::ZeroRotator, SpawnInfo));
+
+		FURL URL;
+		World->InitializeActorsForPlay(URL);
+		World->BeginPlay();
+
+		return true;
+	}
+
+	virtual bool QueueLatentCommands() override
+	{
+		const FBS_DefiningConfig DefHard(EGameModeType::Preset, EBaseGameMode::MultiBeat, "",
+			EGameModeDifficulty::Hard);
+		ADD_LATENT_AUTOMATION_COMMAND(
+			FInitTargetManager(TargetManager, GameModeDataAsset->GetDefaultGameModesMap().FindRef(DefHard)));
+		TickWorld(0.01);
+		ADD_LATENT_AUTOMATION_COMMAND(FOnAudioAnalyzerBeat(TargetManager));
+		TickWorld(0.01);
+		ADD_LATENT_AUTOMATION_COMMAND(FSimulateTargetHit(TargetManager));
+		TickWorld(0.01);
+		ADD_LATENT_AUTOMATION_COMMAND(FOnAudioAnalyzerBeat(TargetManager));
+		TickWorld(0.01);
+		ADD_LATENT_AUTOMATION_COMMAND(FSimulateTargetHit(TargetManager));
+		TickWorld(0.01);
+		return true;
+	}
+
+	virtual bool InstantTest() override { return false; }
+
+	virtual void FinishTest() override
+	{
+		FBSAutomationTestBase::FinishTest();
+		TargetManager->Destroy();
+		GameModeDataAsset = nullptr;
+	};
+};
+
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FBSFinishTest, FBSAutomationTestBase*, BSTest);
+
+bool FBSFinishTest::Update()
+{
+	return false;
 }
+
+
+#define BS_IMPLEMENT_LATENT_AUTOMATION_TEST(TestClass, PrettyName, TFlags) \
+	IMPLEMENT_SIMPLE_AUTOMATION_TEST(TestClass##_Runner, PrettyName, TFlags) \
+	bool TestClass##_Runner::RunTest(const FString& Parameters) \
+	{ \
+		bool bSuccess = false; \
+		TestClass* TestInstance = new TestClass(); \
+		TestInstance->SetTestRunner(*this); \
+		bSuccess = TestInstance->Init(); \
+		if (bSuccess) \
+		{ \
+			bSuccess = TestInstance->QueueLatentCommands(); \
+			ADD_LATENT_AUTOMATION_COMMAND(FBSFinishTest(TestInstance)); \
+		} \
+		delete TestInstance; \
+		return bSuccess; \
+	}
+
+
+BS_IMPLEMENT_LATENT_AUTOMATION_TEST(FBSTestAllGameModes, "TargetManager.RunAllDefaultGameModes",
+	EAutomationTestFlags::CommandletContext | EAutomationTestFlags::EditorContext | EAutomationTestFlags::
+	HighPriorityAndAbove | EAutomationTestFlags::ProductFilter);
