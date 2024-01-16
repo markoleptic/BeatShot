@@ -1,6 +1,6 @@
 # BeatShot
 
-BeatShot is rhythm-based aim-trainer that syncs targets to your music. This repository contains the `Source` directory of Unreal Engine project. To find out more about the game and its features, you can view it on **[Steam](https://store.steampowered.com/app/2126580/BeatShot/)**. You can also checkout the BeatShot [website](https://beatshot.gg) and [developer blog](https://beatshot.gg/devblog).
+BeatShot is a rhythm-based aim-trainer that syncs targets to your music. This repository contains the `Source` directory of Unreal Engine project. To find out more about the game and its features, you can view it on **[Steam](https://store.steampowered.com/app/2126580/BeatShot/)**. You can also checkout the BeatShot [website](https://beatshot.gg) and [developer blog](https://beatshot.gg/devblog).
 
 <table>
   <tr>
@@ -13,23 +13,19 @@ BeatShot is rhythm-based aim-trainer that syncs targets to your music. This repo
   </tr>
 </table>
 
-**Warning if cloning:** There will be several module depedencies missing including:  
+**Warning if cloning:** There will be several plugin module depedencies missing including:  
 - The audio analyzer, which is a [paid plugin](https://www.unrealengine.com/marketplace/en-US/product/audio-analyzer).
 - DLSS, which is installed in the engine I'm using but available for [free](https://www.unrealengine.com/marketplace/en-US/product/nvidia-dlss).
-- Common Loading Screen, which I found in the [Lyra Sample Game](https://docs.unrealengine.com/5.3/en-US/lyra-sample-game-in-unreal-engine/) and modified slightly. I plan to upload this in a separate repository at some point.
+- ~~Common Loading Screen, which I found in the [Lyra Sample Game](https://docs.unrealengine.com/5.3/en-US/lyra-sample-game-in-unreal-engine/) and modified slightly. I plan to upload this in a separate repository at some point.~~ I now use MoviePlayer. The Common Loading Screen started briefly showing an annoying black screen in the middle of the loading screen.
+- [NumCpp](https://github.com/dpilger26/NumCpp) for easy matrix operations.  
 
 ## Project Structure
-The source directory is split into three project-specific modules mainly to create a cleaner looking project structure. Two third party modules, which are basically just libraries, are also included.
+The source directory is split into four project-specific modules:
 
-**BeatShot:** Contains the bulk of the code for running the game that could not be separated into other modules.  
-
-**BeatShotGlobal:** Independent module mostly used for data structures, loading and saving, and HTTP requests.  
-
-**UserInterface:** Contains all UMG/Slate user interface classes used in the game.  
-
-**LocalBoost:** The Boost library included in the engine was too old to support NumCpp, so I added a more recent version.  
-
-**NumCpp:** Basically [Numpy for C++](https://github.com/dpilger26/NumCpp), mainly needed because I didn't want to manually perform certain matrix operations with Unreal data structures.  
+- **BeatShot:** The "Primary Game Module". Contains the bulk of the code for running the game.
+- **BeatShotGlobal:** Independent module mostly used for data structures, loading and saving, and HTTP requests.
+- **UserInterface:** Contains all UMG/Slate user interface classes used in the game.
+- **BeatShotTesting:** Contains unit tests and functional tests. Only game mode testing is implemented so far, and is lacking in features.
 
 ## Getting .mp3/.ogg files:
 
@@ -44,7 +40,7 @@ The source directory is split into three project-specific modules mainly to crea
 
 ## Collaboration / Copyright
 
-This project is on GitHub because Unreal Engine is real handful to learn, so perhaps there's some code that I've used in
+This project is on GitHub because Unreal Engine can be a handful to learn, so perhaps there's some code that I've used in
 this project that could help someone else out. If you wish to collaborate or want to reach out for any reason, you can
 contact me on Discord @markoleptic.
 
