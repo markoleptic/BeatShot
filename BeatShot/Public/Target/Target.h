@@ -127,10 +127,7 @@ class BEATSHOT_API ATarget : public AActor, public IAbilitySystemInterface, publ
 	GENERATED_BODY()
 
 	friend class ATargetManager;
-	friend class FSimulateTargetHit;
 	friend class ABeatShotGameModeFunctionalTest;
-	friend class FInitTargetManager;
-	friend class FBSTestAllGameModes;
 
 protected:
 	UPROPERTY()
@@ -204,6 +201,10 @@ public:
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	/* ~End IAbilitySystemInterface */
 
+	/* ~Begin IGameplayTagAssetInterface */
+	virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override;
+	/* ~End IGameplayTagAssetInterface */
+
 	/** Applies the GE_TargetImmunity gameplay effect to the target */
 	void ApplyImmunityEffect();
 
@@ -212,16 +213,6 @@ public:
 
 	/** Called when a gameplay effect is blocked because of immunity */
 	void OnImmunityBlockGameplayEffect(const FGameplayEffectSpec& Spec, const FActiveGameplayEffect* Effect);
-
-	/* ~Begin IGameplayTagAssetInterface */
-	virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override;
-	virtual bool HasMatchingGameplayTag(FGameplayTag TagToCheck) const override;
-	virtual bool HasAllMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const override;
-	virtual bool HasAnyMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const override;
-	/* ~End IGameplayTagAssetInterface */
-
-	/** Removes a gameplay tag from AbilitySystemComponent */
-	void RemoveGameplayTag(FGameplayTag TagToRemove) const;
 
 	/** Broadcast when the target needs a new direction because of a deactivation response */
 	FOnDeactivationResponse_ChangeDirection OnDeactivationResponse_ChangeDirection;

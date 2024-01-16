@@ -4,13 +4,24 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "BeatShot/BeatShot.h"
 #include "MovablePlatform.generated.h"
 
 class AWallMenu;
 class UBoxComponent;
 class UWallMenuComponent;
 class UChildActorComponent;
+
+/** Enum representing the ways in which the MovablePlatform can move */
+UENUM(BlueprintType)
+enum class EPlatformTransitionType : uint8
+{
+	None UMETA(DisplayName="None"),
+	MoveUpByInteract UMETA(DisplayName="MoveUpByInteract"),
+	MoveDownByInteract UMETA(DisplayName="MoveDownByInteract"),
+	MoveDownByStepOff UMETA(DisplayName="MoveDownByStepOff")};
+
+ENUM_RANGE_BY_FIRST_AND_LAST(EPlatformTransitionType, EPlatformTransitionType::None,
+	EPlatformTransitionType::MoveDownByStepOff);
 
 /** A movable portion of ground that allows the player to rise vertically */
 UCLASS()

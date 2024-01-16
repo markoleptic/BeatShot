@@ -4,12 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "BSEquipmentActor.h"
-#include "BeatShot/Beatshot.h"
 #include "SaveLoadInterface.h"
 #include "GameFramework/Actor.h"
 #include "BSGun.generated.h"
 
 class USkeletalMeshComponent;
+
+DECLARE_DELEGATE_OneParam(FOnShotFired, class ABSPlayerController*);
 
 /** The base gun used in this game */
 UCLASS()

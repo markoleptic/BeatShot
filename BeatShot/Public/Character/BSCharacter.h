@@ -12,7 +12,6 @@
 #include "AbilitySystem/Globals/BSAbilitySet.h"
 #include "BSCharacter.generated.h"
 
-class ATarget;
 class UBSRecoilComponent;
 class UBSCharacterMovementComponent;
 class ABSPlayerState;
@@ -80,6 +79,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "BeatShot|Components")
 	TObjectPtr<UBSRecoilComponent> RecoilComponent;
 
+	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Input")
+	UInputMappingContext* BaseMappingContext;
+
+	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Input")
+	int32 BaseMappingPriority = 0;
+	
 	/** Input configuration used by player controlled pawns to create input mappings and bind input actions. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "BeatShot|Input")
 	TObjectPtr<UBSInputConfig> InputConfig;
@@ -96,12 +101,16 @@ protected:
 	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = "true"), Category = "BeatShot|Sounds")
 	TMap<TEnumAsByte<EPhysicalSurface>, TSubclassOf<UBSMoveStepSound>> MoveStepSounds;
 
+	/** Ability system component that lives on the PlayerState. */
 	TWeakObjectPtr<UBSAbilitySystemComponent> AbilitySystemComponent;
+
+	/** Attribute set that lives on the PlayerState. */
 	TWeakObjectPtr<const UBSAttributeSetBase> AttributeSetBase;
+
+	/** Handles returned when granting abilities. */
 	FBSAbilitySet_GrantedHandles AbilitySet_GrantedHandles;
 
 public:
-	#pragma region Getters
 	/** Implement IAbilitySystemInterface */
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
@@ -144,19 +153,16 @@ public:
 	UFUNCTION(BlueprintPure, Category = "BeatShot|Character")
 	FORCEINLINE bool GetAutoBunnyHop() const { return bAutoBunnyHop; }
 
+	UFUNCTION(Category = "BeatShot|Character", BlueprintCallable)
+	void SetAutoBunnyHop(bool Value) { bAutoBunnyHop = Value; }
+
 	FORCEINLINE TSubclassOf<UBSMoveStepSound>* GetMoveStepSound(const TEnumAsByte<EPhysicalSurface> Surface)
 	{
 		return MoveStepSounds.Find(Surface);
 	}
-
-	#pragma endregion
-
-public:
+	
 	/** Implement IGameplayTagAssetInterface */
 	virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override;
-	virtual bool HasMatchingGameplayTag(FGameplayTag TagToCheck) const override;
-	virtual bool HasAllMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const override;
-	virtual bool HasAnyMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const override;
 	/** End Implement IGameplayTagAssetInterface */
 
 	/** Implement ISaveLoadInterface */
@@ -166,22 +172,14 @@ public:
 
 	virtual bool IsSprinting() const;
 
-	void BindLeftClick();
-	void UnbindLeftClick();
-
-	UFUNCTION(Category = "BeatShot|Character", BlueprintCallable)
-	void SetAutoBunnyHop(bool Value) { bAutoBunnyHop = Value; }
-
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
-	virtual void PawnClientRestart() override;
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void UnPossessed() override;
 	virtual void OnRep_PlayerState() override;
-	virtual void InitializePlayerInput(UInputComponent* PlayerInputComponent);
 	virtual void ApplyDamageMomentum(float DamageTaken, FDamageEvent const& DamageEvent, APawn* PawnInstigator,
 		AActor* DamageCauser) override;
 	virtual void ClearJumpInput(float DeltaTime) override;
@@ -195,6 +193,9 @@ protected:
 	virtual void OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
 	virtual bool CanCrouch() const override;
 
+	/** Crouches or un-crouches based on current state */
+	void ToggleCrouch();
+
 	/** Grant abilities on the Server. The Ability Specs will be replicated to the owning client. Called from inside PossessedBy(). */
 	virtual void AddCharacterAbilities();
 
@@ -207,8 +208,6 @@ protected:
 	/** Removes all equipment on the Server. Called from inside PossessedBy() */
 	virtual void RemoveCharacterInventoryItems();
 
-	#pragma region Input
-
 public:
 	/** Executed when interact is pressed */
 	FOnInteractDelegate OnInteractDelegate;
@@ -216,93 +215,51 @@ public:
 	/** Executed when shift interact is pressed */
 	FOnShiftInteractDelegate OnShiftInteractDelegate;
 
-private:
-	/** Move the character left/right and forward/back */
-	void Input_Move(const FInputActionValue& Value);
+	/** Binds IA_LeftClick to Input_OnLeftClick. */
+	void BindLeftClick();
 
-	/** Look left/right and up/down */
-	void Input_Look(const FInputActionValue& Value);
-
-	/** Toggles crouching */
-	void Input_Crouch(const FInputActionValue& Value);
-
-	/** Walk instead of default sprint */
-	void Input_WalkStart(const FInputActionValue& Value);
-
-	/** Walk instead of default sprint */
-	void Input_WalkEnd(const FInputActionValue& Value);
-
-	/** Crouches or un-crouches based on current state */
-	void ToggleCrouch();
-
-	/** Triggered on pressing E */
-	void Input_OnInteractStarted(const FInputActionValue& Value);
-
-	/** Triggered on releasing E */
-	void Input_OnInteractCompleted(const FInputActionValue& Value);
-
-	/** Triggered on pressing Shift + E */
-	void Input_OnShiftInteractStarted(const FInputActionValue& Value);
-
-	/** Triggered on releasing Shift + E */
-	void Input_OnShiftInteractCompleted(const FInputActionValue& Value);
-
-	void Input_OnInspectStarted(const FInputActionValue& Value);
-
-	void Input_OnMeleeStarted(const FInputActionValue& Value);
-
-	void Input_OnEquipmentSlot1Started(const FInputActionValue& Value);
-
-	void Input_OnEquipmentSlot2Started(const FInputActionValue& Value);
-
-	void Input_OnEquipmentSlot3Started(const FInputActionValue& Value);
-
-	void Input_OnEquipmentSlotLastEquippedStarted(const FInputActionValue& Value);
-
-	/** Triggered from IA_Pause */
-	void Input_OnPause(const FInputActionValue& Value);
-
-	/** Triggered from IA_LeftClick */
-	void Input_OnLeftClick(const FInputActionValue& Value);
-
-	/** Let ASC know an ability bound to an input was pressed. */
-	UFUNCTION(BlueprintCallable)
-	void Input_AbilityInputTagPressed(FGameplayTag InputTag);
-
-	UFUNCTION(BlueprintCallable)
-	/** Let ASC know an ability bound to an input was released. */
-	void Input_AbilityInputTagReleased(FGameplayTag InputTag);
-
-	/** Multiplier to controller pitch and yaw */
-	float Sensitivity;
-
-	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Input")
-	// ReSharper disable once UnrealHeaderToolError
-	UInputMappingContext* BaseMappingContext;
-
-	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Input")
-	int32 BaseMappingPriority = 0;
-
-	const float SensitivityMultiplier = 14.2789148024750118991f;
-	#pragma endregion
+	/** Unbinds IA_LeftClick to Input_OnLeftClick. */
+	void UnbindLeftClick();
 
 protected:
+	void Input_Move(const FInputActionValue& Value);
+	void Input_Look(const FInputActionValue& Value);
+	void Input_Crouch(const FInputActionValue& Value);
+	void Input_WalkStart(const FInputActionValue& Value);
+	void Input_WalkEnd(const FInputActionValue& Value);
+	void Input_OnInteractStarted(const FInputActionValue& Value);
+	void Input_OnInteractCompleted(const FInputActionValue& Value);
+	void Input_OnShiftInteractStarted(const FInputActionValue& Value);
+	void Input_OnShiftInteractCompleted(const FInputActionValue& Value);
+	void Input_OnEquipmentSlot1Started(const FInputActionValue& Value);
+	void Input_OnEquipmentSlot2Started(const FInputActionValue& Value);
+	void Input_OnEquipmentSlot3Started(const FInputActionValue& Value);
+	void Input_OnEquipmentSlotLastEquippedStarted(const FInputActionValue& Value);
+	void Input_OnPause(const FInputActionValue& Value);
+	void Input_OnLeftClick(const FInputActionValue& Value);
+	void Input_AbilityInputTagPressed(FGameplayTag InputTag);
+	void Input_AbilityInputTagReleased(FGameplayTag InputTag);
+	
+	/** Multiplier to controller pitch and yaw */
+	float Sensitivity;
+	
 	/** Automatic bunny-hopping */
-	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"), Category = "PB Player|Gameplay")
+	UPROPERTY(EditAnywhere, Category = "BeatShot|Character")
 	bool bAutoBunnyHop;
 
 	/** Minimum speed to play the camera shake for landing */
-	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = "true"), Category = "PB Player|Damage")
+	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Character")
 	float MinLandBounceSpeed;
 
 	/** Don't take damage below this speed - so jumping doesn't damage */
-	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = "true"), Category = "PB Player|Damage")
+	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Character")
 	float MinSpeedForFallDamage;
 
 	// In HL2, the player has the Z component for applying momentum to the capsule capped
-	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = "true"), Category = "PB Player|Damage")
+	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Character")
 	float CapDamageMomentumZ = 0.f;
 
+	/** Changed when pressing and releasing IA_Walk (shift key) */
 	bool bWantsToWalk;
 
 	/** defer the jump stop for a frame (for early jumps) */

@@ -29,12 +29,8 @@ class BEATSHOT_API ATargetManager : public AActor, public ISaveLoadInterface
 
 	friend class ABSGameMode;
 	friend class UBSCheatManager;
-	friend class FRunAllDefaultGameModesTest;
 	friend class ABeatShotGameModeFunctionalTest;
-	friend class FInitTargetManager;
 	friend class FBSAutomationTestBase;
-	friend class FBSTestAllGameModes;
-	friend class FSimulateTargetHit;
 
 public:
 	ATargetManager();
@@ -310,8 +306,6 @@ protected:
 	 *  references to spawned targets are stored */
 	UPROPERTY()
 	TMap<FGuid, ATarget*> ManagedTargets;
-
-	mutable FCriticalSection ManagedTargetCritSection;
 
 	/** The total amount of ticks while at least one tracking target was damageable */
 	double TotalPossibleDamage;

@@ -22,6 +22,18 @@ class UCurveFloat;
 class AMoon;
 class UMaterialInstanceDynamic;
 
+/** Enum representing the different times of the day */
+UENUM(BlueprintType)
+enum class ETimeOfDay : uint8
+{
+	Day UMETA(DisplayName="Day"),
+	Night UMETA(DisplayName="Night"),
+	DayToNight UMETA(DisplayName="DayToNight"),
+	NightToDay UMETA(DisplayName="NightToDay"),
+};
+
+ENUM_RANGE_BY_FIRST_AND_LAST(ETimeOfDay, ETimeOfDay::Day, ETimeOfDay::NightToDay);
+
 DECLARE_DELEGATE_OneParam(FOnTimeOfDayTransitionCompleted, const ETimeOfDay NewTimeOfDay);
 
 UCLASS()

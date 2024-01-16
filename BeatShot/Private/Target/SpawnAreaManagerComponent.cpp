@@ -620,15 +620,6 @@ void USpawnAreaManagerComponent::FlagSpawnAreaAsManaged(USpawnArea* SpawnArea, c
 	// Add to caches and GuidMap
 	GuidMap.Add(TargetGuid, SpawnArea);
 	CachedManaged.Add(SpawnArea);
-
-	// Grid-based modes don't use OccupiedVertices
-	if (GetTargetCfg().TargetDistributionPolicy == ETargetDistributionPolicy::Grid) return;
-
-	// Set occupied vertices if empty
-	if (SpawnArea->GetOccupiedVertices().IsEmpty())
-	{
-		SpawnArea->SetOccupiedVertices(SpawnArea->MakeOccupiedVertices(GetMinDist(), SpawnArea->GetTargetScale()));
-	}
 }
 
 void USpawnAreaManagerComponent::FlagSpawnAreaAsActivated(const FGuid TargetGuid, const FVector& TargetScale)
@@ -661,26 +652,15 @@ void USpawnAreaManagerComponent::FlagSpawnAreaAsActivated(const FGuid TargetGuid
 	// Set as the most recently activated SpawnArea
 	SetMostRecentSpawnArea(SpawnArea);
 
-	// Grid-based modes don't use OccupiedVertices
-	if (GetTargetCfg().TargetDistributionPolicy == ETargetDistributionPolicy::Grid) return;
-
-	// Set occupied vertices if empty or if scale was changed
-	if (SpawnArea->GetOccupiedVertices().IsEmpty() || TargetScale.Length() != SpawnArea->GetTargetScale().Length())
-	{
-		SpawnArea->SetOccupiedVertices(SpawnArea->MakeOccupiedVertices(GetMinDist(), TargetScale));
-	}
-	
 	// Update scale
 	SpawnArea->SetTargetScale(TargetScale);
 	
 	#if !UE_BUILD_SHIPPING
 	if (bDebug_Vertices)
 	{
-		const TSet<FVector> Invalid = SpawnArea->GetOccupiedVertices();
-		const TSet<FVector> Valid = SpawnArea->GetUnoccupiedVertices(GetMinDist(), SpawnArea->GetTargetScale());
-		DrawVerticesOverlap(SpawnArea, SpawnArea->GetTargetScale(), Valid, Invalid);
+		DrawVerticesOverlap(SpawnArea);
 	}
-	#endif
+	#endif*/
 }
 
 void USpawnAreaManagerComponent::FlagSpawnAreaAsRecent(USpawnArea* SpawnArea)
@@ -1593,28 +1573,30 @@ void USpawnAreaManagerComponent::RemoveOverlappingSpawnAreas(TSet<USpawnArea*>& 
 {
 	// TODO: This is terribly expensive if going from small target scale to large target scale
 	TSet<FVector> Invalid;
-
-	// Only consider Managed Targets to be invalid if runtime
-	TSet<USpawnArea*> InvalidSpawnAreas = ShouldConsiderManagedAsInvalid()
-		? GetManagedActivatedOrRecentSpawnAreas()
-		: GetActivatedOrRecentSpawnAreas();
-
+	TSet<USpawnArea*> InvalidSpawnAreas;
+	
+	if (ShouldConsiderManagedAsInvalid())
+	{
+		// Only consider Managed Targets to be invalid if runtime
+		InvalidSpawnAreas = GetManagedActivatedOrRecentSpawnAreas();
+	}
+	else
+	{
+		InvalidSpawnAreas = GetActivatedOrRecentSpawnAreas();
+	}
+	
 	// Add any chosen SpawnAreas that are queued up to be spawned
 	InvalidSpawnAreas.Append(ChosenSpawnAreas);
 
 	for (const USpawnArea* SpawnArea : InvalidSpawnAreas)
 	{
-		// TODO: BeatTrack fails this
-		// check(!SpawnArea->GetOccupiedVertices().IsEmpty())
-		
-		// Regenerate but don't set when larger so that the candidate won't overlap with a smaller radius target
-		if (NewScale.Length() > SpawnArea->GetTargetScale().Length())
+		if (SpawnArea->GetTargetScale().Length() > NewScale.Length())
 		{
-			Invalid.Append(SpawnArea->MakeOccupiedVertices(GetMinDist(), NewScale));
+			Invalid.Append(SpawnArea->MakeOccupiedVertices(GetMinDist(), SpawnArea->GetTargetScale()));
 		}
 		else
 		{
-			Invalid.Append(SpawnArea->GetOccupiedVertices());
+			Invalid.Append(SpawnArea->MakeOccupiedVertices(GetMinDist(), NewScale));
 		}
 	}
 
@@ -1872,7 +1854,7 @@ TArray<std::pair<int32, int32>> USpawnAreaManagerComponent::FindBorderingIndices
 	return BorderingInRect;
 }
 
-bool USpawnAreaManagerComponent::IsPrime(const int32 Number)
+constexpr bool USpawnAreaManagerComponent::IsPrime(const int32 Number)
 {
 	if (Number <= 1) return false;
 	if (Number == 2 || Number == 3) return true;
@@ -2116,6 +2098,7 @@ TArray<int32> USpawnAreaManagerComponent::FilterIndices(TArray<USpawnArea*>& Val
 /* -- Debug -- */
 /* ----------- */
 #if !UE_BUILD_SHIPPING
+
 void USpawnAreaManagerComponent::PrintDebug_NumRecentNumActive() const
 {
 	const int NumRecent = GetRecentSpawnAreas().Num();
@@ -2163,10 +2146,9 @@ void USpawnAreaManagerComponent::DrawDebug_Boxes(const TSet<USpawnArea*>& InSpaw
 	}
 }
 
-void USpawnAreaManagerComponent::DrawVerticesOverlap(const USpawnArea* SpawnArea, const FVector& Scale,
-	const TSet<FVector>& Valid, const TSet<FVector>& Invalid) const
+void USpawnAreaManagerComponent::DrawVerticesOverlap(USpawnArea* SpawnArea) const
 {
-	const float ScaledRadius = Scale.X * SphereTargetRadius;
+	const float ScaledRadius = SpawnArea->GetTargetScale().X * SphereTargetRadius;
 		
 	// Multiply by two so that any point outside the sphere will not be overlapping
 	float Radius = ScaledRadius * 2.f + (GetMinDist()* 0.5f);
@@ -2179,12 +2161,12 @@ void USpawnAreaManagerComponent::DrawVerticesOverlap(const USpawnArea* SpawnArea
 	
 	DrawDebugSphere(GetWorld(), SpawnArea->ChosenPoint, Radius, 8, FColor::Magenta, false, 0.5f);
 
-	for (FVector Vertex : Valid)
+	for (FVector Vertex : SpawnArea->GetUnoccupiedVertices(GetMinDist(), SpawnArea->GetTargetScale()))
 	{
 		DrawDebugPoint(GetWorld(), Vertex, 10.f, FColor::Green, false, 0.5f);
 	}
 
-	for (FVector Vertex : Invalid)
+	for (FVector Vertex : SpawnArea->MakeOccupiedVertices(GetMinDist(), SpawnArea->GetTargetScale()))
 	{
 		DrawDebugPoint(GetWorld(), Vertex, 10.f, FColor::Red, false, 0.5f);
 	}
@@ -2203,7 +2185,7 @@ void USpawnAreaManagerComponent::DrawVerticesOverlap(const TSet<USpawnArea*>& In
 		Radius = FMath::Max(Radius, SpawnArea->GetMinOverlapRadius());
 
 		// Add max of height/width to account for random spawning within a SpawnArea
-		Radius += FMath::Max( SpawnArea->Width, SpawnArea->Height);
+		Radius += FMath::Max(SpawnArea->Width, SpawnArea->Height);
 		
 		DrawDebugSphere(GetWorld(), SpawnArea->ChosenPoint, Radius, 8, FColor::Magenta, false, 0.5f);
 

@@ -3,6 +3,8 @@
 #include "BeatShot.h"
 #include "Modules/ModuleManager.h"
 
+IMPLEMENT_PRIMARY_GAME_MODULE(FDefaultGameModuleImpl, BeatShot, "BeatShot");
+
 void FBeatShot::StartupModule()
 {
 	FDefaultGameModuleImpl::StartupModule();
@@ -12,5 +14,3 @@ void FBeatShot::ShutdownModule()
 {
 	FDefaultGameModuleImpl::ShutdownModule();
 }
-
-IMPLEMENT_PRIMARY_GAME_MODULE(FDefaultGameModuleImpl, BeatShot, "BeatShot");

@@ -5,21 +5,12 @@
 #include "CoreMinimal.h"
 #include "BSGameModeDataAsset.h"
 #include "MatrixFunctions.h"
+#include "NumCpp.hpp"
 #include "Components/ActorComponent.h"
+#include "ReinforcementLearningComponent.generated.h"
 
 class UCompositeCurveTable;
-THIRD_PARTY_INCLUDES_START
-#pragma push_macro("check")
-#undef check
-#pragma warning (push)
-#pragma warning (disable : 4191)
-#pragma warning (disable : 4686)
-#include "NumCpp/Public/NumCpp.hpp"
-#pragma warning (pop)
-#pragma pop_macro("check")
-THIRD_PARTY_INCLUDES_END
 
-#include "ReinforcementLearningComponent.generated.h"
 
 /** A struct representing two consecutively activated targets, used to keep track of the reward associated between two points */
 USTRUCT()

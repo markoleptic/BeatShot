@@ -210,7 +210,7 @@ void ATargetManager::Clear()
 	TotalPossibleDamage = 0.f;
 	bLastSpawnedTargetDirectionChangeHorizontal = false;
 	bLastActivatedTargetDirectionChangeHorizontal = false;
-
+	
 	RLComponent->Clear();
 	SpawnAreaManager->Clear();
 }
@@ -633,7 +633,7 @@ TSet<USpawnArea*> ATargetManager::FindNextSpawnAreasForSpawn(int32 NumToSpawn) c
 	for (int i = 0; i < NumToSpawn; i++) Scales.Add(FindNextSpawnedTargetScale());
 	
 	TSet<USpawnArea*> Out = SpawnAreaManager->GetSpawnableSpawnAreas(Scales, NumToSpawn);
-	if (Out.IsEmpty()) UE_LOG(LogTargetManager, Warning, TEXT("ValidSpawnableSpawnAreas is empty."));
+	if (Out.IsEmpty()) UE_LOG(LogTargetManager, Display, TEXT("ValidSpawnableSpawnAreas is empty."));
 	
 	return Out;
 }
@@ -646,7 +646,7 @@ TSet<USpawnArea*> ATargetManager::FindNextSpawnAreasForActivation(const int32 Nu
 
 	Out = SpawnAreaManager->GetActivatableSpawnAreas(NumToActivate);
 	
-	if (Out.IsEmpty()) UE_LOG(LogTargetManager, Warning, TEXT("ValidActivatableSpawnAreas is empty."));
+	if (Out.IsEmpty()) UE_LOG(LogTargetManager, Display, TEXT("ValidActivatableSpawnAreas is empty."));
 	
 	return Out;
 }
@@ -1132,7 +1132,6 @@ bool ATargetManager::TrackingTargetIsDamageable() const
 TArray<ATarget*> ATargetManager::GetManagedTargets() const
 {
 	TArray<ATarget*> Out;
-	FScopeLock Lock(&ManagedTargetCritSection);
 	ManagedTargets.GenerateValueArray(Out);
 	return Out;
 }

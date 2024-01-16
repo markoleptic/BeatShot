@@ -25,6 +25,9 @@ namespace Constants
 	/** The value to divide the game sensitivity by to convert to Csgo sensitivity */
 	inline constexpr float CsgoMultiplier = 3.18f;
 
+	/** The value to multiply raw input values by for looking */
+	inline constexpr float SensitivityMultiplier = 14.2789148024750118991f;
+
 	/** The distance to trace the line */
 	inline constexpr float TraceDistance = 999999;
 

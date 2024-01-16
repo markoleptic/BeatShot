@@ -3,16 +3,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "SaveGamePlayerScore.h"
-THIRD_PARTY_INCLUDES_START
-#pragma push_macro("check")
-#undef check
-#pragma warning (push)
-#pragma warning (disable : 4191)
-#pragma warning (disable : 4686)
-#include "NumCpp/Public/NumCpp.hpp"
-#pragma warning (pop)
-#pragma pop_macro("check")
-THIRD_PARTY_INCLUDES_END
+#include "NumCpp.hpp"
 
 /** Converts an NdArray of floats to a TArray of floats */
 template <typename T>

@@ -6,9 +6,9 @@
 #include "AbilitySystemInterface.h"
 #include "GameFramework/Actor.h"
 #include "SaveLoadInterface.h"
-#include "BeatShot/BeatShot.h"
 #include "WallMenu.generated.h"
 
+enum class ETimeOfDay : uint8;
 class ATimeOfDayManager;
 struct FActiveGameplayEffectHandle;
 struct FGameplayEffectSpec;

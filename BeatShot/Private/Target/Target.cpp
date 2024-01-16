@@ -384,29 +384,6 @@ void ATarget::GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const
 	GetAbilitySystemComponent()->GetOwnedGameplayTags(TagContainer);
 }
 
-bool ATarget::HasMatchingGameplayTag(FGameplayTag TagToCheck) const
-{
-	return GetAbilitySystemComponent()->HasMatchingGameplayTag(TagToCheck);
-}
-
-bool ATarget::HasAllMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const
-{
-	return GetAbilitySystemComponent()->HasAllMatchingGameplayTags(TagContainer);
-}
-
-bool ATarget::HasAnyMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const
-{
-	return GetAbilitySystemComponent()->HasAnyMatchingGameplayTags(TagContainer);
-}
-
-void ATarget::RemoveGameplayTag(const FGameplayTag TagToRemove) const
-{
-	if (GetAbilitySystemComponent()->HasMatchingGameplayTag(TagToRemove))
-	{
-		GetAbilitySystemComponent()->RemoveLooseGameplayTag(TagToRemove);
-	}
-}
-
 /* ----------------------------- */
 /* -- Damage/Health functions -- */
 /* ----------------------------- */

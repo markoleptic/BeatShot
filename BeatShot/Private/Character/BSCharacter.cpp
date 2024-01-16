@@ -8,7 +8,6 @@
 #include "Player/BSPlayerState.h"
 #include "Character/BSRecoilComponent.h"
 #include "Target/Target.h"
-#include "Equipment/BSGun.h"
 #include "Engine/DamageEvents.h"
 #include "GameFramework/DamageType.h"
 #include "Camera/CameraComponent.h"
@@ -100,7 +99,7 @@ UBSInventoryManagerComponent* ABSCharacter::GetInventoryManager() const
 
 UBSCharacterMovementComponent* ABSCharacter::GetBSCharacterMovement() const
 {
-	return Cast<UBSCharacterMovementComponent>(GetCharacterMovement());
+	return CastChecked<UBSCharacterMovementComponent>(GetCharacterMovement(), ECastCheckedType::NullAllowed);
 }
 
 UAbilitySystemComponent* ABSCharacter::GetAbilitySystemComponent() const
@@ -120,7 +119,7 @@ ABSPlayerState* ABSCharacter::GetBSPlayerState() const
 
 UBSAbilitySystemComponent* ABSCharacter::GetBSAbilitySystemComponent() const
 {
-	return Cast<UBSAbilitySystemComponent>(GetAbilitySystemComponent());
+	return CastChecked<UBSAbilitySystemComponent>(GetAbilitySystemComponent(), ECastCheckedType::NullAllowed);
 }
 
 UBSRecoilComponent* ABSCharacter::GetRecoilComponent() const
@@ -140,8 +139,9 @@ void ABSCharacter::BeginPlay()
 	// Max jump time to get to the top of the arc
 	MaxJumpTime = -4.0f * GetCharacterMovement()->JumpZVelocity / (3.0f * GetCharacterMovement()->GetGravityZ());
 
-	OnPlayerSettingsChanged_Game(LoadPlayerSettings().Game);
-	OnPlayerSettingsChanged_User(LoadPlayerSettings().User);
+	const FPlayerSettings Settings = LoadPlayerSettings();
+	OnPlayerSettingsChanged_Game(Settings.Game);
+	OnPlayerSettingsChanged_User(Settings.User);
 
 	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	GI->AddDelegateToOnPlayerSettingsChanged(OnPlayerSettingsChangedDelegate_Game);
@@ -161,64 +161,9 @@ void ABSCharacter::Tick(float DeltaSeconds)
 	}
 }
 
-void ABSCharacter::PawnClientRestart()
-{
-	Super::PawnClientRestart();
-
-	/* Make sure that we have a valid PlayerController */
-	if (const ABSPlayerController* PlayerController = Cast<ABSPlayerController>(GetController()))
-	{
-		/* Get the Enhanced Input Local Player Subsystem from the Local Player related to our Player Controller */
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<
-			UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-		{
-			/* PawnClientRestart can run more than once in an Actor's lifetime, so start by clearing out any leftover mappings */
-			Subsystem->ClearAllMappings();
-			/* Add each mapping context, along with their priority values. Higher values out-prioritize lower values */
-			Subsystem->AddMappingContext(BaseMappingContext, BaseMappingPriority);
-		}
-	}
-}
-
 void ABSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-	InitializePlayerInput(InputComponent);
-}
-
-void ABSCharacter::PossessedBy(AController* NewController)
-{
-	Super::PossessedBy(NewController);
-
-	ABSPlayerState* PS = GetPlayerState<ABSPlayerState>();
-	if (PS)
-	{
-		// Set the ASC on the Server. Clients do this in OnRep_PlayerState()
-		AbilitySystemComponent = Cast<UBSAbilitySystemComponent>(PS->GetAbilitySystemComponent());
-
-		// AI won't have PlayerControllers so we can init again here just to be sure. No harm in initing twice for heroes that have PlayerControllers.
-		PS->GetAbilitySystemComponent()->InitAbilityActorInfo(PS, this);
-
-		// Set the AttributeSetBase for convenience attribute functions
-		AttributeSetBase = PS->GetAttributeSetBase();
-
-		// If we handle players disconnecting and rejoining in the future, we'll have to change this so that possession from rejoining doesn't reset attributes.
-		// For now assume possession = spawn/respawn.
-		AddCharacterAbilities();
-
-		AddCharacterInventoryItems();
-	}
-}
-
-void ABSCharacter::UnPossessed()
-{
-	Super::UnPossessed();
-	RemoveCharacterAbilities();
-}
-
-void ABSCharacter::InitializePlayerInput(UInputComponent* PlayerInputComponent)
-{
-	check(PlayerInputComponent);
 
 	const APlayerController* PC = GetController<APlayerController>();
 	check(PC);
@@ -285,6 +230,158 @@ void ABSCharacter::InitializePlayerInput(UInputComponent* PlayerInputComponent)
 	}
 }
 
+void ABSCharacter::Input_Move(const FInputActionValue& Value)
+{
+	if (Value.IsNonZero())
+	{
+		AddMovementInput(GetActorForwardVector(), Value[1]);
+		AddMovementInput(GetActorRightVector(), Value[0]);
+	}
+}
+
+void ABSCharacter::Input_Look(const FInputActionValue& Value)
+{
+	AddControllerPitchInput(Value[1] / SensitivityMultiplier * Sensitivity);
+	AddControllerYawInput(Value[0] / SensitivityMultiplier * Sensitivity);
+}
+
+void ABSCharacter::Input_Crouch(const FInputActionValue& Value)
+{
+	ToggleCrouch();
+}
+
+void ABSCharacter::Input_WalkStart(const FInputActionValue& Value)
+{
+	bWantsToWalk = true;
+}
+
+void ABSCharacter::Input_WalkEnd(const FInputActionValue& Value)
+{
+	bWantsToWalk = false;
+}
+
+void ABSCharacter::Input_OnInteractStarted(const FInputActionValue& Value)
+{
+	if (OnInteractDelegate.IsBound())
+	{
+		OnInteractDelegate.Execute(0);
+	}
+}
+
+void ABSCharacter::Input_OnInteractCompleted(const FInputActionValue& Value)
+{
+	if (OnInteractDelegate.IsBound())
+	{
+		OnInteractDelegate.Execute(1);
+	}
+}
+
+void ABSCharacter::Input_OnShiftInteractStarted(const FInputActionValue& Value)
+{
+	if (OnShiftInteractDelegate.IsBound())
+	{
+		OnShiftInteractDelegate.Execute(0);
+	}
+}
+
+void ABSCharacter::Input_OnShiftInteractCompleted(const FInputActionValue& Value)
+{
+	if (OnShiftInteractDelegate.IsBound())
+	{
+		OnShiftInteractDelegate.Execute(1);
+	}
+}
+
+void ABSCharacter::Input_OnEquipmentSlot1Started(const FInputActionValue& Value)
+{
+	if (GetInventoryManager()->GetSlots().Num() > 1)
+	{
+		GetInventoryManager()->SetActiveSlotIndex(0);
+	}
+}
+
+void ABSCharacter::Input_OnEquipmentSlot2Started(const FInputActionValue& Value)
+{
+	if (GetInventoryManager()->GetSlots().Num() > 1)
+	{
+		GetInventoryManager()->SetActiveSlotIndex(1);
+	}
+}
+
+void ABSCharacter::Input_OnEquipmentSlot3Started(const FInputActionValue& Value)
+{
+	if (GetInventoryManager()->GetSlots().Num() > 1)
+	{
+		GetInventoryManager()->SetActiveSlotIndex(2);
+	}
+}
+
+void ABSCharacter::Input_OnEquipmentSlotLastEquippedStarted(const FInputActionValue& Value)
+{
+	if (GetInventoryManager()->GetSlots().Num() > 1)
+	{
+		GetInventoryManager()->SetActiveSlotIndex(GetInventoryManager()->GetLastSlotIndex());
+	}
+}
+
+void ABSCharacter::Input_OnPause(const FInputActionValue& Value)
+{
+	if (GetBSPlayerController())
+	{
+		GetBSPlayerController()->HandlePause();
+	}
+}
+
+void ABSCharacter::Input_OnLeftClick(const FInputActionValue& Value)
+{
+	if (GetBSPlayerController())
+	{
+		GetBSPlayerController()->HandleLeftClick();
+	}
+}
+
+void ABSCharacter::Input_AbilityInputTagPressed(FGameplayTag InputTag)
+{
+	GetBSAbilitySystemComponent()->AbilityInputTagPressed(InputTag);
+}
+
+void ABSCharacter::Input_AbilityInputTagReleased(FGameplayTag InputTag)
+{
+	GetBSAbilitySystemComponent()->AbilityInputTagReleased(InputTag);
+}
+
+void ABSCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	ABSPlayerState* PS = GetPlayerState<ABSPlayerState>();
+	if (PS)
+	{
+		// Set the ASC on the Server. Clients do this in OnRep_PlayerState()
+		AbilitySystemComponent = Cast<UBSAbilitySystemComponent>(PS->GetAbilitySystemComponent());
+
+		// AI won't have PlayerControllers so we can init again here just to be sure.
+		// No harm in initing twice for heroes that have PlayerControllers.
+		PS->GetAbilitySystemComponent()->InitAbilityActorInfo(PS, this);
+
+		// Set the AttributeSetBase for convenience attribute functions
+		AttributeSetBase = PS->GetAttributeSetBase();
+
+		// If we handle players disconnecting and rejoining in the future, we'll have to change this so that possession
+		// from rejoining doesn't reset attributes. For now assume possession = spawn/respawn.
+		AddCharacterAbilities();
+
+		AddCharacterInventoryItems();
+	}
+}
+
+void ABSCharacter::UnPossessed()
+{
+	Super::UnPossessed();
+	RemoveCharacterAbilities();
+	RemoveCharacterInventoryItems();
+}
+
 void ABSCharacter::AddCharacterAbilities()
 {
 	// Grant abilities, but only on the server	
@@ -298,8 +395,7 @@ void ABSCharacter::AddCharacterAbilities()
 	{
 		if (AbilitySet)
 		{
-			AbilitySet->GiveToAbilitySystem(Cast<UBSAbilitySystemComponent>(GetAbilitySystemComponent()),
-				&AbilitySet_GrantedHandles);
+			AbilitySet->GiveToAbilitySystem(GetBSAbilitySystemComponent(), &AbilitySet_GrantedHandles);
 		}
 	}
 	AbilitySystemComponent->bCharacterAbilitiesGiven = true;
@@ -314,7 +410,7 @@ void ABSCharacter::RemoveCharacterAbilities()
 		return;
 	}
 
-	AbilitySet_GrantedHandles.TakeFromAbilitySystem(Cast<UBSAbilitySystemComponent>(GetAbilitySystemComponent()));
+	AbilitySet_GrantedHandles.TakeFromAbilitySystem(GetBSAbilitySystemComponent());
 	AbilitySystemComponent->bCharacterAbilitiesGiven = false;
 }
 
@@ -385,60 +481,13 @@ void ABSCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 }
 
-void ABSCharacter::Input_Move(const FInputActionValue& Value)
-{
-	// Moving the player
-	if (Value.IsNonZero())
-	{
-		AddMovementInput(GetActorForwardVector(), Value[1]);
-		AddMovementInput(GetActorRightVector(), Value[0]);
-	}
-}
-
-void ABSCharacter::Input_Look(const FInputActionValue& Value)
-{
-	AddControllerPitchInput(Value[1] / SensitivityMultiplier * Sensitivity);
-	AddControllerYawInput(Value[0] / SensitivityMultiplier * Sensitivity);
-}
-
-void ABSCharacter::Input_Crouch(const FInputActionValue& Value)
-{
-	ToggleCrouch();
-}
-
-void ABSCharacter::Input_WalkStart(const FInputActionValue& Value)
-{
-	bWantsToWalk = true;
-	/*if (UBSAbilitySystemComponent* ASC = Cast<UBSAbilitySystemComponent>(GetAbilitySystemComponent()))
-	{
-		ASC->SetLooseGameplayTagCount(FBSGameplayTags::Get().Input_Walk, 1);
-	}*/
-}
-
-void ABSCharacter::Input_WalkEnd(const FInputActionValue& Value)
-{
-	bWantsToWalk = false;
-	/*if (UBSAbilitySystemComponent* ASC = Cast<UBSAbilitySystemComponent>(GetAbilitySystemComponent()))
-	{
-		ASC->SetLooseGameplayTagCount(FBSGameplayTags::Get().Input_Walk, 0);
-	}*/
-}
-
 void ABSCharacter::OnStartCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust)
 {
-	/*if (UBSAbilitySystemComponent* ASC = Cast<UBSAbilitySystemComponent>(GetAbilitySystemComponent()))
-	{
-		ASC->SetLooseGameplayTagCount(FBSGameplayTags::Get().State_Crouching, 1);
-	}*/
 	Super::OnStartCrouch(HalfHeightAdjust, ScaledHalfHeightAdjust);
 }
 
 void ABSCharacter::OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust)
 {
-	/*if (UBSAbilitySystemComponent* ASC = Cast<UBSAbilitySystemComponent>(GetAbilitySystemComponent()))
-	{
-		ASC->SetLooseGameplayTagCount(FBSGameplayTags::Get().State_Crouching, 0);
-	}*/
 	Super::OnEndCrouch(HalfHeightAdjust, ScaledHalfHeightAdjust);
 }
 
@@ -456,10 +505,6 @@ void ABSCharacter::ToggleCrouch()
 
 bool ABSCharacter::IsSprinting() const
 {
-	/*if (HasMatchingGameplayTag(FBSGameplayTags::Get().Input_Walk))
-	{
-		return false;
-	}*/
 	if (GetVelocity().IsNearlyZero(0.01))
 	{
 		return false;
@@ -702,128 +747,12 @@ bool ABSCharacter::CanCrouch() const
 	return !GetCharacterMovement()->bCheatFlying && Super::CanCrouch() && !GetBSCharacterMovement()->IsOnLadder();
 }
 
-void ABSCharacter::Input_OnInteractStarted(const FInputActionValue& Value)
-{
-	if (!OnInteractDelegate.ExecuteIfBound(0))
-	{
-		UE_LOG(LogTemp, Display, TEXT("OnInteractDelegate not bound."));
-	}
-}
-
-void ABSCharacter::Input_OnInteractCompleted(const FInputActionValue& Value)
-{
-	if (!OnInteractDelegate.ExecuteIfBound(1))
-	{
-		UE_LOG(LogTemp, Display, TEXT("OnInteractDelegate not bound."));
-	}
-}
-
-void ABSCharacter::Input_OnShiftInteractStarted(const FInputActionValue& Value)
-{
-	if (!OnShiftInteractDelegate.ExecuteIfBound(0))
-	{
-		UE_LOG(LogTemp, Display, TEXT("OnInteractDelegate not bound."));
-	}
-}
-
-void ABSCharacter::Input_OnShiftInteractCompleted(const FInputActionValue& Value)
-{
-	if (!OnShiftInteractDelegate.ExecuteIfBound(1))
-	{
-		UE_LOG(LogTemp, Display, TEXT("OnInteractDelegate not bound."));
-	}
-}
-
-void ABSCharacter::Input_OnInspectStarted(const FInputActionValue& Value)
-{
-	UE_LOG(LogTemp, Display, TEXT("Inspecting"));
-}
-
-void ABSCharacter::Input_OnMeleeStarted(const FInputActionValue& Value)
-{
-	UE_LOG(LogTemp, Display, TEXT("Knifeattacking"));
-}
-
-void ABSCharacter::Input_OnEquipmentSlot1Started(const FInputActionValue& Value)
-{
-	if (GetInventoryManager()->GetSlots().Num() > 1)
-	{
-		GetInventoryManager()->SetActiveSlotIndex(0);
-	}
-}
-
-void ABSCharacter::Input_OnEquipmentSlot2Started(const FInputActionValue& Value)
-{
-	if (GetInventoryManager()->GetSlots().Num() > 1)
-	{
-		GetInventoryManager()->SetActiveSlotIndex(1);
-	}
-}
-
-void ABSCharacter::Input_OnEquipmentSlot3Started(const FInputActionValue& Value)
-{
-	if (GetInventoryManager()->GetSlots().Num() > 1)
-	{
-		GetInventoryManager()->SetActiveSlotIndex(2);
-	}
-}
-
-void ABSCharacter::Input_OnEquipmentSlotLastEquippedStarted(const FInputActionValue& Value)
-{
-	if (GetInventoryManager()->GetSlots().Num() > 1)
-	{
-		GetInventoryManager()->SetActiveSlotIndex(GetInventoryManager()->GetLastSlotIndex());
-	}
-}
-
-void ABSCharacter::Input_OnPause(const FInputActionValue& Value)
-{
-	if (GetBSPlayerController())
-	{
-		GetBSPlayerController()->HandlePause();
-	}
-}
-
-void ABSCharacter::Input_OnLeftClick(const FInputActionValue& Value)
-{
-	if (GetBSPlayerController())
-	{
-		GetBSPlayerController()->HandleLeftClick();
-	}
-}
-
-void ABSCharacter::Input_AbilityInputTagPressed(FGameplayTag InputTag)
-{
-	Cast<UBSAbilitySystemComponent>(GetAbilitySystemComponent())->AbilityInputTagPressed(InputTag);
-}
-
-void ABSCharacter::Input_AbilityInputTagReleased(FGameplayTag InputTag)
-{
-	Cast<UBSAbilitySystemComponent>(GetAbilitySystemComponent())->AbilityInputTagReleased(InputTag);
-}
-
 void ABSCharacter::GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const
 {
-	if (GetAbilitySystemComponent())
+	if (GetBSAbilitySystemComponent())
 	{
-		const UBSAbilitySystemComponent* ASC = Cast<UBSAbilitySystemComponent>(GetAbilitySystemComponent());
-		if (ASC) ASC->GetOwnedGameplayTags(TagContainer);
+		GetBSAbilitySystemComponent()->GetOwnedGameplayTags(TagContainer);
 	}
-}
-
-bool ABSCharacter::HasMatchingGameplayTag(FGameplayTag TagToCheck) const
-{
-	return IGameplayTagAssetInterface::HasMatchingGameplayTag(TagToCheck);
-}
-
-bool ABSCharacter::HasAllMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const
-{
-	return IGameplayTagAssetInterface::HasAllMatchingGameplayTags(TagContainer);
-}
-
-bool ABSCharacter::HasAnyMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const
-{
-	return IGameplayTagAssetInterface::HasAnyMatchingGameplayTags(TagContainer);
 }
 
 void ABSCharacter::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings)

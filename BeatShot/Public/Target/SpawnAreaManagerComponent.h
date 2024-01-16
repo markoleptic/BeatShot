@@ -658,7 +658,7 @@ protected:
 		const FLargestRect& Rect, const int32 NumCols);
 
 	/** Returns whether or not a number is prime */
-	static bool IsPrime(const int32 Number);
+	static constexpr bool IsPrime(const int32 Number);
 
 	/** Calculates the Manhattan distance between to indices given the number of columns */
 	static int32 CalcManhattanDist(const int32 Index1, const int32 Index2, const int32 NumCols);
@@ -687,8 +687,8 @@ public:
 	/* -- Debug -- */
 	/* ----------- */
 	
+
 #if !UE_BUILD_SHIPPING
-	
 	void PrintDebug_NumRecentNumActive() const;
 
 	/** Shows the grid of spawn areas drawn as debug boxes */
@@ -707,8 +707,7 @@ public:
 
 	/** Draws a debug sphere where the overlapping vertices were traced from, and draws debug points for
 	 *  the vertices if they were recalculated */
-	void DrawVerticesOverlap(const USpawnArea* SpawnArea, const FVector& Scale, const TSet<FVector>& Valid,
-		const TSet<FVector>& Invalid) const;
+	void DrawVerticesOverlap(USpawnArea* SpawnArea) const;
 
 	/** Draws a debug sphere where the overlapping vertices were traced from, and draws debug points for
 	 *  the vertices if they were recalculated */
