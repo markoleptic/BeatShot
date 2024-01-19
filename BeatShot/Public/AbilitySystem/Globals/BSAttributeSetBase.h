@@ -51,11 +51,11 @@ struct FDamageEventData
 };
 
 // Delegate used to broadcast attribute events.
-DECLARE_MULTICAST_DELEGATE_SixParams(FBSAttributeEvent, AActor* /*EffectInstigator*/, AActor* /*EffectCauser*/,
-	const FGameplayEffectSpec* /*EffectSpec*/, float /*EffectMagnitude*/, float /*OldValue*/, float /*NewValue*/);
+DECLARE_MULTICAST_DELEGATE_SixParams(FBSAttributeEvent, AActor* EffectInstigator, AActor* EffectCauser,
+	const FGameplayEffectSpec* EffectSpec, float EffectMagnitude, float OldValue, float NewValue);
 
 // Delegate used to broadcast incoming damage attribute events.
-DECLARE_MULTICAST_DELEGATE_OneParam(FBSDamageEvent, const FDamageEventData& /*InData*/);
+DECLARE_MULTICAST_DELEGATE_OneParam(FBSDamageEvent, const FDamageEventData& InDamageEventData);
 
 /** The base AttributeSet used for this game */
 UCLASS()

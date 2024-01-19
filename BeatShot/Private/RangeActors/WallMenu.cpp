@@ -2,7 +2,6 @@
 
 
 #include "RangeActors/WallMenu.h"
-#include "Character/BSCharacter.h"
 #include "BSGameInstance.h"
 #include "Text3DComponent.h"
 #include "AbilitySystem/BSAbilitySystemComponent.h"

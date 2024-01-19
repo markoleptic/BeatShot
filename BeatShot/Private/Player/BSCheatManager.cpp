@@ -7,7 +7,7 @@
 #if !UE_BUILD_SHIPPING
 #include "AbilitySystemComponent.h"
 #include "BSGameInstance.h"
-#include "Character/BSCharacter.h"
+#include "Character/BSCharacterBase.h"
 #include "BSGameMode.h"
 #include "Player/BSPlayerController.h"
 #include "Target/TargetManager.h"
@@ -240,7 +240,7 @@ void UBSCheatManager::InitCheatManager()
 void UBSCheatManager::CVarOnChanged_Cheat_AimBot(IConsoleVariable* Variable)
 {
 	const ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-	const ABSCharacter* Character = Cast<ABSCharacter>(
+	const ABSCharacterBase* Character = Cast<ABSCharacterBase>(
 		Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->GetPawn());
 
 	if (!GameMode || !Character)

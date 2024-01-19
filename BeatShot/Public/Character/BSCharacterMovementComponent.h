@@ -15,7 +15,6 @@
 #define MOVEMENT_DEFAULT_UNCROUCHTIME 0.2f
 #define MOVEMENT_DEFAULT_UNCROUCHJUMPTIME 0.8f
 
-class ABSCharacter;
 /** Information about the ground under the character.  It only gets updated as needed. */
 USTRUCT(BlueprintType)
 struct FCharacterGroundInfo
@@ -59,8 +58,9 @@ public:
 
 	/** Gets the friction from cached ground info */
 	float GetFrictionFromHit(const FHitResult& Hit) const;
-
-	TObjectPtr<ABSCharacter> BSCharacter;
+	
+	UPROPERTY()
+	TObjectPtr<class ABSCharacterBase> BSCharacter;
 
 protected:
 	/** Cached ground info for the character.  Do not access this directly!  It's only updated when accessed via GetGroundInfo() */

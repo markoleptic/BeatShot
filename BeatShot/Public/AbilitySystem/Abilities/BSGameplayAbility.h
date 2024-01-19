@@ -6,7 +6,7 @@
 #include "Abilities/GameplayAbility.h"
 #include "BSGameplayAbility.generated.h"
 
-class ABSCharacter;
+class ABSCharacterBase;
 class ABSPlayerController;
 
 /** Defines how an ability is activated. */
@@ -67,7 +67,7 @@ public:
 	AController* GetControllerFromActorInfo() const;
 
 	UFUNCTION(BlueprintPure, Category = "BeatShot|Ability")
-	ABSCharacter* GetBSCharacterFromActorInfo() const;
+	ABSCharacterBase* GetBSCharacterFromActorInfo() const;
 
 	// Defines how this ability is meant to activate.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "BeatShot|Ability Activation")

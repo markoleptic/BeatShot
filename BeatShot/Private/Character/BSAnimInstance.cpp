@@ -3,7 +3,7 @@
 #include "Character/BSAnimInstance.h"
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"
-#include "Character/BSCharacter.h"
+#include "Character/BSCharacterBase.h"
 #include "Character/BSCharacterMovementComponent.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BSAnimInstance)
@@ -36,7 +36,7 @@ void UBSAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	Super::NativeUpdateAnimation(DeltaSeconds);
 
-	const ABSCharacter* Character = Cast<ABSCharacter>(GetOwningActor());
+	const ABSCharacterBase* Character = Cast<ABSCharacterBase>(GetOwningActor());
 	if (!Character)
 	{
 		return;

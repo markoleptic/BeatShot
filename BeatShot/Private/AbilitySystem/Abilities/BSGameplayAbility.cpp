@@ -2,7 +2,7 @@
 
 #include "AbilitySystem/Abilities/BSGameplayAbility.h"
 #include "AbilitySystemComponent.h"
-#include "Character/BSCharacter.h"
+#include "Character/BSCharacterBase.h"
 #include "Player/BSPlayerController.h"
 #include "AbilitySystem/BSAbilitySystemComponent.h"
 
@@ -63,9 +63,9 @@ AController* UBSGameplayAbility::GetControllerFromActorInfo() const
 	return nullptr;
 }
 
-ABSCharacter* UBSGameplayAbility::GetBSCharacterFromActorInfo() const
+ABSCharacterBase* UBSGameplayAbility::GetBSCharacterFromActorInfo() const
 {
-	return (CurrentActorInfo ? Cast<ABSCharacter>(CurrentActorInfo->AvatarActor.Get()) : nullptr);
+	return (CurrentActorInfo ? Cast<ABSCharacterBase>(CurrentActorInfo->AvatarActor.Get()) : nullptr);
 }
 
 void UBSGameplayAbility::OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)

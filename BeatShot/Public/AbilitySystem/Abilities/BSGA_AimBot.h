@@ -7,7 +7,6 @@
 #include "BSGA_AimBot.generated.h"
 
 class ATarget;
-class UBSGA_FireGun;
 
 UCLASS()
 class BEATSHOT_API UBSGA_AimBot : public UBSGameplayAbility
@@ -40,13 +39,6 @@ public:
 	/** The ability to try and activate to destroy the target */
 	UPROPERTY(EditDefaultsOnly, Category="BeatShot")
 	TSubclassOf<UBSGameplayAbility> GA_FireGun;
-
-public:
-	UFUNCTION(BlueprintCallable, Category = "BeatShot|AimBot")
-	ATarget* PeekActiveTargets();
-
-	UFUNCTION(BlueprintCallable, Category = "BeatShot|AimBot")
-	void PopActiveTargets();
 
 private:
 	/** A queue of target locations that have not yet been destroyed */

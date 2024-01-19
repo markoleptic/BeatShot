@@ -2,7 +2,7 @@
 
 #include "AbilitySystem/BSAbilitySystemComponent.h"
 #include "Character/BSAnimInstance.h"
-#include "Character/BSCharacter.h"
+#include "Character/BSCharacterBase.h"
 #include "BeatShot/BSGameplayTags.h"
 #include "AbilitySystem/Abilities/BSGameplayAbility.h"
 

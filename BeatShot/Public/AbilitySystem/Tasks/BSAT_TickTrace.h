@@ -7,11 +7,9 @@
 #include "BSAT_TickTrace.generated.h"
 
 class UBSAbilitySystemComponent;
-class ABSCharacter;
+class ABSCharacterBase;
 
-/** Delegate type used in the AimToTarget ability task */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FTickTraceDelegate, FGameplayTag, EventTag, FGameplayEventData, EventData);
-
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTickTraceHit, const FHitResult&, HitResult);
 
 /** Task used to trace a line from the gun to where the owner is facing on tick */
@@ -26,7 +24,6 @@ public:
 
 	virtual void Activate() override;
 	virtual void ExternalCancel() override;
-	virtual FString GetDebugString() const override;
 	virtual void OnDestroy(bool AbilityEnded) override;
 	virtual void TickTask(float DeltaTime) override;
 
@@ -55,25 +52,18 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Ability|Tasks",
 		meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "TRUE"))
 	static UBSAT_TickTrace* SingleWeaponTrace(UGameplayAbility* OwningAbility, const FName TaskInstanceName,
-		ABSCharacter* Character, const FGameplayTagContainer EventTags, const float TraceDistance,
-		const bool bStopWhenAbilityEnds);
+		ABSCharacterBase* Character, const float TraceDistance, const bool bStopWhenAbilityEnds);
 
 private:
 	UPROPERTY()
-	ABSCharacter* Character;
-
-	UPROPERTY()
-	FGameplayTagContainer EventTags;
+	ABSCharacterBase* Character;
 
 	UPROPERTY()
 	bool bStopWhenAbilityEnds;
 
 	void PerformSingleWeaponTrace();
 
-	void OnGameplayEvent(FGameplayTag EventTag, const FGameplayEventData* Payload) const;
-
 	void OnAbilityCancelled();
 
 	FDelegateHandle CancelledHandle;
-	FDelegateHandle EventHandle;
 };

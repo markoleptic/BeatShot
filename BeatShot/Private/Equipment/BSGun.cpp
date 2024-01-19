@@ -5,7 +5,7 @@
 #include "BSGameInstance.h"
 #include "BSGameMode.h"
 #include "BeatShot/BSGameplayTags.h"
-#include "Character/BSCharacter.h"
+#include "Character/BSCharacterBase.h"
 
 ABSGun::ABSGun()
 {
@@ -51,7 +51,7 @@ void ABSGun::Fire()
 	if (OnShotFired.IsBound())
 	{
 		check(GetOwner());
-		if (const ABSCharacter* Character = Cast<ABSCharacter>(GetOwner()))
+		if (const ABSCharacterBase* Character = Cast<ABSCharacterBase>(GetOwner()))
 		{
 			OnShotFired.Execute(Character->GetBSPlayerController());
 		}

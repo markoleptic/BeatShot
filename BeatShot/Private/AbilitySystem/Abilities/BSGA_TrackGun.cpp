@@ -19,13 +19,10 @@ void UBSGA_TrackGun::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 	// Bind AbilityTargetDataSetDelegate to OnTargetDataReadyCallback, and and assign it to OnTargetDataReadyCallbackDelegateHandle;
 	OnTargetDataReadyCallbackDelegateHandle = Component->AbilityTargetDataSetDelegate(CurrentSpecHandle,
 		CurrentActivationInfo.GetActivationPredictionKey()).AddUObject(this, &ThisClass::OnTargetDataReadyCallback);
-
-
-	TickTraceTask = UBSAT_TickTrace::SingleWeaponTrace(this, NAME_None, GetBSCharacterFromActorInfo(),
-		FGameplayTagContainer(), TraceDistance, false);
+	
+	TickTraceTask = UBSAT_TickTrace::SingleWeaponTrace(this, NAME_None, GetBSCharacterFromActorInfo(), TraceDistance, false);
 	TickTraceTask->OnTickTraceHit.AddDynamic(this, &UBSGA_TrackGun::OnTickTraceHitResultHit);
 	TickTraceTask->ReadyForActivation();
-
 
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 }
@@ -101,9 +98,9 @@ void UBSGA_TrackGun::OnTargetDataReadyCallback(const FGameplayAbilityTargetDataH
 
 void UBSGA_TrackGun::OnTickTraceHitResultHit(const FHitResult& HitResult)
 {
-	FGameplayAbilityTargetDataHandle TargetData;
 	FGameplayAbilityTargetData_SingleTargetHit* SingleTargetData = new FGameplayAbilityTargetData_SingleTargetHit();
-	TargetData.Add(SingleTargetData);
 	SingleTargetData->HitResult = HitResult;
+	const FGameplayAbilityTargetDataHandle TargetData(SingleTargetData);
+	
 	OnTargetDataReadyCallback(TargetData, FGameplayTag());
 }

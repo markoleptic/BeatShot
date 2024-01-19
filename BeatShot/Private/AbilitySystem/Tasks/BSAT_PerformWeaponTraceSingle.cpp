@@ -3,6 +3,7 @@
 
 #include "AbilitySystem/Tasks/BSAT_PerformWeaponTraceSingle.h"
 #include "AbilitySystem/Abilities/BSGameplayAbility.h"
+#include "Camera/CameraComponent.h"
 #include "Character/BSCharacter.h"
 #include "Character/BSRecoilComponent.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -15,17 +16,25 @@ UBSAT_PerformWeaponTraceSingle::UBSAT_PerformWeaponTraceSingle()
 void UBSAT_PerformWeaponTraceSingle::Activate()
 {
 	Super::Activate();
-
-	if (const UBSGameplayAbility* GameplayAbility = Cast<UBSGameplayAbility>(Ability))
+	
+	FHitResult HitResult;
+	const bool bSuccess = LineTraceSingle(HitResult);
+	if (ShouldBroadcastAbilityTaskDelegates())
 	{
-		FHitResult HitResult;
-		LineTraceSingle(GameplayAbility->GetBSCharacterFromActorInfo()->GetRecoilComponent(), HitResult);
-		if (ShouldBroadcastAbilityTaskDelegates())
-		{
-			OnCompleted.Broadcast(HitResult);
-		}
+		OnCompleted.Broadcast(bSuccess, HitResult);
 	}
+	
 	EndTask();
+}
+
+void UBSAT_PerformWeaponTraceSingle::ExternalCancel()
+{
+	if (ShouldBroadcastAbilityTaskDelegates())
+	{
+		OnCompleted.Broadcast(false, FHitResult());
+	}
+	// Will call EndTask
+	Super::ExternalCancel();
 }
 
 UBSAT_PerformWeaponTraceSingle* UBSAT_PerformWeaponTraceSingle::PerformWeaponTraceSingle(
@@ -37,21 +46,35 @@ UBSAT_PerformWeaponTraceSingle* UBSAT_PerformWeaponTraceSingle::PerformWeaponTra
 	return MyObj;
 }
 
-void UBSAT_PerformWeaponTraceSingle::LineTraceSingle(const UBSRecoilComponent* RecoilComponent,
-	FHitResult& HitResult) const
+bool UBSAT_PerformWeaponTraceSingle::LineTraceSingle(FHitResult& HitResult) const
 {
-	if (!RecoilComponent)
+	AActor* AvatarActor = Ability->GetAvatarActorFromActorInfo();
+	if (!AvatarActor) return false;
+	
+	USceneComponent* RecoilComponent;
+	FRotator CurrentRecoilRotation;
+	if (const auto Character = Cast<ABSCharacter>(AvatarActor))
 	{
-		return;
+		RecoilComponent = Character->GetRecoilComponent();
+		CurrentRecoilRotation = Character->GetRecoilComponent()->GetCurrentRecoilRotation();
 	}
-
-	const FRotator CurrentRecoilRotation = RecoilComponent->GetCurrentRecoilRotation();
+	else if (const auto CharacterBase = Cast<ABSCharacterBase>(AvatarActor))
+	{
+		CurrentRecoilRotation = FRotator::ZeroRotator;
+		RecoilComponent = CharacterBase->GetCamera();
+	}
+	else
+	{
+		return false;
+	}
+	
 	const FVector RotatedVector1 = UKismetMathLibrary::RotateAngleAxis(RecoilComponent->GetForwardVector(),
 		CurrentRecoilRotation.Pitch, RecoilComponent->GetRightVector());
 	const FVector RotatedVector2 = UKismetMathLibrary::RotateAngleAxis(RotatedVector1, CurrentRecoilRotation.Yaw,
 		RecoilComponent->GetUpVector());
 	const FVector EndTrace = RecoilComponent->GetComponentLocation() + RotatedVector2 * TraceDistance;
-	const FCollisionQueryParams TraceParams(SCENE_QUERY_STAT(WeaponTrace), /*bTraceComplex=*/ true /*IgnoreActor=*/);
+	const FCollisionQueryParams TraceParams(SCENE_QUERY_STAT(WeaponTrace), true);
 	GetWorld()->LineTraceSingleByChannel(HitResult, RecoilComponent->GetComponentLocation(), EndTrace,
 		BS_TraceChannel_Weapon, TraceParams);
+	return true;
 }

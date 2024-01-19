@@ -4,7 +4,7 @@
 #include "Player/BSPlayerController.h"
 #include "AbilitySystemComponent.h"
 #include "AbilitySystem/BSAbilitySystemComponent.h"
-#include "Character/BSCharacter.h"
+#include "Character/BSCharacterBase.h"
 #include "BSGameInstance.h"
 #include "BSGameMode.h"
 #include "FloatingTextActor.h"
@@ -107,9 +107,9 @@ UBSAbilitySystemComponent* ABSPlayerController::GetBSAbilitySystemComponent() co
 	return (PS ? PS->GetBSAbilitySystemComponent() : nullptr);
 }
 
-ABSCharacter* ABSPlayerController::GetBSCharacter() const
+ABSCharacterBase* ABSPlayerController::GetBSCharacter() const
 {
-	return GetCharacter() ? Cast<ABSCharacter>(GetCharacter()) : nullptr;
+	return GetCharacter() ? Cast<ABSCharacterBase>(GetCharacter()) : nullptr;
 }
 
 void ABSPlayerController::SetPlayerEnabledState(const bool bPlayerEnabled)
@@ -280,7 +280,7 @@ void ABSPlayerController::ShowCountdown()
 {
 	if (!IsLocalController()) return;
 	SetControlRotation(FRotator(0, 0, 0));
-	ABSCharacter* BSCharacter = GetBSCharacter();
+	ABSCharacterBase* BSCharacter = GetBSCharacter();
 	check(BSCharacter);
 	
 	BSCharacter->SetActorLocationAndRotation(FVector(1580, 0, 102), FRotator(0, 0, 0));

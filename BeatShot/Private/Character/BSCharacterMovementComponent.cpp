@@ -3,7 +3,7 @@
 
 #include "Character/BSCharacterMovementComponent.h"
 
-#include "Character/BSCharacter.h"
+#include "Character/BSCharacterBase.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
@@ -202,19 +202,20 @@ const FCharacterGroundInfo& UBSCharacterMovementComponent::GetGroundInfo()
 			? UpdatedComponent->GetCollisionObjectType()
 			: ECC_Pawn);
 		const FVector TraceStart(GetActorLocation());
-		const FVector TraceEnd(TraceStart.X, TraceStart.Y, TraceStart.Z - MAX_FLOOR_DIST * 10.0f);
-		const FCollisionShape StandingCapsuleShape = GetPawnCapsuleCollisionShape(SHRINK_None);
-		FCollisionQueryParams QueryParams(SCENE_QUERY_STAT(CharacterFloorTrace), false, CharacterOwner);
-		FCollisionResponseParams ResponseParam;
-		InitCollisionParams(QueryParams, ResponseParam);
+		const FVector TraceEnd(TraceStart.X, TraceStart.Y, TraceStart.Z - GroundTraceDistance - CapsuleHalfHeight);
+		
+		FCollisionQueryParams QueryParams(SCENE_QUERY_STAT(CharacterFloorTrace), true, CharacterOwner);
 		// must trace complex to get mesh phys materials
 		QueryParams.bTraceComplex = true;
 		// must get materials
 		QueryParams.bReturnPhysicalMaterial = true;
-
+		
+		FCollisionResponseParams ResponseParam;
+		InitCollisionParams(QueryParams, ResponseParam);
+		
 		FHitResult HitResult;
-		GetWorld()->SweepSingleByChannel(HitResult, TraceStart, TraceEnd, FQuat::Identity, CollisionChannel,
-			StandingCapsuleShape, QueryParams, ResponseParam);
+		GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, CollisionChannel, QueryParams, ResponseParam);
+		
 		CachedGroundInfo.GroundHitResult = HitResult;
 		CachedGroundInfo.GroundDistance = GroundTraceDistance;
 
@@ -245,7 +246,7 @@ float UBSCharacterMovementComponent::GetFrictionFromHit(const FHitResult& Hit) c
 void UBSCharacterMovementComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
-	BSCharacter = Cast<ABSCharacter>(GetCharacterOwner());
+	BSCharacter = Cast<ABSCharacterBase>(GetCharacterOwner());
 }
 
 void UBSCharacterMovementComponent::OnRegister()

@@ -2,10 +2,8 @@
 
 
 #include "AbilitySystem/Abilities/BSGA_AimBot.h"
-#include "AbilitySystem/Abilities/BSGA_FireGun.h"
 #include "AbilitySystem/Tasks/BSAT_AimToTarget.h"
 #include "BeatShot/BSGameplayTags.h"
-#include "Character/BSCharacter.h"
 #include "Target/Target.h"
 
 UBSGA_AimBot::UBSGA_AimBot()
@@ -45,26 +43,6 @@ void UBSGA_AimBot::OnTargetActivated(ATarget* SpawnedTarget)
 	}
 }
 
-ATarget* UBSGA_AimBot::PeekActiveTargets()
-{
-	ATarget* Target;
-	while (!ActiveTargets_AimBot.IsEmpty())
-	{
-		ActiveTargets_AimBot.Peek(Target);
-		if (IsValid(Target))
-		{
-			return Target;
-		}
-		PopActiveTargets();
-	}
-	return nullptr;
-}
-
-void UBSGA_AimBot::PopActiveTargets()
-{
-	ActiveTargets_AimBot.Pop();
-}
-
 void UBSGA_AimBot::SetIgnoreStartLocation(const FVector& In)
 {
 	IgnoreStartLocation = In;
@@ -79,17 +57,11 @@ void UBSGA_AimBot::SetIgnoreStartLocation(const FVector& In)
 
 void UBSGA_AimBot::CheckTargetQueue()
 {
-	ATarget* ActiveTarget = PeekActiveTargets();
-	if (!ActiveTarget)
-	{
-		return;
-	}
-	if (TargetLocationIsInIgnoreRange(ActiveTarget->GetActorLocation()))
-	{
-		PopActiveTargets();
-		return;
-	}
-
+	ATarget* ActiveTarget;
+	if (!ActiveTargets_AimBot.Dequeue(ActiveTarget)) return;
+	
+	if (TargetLocationIsInIgnoreRange(ActiveTarget->GetActorLocation())) return;
+	
 	UBSAT_AimToTarget* AimToTarget = UBSAT_AimToTarget::AimToTarget(this, FName(), SmoothingCurve, ActiveTarget,
 		1.f / ActiveTarget->GetSpawnBeatDelay());
 	AimToTarget->OnCancelled.AddDynamic(this, &ThisClass::OnAimToTargetCancelled);
@@ -99,28 +71,20 @@ void UBSGA_AimBot::CheckTargetQueue()
 
 void UBSGA_AimBot::OnAimToTargetCancelled()
 {
-	UBSAbilitySystemComponent* ASC = GetBSAbilitySystemComponentFromActorInfo();
-	if (!ASC)
+	if (UBSAbilitySystemComponent* ASC = GetBSAbilitySystemComponentFromActorInfo())
 	{
-		return;
+		ASC->TryActivateAbilityByClass(GA_FireGun);
+		CheckTargetQueue();
 	}
-
-	PopActiveTargets();
-	ASC->TryActivateAbilityByClass(GA_FireGun);
-	CheckTargetQueue();
 }
 
 void UBSGA_AimBot::OnAimToTargetCompleted()
 {
-	UBSAbilitySystemComponent* ASC = GetBSAbilitySystemComponentFromActorInfo();
-	if (!ASC)
+	if (UBSAbilitySystemComponent* ASC = GetBSAbilitySystemComponentFromActorInfo())
 	{
-		return;
+		ASC->TryActivateAbilityByClass(GA_FireGun);
+		CheckTargetQueue();
 	}
-
-	PopActiveTargets();
-	ASC->TryActivateAbilityByClass(GA_FireGun);
-	CheckTargetQueue();
 }
 
 bool UBSGA_AimBot::TargetLocationIsInIgnoreRange(const FVector& Loc) const

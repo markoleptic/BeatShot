@@ -10,8 +10,6 @@
 class UHitTimingWidget;
 class UImage;
 class UHorizontalBox;
-class ABeatAimGameModeBase;
-class ABSCharacter;
 class UProgressBar;
 class UTextBlock;
 class UMaterialInstanceDynamic;

@@ -66,9 +66,13 @@ void UBSEquipmentInstance::SpawnEquipmentActors(const TArray<FBSEquipmentActorTo
 	if (APawn* OwningPawn = GetPawn())
 	{
 		USceneComponent* AttachTarget = OwningPawn->GetRootComponent();
-		if (ABSCharacter* Char = Cast<ABSCharacter>(OwningPawn))
+		if (const ABSCharacter* Character = Cast<ABSCharacter>(OwningPawn))
 		{
-			AttachTarget = Char->GetHandsMesh();
+			AttachTarget = Character->GetHandsMesh();
+		}
+		else if (const ABSCharacterBase* CharacterBase = Cast<ABSCharacterBase>(OwningPawn))
+		{
+			AttachTarget = CharacterBase->GetMesh();
 		}
 
 		for (const FBSEquipmentActorToSpawn& SpawnInfo : ActorsToSpawn)

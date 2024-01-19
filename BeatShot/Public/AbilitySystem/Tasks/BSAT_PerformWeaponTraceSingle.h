@@ -9,7 +9,7 @@
 class UBSRecoilComponent;
 class UBSGameplayAbility;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPerformWeaponTraceDelegate, const FHitResult&, HitResult);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FPerformWeaponTraceDelegate, const bool, bSuccess, const FHitResult&, HitResult);
 
 UCLASS()
 class BEATSHOT_API UBSAT_PerformWeaponTraceSingle : public UAbilityTask
@@ -20,15 +20,15 @@ public:
 	// Constructor and overrides
 	UBSAT_PerformWeaponTraceSingle();
 
+	/** Calls LineTraceSingle and broadcasts delegate */
 	virtual void Activate() override;
 
-	/** Broadcast when the task has obtained a HitResult */
+	/** Broadcasts delegate */
+	virtual void ExternalCancel() override;
+
+	/** Broadcast when the task has obtained a HitResult, or was cancelled. */
 	UPROPERTY(BlueprintAssignable)
 	FPerformWeaponTraceDelegate OnCompleted;
-
-	/** Broadcast if the ability task was cancelled */
-	UPROPERTY(BlueprintAssignable)
-	FPerformWeaponTraceDelegate OnCancelled;
 
 	/**
 	 * If a BSCharacter is the found on the OwningAbility, a Line Trace is performed starting at the Recoil Component's transform. Traces forward by TraceDistance.
@@ -41,8 +41,8 @@ public:
 	static UBSAT_PerformWeaponTraceSingle* PerformWeaponTraceSingle(UBSGameplayAbility* OwningAbility,
 		const FName TaskInstanceName, const float TraceDistance);
 
-
-	void LineTraceSingle(const UBSRecoilComponent* RecoilComponent, FHitResult& HitResult) const;
+	/** Performs actual LineTraceSingleByChannel, returning true on success */
+	bool LineTraceSingle(FHitResult& HitResult) const;
 
 private:
 	/** How far to trace forward from Character camera */

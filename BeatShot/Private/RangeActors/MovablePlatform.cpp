@@ -37,7 +37,7 @@ AMovablePlatform::AMovablePlatform()
 void AMovablePlatform::BeginPlay()
 {
 	Super::BeginPlay();
-	if (ABSCharacter* Character = Cast<ABSCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)))
+	if (ABSCharacterBase* Character = Cast<ABSCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)))
 	{
 		Character->OnInteractDelegate.BindUObject(this, &AMovablePlatform::MovePlatformUp);
 		Character->OnShiftInteractDelegate.BindUObject(this, &AMovablePlatform::MovePlatformDown);

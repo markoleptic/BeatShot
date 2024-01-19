@@ -81,7 +81,7 @@ void ABSGameMode::Logout(AController* Exiting)
 
 ABSCharacter* ABSGameMode::SpawnPlayer(ABSPlayerController* PlayerController)
 {
-	if (ABSCharacter* Character = PlayerController->GetBSCharacter())
+	if (ABSCharacterBase* Character = PlayerController->GetBSCharacter())
 	{
 		Character->Destroy();
 	}
@@ -130,7 +130,7 @@ void ABSGameMode::InitializeGameMode(const TSharedPtr<FBSConfig> InConfig)
 
 	for (const ABSPlayerController* Controller : Controllers)
 	{
-		const ABSCharacter* Character = Controller->GetBSCharacter();
+		const ABSCharacterBase* Character = Controller->GetBSCharacter();
 		check(Character);
 
 		UBSAbilitySystemComponent* ASC = Character->GetBSAbilitySystemComponent();

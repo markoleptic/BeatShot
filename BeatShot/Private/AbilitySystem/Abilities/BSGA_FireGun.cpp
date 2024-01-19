@@ -2,10 +2,8 @@
 
 #include "AbilitySystem/Abilities/BSGA_FireGun.h"
 #include "AbilitySystemComponent.h"
+#include "AbilitySystem/Tasks/BSAT_PerformWeaponTraceSingle.h"
 #include "Character/BSCharacter.h"
-#include "Character/BSRecoilComponent.h"
-#include "Physics/BSCollisionChannels.h"
-#include "Kismet/KismetMathLibrary.h"
 
 UBSGA_FireGun::UBSGA_FireGun()
 {
@@ -86,30 +84,25 @@ void UBSGA_FireGun::OnTargetDataReadyCallback(const FGameplayAbilityTargetDataHa
 
 void UBSGA_FireGun::StartTargeting()
 {
+	const auto Trace = UBSAT_PerformWeaponTraceSingle::PerformWeaponTraceSingle(this, FName(), TraceDistance);
+	Trace->OnCompleted.AddDynamic(this, &ThisClass::OnSingleWeaponTraceCompleted);
+	
 	UAbilitySystemComponent* Component = CurrentActorInfo->AbilitySystemComponent.Get();
 	FScopedPredictionWindow ScopedPrediction(Component, CurrentActivationInfo.GetActivationPredictionKey());
-	FHitResult HitResult = SingleWeaponTrace();
-	FGameplayAbilityTargetDataHandle TargetData;
-	FGameplayAbilityTargetData_SingleTargetHit* SingleTargetData = new FGameplayAbilityTargetData_SingleTargetHit();
-	TargetData.Add(SingleTargetData);
-	SingleTargetData->HitResult = HitResult;
-	OnTargetDataReadyCallback(TargetData, FGameplayTag());
+	
+	Trace->ReadyForActivation();
 }
 
-FHitResult UBSGA_FireGun::SingleWeaponTrace() const
+void UBSGA_FireGun::OnSingleWeaponTraceCompleted(const bool bSuccess, const FHitResult& HitResult)
 {
-	FHitResult HitResult;
-
-	UBSRecoilComponent* RecoilComponent = Cast<UBSRecoilComponent>(GetBSCharacterFromActorInfo()->GetRecoilComponent());
-	const FRotator CurrentRecoilRotation = RecoilComponent->GetCurrentRecoilRotation();
-	const FVector RotatedVector1 = UKismetMathLibrary::RotateAngleAxis(RecoilComponent->GetForwardVector(),
-		CurrentRecoilRotation.Pitch, RecoilComponent->GetRightVector());
-	const FVector RotatedVector2 = UKismetMathLibrary::RotateAngleAxis(RotatedVector1, CurrentRecoilRotation.Yaw,
-		RecoilComponent->GetUpVector());
-	const FVector EndTrace = RecoilComponent->GetComponentLocation() + RotatedVector2 * FVector(TraceDistance);
-	const FCollisionQueryParams TraceParams(SCENE_QUERY_STAT(WeaponTrace), /*bTraceComplex=*/ true, /*IgnoreActor=*/
-		GetAvatarActorFromActorInfo());
-	GetWorld()->LineTraceSingleByChannel(HitResult, RecoilComponent->GetComponentLocation(), EndTrace,
-		BS_TraceChannel_Weapon, TraceParams);
-	return HitResult;
+	if (!bSuccess)
+	{
+		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, false, true);
+	}
+	
+	FGameplayAbilityTargetData_SingleTargetHit* SingleTargetData = new FGameplayAbilityTargetData_SingleTargetHit();
+	SingleTargetData->HitResult = HitResult;
+	const FGameplayAbilityTargetDataHandle TargetData(SingleTargetData);
+	
+	OnTargetDataReadyCallback(TargetData, FGameplayTag());
 }

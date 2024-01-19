@@ -42,8 +42,9 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void StartTargeting();
 
+	UFUNCTION()
 	/** Performs single bullet trace */
-	FHitResult SingleWeaponTrace() const;
+	void OnSingleWeaponTraceCompleted(const bool bSuccess, const FHitResult& HitResult);
 
 private:
 	FDelegateHandle OnTargetDataReadyCallbackDelegateHandle;

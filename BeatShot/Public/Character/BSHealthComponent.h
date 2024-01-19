@@ -11,9 +11,6 @@
 class UBSAbilitySystemComponent;
 class UBSAttributeSetBase;
 
-DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnHealthChanged, AActor* Instigator, const float OldValue,
-	const float NewValue);
-
 /** Base HealthComponent for this game */
 UCLASS(ClassGroup=(Custom), meta= (BlueprintSpawnableComponent))
 class BEATSHOT_API UBSHealthComponent : public UActorComponent

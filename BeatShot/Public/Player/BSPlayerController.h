@@ -11,7 +11,7 @@
 
 class AFloatingTextActor;
 class URLAgentWidget;
-class ABSCharacter;
+class ABSCharacterBase;
 class ULoginWidget;
 class UFPSCounterWidget;
 class UScreenFadeWidget;
@@ -47,7 +47,7 @@ class BEATSHOT_API ABSPlayerController : public APlayerController, public ISaveL
 
 public:
 	/** Returns the possessed character. */
-	ABSCharacter* GetBSCharacter() const;
+	ABSCharacterBase* GetBSCharacter() const;
 	
 	/** Sets the enabled state of the pawn. */
 	void SetPlayerEnabledState(const bool bPlayerEnabled);
