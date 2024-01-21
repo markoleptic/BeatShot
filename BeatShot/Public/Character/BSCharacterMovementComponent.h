@@ -47,10 +47,10 @@ public:
 	void SetSprintSpeedMultiplier(float NewSpringSpeedMultiplier);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sprint")
-	float SprintSpeedMultiplier;
+	float SprintSpeedMultiplier = 1.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Trace")
-	float GroundTraceDistance;
+	float GroundTraceDistance = 100000.0f;
 
 	/** Returns the current ground info.  Calling this will update the ground info if it's out of date. */
 	UFUNCTION(BlueprintCallable, Category = "CharacterMovement")
@@ -68,7 +68,7 @@ protected:
 
 	/** If the player is using a ladder */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Gameplay)
-	bool bOnLadder;
+	bool bOnLadder = false;
 
 	/** Milliseconds between step sounds */
 	float MoveSoundTime;
@@ -76,38 +76,38 @@ protected:
 	/** If we are stepping left, else, right */
 	bool StepSide;
 
-	/** The multiplier for acceleration when on ground. */
+	/** The multiplier for acceleration when on ground. (HL2's sv_accelerate) */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character Movement: Walking")
-	float GroundAccelerationMultiplier;
+	float GroundAccelerationMultiplier = 10.0f;
 
-	/** The multiplier for acceleration when in air. */
+	/** The multiplier for acceleration when in air. (HL2's sv_airaccelerate)*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character Movement: Walking")
-	float AirAccelerationMultiplier;
-
-	/* The vector differential magnitude cap when in air. */
+	float AirAccelerationMultiplier = 10.0f;
+	
+	/* The vector differential magnitude cap when in air. (30 air speed cap from HL2) */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character Movement: Jumping / Falling")
-	float AirSpeedCap;
+	float AirSpeedCap = 57.15f;
 
 	/** Time to crouch on ground in seconds */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character Movement: Walking")
-	float CrouchTime;
+	float CrouchTime = MOVEMENT_DEFAULT_CROUCHTIME;
 
 	/** Time to UnCrouch on ground in seconds */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character Movement: Walking")
-	float UnCrouchTime;
+	float UnCrouchTime = MOVEMENT_DEFAULT_UNCROUCHTIME;
 
 	/** Time to crouch in air in seconds */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character Movement: Walking")
-	float CrouchJumpTime;
+	float CrouchJumpTime = MOVEMENT_DEFAULT_CROUCHJUMPTIME;
 
 	/** Time to UnCrouch in air in seconds */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character Movement: Walking")
-	float UnCrouchJumpTime;
+	float UnCrouchJumpTime = MOVEMENT_DEFAULT_UNCROUCHJUMPTIME;
 
 	/** the minimum step height from moving fast */
 	UPROPERTY(Category = "Character Movement: Walking", EditAnywhere, BlueprintReadWrite)
-	float MinStepHeight;
-
+	float MinStepHeight = 10.0f;	
+	
 	/** the minimum step height from moving fast */
 	UPROPERTY(Category = "Character Movement: Walking", EditAnywhere, BlueprintReadWrite)
 	float GroundBrakingDeceleration = 15.f;
@@ -115,13 +115,13 @@ protected:
 	/** Time (in millis) the player has to re-jump without applying friction. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character Movement: Jumping / Falling",
 		meta=(DisplayName="Rejump Window", ForceUnits="ms"))
-	float BrakingWindow;
+	float BrakingWindow = 15.f;
 
 	/* Progress checked against the Braking Window, incremented in millis. */
-	float BrakingWindowTimeElapsed;
+	float BrakingWindowTimeElapsed = 0.f;
 
 	/** If the player has been on the ground past the Braking Window, start braking. */
-	bool bBrakingWindowElapsed;
+	bool bBrakingWindowElapsed = true;
 
 	/** Wait a frame before crouch speed. */
 	bool bCrouchFrameTolerated = false;
@@ -130,26 +130,26 @@ protected:
 	bool bIsInCrouchTransition = false;
 
 	/** If in the crouching transition */
-	bool bInCrouch;
+	bool bInCrouch = false;;
 
 	/** The target ground speed when running. */
 	UPROPERTY(Category = "Character Movement: Walking", EditAnywhere, BlueprintReadWrite,
 		meta = (ClampMin = "0", UIMin = "0"))
-	float RunSpeed;
+	float RunSpeed = 361.9f;;
 
 	/** The target ground speed when sprinting. */
 	UPROPERTY(Category = "Character Movement: Walking", EditAnywhere, BlueprintReadWrite,
 		meta = (ClampMin = "0", UIMin = "0"))
-	float SprintSpeed;
+	float SprintSpeed = 609.6f;;
 
 	/** The target ground speed when walking slowly. */
 	UPROPERTY(Category = "Character Movement: Walking", EditAnywhere, BlueprintReadWrite,
 		meta = (ClampMin = "0", UIMin = "0"))
-	float WalkSpeed;
+	float WalkSpeed = 285.75f;
 
 	/** Speed on a ladder */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character Movement: Ladder")
-	float LadderSpeed;
+	float LadderSpeed = 381.0f;
 
 	/** The minimum speed to scale up from for slope movement  */
 	UPROPERTY(Category = "Character Movement: Walking", EditAnywhere, BlueprintReadWrite,
@@ -252,7 +252,14 @@ public:
 
 	bool IsBrakingWindowTolerated() const { return bBrakingWindowElapsed; }
 
+	UFUNCTION(BlueprintPure, BlueprintCallable, Category = "Crouch")
 	bool IsInCrouch() const { return bInCrouch; }
+
+	UFUNCTION(BlueprintPure, BlueprintCallable, Category = "Crouch")
+	bool IsInCrouchTransition() const { return bIsInCrouchTransition; }
+
+	UFUNCTION(BlueprintPure, BlueprintCallable, Category = "Crouch")
+	float GetCrouchTime() const;
 
 private:
 	/** Plays sound effect according to movement and surface */
@@ -262,7 +269,7 @@ private:
 
 	float DefaultStepHeight;
 	float DefaultWalkableFloorZ;
-	float LocalSurfaceFriction;
+	float LocalSurfaceFriction = 1.0f;
 
 	/** The time that the player can remount on the ladder */
 	float OffLadderTicks = -1.0f;

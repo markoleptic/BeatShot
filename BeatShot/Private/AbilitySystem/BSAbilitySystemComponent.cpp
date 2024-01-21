@@ -1,17 +1,16 @@
 ﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #include "AbilitySystem/BSAbilitySystemComponent.h"
-#include "Character/BSAnimInstance.h"
 #include "Character/BSCharacterBase.h"
 #include "BeatShot/BSGameplayTags.h"
 #include "AbilitySystem/Abilities/BSGameplayAbility.h"
+#include "Animation/BSAnimInstance.h"
 
 
 void UBSAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor)
 {
-	const FGameplayAbilityActorInfo* ActorInfo = AbilityActorInfo.Get();
 	Super::InitAbilityActorInfo(InOwnerActor, InAvatarActor);
-
+	const FGameplayAbilityActorInfo* ActorInfo = AbilityActorInfo.Get();
 	if (UBSAnimInstance* AnimInstance = Cast<UBSAnimInstance>(ActorInfo->GetAnimInstance()))
 	{
 		AnimInstance->InitializeWithAbilitySystem(this);

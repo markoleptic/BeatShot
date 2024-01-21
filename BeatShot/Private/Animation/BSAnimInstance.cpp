@@ -1,6 +1,6 @@
 ﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
-#include "Character/BSAnimInstance.h"
+#include "Animation/BSAnimInstance.h"
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"
 #include "Character/BSCharacterBase.h"
@@ -8,7 +8,8 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BSAnimInstance)
 
-UBSAnimInstance::UBSAnimInstance(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+UBSAnimInstance::UBSAnimInstance(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer),
+	AnimationSet(nullptr)
 {
 }
 

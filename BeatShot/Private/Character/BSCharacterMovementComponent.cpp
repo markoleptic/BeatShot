@@ -28,115 +28,122 @@ constexpr float DesiredGravity = -1143.0f;
 
 UBSCharacterMovementComponent::UBSCharacterMovementComponent()
 {
-	SprintSpeedMultiplier = 1.0f;
-	GroundTraceDistance = 100000.0f;
-
-	// We have our own air movement handling, so we can allow for full air
-	// control through UE's logic
+	// We have our own air movement handling, so we can allow for full air control through UE's logic
 	AirControl = 1.0f;
+	
 	// Disable air control boost
 	AirControlBoostMultiplier = 0.0f;
 	AirControlBoostVelocityThreshold = 0.0f;
+	
 	// HL2 cl_(forward & side)speed = 450Hu
 	MaxAcceleration = 857.25f;
+	
 	// Set the default walk speed
-	WalkSpeed = 285.75f;
-	RunSpeed = 361.9f;
-	SprintSpeed = 609.6f;
 	MaxWalkSpeed = RunSpeed;
-	// Acceleration multipliers (HL2's sv_accelerate and sv_airaccelerate)
-	GroundAccelerationMultiplier = 10.0f;
-	AirAccelerationMultiplier = 10.0f;
-	// 30 air speed cap from HL2
-	AirSpeedCap = 57.15f;
-	// HL2 like friction
-	// sv_friction
+	
+	// HL2 like friction (sv_friction)
 	GroundFriction = 4.0f;
 	BrakingFriction = 4.0f;
-	LocalSurfaceFriction = 1.0f;
 	bUseSeparateBrakingFriction = false;
+	
 	// No multiplier
 	BrakingFrictionFactor = 1.0f;
+	
 	// Historical value for Source
 	BrakingSubStepTime = 0.015f;
+	
 	// Avoid breaking up time step
 	MaxSimulationTimeStep = 0.5f;
 	MaxSimulationIterations = 1;
+	
 	// Braking deceleration (sv_stopspeed)
 	FallingLateralFriction = 0.0f;
 	BrakingDecelerationFalling = 0.0f;
 	BrakingDecelerationFlying = 190.5f;
 	BrakingDecelerationSwimming = 190.5f;
 	BrakingDecelerationWalking = 190.5f;
+	
 	// HL2 step height
 	MaxStepHeight = 34.29f;
 	DefaultStepHeight = MaxStepHeight;
-	// Step height scaling due to speed
-	MinStepHeight = 10.0f;
+	
 	// Jump z from HL2's 160Hu
 	// 21Hu jump height
 	// 510ms jump time
 	JumpZVelocity = 304.8f;
+	
 	// Don't bounce off characters
 	JumpOffJumpZFactor = 0.0f;
+	
 	// Default show pos to false
 	bShowPos = false;
+	
 	// We aren't on a ladder at first
 	bOnLadder = false;
 	OffLadderTicks = LADDER_MOUNT_TIMEOUT;
-	LadderSpeed = 381.0f;
+	
 	// Speed multiplier bounds
 	SpeedMultMin = SprintSpeed * 1.7f;
 	SpeedMultMax = SprintSpeed * 2.5f;
+	
 	// Start out braking
 	bBrakingWindowElapsed = true;
 	BrakingWindowTimeElapsed = 0.f;
 	BrakingWindow = 15.f;
+	
 	// Crouching
 	SetCrouchedHalfHeight(55.f);
 	CrouchTime = 0.2f;
 	UnCrouchTime = 0.1f;
 	MaxWalkSpeedCrouched = RunSpeed * 0.33333333f;
 	bCanWalkOffLedgesWhenCrouching = true;
-	CrouchTime = MOVEMENT_DEFAULT_CROUCHTIME;
-	UnCrouchTime = MOVEMENT_DEFAULT_UNCROUCHTIME;
-	CrouchJumpTime = MOVEMENT_DEFAULT_CROUCHJUMPTIME;
-	UnCrouchJumpTime = MOVEMENT_DEFAULT_UNCROUCHJUMPTIME;
+
 	// Slope angle is 45.57 degrees
 	SetWalkableFloorZ(0.7f);
 	DefaultWalkableFloorZ = GetWalkableFloorZ();
 	AxisSpeedLimit = 6667.5f;
+	
 	// Tune physics interactions
 	StandingDownwardForceScale = 1.0f;
+	
 	// Reasonable values polled from NASA (https://msis.jsc.nasa.gov/sections/section04.htm#Figure%204.9.3-6)
 	// and Standard Handbook of Machine Design
 	InitialPushForceFactor = 100.0f;
 	PushForceFactor = 500.0f;
+	
 	// Let's not do any weird stuff...Gordon isn't a trampoline
 	RepulsionForce = 0.0f;
 	MaxTouchForce = 0.0f;
 	TouchForceFactor = 0.0f;
+	
 	// Just push all objects based on their impact point
 	// it might be weird with a lot of dev objects due to scale, but
 	// it's much more realistic.
 	bPushForceUsingZOffset = false;
 	PushForcePointZOffsetFactor = -0.66f;
+	
 	// Scale push force down if we are slow
 	bScalePushForceToVelocity = true;
+	
 	// Don't push more if there's more mass
 	bPushForceScaledToMass = false;
 	bTouchForceScaledToMass = false;
 	Mass = 85.0f; // player.mdl is 85kg
+	
 	// Don't smooth rotation at all
 	bUseControllerDesiredRotation = false;
+	
 	// Flat base
 	bUseFlatBaseForFloorChecks = true;
+	
 	// Agent props
 	NavAgentProps.bCanCrouch = true;
 	NavAgentProps.bCanJump = true;
 	NavAgentProps.bCanFly = true;
+	
 	// Make sure gravity is correct for player movement
 	GravityScale = DesiredGravity / UPhysicsSettings::Get()->DefaultGravityZ;
+	
 	// Make sure ramp movement in correct
 	bMaintainHorizontalGroundVelocity = true;
 }
@@ -948,7 +955,6 @@ void UBSCharacterMovementComponent::Crouch(bool bClientSimulation)
 	if (bClientSimulation)
 	{
 		Super::Crouch(true);
-		return;
 	}
 	bIsInCrouchTransition = true;
 }
@@ -959,7 +965,6 @@ void UBSCharacterMovementComponent::UnCrouch(bool bClientSimulation)
 	if (bClientSimulation)
 	{
 		Super::UnCrouch(true);
-		return;
 	}
 	bIsInCrouchTransition = true;
 }
@@ -1576,6 +1581,32 @@ void UBSCharacterMovementComponent::SetNoClip(bool bNoClip)
 void UBSCharacterMovementComponent::ToggleNoClip()
 {
 	SetNoClip(!bCheatFlying);
+}
+
+float UBSCharacterMovementComponent::GetCrouchTime() const
+{
+	if (!bWantsToCrouch || !CanCrouchInCurrentState())
+	{
+		if (IsWalking())
+		{
+			// Normal uncrouch
+			return UnCrouchTime;
+		}
+		// Uncrouch jump
+		return UnCrouchJumpTime;
+	}
+	
+	if (bWantsToCrouch)
+	{
+		if (IsWalking())
+		{
+			return CrouchTime;
+		}
+		
+		return CrouchJumpTime;
+	}
+
+	return 0.f;
 }
 
 void UBSCharacterMovementComponent::PlayMoveSound(float DeltaTime)

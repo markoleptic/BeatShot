@@ -7,6 +7,7 @@
 #include "GameplayEffectTypes.h"
 #include "BSAnimInstance.generated.h"
 
+class UBSAnimationSet;
 class UAbilitySystemComponent;
 
 /**	The base game animation instance class used by this project. */
@@ -28,6 +29,9 @@ protected:
 	// These should be used instead of manually querying for the gameplay tags.
 	UPROPERTY(EditDefaultsOnly, Category = "GameplayTags")
 	FGameplayTagBlueprintPropertyMap GameplayTagPropertyMap;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced, Category = "Animation")
+	UBSAnimationSet* AnimationSet;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Character State Data")
 	float GroundDistance = -1.0f;
