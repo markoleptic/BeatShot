@@ -61,10 +61,12 @@ void ABSGameMode::Tick(float DeltaSeconds)
 void ABSGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
-	ABSPlayerController* NewBSPlayer = Cast<ABSPlayerController>(NewPlayer);
-	Controllers.Add(NewBSPlayer);
-	CurrentPlayerScores.Add(NewBSPlayer, FPlayerScore());
-	SpawnPlayer(NewBSPlayer);
+	if (ABSPlayerController* NewBSPlayer = Cast<ABSPlayerController>(NewPlayer))
+	{
+		Controllers.Add(NewBSPlayer);
+		CurrentPlayerScores.Add(NewBSPlayer, FPlayerScore());
+	}
+	SpawnPlayer(NewPlayer);
 }
 
 void ABSGameMode::PostLoad()
@@ -79,15 +81,14 @@ void ABSGameMode::Logout(AController* Exiting)
 	CurrentPlayerScores.Remove(Cast<ABSPlayerController>(Exiting));
 }
 
-ABSCharacter* ABSGameMode::SpawnPlayer(ABSPlayerController* PlayerController)
+ACharacter* ABSGameMode::SpawnPlayer(APlayerController* PlayerController)
 {
-	if (ABSCharacterBase* Character = PlayerController->GetBSCharacter())
+	if (ACharacter* Character = PlayerController->GetCharacter())
 	{
 		Character->Destroy();
 	}
 	const APlayerStart* ChosenPlayerStart = Cast<APlayerStart>(ChoosePlayerStart(PlayerController));
-	ABSCharacter* SpawnedCharacter = GetWorld()->SpawnActor<ABSCharacter>(CharacterClass,
-		ChosenPlayerStart->GetTransform());
+	ACharacter* SpawnedCharacter = GetWorld()->SpawnActor<ACharacter>(CharacterClass, ChosenPlayerStart->GetTransform());
 	PlayerController->Possess(SpawnedCharacter);
 	return SpawnedCharacter;
 }
@@ -149,7 +150,7 @@ void ABSGameMode::InitializeGameMode(const TSharedPtr<FBSConfig> InConfig)
 			{
 				TrackGunAbilitySet->GiveToAbilitySystem(ASC, &TrackGunAbilityGrantedHandles);
 			}
-			FGameplayAbilitySpec* TrackGunSpec = TrackGunAbilityGrantedHandles.FindFirstAbilitySpecFromHandle(ASC);
+			FGameplayAbilitySpec* TrackGunSpec = TrackGunAbilityGrantedHandles.FindAbilitySpecFromHandle(ASC);
 			if (UBSGA_TrackGun* TrackAbility = Cast<UBSGA_TrackGun>(TrackGunSpec->GetPrimaryInstance()))
 			{
 				TrackAbility->OnPlayerStopTrackingTarget.AddUniqueDynamic(TargetManager.Get(),
@@ -742,7 +743,7 @@ void ABSGameMode::OnPostTargetDamageEvent(const FTargetDamageEvent& Event)
 
 	if (Event.DamageCauser)
 	{
-		if (ABSCharacter* Character = Cast<ABSCharacter>(Event.DamageCauser))
+		if (const ABSCharacterBase* Character = Cast<ABSCharacterBase>(Event.DamageCauser))
 		{
 			if (ABSPlayerController* Controller = Character->GetBSPlayerController())
 			{

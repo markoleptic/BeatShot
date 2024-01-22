@@ -6,7 +6,6 @@
 #include "BSGameplayAbility.h"
 #include "BSGA_FireGun.generated.h"
 
-class ABSCharacter;
 
 /** GameplayAbility that provides the user with the ability to fire their gun */
 UCLASS()

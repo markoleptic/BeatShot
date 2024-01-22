@@ -65,12 +65,18 @@ struct FBSGameplayTags
 	FGameplayTag Ability_ShiftInteract;
 	FGameplayTag Ability_InputBlocked;
 
+	FGameplayTag Equipped;
+	FGameplayTag Equipped_None;
+	FGameplayTag Equipped_Gun;
+	FGameplayTag Equipped_Knife;
+
 	FGameplayTag State;
 	FGameplayTag State_Crouching;
 	FGameplayTag State_Inspecting;
 	FGameplayTag State_KnifeAttacking;
 	FGameplayTag State_BackStabbing;
 	FGameplayTag State_Firing;
+	FGameplayTag State_Tracking;
 	FGameplayTag State_Jumping;
 	FGameplayTag State_Moving;
 	FGameplayTag State_Sprinting;

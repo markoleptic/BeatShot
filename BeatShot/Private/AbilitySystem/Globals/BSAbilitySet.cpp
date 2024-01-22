@@ -6,11 +6,11 @@
 #include "AbilitySystem/BSAbilitySystemComponent.h"
 #include "AbilitySystem/Abilities/BSGameplayAbility.h"
 
-UBSAbilitySet::UBSAbilitySet(const FObjectInitializer& ObjectInitializer): Super(ObjectInitializer)
-{
-}
+/* ---------------------------- */
+/* -- BS Granted Ability Set -- */
+/* ---------------------------- */
 
-void FBSAbilitySet_GrantedHandles::AddAbilitySpecHandle(const FGameplayAbilitySpecHandle& Handle)
+void FBSGrantedAbilitySet::AddAbilitySpecHandle(const FGameplayAbilitySpecHandle& Handle)
 {
 	if (Handle.IsValid())
 	{
@@ -18,7 +18,7 @@ void FBSAbilitySet_GrantedHandles::AddAbilitySpecHandle(const FGameplayAbilitySp
 	}
 }
 
-void FBSAbilitySet_GrantedHandles::AddGameplayEffectHandle(const FActiveGameplayEffectHandle& Handle)
+void FBSGrantedAbilitySet::AddGameplayEffectHandle(const FActiveGameplayEffectHandle& Handle)
 {
 	if (Handle.IsValid())
 	{
@@ -26,12 +26,12 @@ void FBSAbilitySet_GrantedHandles::AddGameplayEffectHandle(const FActiveGameplay
 	}
 }
 
-void FBSAbilitySet_GrantedHandles::AddAttributeSet(UAttributeSet* Set)
+void FBSGrantedAbilitySet::AddAttributeSet(UAttributeSet* Set)
 {
 	GrantedAttributeSets.Add(Set);
 }
 
-void FBSAbilitySet_GrantedHandles::TakeFromAbilitySystem(UBSAbilitySystemComponent* ASC)
+void FBSGrantedAbilitySet::TakeFromAbilitySystem(UBSAbilitySystemComponent* ASC)
 {
 	check(ASC);
 
@@ -67,7 +67,7 @@ void FBSAbilitySet_GrantedHandles::TakeFromAbilitySystem(UBSAbilitySystemCompone
 	GrantedAttributeSets.Reset();
 }
 
-FGameplayAbilitySpec* FBSAbilitySet_GrantedHandles::FindFirstAbilitySpecFromHandle(UBSAbilitySystemComponent* ASC)
+FGameplayAbilitySpec* FBSGrantedAbilitySet::FindAbilitySpecFromHandle(UBSAbilitySystemComponent* ASC)
 {
 	for (const FGameplayAbilitySpecHandle& Handle : AbilitySpecHandles)
 	{
@@ -79,12 +79,20 @@ FGameplayAbilitySpec* FBSAbilitySet_GrantedHandles::FindFirstAbilitySpecFromHand
 	return nullptr;
 }
 
-bool FBSAbilitySet_GrantedHandles::IsEmpty() const
+bool FBSGrantedAbilitySet::IsEmpty() const
 {
 	return AbilitySpecHandles.IsEmpty() && GameplayEffectHandles.IsEmpty() && GrantedAttributeSets.IsEmpty();
 }
 
-void UBSAbilitySet::GiveToAbilitySystem(UBSAbilitySystemComponent* ASC, FBSAbilitySet_GrantedHandles* OutGrantedHandles,
+/* -------------------- */
+/* -- BS Ability Set -- */
+/* -------------------- */
+
+UBSAbilitySet::UBSAbilitySet(const FObjectInitializer& ObjectInitializer): Super(ObjectInitializer)
+{
+}
+
+void UBSAbilitySet::GiveToAbilitySystem(UBSAbilitySystemComponent* ASC, FBSGrantedAbilitySet* OutGrantedHandles,
 	UObject* SourceObject) const
 {
 	check(ASC);
@@ -98,7 +106,7 @@ void UBSAbilitySet::GiveToAbilitySystem(UBSAbilitySystemComponent* ASC, FBSAbili
 	// Grant the gameplay abilities.
 	for (int32 AbilityIndex = 0; AbilityIndex < GrantedGameplayAbilities.Num(); ++AbilityIndex)
 	{
-		const FBSAbilitySet_GameplayAbility& AbilityToGrant = GrantedGameplayAbilities[AbilityIndex];
+		const FBSAbilitySetGameplayAbility& AbilityToGrant = GrantedGameplayAbilities[AbilityIndex];
 
 		if (!IsValid(AbilityToGrant.Ability))
 		{
@@ -123,7 +131,7 @@ void UBSAbilitySet::GiveToAbilitySystem(UBSAbilitySystemComponent* ASC, FBSAbili
 	// Grant the gameplay effects.
 	for (int32 EffectIndex = 0; EffectIndex < GrantedGameplayEffects.Num(); ++EffectIndex)
 	{
-		const FBSAbilitySet_GameplayEffect& EffectToGrant = GrantedGameplayEffects[EffectIndex];
+		const FBSAbilitySetGameplayEffect& EffectToGrant = GrantedGameplayEffects[EffectIndex];
 
 		if (!IsValid(EffectToGrant.GameplayEffect))
 		{
@@ -144,7 +152,7 @@ void UBSAbilitySet::GiveToAbilitySystem(UBSAbilitySystemComponent* ASC, FBSAbili
 	// Grant the attribute sets.
 	for (int32 SetIndex = 0; SetIndex < GrantedAttributes.Num(); ++SetIndex)
 	{
-		const FBSAbilitySet_AttributeSet& SetToGrant = GrantedAttributes[SetIndex];
+		const FBSAbilitySetAttributeSet& SetToGrant = GrantedAttributes[SetIndex];
 
 		if (!IsValid(SetToGrant.AttributeSet))
 		{

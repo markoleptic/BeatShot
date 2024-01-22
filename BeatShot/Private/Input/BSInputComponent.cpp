@@ -60,23 +60,50 @@ void UBSInputComponent::RemoveInputMappings(const UBSInputConfig* InputConfig,
 	}
 }
 
-void UBSInputComponent::RemoveBind(const FGameplayTag& InputTag)
+void UBSInputComponent::RemoveNativeActionBinding(const FGameplayTag& InputTag)
 {
-	TArray<uint32> BindHandles;
+	TArray<FEnhancedInputActionEventBinding*> BindHandles;
 	if (NativeActionBindings.RemoveAndCopyValue(InputTag, BindHandles))
 	{
-		for (const uint32 BindHandle : BindHandles)
+		for (FEnhancedInputActionEventBinding* BindHandle : BindHandles)
 		{
-			RemoveBindingByHandle(BindHandle);
+			RemoveBindingByHandle(BindHandle->GetHandle());
 		}
 	}
 }
 
-void UBSInputComponent::RemoveBinds(TArray<uint32>& BindHandles)
+void UBSInputComponent::RemoveAbilityActionBinding(const FGameplayTag& InputTag)
 {
-	for (uint32 Handle : BindHandles)
+	TArray<FEnhancedInputActionEventBinding*> BindHandles;
+	if (AbilityActionBindings.RemoveAndCopyValue(InputTag, BindHandles))
 	{
-		RemoveBindingByHandle(Handle);
+		for (FEnhancedInputActionEventBinding* BindHandle : BindHandles)
+		{
+			RemoveBindingByHandle(BindHandle->GetHandle());
+		}
 	}
-	BindHandles.Reset();
+}
+
+void UBSInputComponent::ClearNativeActionBindings()
+{
+	for (auto& Binding : NativeActionBindings)
+	{
+		for (FEnhancedInputActionEventBinding* Handle : Binding.Value)
+		{
+			RemoveBindingByHandle(Handle->GetHandle());
+		}
+	}
+	NativeActionBindings.Reset();
+}
+
+void UBSInputComponent::ClearAbilityActionBindings()
+{
+	for (auto& Binding : AbilityActionBindings)
+	{
+		for (FEnhancedInputActionEventBinding* Handle : Binding.Value)
+		{
+			RemoveBindingByHandle(Handle->GetHandle());
+		}
+	}
+	AbilityActionBindings.Reset();
 }

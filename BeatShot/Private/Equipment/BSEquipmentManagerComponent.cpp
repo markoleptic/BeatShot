@@ -19,17 +19,16 @@
 class FLifetimeProperty;
 struct FReplicationFlags;
 
-FString FBSAppliedEquipmentEntry::GetDebugString() const
-{
-	return FString::Printf(TEXT("%s of %s"), *GetNameSafe(Instance), *GetNameSafe(EquipmentDefinition.Get()));
-}
+/* ---------------------- */
+/* -- FBSEquipmentList -- */
+/* ---------------------- */
 
 void FBSEquipmentList::PreReplicatedRemove(const TArrayView<int32> RemovedIndices, int32 FinalSize)
 {
-	for (int32 Index : RemovedIndices)
+	for (const int32 Index : RemovedIndices)
 	{
 		const FBSAppliedEquipmentEntry& Entry = Entries[Index];
-		if (Entry.Instance != nullptr)
+		if (Entry.Instance)
 		{
 			Entry.Instance->OnUnequipped();
 		}
@@ -38,10 +37,10 @@ void FBSEquipmentList::PreReplicatedRemove(const TArrayView<int32> RemovedIndice
 
 void FBSEquipmentList::PostReplicatedAdd(const TArrayView<int32> AddedIndices, int32 FinalSize)
 {
-	for (int32 Index : AddedIndices)
+	for (const int32 Index : AddedIndices)
 	{
 		const FBSAppliedEquipmentEntry& Entry = Entries[Index];
-		if (Entry.Instance != nullptr)
+		if (Entry.Instance)
 		{
 			Entry.Instance->OnEquipped();
 		}
@@ -54,7 +53,7 @@ void FBSEquipmentList::PostReplicatedChange(const TArrayView<int32> ChangedIndic
 
 UBSEquipmentInstance* FBSEquipmentList::AddEntry(TSubclassOf<UBSEquipmentDefinition> EquipmentDefinition)
 {
-	check(EquipmentDefinition != nullptr);
+	check(EquipmentDefinition);
 	check(OwnerComponent);
 	check(OwnerComponent->GetOwner()->HasAuthority());
 
@@ -69,15 +68,15 @@ UBSEquipmentInstance* FBSEquipmentList::AddEntry(TSubclassOf<UBSEquipmentDefinit
 	FBSAppliedEquipmentEntry& NewEntry = Entries.AddDefaulted_GetRef();
 	NewEntry.EquipmentDefinition = EquipmentDefinition;
 	NewEntry.Instance = NewObject<UBSEquipmentInstance>(OwnerComponent->GetOwner(), InstanceType);
-	UBSEquipmentInstance* Result = NewEntry.Instance;
+	UBSEquipmentInstance* Result = NewEntry.Instance.Get();
 
 	if (UBSAbilitySystemComponent* ASC = GetAbilitySystemComponent())
 	{
-		for (const UBSAbilitySet* AbilitySet : EquipmentCDO->AbilitySetsToGrant)
+		for (const TObjectPtr<const UBSAbilitySet> AbilitySet : EquipmentCDO->AbilitySetsToGrant)
 		{
 			if (AbilitySet)
 			{
-				AbilitySet->GiveToAbilitySystem(ASC, /*inout*/ &NewEntry.GrantedHandles, Result);
+				AbilitySet->GiveToAbilitySystem(ASC, &NewEntry.GrantedHandles, Result);
 			}
 		}
 	}
@@ -115,10 +114,14 @@ UBSAbilitySystemComponent* FBSEquipmentList::GetAbilitySystemComponent() const
 	return Cast<UBSAbilitySystemComponent>(UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(OwningActor));
 }
 
+/* ------------------------------------ */
+/* -- BS Equipment Manager Component -- */
+/* ------------------------------------ */
+
 UBSEquipmentManagerComponent::UBSEquipmentManagerComponent(const FObjectInitializer& ObjectInitializer) :
 	Super(ObjectInitializer), EquipmentList(this)
 {
-	//PrimaryComponentTick.bCanEverTick = false;
+	PrimaryComponentTick.bCanEverTick = false;
 	SetIsReplicatedByDefault(true);
 	bWantsInitializeComponent = true;
 }
@@ -193,7 +196,7 @@ void UBSEquipmentManagerComponent::UninitializeComponent()
 	// gathering all instances before removal to avoid side effects affecting the equipment list iterator	
 	for (const FBSAppliedEquipmentEntry& Entry : EquipmentList.Entries)
 	{
-		AllEquipmentInstances.Add(Entry.Instance);
+		AllEquipmentInstances.Add(Entry.Instance.Get());
 	}
 
 	for (UBSEquipmentInstance* EquipInstance : AllEquipmentInstances)
@@ -208,7 +211,7 @@ void UBSEquipmentManagerComponent::ReadyForReplication()
 {
 	Super::ReadyForReplication();
 
-	// Register existing LyraEquipmentInstances
+	// Register existing BSEquipmentInstances
 	if (IsUsingRegisteredSubObjectList())
 	{
 		for (const FBSAppliedEquipmentEntry& Entry : EquipmentList.Entries)
@@ -249,23 +252,6 @@ TArray<UBSEquipmentInstance*> UBSEquipmentManagerComponent::GetEquipmentInstance
 		if (UBSEquipmentInstance* Instance = Entry.Instance)
 		{
 			if (Instance->IsA(InstanceType))
-			{
-				Results.Add(Instance);
-			}
-		}
-	}
-	return Results;
-}
-
-TArray<UBSEquipmentInstance*> UBSEquipmentManagerComponent::GetEquipmentInstancesMatchingEquipmentType(const EEquipmentType& EquipmentType)
-{
-	TArray<UBSEquipmentInstance*> Results;
-	for (const FBSAppliedEquipmentEntry& Entry : EquipmentList.Entries)
-	{
-		const UBSEquipmentDefinition* EquipmentCDO = GetDefault<UBSEquipmentDefinition>(Entry.EquipmentDefinition);
-		if (UBSEquipmentInstance* Instance = Entry.Instance)
-		{
-			if (EquipmentCDO->EquipmentType == EquipmentType)
 			{
 				Results.Add(Instance);
 			}

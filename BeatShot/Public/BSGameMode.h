@@ -11,11 +11,9 @@
 #include "BSGameMode.generated.h"
 
 class ABSGun;
-struct FBSAbilitySet_GrantedHandles;
+struct FBSGrantedAbilitySet;
 class UBSAbilitySet;
 class AVisualizerManager;
-class ABSCharacter;
-class AVisualizerBase;
 class AFloatingTextActor;
 class ATargetManager;
 class ATarget;
@@ -43,7 +41,7 @@ class BEATSHOT_API ABSGameMode : public AGameMode, public ISaveLoadInterface, pu
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 	virtual void PostLoad() override;
 	virtual void Logout(AController* Exiting) override;
-	ABSCharacter* SpawnPlayer(ABSPlayerController* PlayerController);
+	ACharacter* SpawnPlayer(APlayerController* PlayerController);
 
 	UPROPERTY()
 	TArray<ABSPlayerController*> Controllers;
@@ -82,7 +80,7 @@ protected:
 	UBSAbilitySet* TrackGunAbilitySet;
 
 	/** Granted data about the TrackGun ability */
-	FBSAbilitySet_GrantedHandles TrackGunAbilityGrantedHandles;
+	FBSGrantedAbilitySet TrackGunAbilityGrantedHandles;
 
 public:
 	/** Returns pointer to TargetManager */

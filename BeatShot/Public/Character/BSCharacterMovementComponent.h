@@ -7,13 +7,15 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "BSCharacterMovementComponent.generated.h"
 
-#define LADDER_MOUNT_TIMEOUT 0.2f
 
 /** Crouch Timings (in seconds) */
 #define MOVEMENT_DEFAULT_CROUCHTIME 0.4f
 #define MOVEMENT_DEFAULT_CROUCHJUMPTIME 0.0f
 #define MOVEMENT_DEFAULT_UNCROUCHTIME 0.2f
 #define MOVEMENT_DEFAULT_UNCROUCHJUMPTIME 0.8f
+#define LADDER_MOUNT_TIMEOUT 0.2f
+
+class ABSCharacterBase;
 
 /** Information about the ground under the character.  It only gets updated as needed. */
 USTRUCT(BlueprintType)
@@ -60,7 +62,7 @@ public:
 	float GetFrictionFromHit(const FHitResult& Hit) const;
 	
 	UPROPERTY()
-	TObjectPtr<class ABSCharacterBase> BSCharacter;
+	TObjectPtr<ABSCharacterBase> BSCharacter;
 
 protected:
 	/** Cached ground info for the character.  Do not access this directly!  It's only updated when accessed via GetGroundInfo() */

@@ -49,15 +49,23 @@ public:
 	 *  and associates a GameplayTag with it. */
 	template <class UserClass, typename PressedFuncType, typename ReleasedFuncType>
 	void BindAbilityActions(const UBSInputConfig* InputConfig, UserClass* Object, PressedFuncType PressedFunc,
-		ReleasedFuncType ReleasedFunc, TArray<uint32>& BindHandles);
+		ReleasedFuncType ReleasedFunc);
 
-	/** Removes a native action binding by finding the input tag in the NativeActionBindings map */
-	void RemoveBind(const FGameplayTag& InputTag);
+	/** Removes a native action binding by finding the input tag in the NativeActionBindings map. */
+	void RemoveNativeActionBinding(const FGameplayTag& InputTag);
 
-	void RemoveBinds(TArray<uint32>& BindHandles);
+	/** Removes an ability action binding by finding the input tag in the AbilityActionBindings map. */
+	void RemoveAbilityActionBinding(const FGameplayTag& InputTag);
+
+	/** Removes and unbinds all native actions in the NativeActionBindings map. */
+	void ClearNativeActionBindings();
+	
+	/** Removes and unbinds all ability actions in the NativeActionBindings map. */
+	void ClearAbilityActionBindings();
 
 protected:
-	TMap<FGameplayTag, TArray<uint32>> NativeActionBindings;
+	TMap<FGameplayTag, TArray<FEnhancedInputActionEventBinding*>> NativeActionBindings;
+	TMap<FGameplayTag, TArray<FEnhancedInputActionEventBinding*>> AbilityActionBindings;
 };
 
 
@@ -67,9 +75,10 @@ void UBSInputComponent::BindNativeAction(const UBSInputConfig* InputConfig, cons
 {
 	check(InputConfig);
 	const FBSInputAction IA = InputConfig->FindBSInputActionForTag(InputTag, bLogIfNotFound);
-	if (IA.InputAction)
+	if (IA.InputAction && IA.InputTag.IsValid())
 	{
-		NativeActionBindings.FindOrAdd(InputTag).Add(BindAction(IA.InputAction, IA.PressedTriggerEvent, Object, Func).GetHandle());
+		FEnhancedInputActionEventBinding& Binding = BindAction(IA.InputAction, IA.PressedTriggerEvent, Object, Func);
+		NativeActionBindings.FindOrAdd(IA.InputTag).Add(&Binding);
 	}
 }
 
@@ -83,18 +92,22 @@ void UBSInputComponent::BindNativeAction(const UBSInputConfig* InputConfig, cons
 	{
 		if (PressedFunc)
 		{
-			NativeActionBindings.FindOrAdd(InputTag).Add(BindAction(IA.InputAction, IA.PressedTriggerEvent, Object, PressedFunc).GetHandle());
+			FEnhancedInputActionEventBinding& Binding = BindAction(IA.InputAction, IA.PressedTriggerEvent,
+				Object, PressedFunc);
+			NativeActionBindings.FindOrAdd(IA.InputTag).Add(&Binding);
 		}
 		if (ReleasedFunc)
 		{
-			NativeActionBindings.FindOrAdd(InputTag).Add(BindAction(IA.InputAction, ETriggerEvent::Completed, Object, ReleasedFunc).GetHandle());
+			FEnhancedInputActionEventBinding& Binding = BindAction(IA.InputAction, ETriggerEvent::Completed,
+				Object, ReleasedFunc);
+			NativeActionBindings.FindOrAdd(IA.InputTag).Add(&Binding);
 		}
 	}
 }
 
 template <class UserClass, typename PressedFuncType, typename ReleasedFuncType>
 void UBSInputComponent::BindAbilityActions(const UBSInputConfig* InputConfig, UserClass* Object,
-	PressedFuncType PressedFunc, ReleasedFuncType ReleasedFunc, TArray<uint32>& BindHandles)
+	PressedFuncType PressedFunc, ReleasedFuncType ReleasedFunc)
 {
 	check(InputConfig);
 
@@ -104,14 +117,16 @@ void UBSInputComponent::BindAbilityActions(const UBSInputConfig* InputConfig, Us
 		{
 			if (PressedFunc)
 			{
-				BindHandles.Add(BindAction(Action.InputAction, Action.PressedTriggerEvent, Object, PressedFunc,
-					Action.InputTag).GetHandle());
+				FEnhancedInputActionEventBinding& Binding = BindAction(Action.InputAction, Action.PressedTriggerEvent,
+					Object, PressedFunc, Action.InputTag);
+				AbilityActionBindings.FindOrAdd(Action.InputTag).Add(&Binding);
 			}
 
 			if (ReleasedFunc)
 			{
-				BindHandles.Add(BindAction(Action.InputAction, ETriggerEvent::Completed, Object, ReleasedFunc,
-					Action.InputTag).GetHandle());
+				FEnhancedInputActionEventBinding& Binding = BindAction(Action.InputAction, ETriggerEvent::Completed,
+					Object, ReleasedFunc, Action.InputTag);
+				AbilityActionBindings.FindOrAdd(Action.InputTag).Add(&Binding);
 			}
 		}
 	}

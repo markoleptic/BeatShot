@@ -4,35 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "Containers/Array.h"
-#include "Containers/ArrayView.h"
-#include "Containers/Map.h"
-#include "Containers/Set.h"
-#include "Containers/SparseArray.h"
-#include "Containers/UnrealString.h"
-#include "CoreTypes.h"
 #include "Net/Serialization/FastArraySerializer.h"
-#include "Templates/SubclassOf.h"
-#include "Templates/UnrealTemplate.h"
-#include "UObject/Class.h"
-#include "UObject/UObjectGlobals.h"
 #include "BSInventoryManagerComponent.generated.h"
 
-struct FGameplayTag;
 class UBSEquipmentManagerComponent;
 class UBSEquipmentInstance;
 class UBSInventoryItemDefinition;
 class UBSInventoryItemInstance;
-class UBSInventoryManagerComponent;
-class UObject;
-struct FFrame;
-struct FBSInventoryList;
-struct FNetDeltaSerializeInfo;
-struct FReplicationFlags;
+struct FGameplayTag;
 
-/**
- *  A single entry in an inventory, which contains a pointer to the InventoryItemInstance and the stack count
- */
+
+/** A single entry in an inventory, which contains a pointer to the InventoryItemInstance and the stack count. */
 USTRUCT(BlueprintType)
 struct FBSInventoryEntry : public FFastArraySerializerItem
 {
@@ -45,8 +27,8 @@ struct FBSInventoryEntry : public FFastArraySerializerItem
 	FString GetDebugString() const;
 
 private:
-	friend FBSInventoryList;
-	friend UBSInventoryManagerComponent;
+	friend struct FBSInventoryList;
+	friend class UBSInventoryManagerComponent;
 
 	UPROPERTY()
 	TObjectPtr<UBSInventoryItemInstance> Instance = nullptr;

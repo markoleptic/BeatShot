@@ -15,73 +15,86 @@ class UGameplayEffect;
 class UAttributeSet;
 class UBSAbilitySystemComponent;
 
-/** Associate a BSGameplayAbility with a GameplayTag. Also includes Ability Level */
+/** Contains the class default object for the ability, along with the level and input tag. */
 USTRUCT(BlueprintType)
-struct FBSAbilitySet_GameplayAbility
+struct FBSAbilitySetGameplayAbility
 {
 	GENERATED_BODY()
 
-	// Gameplay ability to grant.
+	/** Gameplay ability to grant. Class default object. */
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UBSGameplayAbility> Ability = nullptr;
 
-	// Level of ability to grant.
+	/** Level of ability to grant. */
 	UPROPERTY(EditDefaultsOnly)
 	int32 AbilityLevel = 1;
 
-	// Tag used to process input for the ability.
+	/** Tag used to process input for the ability. */
 	UPROPERTY(EditDefaultsOnly, Meta = (Categories = "InputTag"))
 	FGameplayTag InputTag;
 };
 
-/** Contains the gameplay effect and the effect level */
+/** Contains the gameplay effect class default object and the effect level. */
 USTRUCT(BlueprintType)
-struct FBSAbilitySet_GameplayEffect
+struct FBSAbilitySetGameplayEffect
 {
 	GENERATED_BODY()
 
-	// Gameplay effect to grant.
+	/** Gameplay effect to grant. Class default object. */
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UGameplayEffect> GameplayEffect = nullptr;
 
-	// Level of gameplay effect to grant.
+	/** Level of gameplay effect to grant. */
 	UPROPERTY(EditDefaultsOnly)
 	float EffectLevel = 1.0f;
 };
 
-/** AttributeSet Wrapper */
+/** Contains the AttributeSet class default object */
 USTRUCT(BlueprintType)
-struct FBSAbilitySet_AttributeSet
+struct FBSAbilitySetAttributeSet
 {
 	GENERATED_BODY()
 
-	// Gameplay effect to grant.
+	/** Class default object for the attribute set. */
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UAttributeSet> AttributeSet;
 };
 
 /** Data used to store handles to what has been granted by the ability set. */
 USTRUCT(BlueprintType)
-struct FBSAbilitySet_GrantedHandles
+struct FBSGrantedAbilitySet
 {
 	GENERATED_BODY()
+
+	/** Adds an entry to AbilitySpecHandles. */
 	void AddAbilitySpecHandle(const FGameplayAbilitySpecHandle& Handle);
+
+	/** Adds an entry to GameplayEffectHandles. */
 	void AddGameplayEffectHandle(const FActiveGameplayEffectHandle& Handle);
+
+	/** Adds an entry to GrantedAttributeSets. */
 	void AddAttributeSet(UAttributeSet* Set);
+
+	/** Removes all granted Gameplay Abilities, Gameplay Effects, and Attribute Sets. */
 	void TakeFromAbilitySystem(UBSAbilitySystemComponent* ASC);
-	FGameplayAbilitySpec* FindFirstAbilitySpecFromHandle(UBSAbilitySystemComponent* ASC);
+
+	/** Wrapper around ASCs FindAbilitySpecFromHandle, just returns the first one. */
+	FGameplayAbilitySpec* FindAbilitySpecFromHandle(UBSAbilitySystemComponent* ASC);
+
+	/** Returns whether or not all granted AbilitySpecHandles, GameplayEffectHandles,
+	 *  and GrantedAttributeSets are empty. */
 	bool IsEmpty() const;
 
 protected:
-	// Handles to the granted abilities.
+	/** Handles to the granted abilities. */
 	UPROPERTY()
 	TArray<FGameplayAbilitySpecHandle> AbilitySpecHandles;
 
-	// Handles to the granted gameplay effects.
+	/** Handles to the granted gameplay effects. */
 	UPROPERTY()
 	TArray<FActiveGameplayEffectHandle> GameplayEffectHandles;
 
-	// Pointers to the granted attribute sets
+	/** Pointers to the granted attribute sets */
 	UPROPERTY()
 	TArray<TObjectPtr<UAttributeSet>> GrantedAttributeSets;
 };
@@ -96,21 +109,21 @@ class UBSAbilitySet : public UDataAsset
 public:
 	UBSAbilitySet(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
-	// Grants the ability set to the specified ability system component.
-	// The returned handles can be used later to take away anything that was granted.
-	void GiveToAbilitySystem(UBSAbilitySystemComponent* ASC, FBSAbilitySet_GrantedHandles* OutGrantedHandles,
+	/** Grants the ability set to the specified ability system component. The returned handles can be used later
+	 *  to take away anything that was granted. */
+	void GiveToAbilitySystem(UBSAbilitySystemComponent* ASC, FBSGrantedAbilitySet* OutGrantedHandles,
 		UObject* SourceObject = nullptr) const;
 
 protected:
-	// Gameplay abilities to grant when this ability set is granted.
+	/** Gameplay abilities to grant when this ability set is granted. */
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Abilities", meta=(TitleProperty=Ability))
-	TArray<FBSAbilitySet_GameplayAbility> GrantedGameplayAbilities;
+	TArray<FBSAbilitySetGameplayAbility> GrantedGameplayAbilities;
 
-	// Gameplay effects to grant when this ability set is granted.
+	/** Gameplay effects to grant when this ability set is granted. */
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Effects", meta=(TitleProperty=GameplayEffect))
-	TArray<FBSAbilitySet_GameplayEffect> GrantedGameplayEffects;
+	TArray<FBSAbilitySetGameplayEffect> GrantedGameplayEffects;
 
-	// Attribute sets to grant when this ability set is granted.
+	/** Attribute sets to grant when this ability set is granted. */
 	UPROPERTY(EditDefaultsOnly, Category = "Attribute Sets", meta=(TitleProperty=AttributeSet))
-	TArray<FBSAbilitySet_AttributeSet> GrantedAttributes;
+	TArray<FBSAbilitySetAttributeSet> GrantedAttributes;
 };

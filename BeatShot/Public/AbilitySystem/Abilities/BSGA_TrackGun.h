@@ -6,7 +6,6 @@
 #include "BSGameplayAbility.h"
 #include "BSGA_TrackGun.generated.h"
 
-class ABSCharacter;
 class UBSAT_TickTrace;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayerStopTrackingTarget);

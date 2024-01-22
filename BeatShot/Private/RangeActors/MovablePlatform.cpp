@@ -132,7 +132,7 @@ void AMovablePlatform::InterpFloorElevation(const float DeltaSeconds)
 void AMovablePlatform::OnTriggerVolumeBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (Cast<ABSCharacter>(OtherActor))
+	if (Cast<ABSCharacterBase>(OtherActor))
 	{
 		Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->ShowInteractInfo();
 		bPlayerIsOverlappingControl = true;
@@ -142,7 +142,7 @@ void AMovablePlatform::OnTriggerVolumeBeginOverlap(UPrimitiveComponent* Overlapp
 void AMovablePlatform::OnTriggerVolumeEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if (Cast<ABSCharacter>(OtherActor))
+	if (Cast<ABSCharacterBase>(OtherActor))
 	{
 		Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->HideInteractInfo();
 		bPlayerIsOverlappingControl = false;
@@ -153,7 +153,7 @@ void AMovablePlatform::OnTriggerVolumeEndOverlap(UPrimitiveComponent* Overlapped
 void AMovablePlatform::OnCharacterStepOnFloor(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (Cast<ABSCharacter>(OtherActor))
+	if (Cast<ABSCharacterBase>(OtherActor))
 	{
 		bPlayerIsOverlappingFloor = true;
 	}
@@ -162,7 +162,7 @@ void AMovablePlatform::OnCharacterStepOnFloor(UPrimitiveComponent* OverlappedCom
 void AMovablePlatform::OnCharacterStepOffFloor(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if (Cast<ABSCharacter>(OtherActor))
+	if (Cast<ABSCharacterBase>(OtherActor))
 	{
 		PlatformTransitionType = EPlatformTransitionType::MoveDownByStepOff;
 		bPlayerIsOverlappingFloor = false;

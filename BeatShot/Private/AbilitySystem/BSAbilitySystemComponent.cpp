@@ -317,7 +317,7 @@ void UBSAbilitySystemComponent::AbilityInputTagPressed(FGameplayTag InputTag)
 {
 	if (InputTag.IsValid())
 	{
-		for (const FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities.Items)
+		for (FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities.Items)
 		{
 			if (AbilitySpec.Ability && (AbilitySpec.DynamicAbilityTags.HasTagExact(InputTag)))
 			{

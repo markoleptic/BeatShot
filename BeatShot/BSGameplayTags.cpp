@@ -69,9 +69,15 @@ void FBSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(Ability_ShiftInteract, "Ability.ShiftInteract", "");
 	AddTag(Ability_InputBlocked, "Ability.InputBlocked", "");
 
+	AddTag(Equipped, "Equipped", "");
+	AddTag(Equipped, "Equipped.None", "");
+	AddTag(Equipped, "Equipped.Gun", "");
+	AddTag(Equipped, "Equipped.Knife", "");
+
 	AddTag(State, "State", "");
 	AddTag(State_Crouching, "State.Crouching", "");
 	AddTag(State_Firing, "State.Firing", "");
+	AddTag(State_Tracking, "State.Tracking", "");
 	AddTag(State_Inspecting, "State.Inspecting", "");
 	AddTag(State_KnifeAttacking, "State.KnifeAttacking", "");
 	AddTag(State_BackStabbing, "State.BackStabbing", "");

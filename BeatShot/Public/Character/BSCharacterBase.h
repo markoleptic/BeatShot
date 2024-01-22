@@ -93,7 +93,7 @@ protected:
 	TWeakObjectPtr<const UBSAttributeSetBase> AttributeSetBase;
 
 	/** Handles returned when granting abilities. */
-	FBSAbilitySet_GrantedHandles AbilitySet_GrantedHandles;
+	FBSGrantedAbilitySet AbilitySet_GrantedHandles;
 
 public:
 	/** Implement IAbilitySystemInterface */
@@ -237,9 +237,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Character")
 	float MinSpeedForFallDamage;
 
-	// In HL2, the player has the Z component for applying momentum to the capsule capped
+	/** In HL2, the player has the Z component for applying momentum to the capsule capped */
 	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Character")
-	float CapDamageMomentumZ = 0.f;
+	float CapDamageMomentumZ;
 
 	/** Changed when pressing and releasing IA_Walk (shift key) */
 	bool bWantsToWalk;

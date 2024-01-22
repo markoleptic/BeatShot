@@ -77,6 +77,9 @@ struct FBSIdleAnimSet
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UAnimSequence* LeftHandPoseOverride;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UAnimSequence* ArmIdlePoseOverride;
 };
 
 USTRUCT(BlueprintType)
@@ -141,6 +144,9 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FBSJumpingAnimSet JumpingAnimSet;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TArray<UAnimSequence*> IdleBreaks;
 
 	UFUNCTION(BlueprintPure, BlueprintCallable, Category="Animation")
 	UAnimSequence* FindAnimSequence(const EBSAnimMovementMode MovementMode, const EBSAnimStateType StateType,
