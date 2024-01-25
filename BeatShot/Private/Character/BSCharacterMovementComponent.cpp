@@ -93,8 +93,6 @@ UBSCharacterMovementComponent::UBSCharacterMovementComponent()
 	
 	// Crouching
 	SetCrouchedHalfHeight(55.f);
-	CrouchTime = 0.2f;
-	UnCrouchTime = 0.1f;
 	MaxWalkSpeedCrouched = RunSpeed * 0.33333333f;
 	bCanWalkOffLedgesWhenCrouching = true;
 
@@ -933,6 +931,7 @@ void UBSCharacterMovementComponent::UpdateCrouching(float DeltaTime, bool bOnlyU
 			if (bOnLadder) // if on a ladder, cancel this because bWantsToCrouch should be false
 			{
 				bIsInCrouchTransition = false;
+				bIsTransitioningToCrouch = false;
 			}
 			else
 			{
@@ -955,8 +954,10 @@ void UBSCharacterMovementComponent::Crouch(bool bClientSimulation)
 	if (bClientSimulation)
 	{
 		Super::Crouch(true);
+		return;
 	}
 	bIsInCrouchTransition = true;
+	bIsTransitioningToCrouch = true;
 }
 
 void UBSCharacterMovementComponent::UnCrouch(bool bClientSimulation)
@@ -965,6 +966,7 @@ void UBSCharacterMovementComponent::UnCrouch(bool bClientSimulation)
 	if (bClientSimulation)
 	{
 		Super::UnCrouch(true);
+		return;
 	}
 	bIsInCrouchTransition = true;
 }
@@ -974,6 +976,7 @@ void UBSCharacterMovementComponent::DoCrouchResize(float TargetTime, float Delta
 	if (!HasValidData() || (!bClientSimulation && !CanCrouchInCurrentState()))
 	{
 		bIsInCrouchTransition = false;
+		bIsTransitioningToCrouch = false;
 		return;
 	}
 
@@ -987,6 +990,7 @@ void UBSCharacterMovementComponent::DoCrouchResize(float TargetTime, float Delta
 		}
 		CharacterOwner->OnStartCrouch(0.0f, 0.0f);
 		bIsInCrouchTransition = false;
+		bIsTransitioningToCrouch = false;
 		return;
 	}
 
@@ -1022,6 +1026,7 @@ void UBSCharacterMovementComponent::DoCrouchResize(float TargetTime, float Delta
 		TargetAlpha = 1.0f;
 		TargetAlphaDiff = TargetAlpha - CurrentAlpha;
 		bIsInCrouchTransition = false;
+		bIsTransitioningToCrouch = false;
 		CharacterOwner->bIsCrouched = true;
 	}
 	// Determine the target height for this tick
@@ -1269,14 +1274,18 @@ void UBSCharacterMovementComponent::DoUnCrouchResize(float TargetTime, float Del
 		bShrinkProxyCapsule = true;
 	}
 
+	const float NewHalfHeight = OldUnscaledHalfHeight + HalfHeightAdjust;
+
 	// Now call SetCapsuleSize() to cause touch/untouch events and actually grow the capsule
 	CharacterCapsule->SetCapsuleSize(DefaultCharacter->GetCapsuleComponent()->GetUnscaledCapsuleRadius(),
-		OldUnscaledHalfHeight + HalfHeightAdjust, true);
-
-	// OnEndCrouch takes the change from the Default size, not the current one (though they are usually the same).
+		NewHalfHeight, true);
+	
+	// OnEndCrouch takes the change from the Default size, not the current one
 	const float MeshAdjust = DefaultCharacter->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight() -
-		OldUnscaledHalfHeight + HalfHeightAdjust;
+		NewHalfHeight;
+
 	AdjustProxyCapsuleSize();
+	
 	CharacterOwner->OnEndCrouch(MeshAdjust, MeshAdjust * ComponentScale);
 	bCrouchFrameTolerated = false;
 
@@ -1287,7 +1296,7 @@ void UBSCharacterMovementComponent::DoUnCrouchResize(float TargetTime, float Del
 		FNetworkPredictionData_Client_Character* ClientData = GetPredictionData_Client_Character();
 		if (ClientData)
 		{
-			ClientData->MeshTranslationOffset += FVector(0.0f, 0.0f, ScaledHalfHeightAdjust);
+			ClientData->MeshTranslationOffset += FVector(0.0f, 0.0f, MeshAdjust);
 			ClientData->OriginalMeshTranslationOffset = ClientData->MeshTranslationOffset;
 		}
 	}
@@ -1581,32 +1590,6 @@ void UBSCharacterMovementComponent::SetNoClip(bool bNoClip)
 void UBSCharacterMovementComponent::ToggleNoClip()
 {
 	SetNoClip(!bCheatFlying);
-}
-
-float UBSCharacterMovementComponent::GetCrouchTime() const
-{
-	if (!bWantsToCrouch || !CanCrouchInCurrentState())
-	{
-		if (IsWalking())
-		{
-			// Normal uncrouch
-			return UnCrouchTime;
-		}
-		// Uncrouch jump
-		return UnCrouchJumpTime;
-	}
-	
-	if (bWantsToCrouch)
-	{
-		if (IsWalking())
-		{
-			return CrouchTime;
-		}
-		
-		return CrouchJumpTime;
-	}
-
-	return 0.f;
 }
 
 void UBSCharacterMovementComponent::PlayMoveSound(float DeltaTime)

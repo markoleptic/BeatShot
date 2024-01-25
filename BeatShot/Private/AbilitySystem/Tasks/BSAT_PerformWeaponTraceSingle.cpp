@@ -3,8 +3,7 @@
 
 #include "AbilitySystem/Tasks/BSAT_PerformWeaponTraceSingle.h"
 #include "AbilitySystem/Abilities/BSGameplayAbility.h"
-#include "Camera/CameraComponent.h"
-#include "Character/BSCharacter.h"
+#include "Character/BSCharacterBase.h"
 #include "Character/BSRecoilComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Physics/BSCollisionChannels.h"
@@ -50,23 +49,12 @@ bool UBSAT_PerformWeaponTraceSingle::LineTraceSingle(FHitResult& HitResult) cons
 {
 	AActor* AvatarActor = Ability->GetAvatarActorFromActorInfo();
 	if (!AvatarActor) return false;
-	
-	USceneComponent* RecoilComponent;
-	FRotator CurrentRecoilRotation;
-	if (const auto Character = Cast<ABSCharacter>(AvatarActor))
-	{
-		RecoilComponent = Character->GetRecoilComponent();
-		CurrentRecoilRotation = Character->GetRecoilComponent()->GetCurrentRecoilRotation();
-	}
-	else if (const auto CharacterBase = Cast<ABSCharacterBase>(AvatarActor))
-	{
-		CurrentRecoilRotation = FRotator::ZeroRotator;
-		RecoilComponent = CharacterBase->GetCamera();
-	}
-	else
-	{
-		return false;
-	}
+
+	const auto Character = Cast<ABSCharacterBase>(AvatarActor);
+	if (!Character) return false;
+
+	const USceneComponent* RecoilComponent = Character->GetRecoilComponent();
+	const FRotator CurrentRecoilRotation = Character->GetRecoilComponent()->GetCurrentRecoilRotation();
 	
 	const FVector RotatedVector1 = UKismetMathLibrary::RotateAngleAxis(RecoilComponent->GetForwardVector(),
 		CurrentRecoilRotation.Pitch, RecoilComponent->GetRightVector());

@@ -2,8 +2,7 @@
 
 #include "AbilitySystem/Tasks/BSAT_TickTrace.h"
 #include "AbilitySystemComponent.h"
-#include "Camera/CameraComponent.h"
-#include "Character/BSCharacter.h"
+#include "Character/BSCharacterBase.h"
 #include "Character/BSRecoilComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Physics/BSCollisionChannels.h"
@@ -63,18 +62,8 @@ void UBSAT_TickTrace::PerformSingleWeaponTrace()
 		return;
 	}
 	
-	USceneComponent* RecoilComponent;
-	FRotator CurrentRecoilRotation;
-	if (const auto BSCharacter = Cast<ABSCharacter>(Character))
-	{
-		RecoilComponent = BSCharacter->GetRecoilComponent();
-		CurrentRecoilRotation = BSCharacter->GetRecoilComponent()->GetCurrentRecoilRotation();
-	}
-	else
-	{
-		CurrentRecoilRotation = FRotator::ZeroRotator;
-		RecoilComponent = Character->GetCamera();
-	}
+	const USceneComponent* RecoilComponent = Character->GetRecoilComponent();
+	const FRotator CurrentRecoilRotation = Character->GetRecoilComponent()->GetCurrentRecoilRotation();
 	
 	const FVector RotatedVector1 = UKismetMathLibrary::RotateAngleAxis(RecoilComponent->GetForwardVector(),
 		CurrentRecoilRotation.Pitch, RecoilComponent->GetRightVector());

@@ -15,6 +15,7 @@
 #include "Equipment/BSEquipmentManagerComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Character/BSRecoilComponent.h"
 #include "Input/BSInputComponent.h"
 #include "Inventory/BSInventoryManagerComponent.h"
 #include "Player/BSPlayerController.h"
@@ -42,10 +43,13 @@ ABSCharacterBase::ABSCharacterBase(const FObjectInitializer& ObjectInitializer) 
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm Component"));
 	SpringArmComponent->bUsePawnControlRotation = true;
 	SpringArmComponent->TargetArmLength = 0.f;
-	SpringArmComponent->SetupAttachment(GetMesh(), "head");
+	SpringArmComponent->SetupAttachment(GetMesh(), HeadSocket);
+
+	RecoilComponent = CreateDefaultSubobject<UBSRecoilComponent>("Recoil Component");
+	RecoilComponent->SetupAttachment(SpringArmComponent);
 
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>("Camera Component");
-	CameraComponent->SetupAttachment(SpringArmComponent);
+	CameraComponent->SetupAttachment(RecoilComponent);
 	CameraComponent->SetFieldOfView(103);
 	CameraComponent->PostProcessSettings.MotionBlurAmount = 0;
 	CameraComponent->PostProcessSettings.bOverride_MotionBlurMax = 0;
@@ -480,16 +484,15 @@ bool ABSCharacterBase::CanCrouch() const
 	return !GetCharacterMovement()->bCheatFlying && Super::CanCrouch() && !GetBSCharacterMovement()->IsOnLadder();
 }
 
-void ABSCharacterBase::ToggleCrouch()
+void ABSCharacterBase::OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust)
 {
-	if (bIsCrouched || GetCharacterMovement()->bWantsToCrouch)
-	{
-		UnCrouch();
-	}
-	else
-	{
-		Crouch();
-	}
+	Super::OnEndCrouch(HalfHeightAdjust, ScaledHalfHeightAdjust);
+
+	// The character will move into the floor for some reason without this
+	FVector Location = GetMesh()->GetRelativeLocation();
+	CacheInitialMeshOffset(Location, GetMesh()->GetRelativeRotation());
+	Location.Z += ScaledHalfHeightAdjust;
+	GetMesh()->SetRelativeLocation(Location);
 }
 
 bool ABSCharacterBase::IsSprinting() const
@@ -613,7 +616,14 @@ void ABSCharacterBase::Input_Look(const FInputActionValue& Value)
 
 void ABSCharacterBase::Input_Crouch(const FInputActionValue& Value)
 {
-	ToggleCrouch();
+	if (bIsCrouched || GetCharacterMovement()->bWantsToCrouch)
+	{
+		UnCrouch();
+	}
+	else
+	{
+		Crouch();
+	}
 }
 
 void ABSCharacterBase::Input_WalkStart(const FInputActionValue& Value)

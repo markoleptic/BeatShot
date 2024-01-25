@@ -2,7 +2,6 @@
 
 #include "Character/BSCharacter.h"
 #include "Character/BSCharacterMovementComponent.h"
-#include "Character/BSRecoilComponent.h"
 #include "GameFramework/DamageType.h"
 #include "Camera/CameraComponent.h"
 #include "Components/InputComponent.h"
@@ -21,10 +20,6 @@ ABSCharacter::ABSCharacter(const FObjectInitializer& ObjectInitializer) : Super(
 	
 	SpringArmComponent->SetupAttachment(RootComponent);
 	SpringArmComponent->SetRelativeLocation(FVector(0.f, 0.f, 64.f));
-
-	RecoilComponent = CreateDefaultSubobject<UBSRecoilComponent>("Recoil Component");
-	RecoilComponent->SetupAttachment(SpringArmComponent);
-	CameraComponent->SetupAttachment(RecoilComponent);
 
 	HandsMesh = CreateDefaultSubobject<USkeletalMeshComponent>("Character Mesh");
 	HandsMesh->SetupAttachment(CameraComponent);
@@ -48,9 +43,4 @@ ABSCharacter::ABSCharacter(const FObjectInitializer& ObjectInitializer) : Super(
 USkeletalMeshComponent* ABSCharacter::GetHandsMesh() const
 {
 	return Cast<USkeletalMeshComponent>(HandsMesh);
-}
-
-UBSRecoilComponent* ABSCharacter::GetRecoilComponent() const
-{
-	return RecoilComponent.Get();
 }

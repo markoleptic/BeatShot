@@ -131,24 +131,24 @@ protected:
 	/** If in the crouching transition */
 	bool bIsInCrouchTransition = false;
 
-	/** If in the crouching transition */
-	bool bInCrouch = false;;
-
-	/** The target ground speed when running. */
-	UPROPERTY(Category = "Character Movement: Walking", EditAnywhere, BlueprintReadWrite,
-		meta = (ClampMin = "0", UIMin = "0"))
-	float RunSpeed = 361.9f;;
-
-	/** The target ground speed when sprinting. */
-	UPROPERTY(Category = "Character Movement: Walking", EditAnywhere, BlueprintReadWrite,
-		meta = (ClampMin = "0", UIMin = "0"))
-	float SprintSpeed = 609.6f;;
+	/** If in the uncrouching transition */
+	bool bIsTransitioningToCrouch = false;
 
 	/** The target ground speed when walking slowly. */
 	UPROPERTY(Category = "Character Movement: Walking", EditAnywhere, BlueprintReadWrite,
 		meta = (ClampMin = "0", UIMin = "0"))
 	float WalkSpeed = 285.75f;
 
+	/** The target ground speed when running. */
+	UPROPERTY(Category = "Character Movement: Walking", EditAnywhere, BlueprintReadWrite,
+		meta = (ClampMin = "0", UIMin = "0"))
+	float RunSpeed = 361.9f;
+
+	/** The target ground speed when sprinting. */
+	UPROPERTY(Category = "Character Movement: Walking", EditAnywhere, BlueprintReadWrite,
+		meta = (ClampMin = "0", UIMin = "0"))
+	float SprintSpeed = 609.6f;
+	
 	/** Speed on a ladder */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character Movement: Ladder")
 	float LadderSpeed = 381.0f;
@@ -156,12 +156,12 @@ protected:
 	/** The minimum speed to scale up from for slope movement  */
 	UPROPERTY(Category = "Character Movement: Walking", EditAnywhere, BlueprintReadWrite,
 		meta = (ClampMin = "0", UIMin = "0"))
-	float SpeedMultMin;
+	float SpeedMultMin = SprintSpeed * 1.7f;
 
 	/** The maximum speed to scale up to for slope movement */
 	UPROPERTY(Category = "Character Movement: Walking", EditAnywhere, BlueprintReadWrite,
 		meta = (ClampMin = "0", UIMin = "0"))
-	float SpeedMultMax;
+	float SpeedMultMax = SprintSpeed * 2.5f;
 
 	/** The maximum angle we can roll for camera adjust */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character Movement (General Settings)")
@@ -222,7 +222,7 @@ public:
 	virtual void DoUnCrouchResize(float TargetTime, float DeltaTime, bool bClientSimulation = false);
 
 	virtual bool MoveUpdatedComponentImpl(const FVector& Delta, const FQuat& NewRotation, bool bSweep,
-		FHitResult* OutHit = nullptr, ETeleportType Teleport = ETeleportType::None) override;
+		FHitResult* OutHit, ETeleportType Teleport = ETeleportType::None) override;
 
 	// Jump overrides
 	virtual bool CanAttemptJump() const override;
@@ -255,13 +255,7 @@ public:
 	bool IsBrakingWindowTolerated() const { return bBrakingWindowElapsed; }
 
 	UFUNCTION(BlueprintPure, BlueprintCallable, Category = "Crouch")
-	bool IsInCrouch() const { return bInCrouch; }
-
-	UFUNCTION(BlueprintPure, BlueprintCallable, Category = "Crouch")
-	bool IsInCrouchTransition() const { return bIsInCrouchTransition; }
-
-	UFUNCTION(BlueprintPure, BlueprintCallable, Category = "Crouch")
-	float GetCrouchTime() const;
+	bool IsTransitioningToCrouch() const { return bIsTransitioningToCrouch; }
 
 private:
 	/** Plays sound effect according to movement and surface */
@@ -275,6 +269,9 @@ private:
 
 	/** The time that the player can remount on the ladder */
 	float OffLadderTicks = -1.0f;
+
+	/** Whether or not the capsule has grown back to its original size during uncrouching. Since OnEndCrouch uses Used so that the last tick  */
+	bool bUnCrouchCompleted = true;
 
 	bool bHasDeferredMovementMode;
 	EMovementMode DeferredMovementMode;
