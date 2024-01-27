@@ -10,7 +10,7 @@
 
 /** Crouch Timings (in seconds) */
 #define MOVEMENT_DEFAULT_CROUCHTIME 0.4f
-#define MOVEMENT_DEFAULT_CROUCHJUMPTIME 0.0f
+#define MOVEMENT_DEFAULT_CROUCHJUMPTIME 0.1f
 #define MOVEMENT_DEFAULT_UNCROUCHTIME 0.2f
 #define MOVEMENT_DEFAULT_UNCROUCHJUMPTIME 0.8f
 #define LADDER_MOUNT_TIMEOUT 0.2f
@@ -130,9 +130,10 @@ protected:
 
 	/** If in the crouching transition */
 	bool bIsInCrouchTransition = false;
-
-	/** If in the uncrouching transition */
-	bool bIsTransitioningToCrouch = false;
+	
+	/** The progress transitioning to a crouched state from an un-crouched state, or vice-versa. A value of 0
+	 *  means the character is not crouched, while a value of 1 indicates the character is fully crouched. */
+	float CurrentCrouchProgress = 0.f;
 
 	/** The target ground speed when walking slowly. */
 	UPROPERTY(Category = "Character Movement: Walking", EditAnywhere, BlueprintReadWrite,
@@ -254,9 +255,11 @@ public:
 
 	bool IsBrakingWindowTolerated() const { return bBrakingWindowElapsed; }
 
+	/** Returns the progress transitioning to a crouched state from an un-crouched state, or vice-versa. A value of 0
+	 *  means the character is not crouched, while a value of 1 indicates the character is fully crouched. */
 	UFUNCTION(BlueprintPure, BlueprintCallable, Category = "Crouch")
-	bool IsTransitioningToCrouch() const { return bIsTransitioningToCrouch; }
-
+	float GetCrouchProgress() const { return CurrentCrouchProgress; }
+	
 private:
 	/** Plays sound effect according to movement and surface */
 	void PlayMoveSound(float DeltaTime);
@@ -269,9 +272,6 @@ private:
 
 	/** The time that the player can remount on the ladder */
 	float OffLadderTicks = -1.0f;
-
-	/** Whether or not the capsule has grown back to its original size during uncrouching. Since OnEndCrouch uses Used so that the last tick  */
-	bool bUnCrouchCompleted = true;
 
 	bool bHasDeferredMovementMode;
 	EMovementMode DeferredMovementMode;

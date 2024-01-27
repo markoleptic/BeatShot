@@ -323,7 +323,8 @@ void UBSCharacterMovementComponent::TickComponent(float DeltaTime, ELevelTick Ti
 void UBSCharacterMovementComponent::CalcVelocity(float DeltaTime, float Friction, bool bFluid,
 	float BrakingDeceleration)
 {
-	// Do not update velocity when using root motion or when SimulatedProxy and not simulating root motion - SimulatedProxy are repped their Velocity
+	// Do not update velocity when using root motion or when SimulatedProxy and not simulating root motion;
+	// SimulatedProxy are repped their Velocity
 	if (!HasValidData() || HasAnimRootMotion() || DeltaTime < MIN_TICK_TIME || (CharacterOwner && CharacterOwner->
 		GetLocalRole() == ROLE_SimulatedProxy && !bWasSimulatingRootMotion))
 	{
@@ -585,7 +586,8 @@ void UBSCharacterMovementComponent::PhysFalling(float deltaTime, int32 Iteration
 		bool bEndingJumpForce = false;
 		if (CharacterOwner->JumpForceTimeRemaining > 0.0f)
 		{
-			// Consume some of the force time. Only the remaining time (if any) is affected by gravity when bApplyGravityWhileJumping=false.
+			// Consume some of the force time. Only the remaining time (if any) is affected by gravity when
+			// bApplyGravityWhileJumping=false.
 			const float JumpForceTime = FMath::Min(CharacterOwner->JumpForceTimeRemaining, timeTick);
 			GravityTime = bApplyGravityWhileJumping ? timeTick : FMath::Max(0.0f, timeTick - JumpForceTime);
 
@@ -601,7 +603,8 @@ void UBSCharacterMovementComponent::PhysFalling(float deltaTime, int32 Iteration
 		// Apply gravity
 		Velocity = NewFallVelocity(Velocity, Gravity, GravityTime);
 
-		// See if we need to sub-step to exactly reach the apex. This is important for avoiding "cutting off the top" of the trajectory as framerate varies.
+		// See if we need to sub-step to exactly reach the apex. This is important for avoiding "cutting off the top"
+		// of the trajectory as framerate varies.
 		if (OldVelocity.Z > 0.f && Velocity.Z <= 0.f && NumJumpApexAttempts < MaxJumpApexAttemptsPerSimulation)
 		{
 			const FVector DerivedAccel = (Velocity - OldVelocity) / timeTick;
@@ -609,7 +612,8 @@ void UBSCharacterMovementComponent::PhysFalling(float deltaTime, int32 Iteration
 			{
 				const float TimeToApex = -OldVelocity.Z / DerivedAccel.Z;
 
-				// The time-to-apex calculation should be precise, and we want to avoid adding a substep when we are basically already at the apex from the previous iteration's work.
+				// The time-to-apex calculation should be precise, and we want to avoid adding a substep when we
+				// are basically already at the apex from the previous iteration's work.
 				const float ApexTimeMinimum = 0.0001f;
 				if (TimeToApex >= ApexTimeMinimum && TimeToApex < timeTick)
 				{
@@ -617,7 +621,8 @@ void UBSCharacterMovementComponent::PhysFalling(float deltaTime, int32 Iteration
 					Velocity = ApexVelocity;
 					Velocity.Z = 0.f; // Should be nearly zero anyway, but this makes apex notifications consistent.
 
-					// We only want to move the amount of time it takes to reach the apex, and refund the unused time for next iteration.
+					// We only want to move the amount of time it takes to reach the apex, and refund the unused
+					// time for next iteration.
 					remainingTime += (timeTick - TimeToApex);
 					timeTick = TimeToApex;
 					Iterations--;
@@ -626,7 +631,10 @@ void UBSCharacterMovementComponent::PhysFalling(float deltaTime, int32 Iteration
 			}
 		}
 
-		//UE_LOG(LogCharacterMovement, Log, TEXT("dt=(%.6f) OldLocation=(%s) OldVelocity=(%s) OldVelocityWithRootMotion=(%s) NewVelocity=(%s)"), timeTick, *(UpdatedComponent->GetComponentLocation()).ToString(), *OldVelocity.ToString(), *OldVelocityWithRootMotion.ToString(), *Velocity.ToString());
+		// UE_LOG(LogCharacterMovement, Log, TEXT("dt=(%.6f) OldLocation=(%s) OldVelocity=(%s)
+		// OldVelocityWithRootMotion=(%s) NewVelocity=(%s)"), timeTick,
+		// *(UpdatedComponent->GetComponentLocation()).ToString(), *OldVelocity.ToString(),
+		// *OldVelocityWithRootMotion.ToString(), *Velocity.ToString());
 		ApplyRootMotionToVelocity(timeTick);
 
 		if (bNotifyApex && (Velocity.Z < 0.f))
@@ -719,7 +727,7 @@ void UBSCharacterMovementComponent::PhysFalling(float deltaTime, int32 Iteration
 					VelocityNoAirControl = NewFallVelocity(VelocityNoAirControl, Gravity, GravityTime);
 				}
 
-				const bool bCheckLandingSpot = false; // we already checked above.
+				constexpr bool bCheckLandingSpot = false; // we already checked above.
 				AirControlAccel = (Velocity - VelocityNoAirControl) / timeTick;
 				const FVector AirControlDeltaV = LimitAirControl(LastMoveTimeSlice, AirControlAccel, Hit,
 					bCheckLandingSpot) * LastMoveTimeSlice;
@@ -779,7 +787,7 @@ void UBSCharacterMovementComponent::PhysFalling(float deltaTime, int32 Iteration
 					// Limit air control, but allow a slide along the second wall.
 					if (bHasLimitedAirControl)
 					{
-						const bool bCheckLandingSpot = false; // we already checked above.
+						constexpr bool bCheckLandingSpot = false; // we already checked above.
 						const FVector AirControlDeltaV = LimitAirControl(subTimeTickRemaining, AirControlAccel, Hit,
 							bCheckLandingSpot) * subTimeTickRemaining;
 
@@ -907,7 +915,7 @@ void UBSCharacterMovementComponent::UpdateCrouching(float DeltaTime, bool bOnlyU
 		return;
 	}
 
-	// Crouch transition but not in noclip
+	// Crouch transition but not in no-clip
 	if (bIsInCrouchTransition && !bCheatFlying)
 	{
 		// If the player wants to uncrouch, or we have to uncrouch after movement
@@ -931,7 +939,7 @@ void UBSCharacterMovementComponent::UpdateCrouching(float DeltaTime, bool bOnlyU
 			if (bOnLadder) // if on a ladder, cancel this because bWantsToCrouch should be false
 			{
 				bIsInCrouchTransition = false;
-				bIsTransitioningToCrouch = false;
+				CurrentCrouchProgress = 0.f;
 			}
 			else
 			{
@@ -957,7 +965,6 @@ void UBSCharacterMovementComponent::Crouch(bool bClientSimulation)
 		return;
 	}
 	bIsInCrouchTransition = true;
-	bIsTransitioningToCrouch = true;
 }
 
 void UBSCharacterMovementComponent::UnCrouch(bool bClientSimulation)
@@ -976,7 +983,6 @@ void UBSCharacterMovementComponent::DoCrouchResize(float TargetTime, float Delta
 	if (!HasValidData() || (!bClientSimulation && !CanCrouchInCurrentState()))
 	{
 		bIsInCrouchTransition = false;
-		bIsTransitioningToCrouch = false;
 		return;
 	}
 
@@ -990,11 +996,11 @@ void UBSCharacterMovementComponent::DoCrouchResize(float TargetTime, float Delta
 		}
 		CharacterOwner->OnStartCrouch(0.0f, 0.0f);
 		bIsInCrouchTransition = false;
-		bIsTransitioningToCrouch = false;
+		CurrentCrouchProgress = 1.f;
 		return;
 	}
 
-	ACharacter* DefaultCharacter = CharacterOwner->GetClass()->GetDefaultObject<ACharacter>();
+	const ACharacter* DefaultCharacter = CharacterOwner->GetClass()->GetDefaultObject<ACharacter>();
 
 	if (bClientSimulation && CharacterOwner->GetLocalRole() == ROLE_SimulatedProxy)
 	{
@@ -1026,16 +1032,18 @@ void UBSCharacterMovementComponent::DoCrouchResize(float TargetTime, float Delta
 		TargetAlpha = 1.0f;
 		TargetAlphaDiff = TargetAlpha - CurrentAlpha;
 		bIsInCrouchTransition = false;
-		bIsTransitioningToCrouch = false;
 		CharacterOwner->bIsCrouched = true;
 	}
+	
+	CurrentCrouchProgress = TargetAlpha;
+	
 	// Determine the target height for this tick
-	float TargetCrouchedHalfHeight = OldUnscaledHalfHeight - FullCrouchDiff * TargetAlpha;
+	const float TargetCrouchedHalfHeight = OldUnscaledHalfHeight - FullCrouchDiff * TargetAlpha;
 	// Height is not allowed to be smaller than radius.
-	float ClampedCrouchedHalfHeight = FMath::Max3(0.0f, OldUnscaledRadius, TargetCrouchedHalfHeight);
+	const float ClampedCrouchedHalfHeight = FMath::Max3(0.0f, OldUnscaledRadius, TargetCrouchedHalfHeight);
 	CharacterCapsule->SetCapsuleSize(OldUnscaledRadius, ClampedCrouchedHalfHeight);
-	float HalfHeightAdjust = FullCrouchDiff * TargetAlphaDiff;
-	float ScaledHalfHeightAdjust = HalfHeightAdjust * ComponentScale;
+	const float HalfHeightAdjust = FullCrouchDiff * TargetAlphaDiff;
+	const float ScaledHalfHeightAdjust = HalfHeightAdjust * ComponentScale;
 
 	if (!bClientSimulation)
 	{
@@ -1099,6 +1107,7 @@ void UBSCharacterMovementComponent::DoUnCrouchResize(float TargetTime, float Del
 		CharacterOwner->OnEndCrouch(0.0f, 0.0f);
 		bCrouchFrameTolerated = false;
 		bIsInCrouchTransition = false;
+		CurrentCrouchProgress = 0.f;
 		return;
 	}
 
@@ -1106,11 +1115,11 @@ void UBSCharacterMovementComponent::DoUnCrouchResize(float TargetTime, float Del
 
 	const float ComponentScale = CharacterCapsule->GetShapeScale();
 	const float OldUnscaledHalfHeight = CharacterCapsule->GetUnscaledCapsuleHalfHeight();
-	const float UncrouchedHeight = DefaultCharacter->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight();
-	const float FullCrouchDiff = UncrouchedHeight - GetCrouchedHalfHeight();
+	const float UnCrouchedHeight = DefaultCharacter->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight();
+	const float FullCrouchDiff = UnCrouchedHeight - GetCrouchedHalfHeight();
 	// Determine the crouching progress
 	const bool InstantCrouch = FMath::IsNearlyZero(TargetTime);
-	float CurrentAlpha = 1.0f - (UncrouchedHeight - OldUnscaledHalfHeight) / FullCrouchDiff;
+	float CurrentAlpha = 1.0f - (UnCrouchedHeight - OldUnscaledHalfHeight) / FullCrouchDiff;
 	float TargetAlphaDiff = 1.0f;
 	float TargetAlpha = 1.0f;
 	const UWorld* MyWorld = GetWorld();
@@ -1124,13 +1133,13 @@ void UBSCharacterMovementComponent::DoUnCrouchResize(float TargetTime, float Del
 		{
 			// Try to stay in place and see if the larger capsule fits. We use a
 			// slightly taller capsule to avoid penetration.
-			const float SweepInflation = KINDA_SMALL_NUMBER * 10.0f;
+			constexpr float SweepInflation = KINDA_SMALL_NUMBER * 10.0f;
 			FCollisionQueryParams CapsuleParams(SCENE_QUERY_STAT(CrouchTrace), false, CharacterOwner);
 			FCollisionResponseParams ResponseParam;
 			InitCollisionParams(CapsuleParams, ResponseParam);
 
 			// Check how much we have left to go (with some wiggle room to still allow for partial uncrouches in some areas)
-			const float HalfHeightAdjust = ComponentScale * (UncrouchedHeight - OldUnscaledHalfHeight) *
+			const float HalfHeightAdjust = ComponentScale * (UnCrouchedHeight - OldUnscaledHalfHeight) *
 				GroundUnCrouchCheckFactor;
 
 			// Compensate for the difference between current capsule size and standing size
@@ -1155,17 +1164,20 @@ void UBSCharacterMovementComponent::DoUnCrouchResize(float TargetTime, float Del
 		TargetAlphaDiff = TargetAlpha - CurrentAlpha;
 		bIsInCrouchTransition = false;
 	}
+
+	CurrentCrouchProgress = 1 - TargetAlpha;
+	
 	const float HalfHeightAdjust = FullCrouchDiff * TargetAlphaDiff;
 	const float ScaledHalfHeightAdjust = HalfHeightAdjust * ComponentScale;
 
-	// Grow to uncrouched size.
+	// Grow to un-crouched size.
 	check(CharacterCapsule);
 
 	if (!bClientSimulation)
 	{
 		// Try to stay in place and see if the larger capsule fits. We use a
 		// slightly taller capsule to avoid penetration.
-		const float SweepInflation = KINDA_SMALL_NUMBER * 10.0f;
+		constexpr float SweepInflation = KINDA_SMALL_NUMBER * 10.0f;
 		FCollisionQueryParams CapsuleParams(SCENE_QUERY_STAT(CrouchTrace), false, CharacterOwner);
 		FCollisionResponseParams ResponseParam;
 		InitCollisionParams(CapsuleParams, ResponseParam);
@@ -1242,7 +1254,7 @@ void UBSCharacterMovementComponent::DoUnCrouchResize(float TargetTime, float Del
 				{
 					// Something might be just barely overhead, try moving down
 					// closer to the floor to avoid it.
-					const float MinFloorDist = KINDA_SMALL_NUMBER * 10.0f;
+					constexpr float MinFloorDist = KINDA_SMALL_NUMBER * 10.0f;
 					if (CurrentFloor.bBlockingHit && CurrentFloor.FloorDist > MinFloorDist)
 					{
 						StandingLocation.Z -= CurrentFloor.FloorDist - MinFloorDist;
@@ -1276,7 +1288,7 @@ void UBSCharacterMovementComponent::DoUnCrouchResize(float TargetTime, float Del
 
 	const float NewHalfHeight = OldUnscaledHalfHeight + HalfHeightAdjust;
 
-	// Now call SetCapsuleSize() to cause touch/untouch events and actually grow the capsule
+	// Now call SetCapsuleSize() to cause touch/un-touch events and actually grow the capsule
 	CharacterCapsule->SetCapsuleSize(DefaultCharacter->GetCapsuleComponent()->GetUnscaledCapsuleRadius(),
 		NewHalfHeight, true);
 	
@@ -1736,9 +1748,7 @@ void UBSCharacterMovementComponent::PlayMoveSound(float DeltaTime)
 
 UBSMoveStepSound* UBSCharacterMovementComponent::GetMoveStepSoundBySurface(EPhysicalSurface SurfaceType) const
 {
-	TSubclassOf<UBSMoveStepSound>* GotSound = BSCharacter->GetMoveStepSound(TEnumAsByte<EPhysicalSurface>(SurfaceType));
-
-	if (GotSound)
+	if (const TSubclassOf<UBSMoveStepSound>* GotSound = BSCharacter->GetMoveStepSound(TEnumAsByte(SurfaceType)))
 	{
 		return GotSound->GetDefaultObject();
 	}
