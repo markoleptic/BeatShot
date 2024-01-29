@@ -3,6 +3,7 @@
 
 #include "BeatShotGameModeFunctionalTest.h"
 
+#include "Algo/RandomShuffle.h"
 #include "Target/TargetManager.h"
 
 ABeatShotGameModeFunctionalTest::ABeatShotGameModeFunctionalTest()
@@ -15,18 +16,72 @@ ABeatShotGameModeFunctionalTest::ABeatShotGameModeFunctionalTest()
 void ABeatShotGameModeFunctionalTest::PrepareTest()
 {
 	Super::PrepareTest();
-	if (!TargetManagerClass || !GameModeDataAsset)
+	if (!TargetManagerClass)
 	{
-		FinishTest(EFunctionalTestResult::Failed, TEXT("No TargetManagerClass or GameModeDataAsset"));
+		FinishTest(EFunctionalTestResult::Failed, TEXT("No TargetManagerClass."));
 	}
-	PopulateGameModeConfigs();
+	
+	ImportDefaultGameModes();
+	ImportCustomGameModes();
+	
+	if (GameModesToTest.IsEmpty())
+	{
+		FinishTest(EFunctionalTestResult::Failed, TEXT("No Games Modes to test."));
+	}
+	
 	GameModeConfig = MakeShareable(new FBSConfig());
 	TargetManager = GetWorld()->SpawnActor<ATargetManager>(TargetManagerClass);
+	if (bRecordGetSpawnableSpawnAreasExecutionTime)
+	{
+		TargetManager->SpawnableSpawnAreasExecutionTimeDelegate.BindUObject(this,
+			&ThisClass::OnSpawnableSpawnAreasExecution);
+	}
+}
+
+void ABeatShotGameModeFunctionalTest::ImportDefaultGameModes()
+{
+	if (!GameModeDataAsset) return;
+	
+	const auto Map = GameModeDataAsset->GetDefaultGameModesMap();
+	for (const auto& GameMode : DefaultGameModesToTest)
+	{
+		for (const auto& Difficulty : DefaultGameModeDifficultiesToTest)
+		{
+			if (const auto Found = Map.Find(FBS_DefiningConfig(EGameModeType::Preset, GameMode, "", Difficulty)))
+			{
+				GameModesToTest.Add(*Found);
+			}
+			else
+			{
+				const FString GameModeString = UEnum::GetDisplayValueAsText(GameMode).ToString();
+				const FString DifString = UEnum::GetDisplayValueAsText(Difficulty).ToString();
+				AddWarning(FString::Printf(TEXT("Failed to import default game mode: %s %s"),
+					*GameModeString, *DifString));
+			}
+		}
+	}
+}
+
+void ABeatShotGameModeFunctionalTest::ImportCustomGameModes()
+{
+	for (const auto& ExportString : CustomGameModesToTest)
+	{
+		FBSConfig Config;
+		FText FailureReason;
+		if (FBSConfig::DecodeFromString(ExportString, Config, &FailureReason))
+		{
+			GameModesToTest.Add(Config);
+		}
+		else
+		{
+			AddWarning(FString::Printf(TEXT("Failed to import custom game mode: %s"), *FailureReason.ToString()));
+		}
+	}
 }
 
 bool ABeatShotGameModeFunctionalTest::IsReady_Implementation()
 {
-	return TargetManager && GameModeConfig.IsValid() && GameModeConfigs.Num() == 3;
+	return TargetManager && GameModeConfig.IsValid();
 }
 
 void ABeatShotGameModeFunctionalTest::StartTest()
@@ -42,23 +97,13 @@ void ABeatShotGameModeFunctionalTest::FinishTest(EFunctionalTestResult TestResul
 	TargetManager->Destroy();
 	GameModeConfig.Reset();
 	GameModeConfig = nullptr;
-	GameModeConfigs.Empty();
+	GameModesToTest.Empty();
 	Super::FinishTest(TestResult, Message);
 }
 
 void ABeatShotGameModeFunctionalTest::CleanUp()
 {
 	Super::CleanUp();
-}
-
-void ABeatShotGameModeFunctionalTest::PopulateGameModeConfigs()
-{
-	const FBS_DefiningConfig DefNormal(EGameModeType::Preset, GameModeToTest, "", EGameModeDifficulty::Normal);
-	const FBS_DefiningConfig DefHard(EGameModeType::Preset, GameModeToTest, "", EGameModeDifficulty::Hard);
-	const FBS_DefiningConfig DefDeath(EGameModeType::Preset, GameModeToTest, "", EGameModeDifficulty::Death);
-	GameModeConfigs.Add(GameModeDataAsset->GetDefaultGameModesMap().FindRef(DefNormal));
-	GameModeConfigs.Add(GameModeDataAsset->GetDefaultGameModesMap().FindRef(DefHard));
-	GameModeConfigs.Add(GameModeDataAsset->GetDefaultGameModesMap().FindRef(DefDeath));
 }
 
 void ABeatShotGameModeFunctionalTest::OnAudioAnalyzerBeat()
@@ -77,10 +122,18 @@ void ABeatShotGameModeFunctionalTest::OnAudioAnalyzerBeat()
 
 void ABeatShotGameModeFunctionalTest::StartGameMode()
 {
-	const FText GameModeText = UEnum::GetDisplayValueAsText(GameModeConfigs[CurrentIndex].DefiningConfig.BaseGameMode);
-	const FText DifficultyText = UEnum::GetDisplayValueAsText(GameModeConfigs[CurrentIndex].DefiningConfig.Difficulty);
+	FText GameModeText;
+	if (GameModesToTest[CurrentIndex].DefiningConfig.GameModeType == EGameModeType::Preset)
+	{
+		GameModeText = UEnum::GetDisplayValueAsText(GameModesToTest[CurrentIndex].DefiningConfig.BaseGameMode);
+	}
+	else
+	{
+		GameModeText = FText::FromString(GameModesToTest[CurrentIndex].DefiningConfig.CustomGameModeName);
+	}
+	const FText DifficultyText = UEnum::GetDisplayValueAsText(GameModesToTest[CurrentIndex].DefiningConfig.Difficulty);
 	StartStep(GameModeText.ToString() + "." + DifficultyText.ToString());
-	*GameModeConfig = GameModeConfigs[CurrentIndex];
+	*GameModeConfig = GameModesToTest[CurrentIndex];
 	TargetManager->Init(GameModeConfig, PlayerSettings_Game);
 	TargetManager->SetShouldSpawn(true);
 	GetWorldTimerManager().SetTimer(GameModeTimer, this, &ThisClass::StopGameMode, GameModeDuration, false);
@@ -93,11 +146,13 @@ void ABeatShotGameModeFunctionalTest::StopGameMode()
 	GetWorldTimerManager().ClearAllTimersForObject(this);
 	if (!TargetManager) FinishTest(EFunctionalTestResult::Failed, TEXT("Null Target Manager"));
 
+	GatherData();
+	
 	TargetManager->Clear();
 	FinishStep();
 	CurrentIndex++;
 
-	if (GameModeConfigs.IsValidIndex(CurrentIndex))
+	if (GameModesToTest.IsValidIndex(CurrentIndex))
 	{
 		StartGameMode();
 	}
@@ -111,12 +166,56 @@ void ABeatShotGameModeFunctionalTest::DestroyTargets()
 {
 	if (TargetManager)
 	{
-		for (const USpawnArea* SpawnArea : TargetManager->SpawnAreaManager->GetActivatedSpawnAreas())
+		if (bDestroyAllActivatedTargetsOnTimeStep)
 		{
-			if (ATarget* Target = TargetManager->ManagedTargets.FindRef(SpawnArea->GetGuid()))
+			for (const USpawnArea* SpawnArea : TargetManager->SpawnAreaManager->GetActivatedSpawnAreas())
 			{
-				Target->DamageSelf(true);
+				if (ATarget* Target = TargetManager->ManagedTargets.FindRef(SpawnArea->GetGuid()))
+				{
+					Target->DamageSelf(true);
+				}
+			}
+		}
+		else
+		{
+			TArray<USpawnArea*> Activated = TargetManager->SpawnAreaManager->GetActivatedSpawnAreas().Array();
+			Algo::RandomShuffle(Activated);
+			Activated.SetNum(NumActivatedTargetsToDestroy);
+			for (const USpawnArea* SpawnArea : Activated)
+			{
+				if (ATarget* Target = TargetManager->ManagedTargets.FindRef(SpawnArea->GetGuid()))
+				{
+					Target->DamageSelf(true);
+				}
 			}
 		}
 	}
+}
+
+void ABeatShotGameModeFunctionalTest::GatherData()
+{
+	if (bRecordGetSpawnableSpawnAreasExecutionTime && !SpawnableSpawnAreasExecutionTimes.IsEmpty())
+	{
+		double Sum = 0.f;
+		double WorstCase = 0.f;
+		const int32 Num = SpawnableSpawnAreasExecutionTimes.Num();
+		for (auto It = SpawnableSpawnAreasExecutionTimes.CreateConstIterator(); It; ++It)
+		{
+			const double Value = *It;
+			Sum += Value;
+			if (Value > WorstCase)
+			{
+				WorstCase = Value;
+			}
+		}
+		const double Avg = Sum / Num;
+		SpawnableSpawnAreasExecutionTimes.Empty();
+		AddInfo(FString::Printf(TEXT("Avg Execution Time to get SpawnArea for spawning: %lf"), Avg));
+		AddInfo(FString::Printf(TEXT("Worst Case Execution Time to get SpawnArea for spawning: %lf"), WorstCase));
+	}
+}
+
+void ABeatShotGameModeFunctionalTest::OnSpawnableSpawnAreasExecution(const double ElapsedTime)
+{
+	SpawnableSpawnAreasExecutionTimes.Emplace(ElapsedTime);
 }

@@ -157,7 +157,7 @@ protected:
 	FVector FindNextSpawnedTargetScale() const;
 
 	/** Finds suitable SpawnArea(s) to spawn NumToSpawn targets given the mode */
-	TSet<USpawnArea*> FindNextSpawnAreasForSpawn(int32 NumToSpawn) const;
+	TSet<USpawnArea*> FindNextSpawnAreasForSpawn(const int32 NumToSpawn) const;
 
 	/** Finds suitable SpawnArea(s) to activate NumToActivate targets */
 	TSet<USpawnArea*> FindNextSpawnAreasForActivation(int32 NumToActivate) const;
@@ -315,4 +315,9 @@ protected:
 
 	/** Whether or not the last spawned target direction change was horizontal */
 	mutable bool bLastSpawnedTargetDirectionChangeHorizontal;
+
+	#if !UE_BUILD_SHIPPING
+	/** Delegate used to record execution time taken for SpawnAreaManager's GetSpawnableSpawnAreas function. */
+	TDelegate<void(const double)> SpawnableSpawnAreasExecutionTimeDelegate;
+	#endif
 };

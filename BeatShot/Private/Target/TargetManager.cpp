@@ -616,24 +616,44 @@ FVector ATargetManager::FindNextSpawnedTargetScale() const
 		GetBSConfig()->TargetConfig.MaxSpawnedTargetScale));
 }
 
-TSet<USpawnArea*> ATargetManager::FindNextSpawnAreasForSpawn(int32 NumToSpawn) const
+TSet<USpawnArea*> ATargetManager::FindNextSpawnAreasForSpawn(const int32 NumToSpawn) const
 {
-	if (NumToSpawn == 0) return TSet<USpawnArea*>();
+	if (NumToSpawn == 0) return {};
 	
 	// Change the BoxExtent of the SpawnBox if dynamic
-	const bool bDynamic = GetBSConfig()->TargetConfig.BoundsScalingPolicy == EBoundsScalingPolicy::Dynamic;
-	if (bDynamic)
+	if (GetBSConfig()->TargetConfig.BoundsScalingPolicy == EBoundsScalingPolicy::Dynamic)
 	{
-		const float Factor = bDynamic ? GetCurveTableValue(true, DynamicLookUpValue_SpawnAreaScale) : 1.f;
+		const float Factor = GetCurveTableValue(true, DynamicLookUpValue_SpawnAreaScale);
 		UpdateSpawnBoxExtents(Factor);
 		UpdateSpawnVolume(Factor);
 	}
 	
 	TArray<FVector> Scales;
-	for (int i = 0; i < NumToSpawn; i++) Scales.Add(FindNextSpawnedTargetScale());
+	Scales.Reserve(NumToSpawn);
+	for (int i = 0; i < NumToSpawn; i++)
+	{
+		Scales.Add(FindNextSpawnedTargetScale());
+	}
+
+	#if !UE_BUILD_SHIPPING
+	const double StartTime = FPlatformTime::Seconds();
+	#endif
 	
 	TSet<USpawnArea*> Out = SpawnAreaManager->GetSpawnableSpawnAreas(Scales, NumToSpawn);
-	if (Out.IsEmpty()) UE_LOG(LogTargetManager, Display, TEXT("ValidSpawnableSpawnAreas is empty."));
+	
+	#if !UE_BUILD_SHIPPING
+	const double EndTime = FPlatformTime::Seconds();
+	const double ElapsedTime = EndTime - StartTime;
+	
+	if (Out.IsEmpty())
+	{
+		UE_LOG(LogTargetManager, Display, TEXT("ValidSpawnableSpawnAreas is empty."));
+	}
+	if (SpawnableSpawnAreasExecutionTimeDelegate.IsBound())
+	{
+		SpawnableSpawnAreasExecutionTimeDelegate.Execute(ElapsedTime);
+	}
+	#endif
 	
 	return Out;
 }

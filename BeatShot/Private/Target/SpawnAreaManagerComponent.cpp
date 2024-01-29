@@ -1046,8 +1046,6 @@ TSet<USpawnArea*> USpawnAreaManagerComponent::GetSpawnableSpawnAreas_Grid(const 
 TSet<USpawnArea*> USpawnAreaManagerComponent::GetSpawnableSpawnAreas_NonGrid(const TArray<FVector>& Scales,
 	const int32 NumToSpawn) const
 {
-	// const double StartTime = FPlatformTime::Seconds();
-
 	// Start with all SpawnAreas within the current box bounds, RemoveOverlappingSpawnAreas will take care of rest
 	TSet<USpawnArea*> ValidSpawnAreas = CachedExtrema;
 
@@ -1096,9 +1094,7 @@ TSet<USpawnArea*> USpawnAreaManagerComponent::GetSpawnableSpawnAreas_NonGrid(con
 			PreviousSpawnArea = Chosen;
 		}
 	}
-	// const double EndTime = FPlatformTime::Seconds();
-	// const double ElapsedTime = EndTime - StartTime;
-	// UE_LOG(LogTemp, Warning, TEXT("%s took %f seconds to execute."), *FString(__FUNCTION__), ElapsedTime);
+
 	return ChosenSpawnAreas;
 }
 
