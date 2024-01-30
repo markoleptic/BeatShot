@@ -56,6 +56,7 @@ void UPostGameMenuWidget::ShowAudioFormatSelect()
 		FGameModeTransitionState GameModeTransitionState;
 
 		GameModeTransitionState.TransitionState = ETransitionState::PlayAgain;
+		GameModeTransitionState.bSaveCurrentScores = false;
 		GameModeTransitionState.BSConfig.AudioConfig.SongTitle = AudioConfig.SongTitle;
 		GameModeTransitionState.BSConfig.AudioConfig.SongLength = AudioConfig.SongLength;
 		GameModeTransitionState.BSConfig.AudioConfig.InAudioDevice = AudioConfig.InAudioDevice;

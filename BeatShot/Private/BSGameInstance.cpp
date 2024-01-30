@@ -51,7 +51,7 @@ void UBSGameInstance::OnLoadingScreenFadeOutComplete()
 	// No longer the initial loading screen
 	bIsInitialLoadingScreen = false;
 	
-	if (GetWorld()->GetMapName().Contains("MainMenu"))
+	if (GetWorld()->GetMapName().Contains(MainMenuLevelName.ToString()))
 	{
 		if (ABSPlayerController* PC = Cast<ABSPlayerController>(GetFirstLocalPlayerController(GetWorld())))
 		{
@@ -67,7 +67,7 @@ void UBSGameInstance::PrepareLoadingScreen()
 	Attributes.bAllowEngineTick = true;
 	Attributes.bMoviesAreSkippable = false;
 	Attributes.bWaitForManualStop = true;
-	Attributes.MinimumLoadingScreenDisplayTime = 2.f;
+	Attributes.MinimumLoadingScreenDisplayTime = MinimumLoadingScreenDisplayTime;
 	if (SlateWidgetStyleAsset && SlateWidgetStyleAsset->CustomStyle)
 	{
 		if (const FLoadingScreenStyle* Style = static_cast<const struct FLoadingScreenStyle*>(SlateWidgetStyleAsset->
@@ -136,51 +136,60 @@ void UBSGameInstance::HandleGameModeTransition(const FGameModeTransitionState& N
 			{
 				PC->OnScreenFadeToBlackFinish.BindLambda([this]
 				{
-					UGameplayStatics::OpenLevel(GetWorld(), FName("Range"));
+					UGameplayStatics::OpenLevel(GetWorld(), RangeLevelName);
 				});
 				PC->FadeScreenToBlack();
 			}
-			break;
 		}
+		break;
 	case ETransitionState::QuitToMainMenu:
+		{
+			// Nothing else to do here
+			EndBSGameMode(NewGameModeTransitionState);
+		}
+		break;
 	case ETransitionState::StartFromPostGameMenu:
+		{
+			// Update Game Mode configuration
+			SetBSConfig(NewGameModeTransitionState.BSConfig);
+			EndBSGameMode(NewGameModeTransitionState);
+		}
+		break;
 	case ETransitionState::Restart:
 		{
-			if (ABSGameMode* GM = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
-			{
-				GM->EndGameMode(NewGameModeTransitionState.bSaveCurrentScores,
-					NewGameModeTransitionState.TransitionState);
-			}
-			break;
+			// Nothing else to do here
+			EndBSGameMode(NewGameModeTransitionState);
 		}
+		break;
 	case ETransitionState::QuitToDesktop:
 		{
-			bQuitToDesktopAfterSave = NewGameModeTransitionState.bSaveCurrentScores;
-			if (ABSGameMode* GM = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
-			{
-				GM->EndGameMode(NewGameModeTransitionState.bSaveCurrentScores,
-					NewGameModeTransitionState.TransitionState);
-			}
-			if (!bQuitToDesktopAfterSave)
+			EndBSGameMode(NewGameModeTransitionState);
+			// Can exit immediately if not saving scores, otherwise SavePlayerScoresToDatabase will handle it
+			if (!NewGameModeTransitionState.bSaveCurrentScores)
 			{
 				UKismetSystemLibrary::QuitGame(GetWorld(), UGameplayStatics::GetPlayerController(GetWorld(), 0),
 					EQuitPreference::Quit, false);
 			}
-			break;
 		}
+		break;
 	case ETransitionState::PlayAgain:
 		{
 			BSConfig->AudioConfig = NewGameModeTransitionState.BSConfig.AudioConfig;
 			BSConfig->OnCreate();
-			if (ABSGameMode* GM = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
-			{
-				GM->EndGameMode(NewGameModeTransitionState.bSaveCurrentScores,
-					NewGameModeTransitionState.TransitionState);
-			}
-			break;
+			EndBSGameMode(NewGameModeTransitionState);
 		}
+		break;
 	case ETransitionState::None:
 		break;
+	}
+}
+
+void UBSGameInstance::EndBSGameMode(const FGameModeTransitionState& NewGameModeTransitionState) const
+{
+	if (ABSGameMode* GM = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
+	{
+		GM->EndGameMode(NewGameModeTransitionState.bSaveCurrentScores,
+			NewGameModeTransitionState.TransitionState);
 	}
 }
 

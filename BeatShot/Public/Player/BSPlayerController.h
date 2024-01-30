@@ -138,7 +138,12 @@ public:
 	/** Delegate that executes when the screen fade widget completes its animation.  */
 	FOnScreenFadeToBlackFinish OnScreenFadeToBlackFinish;
 
-	/** The time the screen fade widget plays its animations for. Also applies to fading MainMenu music. */
+	/** The length of time to fade in MainMenu music. */
+	UPROPERTY(EditDefaultsOnly, Category = "BSPlayerController|Loading Screen")
+	float MainMenuMusicFadeInDuration = 2.f;
+
+	/** The time the screen fade widget plays its animations for. Also applies to fading out MainMenu music. */
+	UPROPERTY(EditDefaultsOnly, Category = "BSPlayerController|Loading Screen")
 	float ScreenFadeWidgetAnimationDuration = 0.75f;
 
 protected:

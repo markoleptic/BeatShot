@@ -47,6 +47,9 @@ public:
 	/** Handles game mode transitions initiated by Main Menu, Pause Menu, or Post Game Menu */
 	void HandleGameModeTransition(const FGameModeTransitionState& NewGameModeTransitionState);
 
+	/** Calls EndGameMode if the current game mode is BSGameMode. */
+	void EndBSGameMode(const FGameModeTransitionState& NewGameModeTransitionState) const;
+
 	/** Returns shared pointer to defining game mode options configuration */
 	TSharedPtr<FBSConfig> GetBSConfig() const { return BSConfig; }
 
@@ -55,6 +58,12 @@ public:
 
 	/** Returns actor that manages the time of day in the Range level. */
 	TObjectPtr<ATimeOfDayManager> GetTimeOfDayManager() const { return TimeOfDayManager; }
+
+	/** Returns the name of the MainMenuLevel. */
+	FName GetMainMenuLevelName() const { return MainMenuLevelName; }
+
+	/** Returns the name of the MainMenuLevel. */
+	FName GetRangeLevelName() const { return RangeLevelName; }
 
 	/** Sets the actor that manages the time of day in the Range level. */
 	void SetTimeOfDayManager(const TObjectPtr<ATimeOfDayManager> InManager) { TimeOfDayManager = InManager; }
@@ -161,6 +170,15 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Loading Screen")
 	USlateWidgetStyleAsset* SlateWidgetStyleAsset;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Loading Screen")
+	float MinimumLoadingScreenDisplayTime = 2.f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Levels")
+	FName MainMenuLevelName;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Levels")
+	FName RangeLevelName;
 
 	/** Whether or not the Steam Overlay is active. */
 	bool IsSteamOverlayActive = false;

@@ -73,17 +73,17 @@ TMap<FBS_DefiningConfig, FCommonScoreInfo> USaveGamePlayerScore::GetCommonScoreI
 	return CommonScoreInfo;
 }
 
-FCommonScoreInfo USaveGamePlayerScore::FindCommonScoreInfo(const FBS_DefiningConfig& InDefiningConfig)
+void USaveGamePlayerScore::FindOrAddCommonScoreInfo(const FBS_DefiningConfig& InDefiningConfig,
+	FCommonScoreInfo& OutCommonScoreInfo)
 {
-	FCommonScoreInfo* Found = CommonScoreInfo.Find(InDefiningConfig);
-	return Found ? *Found : FCommonScoreInfo();
+	OutCommonScoreInfo = CommonScoreInfo.FindOrAdd(InDefiningConfig);
 }
 
-void USaveGamePlayerScore::FindOrAddCommonScoreInfo(const FBS_DefiningConfig& InDefiningConfig,
+void USaveGamePlayerScore::SaveCommonScoreInfo(const FBS_DefiningConfig& InDefiningConfig,
 	const FCommonScoreInfo& InCommonScoreInfo)
 {
 	CommonScoreInfo.FindOrAdd(InDefiningConfig) = InCommonScoreInfo;
-
+	
 	#if !UE_BUILD_SHIPPING
 	if (InCommonScoreInfo.NumQTableRows != 0 && InCommonScoreInfo.QTable.Num() > 0)
 	{

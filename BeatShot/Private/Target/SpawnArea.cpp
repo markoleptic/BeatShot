@@ -6,10 +6,14 @@
 
 using namespace Constants;
 
+float USpawnArea::Width = 0.f;
+float USpawnArea::Height = 0.f;
+int32 USpawnArea::TotalNumHorizontalSpawnAreas = 0;
+int32 USpawnArea::TotalNumVerticalSpawnAreas = 0;
+int32 USpawnArea::Size = 0;
+
 USpawnArea::USpawnArea()
 {
-	Width = 0.f;
-	Height = 0.f;
 	Vertex_BottomLeft = FVector(-1);
 	CenterPoint = FVector(-1);
 	ChosenPoint = FVector(-1);
@@ -27,34 +31,29 @@ USpawnArea::USpawnArea()
 	GridIndexType = EGridIndexType::None;
 	OccupiedVertices = TSet<FVector>();
 	AdjacentIndexMap = TMap<EBorderingDirection, int32>();
-	Size = 0;
 	Guid = FGuid();
 }
 
-void USpawnArea::Init(const FSpawnAreaParams& InParams)
+void USpawnArea::Init(const int32 InIndex, const FVector& InBottomLeftVertex)
 {
-	Width = InParams.IncY;
-	Height = InParams.IncZ;
-
-	Vertex_BottomLeft = InParams.BottomLeft;
-	CenterPoint = Vertex_BottomLeft + FVector(0, InParams.IncY * 0.5f, InParams.IncZ * 0.5f);
-	Vertex_BottomRight = Vertex_BottomLeft + FVector(0, InParams.IncY, 0);
-	Vertex_TopLeft = Vertex_BottomLeft + FVector(0, 0, InParams.IncZ);
-	Vertex_TopRight = Vertex_BottomLeft + FVector(0, InParams.IncY, InParams.IncZ);
+	Vertex_BottomLeft = InBottomLeftVertex;
+	CenterPoint = Vertex_BottomLeft + FVector(0, Width * 0.5f, Height * 0.5f);
+	Vertex_BottomRight = Vertex_BottomLeft + FVector(0, Width, 0);
+	Vertex_TopLeft = Vertex_BottomLeft + FVector(0, 0, Height);
+	Vertex_TopRight = Vertex_BottomLeft + FVector(0, Width, Height);
 
 	ChosenPoint = Vertex_BottomLeft;
 	TargetScale = FVector(1);
 
 	TotalSpawns = INDEX_NONE;
 	TotalHits = 0;
-	Index = InParams.Index;
-	Size = InParams.NumVerticalTargets * InParams.NumHorizontalTargets;
+	Index = InIndex;
 
 	bIsActivated = false;
 	bIsRecent = false;
 	TimeSetRecent = DBL_MAX;
-	GridIndexType = FindIndexType(InParams.Index, Size, InParams.NumHorizontalTargets);
-	SetAdjacentIndices(GridIndexType, Index, InParams.NumHorizontalTargets);
+	GridIndexType = FindIndexType(InIndex, Size, TotalNumHorizontalSpawnAreas);
+	SetAdjacentIndices(GridIndexType, Index, TotalNumHorizontalSpawnAreas);
 	OccupiedVertices = TSet<FVector>();
 }
 
@@ -201,7 +200,7 @@ void USpawnArea::SetIsActivated(const bool bActivated, const bool bAllow)
 	bAllowActivationWhileActivated = bAllow;
 }
 
-float USpawnArea::GetMinOverlapRadius() const
+float USpawnArea::GetMinOverlapRadius()
 {
 	return FMath::Max(Width, Height) * 0.5f;
 }

@@ -176,11 +176,8 @@ public:
 	/** Saves an instance of an FPlayerScore to slot */
 	static void SavePlayerScoreInstance(const FPlayerScore& PlayerScoreToSave);
 
-	/** Loads the map containing common score info for all game modes */
-	static TMap<FBS_DefiningConfig, FCommonScoreInfo> LoadCommonScoreInfoMap();
-
-	/** Returns the CommonScoreInfo that matches a given DefiningConfig, or a blank one if none found */
-	static FCommonScoreInfo FindCommonScoreInfo(const FBS_DefiningConfig& DefiningConfig);
+	/** Returns the CommonScoreInfo that matches a given DefiningConfig, or creates a new one if none found */
+	static FCommonScoreInfo FindOrAddCommonScoreInfo(const FBS_DefiningConfig& DefiningConfig);
 
 	/** Finds or Adds a DefiningConfig CommonScoreInfo pair and saves to slot */
 	static void SaveCommonScoreInfo(const FBS_DefiningConfig& DefiningConfig,

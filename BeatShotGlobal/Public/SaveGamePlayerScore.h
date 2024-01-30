@@ -748,12 +748,13 @@ public:
 	/** Returns a copy of CommonScoreInfo */
 	TMap<FBS_DefiningConfig, FCommonScoreInfo> GetCommonScoreInfo() const;
 
-	/** Returns a copy of the CommonScoreInfo that matches a given DefiningConfig, or a blank one if none found  */
-	FCommonScoreInfo FindCommonScoreInfo(const FBS_DefiningConfig& InDefiningConfig);
-
-	/** Finds or Adds the CommonScoreInfo for the given Defining Config */
+	/** Finds or Adds an entry to CommonScoreInfo map for the given Defining Config. */
 	void FindOrAddCommonScoreInfo(const FBS_DefiningConfig& InDefiningConfig,
-		const FCommonScoreInfo& InCommonScoreInfo);
+		FCommonScoreInfo& OutCommonScoreInfo);
+
+	/** Replaces the CommonScoreInfo entry with InCommonScoreInfo if one is found using InDefiningConfig. Otherwise, it
+	 *  adds a new entry. */
+	void SaveCommonScoreInfo(const FBS_DefiningConfig& InDefiningConfig, const FCommonScoreInfo& InCommonScoreInfo);
 
 	/** Clears the QTable for an FCommonScoreInfo instance that matches the Defining Config. Returns 1 if successfully found and cleared */
 	int32 ResetQTable(const FBS_DefiningConfig& InDefiningConfig);

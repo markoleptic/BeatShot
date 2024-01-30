@@ -79,6 +79,9 @@ UBSEquipmentInstance* FBSEquipmentList::AddEntry(TSubclassOf<UBSEquipmentDefinit
 				AbilitySet->GiveToAbilitySystem(ASC, &NewEntry.GrantedHandles, Result);
 			}
 		}
+
+		// Apply Equipped gameplay tags
+		ASC->AddLooseGameplayTags(EquipmentCDO->EquippedTags);
 	}
 	else
 	{
@@ -99,6 +102,10 @@ void FBSEquipmentList::RemoveEntry(UBSEquipmentInstance* Instance)
 			if (UBSAbilitySystemComponent* ASC = GetAbilitySystemComponent())
 			{
 				Entry.GrantedHandles.TakeFromAbilitySystem(ASC);
+
+				// Remove Equipped gameplay tags
+				const UBSEquipmentDefinition* EquipmentCDO = GetDefault<UBSEquipmentDefinition>(Entry.EquipmentDefinition);
+				ASC->RemoveLooseGameplayTags(EquipmentCDO->EquippedTags);
 			}
 			Instance->DestroyEquipmentActors();
 			EntryIt.RemoveCurrent();
@@ -142,7 +149,6 @@ UBSEquipmentInstance* UBSEquipmentManagerComponent::EquipItem(TSubclassOf<UBSEqu
 		if (Result != nullptr)
 		{
 			Result->OnEquipped();
-
 			if (IsUsingRegisteredSubObjectList() && IsReadyForReplication())
 			{
 				AddReplicatedSubObject(Result);

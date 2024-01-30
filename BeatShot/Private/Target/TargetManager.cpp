@@ -127,7 +127,7 @@ void ATargetManager::Init(const TSharedPtr<FBSConfig>& InConfig, const FPlayerSe
 	// Init RLC
 	if (GetBSConfig()->IsCompatibleWithReinforcementLearning())
 	{
-		const FCommonScoreInfo CommonScoreInfo = FindCommonScoreInfo(GetBSConfig()->DefiningConfig);
+		const FCommonScoreInfo CommonScoreInfo = FindOrAddCommonScoreInfo(GetBSConfig()->DefiningConfig);
 		const FRLAgentParams Params(GetBSConfig()->AIConfig, CommonScoreInfo, SpawnAreaManager->GetSpawnAreaSize());
 		RLComponent->Init(Params);
 
@@ -1197,7 +1197,7 @@ FAccuracyData ATargetManager::GetLocationAccuracy() const
 	return SpawnAreaManager->GetLocationAccuracy();
 }
 
-void ATargetManager::SaveQTable(FCommonScoreInfo& InCommonScoreInfo) const
+void ATargetManager::UpdateCommonScoreInfoQTable(FCommonScoreInfo& InCommonScoreInfo) const
 {
 	if (RLComponent->GetReinforcementLearningMode() != EReinforcementLearningMode::None)
 	{

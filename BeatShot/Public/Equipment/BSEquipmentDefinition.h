@@ -29,7 +29,7 @@ struct FBSEquipmentActorToSpawn
 	FTransform AttachTransform;
 };
 
-/** Describes a piece of equipment that can be applied to a pawn */
+/** Describes a piece of equipment that can be applied to a pawn. */
 UCLASS(Blueprintable, Const, Abstract, BlueprintType)
 class BEATSHOT_API UBSEquipmentDefinition : public UObject
 {
@@ -50,7 +50,8 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Equipment")
 	TArray<FBSEquipmentActorToSpawn> ActorsToSpawn;
 
-	/** Gameplay tags associated with this piece of equipment. */
+	/** Gameplay tags associated with this piece of equipment. Applied to the Owner's ASC when equipped,
+	 *  and removed when unequipped. */
 	UPROPERTY(EditDefaultsOnly, Category="Equipment")
-	FGameplayTagContainer GameplayTags;
+	FGameplayTagContainer EquippedTags;
 };

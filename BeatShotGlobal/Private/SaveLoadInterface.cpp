@@ -365,22 +365,14 @@ void ISaveLoadInterface::SavePlayerScoreInstance(const FPlayerScore& PlayerScore
 /* ---- Common Score Info ---- */
 /* --------------------------- */
 
-TMap<FBS_DefiningConfig, FCommonScoreInfo> ISaveLoadInterface::LoadCommonScoreInfoMap()
+FCommonScoreInfo ISaveLoadInterface::FindOrAddCommonScoreInfo(const FBS_DefiningConfig& DefiningConfig)
 {
-	if (const USaveGamePlayerScore* SaveGamePlayerScore = LoadFromSlot_SaveGamePlayerScore())
-	{
-		return SaveGamePlayerScore->GetCommonScoreInfo();
-	}
-	return TMap<FBS_DefiningConfig, FCommonScoreInfo>();
-}
-
-FCommonScoreInfo ISaveLoadInterface::FindCommonScoreInfo(const FBS_DefiningConfig& DefiningConfig)
-{
+	FCommonScoreInfo CommonScoreInfo;
 	if (USaveGamePlayerScore* SaveGamePlayerScore = LoadFromSlot_SaveGamePlayerScore())
 	{
-		return SaveGamePlayerScore->FindCommonScoreInfo(DefiningConfig);
+		SaveGamePlayerScore->FindOrAddCommonScoreInfo(DefiningConfig, CommonScoreInfo);
 	}
-	return FCommonScoreInfo();
+	return CommonScoreInfo;
 }
 
 void ISaveLoadInterface::SaveCommonScoreInfo(const FBS_DefiningConfig& DefiningConfig,
@@ -388,7 +380,7 @@ void ISaveLoadInterface::SaveCommonScoreInfo(const FBS_DefiningConfig& DefiningC
 {
 	if (USaveGamePlayerScore* SaveGamePlayerScore = LoadFromSlot_SaveGamePlayerScore())
 	{
-		SaveGamePlayerScore->FindOrAddCommonScoreInfo(DefiningConfig, CommonScoreInfoToSave);
+		SaveGamePlayerScore->SaveCommonScoreInfo(DefiningConfig, CommonScoreInfoToSave);
 		SaveToSlot(SaveGamePlayerScore);
 	}
 }

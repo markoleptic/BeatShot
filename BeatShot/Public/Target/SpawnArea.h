@@ -41,38 +41,6 @@ enum class EGridIndexType : uint8
 
 ENUM_RANGE_BY_FIRST_AND_LAST(EGridIndexType, EGridIndexType::Corner_TopLeft, EGridIndexType::Middle);
 
-/** Parameters for initializing a SpawnArea */
-USTRUCT()
-struct FSpawnAreaParams
-{
-	GENERATED_BODY()
-	int32 Index;
-	FVector BottomLeft;
-	int32 IncY;
-	int32 IncZ;
-	int32 NumVerticalTargets;
-	int32 NumHorizontalTargets;
-	bool bGrid;
-
-	FSpawnAreaParams()
-	{
-		Index = -1;
-		BottomLeft = FVector();
-		IncY = -1;
-		IncZ = -1;
-		NumVerticalTargets = -1;
-		NumHorizontalTargets = -1;
-		bGrid = false;
-	}
-
-	FSpawnAreaParams& NextIndex(const int32 InIndex, const FVector& InLoc)
-	{
-		Index = InIndex;
-		BottomLeft = InLoc;
-		return *this;
-	}
-};
-
 /** A small piece of the total spawn area containing info about its state in relation to targets,
  *  including points that represents where targets have spawned */
 UCLASS()
@@ -82,6 +50,24 @@ class BEATSHOT_API USpawnArea : public UObject
 
 	friend class USpawnAreaManagerComponent;
 
+	/** The unique index for this SpawnArea */
+	int32 Index;
+
+	/** The width of the SpawnArea in Unreal units. */
+	static float Width;
+
+	/** The height of the SpawnArea in Unreal units. */
+	static float Height;
+
+	/** The total number of horizontal SpawnAreas. */
+	static int32 TotalNumHorizontalSpawnAreas;
+
+	/** The total number of vertical SpawnAreas. */
+	static int32 TotalNumVerticalSpawnAreas;
+	
+	/** The total number of SpawnAreas that this SpawnArea is part of. */
+	static int32 Size;
+
 	/** Guid associated with a managed target */
 	FGuid Guid;
 
@@ -90,16 +76,7 @@ class BEATSHOT_API USpawnArea : public UObject
 
 	/** The point chosen after a successful spawn or activation. Will be inside the sub area */
 	FVector ChosenPoint;
-
-	/** The width of the box */
-	float Width;
-
-	/** The height of the box */
-	float Height;
-
-	/** The unique index for this SpawnArea */
-	int32 Index;
-
+	
 	/** Bottom left vertex of the box, used for comparison between SpawnAreas. This Vertex corresponds to a location
 	 *  in AllSpawnLocations (in TargetManager) */
 	FVector Vertex_BottomLeft;
@@ -153,13 +130,26 @@ class BEATSHOT_API USpawnArea : public UObject
 	 *  managed or activated. Only updated if the target scale changes */
 	TSet<FVector> OccupiedVertices;
 
-	/** NumHorizontalTargets * NumVerticalTargets */
-	int32 Size;
-
 public:
 	USpawnArea();
 
-	void Init(const FSpawnAreaParams& InParams);
+	/** Initializes the SpawnArea object. */
+	void Init(const int32 InIndex, const FVector& InBottomLeftVertex);
+
+	/** Sets the size (number of horizontal SpawnAreas * number of vertical SpawnAreas) for all SpawnAreas. */
+	static void SetSize(const int32 InSize) { Size = InSize; }
+
+	/** Sets the width for all SpawnAreas. */
+	static void SetWidth(const int32 InWidth) { Width = InWidth; }
+
+	/** Sets the width for all SpawnAreas. */
+	static void SetHeight(const int32 InHeight) { Height = InHeight; }
+
+	/** Sets the total number of horizontal SpawnAreas for all SpawnAreas. */
+	static void SetTotalNumHorizontalSpawnAreas(const int32 InNum) { TotalNumHorizontalSpawnAreas = InNum; }
+
+	/** Sets the total number of vertical SpawnAreas for all SpawnAreas. */
+	static void SetTotalNumVerticalSpawnAreas(const int32 InNum) { TotalNumVerticalSpawnAreas = InNum; }
 	
 	/** Returns the index assigned on initialization */
 	int32 GetIndex() const { return Index; }
@@ -233,7 +223,7 @@ public:
 	void ResetGuid() { Guid.Invalidate(); }
 
 	/** Returns the minimum overlap radius */
-	float GetMinOverlapRadius() const;
+	static float GetMinOverlapRadius();
 
 	/** Sets the TargetScale */
 	void SetTargetScale(const FVector& InScale);
@@ -355,11 +345,7 @@ struct FAreaKey
 	FVector Vertex_BottomLeft;
 	FVector Vertex_TopRight;
 
-	FAreaKey()
-	{
-		Vertex_BottomLeft = FVector();
-		Vertex_TopRight = FVector();
-	}
+	FAreaKey() = default;
 
 	FAreaKey(const FVector& InBotLeft, const FVector& InTopRight)
 	{
@@ -393,20 +379,20 @@ struct FAreaKey
 
 struct FSpawnAreaIndexKeyFuncs : BaseKeyFuncs<USpawnArea, int32, false>
 {
-	// Implement GetSetKey, which extracts the key from an element
+	// Extracts the key from an element
 	static FORCEINLINE const KeyInitType& GetSetKey(const USpawnArea& Element)
 	{
 		// Return the key based on the subset of the element type
 		return Element.GetIndex();
 	}
 
-	// Implement KeyHash, which computes the hash value for a key
+	// Computes the hash value for a key
 	static FORCEINLINE uint32 KeyHash(const KeyInitType& Key)
 	{
 		return GetTypeHash(Key);
 	}
 
-	// Implement Match, which compares two keys for equality
+	// Compares two keys for equality
 	static FORCEINLINE bool Matches(const KeyInitType& A, const KeyInitType& B)
 	{
 		return A == B;

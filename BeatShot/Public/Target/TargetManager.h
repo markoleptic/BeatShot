@@ -266,7 +266,7 @@ public:
 	FAccuracyData GetLocationAccuracy() const;
 
 	/** Saves the QTable inside InCommonScoreInfo */
-	void SaveQTable(FCommonScoreInfo& InCommonScoreInfo) const;
+	void UpdateCommonScoreInfoQTable(FCommonScoreInfo& InCommonScoreInfo) const;
 
 protected:
 	/** Initialized at start of game mode by DefaultGameMode */

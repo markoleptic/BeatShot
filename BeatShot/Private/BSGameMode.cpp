@@ -205,22 +205,21 @@ void ABSGameMode::StartGameModeTimers()
 
 void ABSGameMode::BindGameModeDelegates()
 {
-	if (!GetTargetManager()->OnTargetActivated.IsBoundToObject(this))
+	if (!TargetManager->OnTargetActivated.IsBoundToObject(this))
 	{
-		GetTargetManager()->OnTargetActivated.AddUObject(this, &ABSGameMode::UpdateTargetsSpawned);
+		TargetManager->OnTargetActivated.AddUObject(this, &ABSGameMode::UpdateTargetsSpawned);
 	}
-	if (!GetTargetManager()->PostTargetDamageEvent.IsBoundToObject(this))
+	if (!TargetManager->PostTargetDamageEvent.IsBoundToObject(this))
 	{
-		GetTargetManager()->PostTargetDamageEvent.AddUObject(this, &ABSGameMode::OnPostTargetDamageEvent);
+		TargetManager->PostTargetDamageEvent.AddUObject(this, &ABSGameMode::OnPostTargetDamageEvent);
 	}
 }
 
 void ABSGameMode::EndGameMode(const bool bSaveScores, const ETransitionState TransitionState)
 {
-	TimePlayedGameMode = GetWorldTimerManager().GetTimerElapsed(GameModeLengthTimer);
-	GetWorldTimerManager().ClearTimer(GameModeLengthTimer);
-	GetWorldTimerManager().ClearTimer(PlayerDelayTimer);
-	GetWorldTimerManager().ClearTimer(OnSecondPassedTimer);
+	FTimerManager& TimerManager = GetWorldTimerManager();
+	TimePlayedGameMode = TimerManager.GetTimerElapsed(GameModeLengthTimer);
+	TimerManager.ClearAllTimersForObject(this);
 	GameModeLengthTimerDelegate.Unbind();
 
 	TMap<ABSPlayerController*, FCommonScoreInfo> ScoreInfo;
@@ -229,27 +228,37 @@ void ABSGameMode::EndGameMode(const bool bSaveScores, const ETransitionState Tra
 	{
 		TargetManager->SetShouldSpawn(false);
 
+		// Update Score information before TargetManager is destroyed
 		const FAccuracyData AccuracyData = TargetManager->GetLocationAccuracy();
-
+		
 		for (auto& CurrentPlayerScore : CurrentPlayerScores)
 		{
+			// Update location accuracy for the current player score
 			CurrentPlayerScore.Value.LocationAccuracy = AccuracyData.AccuracyRows;
-			FCommonScoreInfo ScoreInfoInst = CurrentPlayerScore.Key->FindCommonScoreInfo(BSConfig->DefiningConfig);
+
+			// Find or add a Common Score Info instance
+			FCommonScoreInfo ScoreInfoInst = CurrentPlayerScore.Key->FindOrAddCommonScoreInfo(BSConfig->DefiningConfig);
+
+			// Update the Common Score Info Accuracy Data
 			ScoreInfoInst.UpdateAccuracy(AccuracyData);
-			ScoreInfo.Add(CurrentPlayerScore.Key, ScoreInfoInst);
+
+			// Update the Common Score Info QTable if settings permit
 			if (BSConfig->AIConfig.ReinforcementLearningMode != EReinforcementLearningMode::None)
 			{
-				GetTargetManager()->SaveQTable(ScoreInfoInst);
+				TargetManager->UpdateCommonScoreInfoQTable(ScoreInfoInst);
 			}
+
+			// Add the Common Score Info instance to the map so it can be saved later
+			ScoreInfo.Add(CurrentPlayerScore.Key, ScoreInfoInst);
 		}
 
-		if (GetTargetManager()->OnTargetActivated.IsBoundToObject(this))
+		if (TargetManager->OnTargetActivated.IsBoundToObject(this))
 		{
-			GetTargetManager()->OnTargetActivated.RemoveAll(this);
+			TargetManager->OnTargetActivated.RemoveAll(this);
 		}
-		if (GetTargetManager()->PostTargetDamageEvent.IsBoundToObject(this))
+		if (TargetManager->PostTargetDamageEvent.IsBoundToObject(this))
 		{
-			GetTargetManager()->PostTargetDamageEvent.RemoveAll(this);
+			TargetManager->PostTargetDamageEvent.RemoveAll(this);
 		}
 
 		TargetManager->Destroy();
@@ -591,7 +600,8 @@ void ABSGameMode::GoToMainMenu()
 		Controller->HidePlayerHUD();
 		Controller->HideCrossHair();
 	}
-	UGameplayStatics::OpenLevel(GetWorld(), "MainMenuLevel");
+	const UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	UGameplayStatics::OpenLevel(GetWorld(), GI->GetMainMenuLevelName());
 }
 
 void ABSGameMode::LoadMatchingPlayerScores()
@@ -665,17 +675,17 @@ void ABSGameMode::HandleScoreSaving(const bool bExternalSaveScores,
 					GI->GetSteamManager()->UpdateStat_NumGamesPlayed(CurrentPlayerScore.Value.DefiningConfig.BaseGameMode, 1);
 				}
 			}
-			#else
+			#else // !UE_BUILD_SHIPPING
 			if (CurrentPlayerScore.Value.DefiningConfig.GameModeType == EGameModeType::Custom)
 			{
 				GI->GetSteamManager()->UpdateStat_NumGamesPlayed(EBaseGameMode::None, 1);
 			}
 			else
 			{
-				GI->GetSteamManager()->UpdateStat_NumGamesPlayed(CurrentPlayerScore.Value.DefiningConfig.BaseGameMode,
-					1);
+				GI->GetSteamManager()->UpdateStat_NumGamesPlayed(CurrentPlayerScore.Value.DefiningConfig.BaseGameMode, 1);
 			}
-			#endif
+			#endif // UE_BUILD_SHIPPING
+			
 			// Save common score info and completed scores locally
 			const FCommonScoreInfo* CommonScoreInfo = InCommonScoreInfo.Find(CurrentPlayerScore.Key);
 			if (CommonScoreInfo)

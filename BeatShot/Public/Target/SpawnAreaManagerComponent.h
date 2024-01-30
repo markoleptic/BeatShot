@@ -9,44 +9,52 @@
 #include "Target.h"
 #include "SpawnAreaManagerComponent.generated.h"
 
-/** Contains the minimum and maximum of a Box */
-USTRUCT()
+
+/** Cardinal direction Index types that are valid to use when searching for GridBlocks */
+inline const TSet GridBlockIndexTypes = {
+	EBorderingDirection::Left, EBorderingDirection::Right, EBorderingDirection::Up, EBorderingDirection::Down
+};
+
+/** Up-Down only index types */
+inline const TSet VerticalIndexTypes = {EBorderingDirection::Up, EBorderingDirection::Down};
+
+/** Left-right only index types */
+inline const TSet HorizontalIndexTypes = {EBorderingDirection::Left, EBorderingDirection::Right};
+
+/** All index types */
+inline const TSet AllIndexTypes = {
+	EBorderingDirection::UpLeft, EBorderingDirection::UpRight, EBorderingDirection::DownLeft,
+	EBorderingDirection::DownRight, EBorderingDirection::Left, EBorderingDirection::Right, EBorderingDirection::Up,
+	EBorderingDirection::Down
+};
+
+/** Contains the minimum and maximum of a Box, i.e. the bottom left corner location and top right corner location. */
 struct FExtrema
 {
-	GENERATED_BODY()
-
 	/** The min extrema */
 	FVector Min;
 
 	/** The max extrema */
 	FVector Max;
 
-	FExtrema()
-	{
-		Min = FVector();
-		Max = FVector();
-	}
+	FExtrema() = default;
+	~FExtrema() = default;
 
-	FExtrema(const FVector& InMin, const FVector& InMax)
+	FExtrema(const FVector& InMin, const FVector& InMax) :
+	Min(InMin),
+	Max(InMax)
 	{
-		Min = InMin;
-		Max = InMax;
 	}
 };
 
 /** A block of SpawnArea indices that are all connected. Hashed so that only unique combinations are considered and not
- *  all permutations */
-USTRUCT()
+ *  all permutations. */
 struct FBlock
 {
-	GENERATED_BODY()
-
 	TArray<int32> Indices;
-
-	FBlock()
-	{
-		Indices = TArray<int32>();
-	}
+	
+	FBlock() = default;
+	~FBlock() = default;
 
 	void AddBlockIndex(const int32 InIndex)
 	{
@@ -111,21 +119,19 @@ struct FRectInfo
 	FRectInfo() : Index(0), ColIndex(0), Height(0)
 	{
 	}
+	~FRectInfo() = default;
 
-	FRectInfo(const int32 InIndex, const int32 InColIndex, const int32 InHeight)
+	FRectInfo(const int32 InIndex, const int32 InColIndex, const int32 InHeight):
+	Index(InIndex),
+	ColIndex(InColIndex),
+	Height(InHeight)
 	{
-		Index = InIndex;
-		ColIndex = InColIndex;
-		Height = InHeight;
 	}
 };
 
 /** Contains info about the largest valid rectangle in a grid */
-USTRUCT()
 struct FLargestRect
 {
-	GENERATED_BODY()
-
 	/** True if the ActualBlockSize was greater than the product of the factors chosen for the block,
 	 *  like when ActualBlockSize is prime number and a smaller grid is chosen */
 	bool bNeedsRemainderIndex;
@@ -182,14 +188,13 @@ struct FLargestRect
 	{
 	}
 
+	~FLargestRect() = default;
+
 	FLargestRect(const int32 InMaxArea, const int32 InStart, const int32 InEnd): bNeedsRemainderIndex(false),
-		StartRowIndex(0), StartColIndex(0), EndRowIndex(0), EndColIndex(0), NumRowsAvailable(0), NumColsAvailable(0),
-		ActualBlockSize(0), ChosenBlockSize(0), ChosenStartRowIndex(-1), ChosenStartColIndex(-1), ChosenEndRowIndex(-1),
-		ChosenEndColIndex(-1)
+		MaxArea(InMaxArea), StartIndex(InStart), EndIndex(InEnd), StartRowIndex(0), StartColIndex(0), EndRowIndex(0),
+		EndColIndex(0), NumRowsAvailable(0), NumColsAvailable(0), ActualBlockSize(0), ChosenBlockSize(0),
+		ChosenStartRowIndex(-1), ChosenStartColIndex(-1), ChosenEndRowIndex(-1), ChosenEndColIndex(-1)
 	{
-		MaxArea = InMaxArea;
-		StartIndex = InStart;
-		EndIndex = InEnd;
 	}
 
 	/** Test the NewMaxArea against MaxArea. If larger, takes on all parameter values */
@@ -203,8 +208,8 @@ struct FLargestRect
 		}
 	}
 
-	/** Updates StartRowIndex, StartColIndex, EndRowIndex, EndColIndex, NumRowsAvailable, and NumColsAvailable
-	 *  provided that the StartIndex and EndIndex has been found */
+	/** Updates Start/End Row and Column indices, NumRowsAvailable, and NumColsAvailable provided that the StartIndex
+	 *  and EndIndex have been found */
 	void UpdateIndices(const int32 NumCols)
 	{
 		StartRowIndex = StartIndex / NumCols;
@@ -215,6 +220,7 @@ struct FLargestRect
 		NumColsAvailable = EndColIndex - StartColIndex + 1;
 	}
 
+	/** Sets the value of ActualBlockSize to the minimum of InBlockSize and MaxArea. */
 	void SetBlockSize(const int32 InBlockSize)
 	{
 		ActualBlockSize = FMath::Min(InBlockSize, MaxArea);
@@ -222,11 +228,8 @@ struct FLargestRect
 };
 
 /** A unique pair of factors for a number */
-USTRUCT()
 struct FFactor
 {
-	GENERATED_BODY()
-
 	int32 Factor1;
 	int32 Factor2;
 	int32 Distance;
@@ -235,18 +238,12 @@ struct FFactor
 	{
 	}
 
-	FFactor(const int32 F1, const int32 F2)
+	FFactor(const int32 F1, const int32 F2) : Factor1(F1), Factor2(F2), Distance(abs(F1 - F2))
 	{
-		Factor1 = F1;
-		Factor2 = F2;
-		Distance = abs(F1 - F2);
 	}
 
-	explicit FFactor(const int32 InDistance)
+	explicit FFactor(const int32 InDistance) : Factor1(-1), Factor2(-1), Distance(InDistance)
 	{
-		Factor1 = -1;
-		Factor2 = -1;
-		Distance = InDistance;
 	}
 
 	bool IsValid() const
@@ -278,105 +275,6 @@ struct FFactor
 		Hash = HashCombine(Hash, GetTypeHash(Max));
 
 		return Hash;
-	}
-};
-
-/** Parameters for FindValidIndexCombinationsDFS */
-USTRUCT()
-struct FDFSLoopParams
-{
-	GENERATED_BODY()
-
-	/** Whether or not a suitable block has been found */
-	bool bFound;
-
-	/** The minimum among a completed block's maximum distance between any two indices in the block */
-	int32 BestMaxDistance;
-
-	/** The minimum among a completed block's total distance between all indices in the block */
-	int32 BestTotalDistance;
-
-	/** The size of the block to create */
-	int32 BlockSize;
-
-	/** Number of columns in the SpawnArea grid */
-	int32 NumCols;
-
-	/** Recursions skipped */
-	int32 SkippedRecursions;
-
-	/** Total iterations performed */
-	int32 TotalIterations;
-
-	/** Total recursions performed */
-	int32 TotalRecursions;
-
-	/** The current block of indices */
-	FBlock CurrentBlock;
-
-	/** A set of suitable blocks, usually just one since often exit after first found */
-	TSet<FBlock> Blocks;
-
-	/** Types of indexes that should be allowed to link SpawnAreas */
-	TSet<EBorderingDirection> IndexTypes;
-
-	/** An array with size equal to number of SpawnAreas, where each index corresponds to a SpawnArea index. A value
-	 *  of 1 indicates the index can be spawned at, while an index of 0 indicates it cannot be spawned at */
-	TArray<int32> Valid;
-
-	/** A set of indices already visited, after the first index of a block */
-	TSet<int32> Visited;
-
-	/** A set of first block indices already visited. Added before entering the recursion */
-	TSet<int32> InitialVisited;
-
-	FDFSLoopParams()
-	{
-		bFound = false;
-		BestMaxDistance = 99999;
-		BestTotalDistance = 99999;
-		BlockSize = 0;
-		NumCols = 0;
-		SkippedRecursions = 0;
-		TotalIterations = 0;
-		TotalRecursions = 0;
-
-		CurrentBlock = FBlock();
-		Blocks = TSet<FBlock>();
-		IndexTypes = TSet<EBorderingDirection>();
-		Valid = TArray<int32>();
-		Visited = TSet<int32>();
-		InitialVisited = TSet<int32>();
-	}
-
-	FDFSLoopParams(const TArray<int32>& InValid, const TSet<EBorderingDirection>& InGridIndexTypes,
-		const int32 InBlockSize, const int32 InNumCols)
-	{
-		bFound = false;
-		BestMaxDistance = 99999;
-		BestTotalDistance = 99999;
-		BlockSize = InBlockSize;
-		NumCols = InNumCols;
-		SkippedRecursions = 0;
-		TotalIterations = 0;
-		TotalRecursions = 0;
-
-		CurrentBlock = FBlock();
-		Blocks = TSet<FBlock>();
-		IndexTypes = InGridIndexTypes;
-		Valid = InValid;
-		Visited = TSet<int32>();
-		InitialVisited = TSet<int32>();
-	}
-
-	/** Resets CurrentBlock, Visited, and InitialVisited. Sets CurrentDepth to 1 */
-	void NextIter(const int32 InNewIndex)
-	{
-		CurrentBlock.Reset();
-		CurrentBlock.AddBlockIndex(InNewIndex);
-		Visited.Empty();
-		InitialVisited.Empty();
-		InitialVisited.Add(InNewIndex);
 	}
 };
 
@@ -439,9 +337,6 @@ protected:
 	
 	/** Returns pointer to TargetManager's BSConfig */
 	TSharedPtr<FBSConfig> GetBSConfig() const { return BSConfig; }
-
-	/** Returns pointer to TargetManager's BSConfig.TargetConfig */
-	const FBS_TargetConfig& GetTargetCfg() const { return BSConfig->TargetConfig; }
 
 	/** Returns the minimum distance between targets, used just to shorten length of call */
 	float GetMinDist() const { return BSConfig->TargetConfig.MinDistanceBetweenTargets; }
@@ -600,12 +495,6 @@ protected:
 	 *  SpawnAreas may be returned Only considers input directions */
 	TSet<USpawnArea*> GetBorderingGridBlockSpawnAreas(const TSet<USpawnArea*>& GridBlock,
 		const TSet<EBorderingDirection>& Directions) const;
-
-	/** Calls FindValidIndexCombinationsDFS for each SpawnArea in ValidSpawnAreas. If at least one valid block was
-	 *  found, ValidSpawnAreas is emptied, a random block of indices is chosen, and the SpawnAreas corresponding
-	 *  to the indices are added to ValidSpawnAreas */
-	void FindGridBlockUsingDFS(TSet<USpawnArea*>& ValidSpawnAreas, const TArray<int32>& IndexValidity,
-		const TSet<EBorderingDirection>& Directions, const int32 BlockSize) const;
 	
 	/** Removes all SpawnAreas that are occupied by activated, recent targets, and possibly managed targets.
 	 *  Recalculates occupied vertices for each spawn area if necessary. Only called when finding Spawnable
@@ -662,14 +551,6 @@ protected:
 
 	/** Calculates the Manhattan distance between to indices given the number of columns */
 	static int32 CalcManhattanDist(const int32 Index1, const int32 Index2, const int32 NumCols);
-
-	/** Estimates the BestTotalDistance and MaxTotalDistance of an FDFSLoopParams struct by simulating an index block */
-	static void EstimateDistances(FDFSLoopParams& Params);
-
-	/** Deprecated since it just takes way too many iterations and using the largest rectangle is much more efficient.
-	 *  Performs a depth-first search to find unique combinations of SpawnArea indices (Params.Blocks) of a
-	 *  specific size. Checks to see if the SpawnArea is a valid index using Params.Valid. */
-	void FindValidIndexCombinationsDFS(const int32 StartIndex, FDFSLoopParams& Params) const;
 	
 	/** General SpawnAreas filter function that takes in a filter function to apply */
 	static TArray<int32> FilterIndices(TArray<USpawnArea*>& ValidSpawnAreas, bool (USpawnArea::*FilterFunc)() const);
@@ -707,7 +588,7 @@ public:
 
 	/** Draws a debug sphere where the overlapping vertices were traced from, and draws debug points for
 	 *  the vertices if they were recalculated */
-	void DrawVerticesOverlap(USpawnArea* SpawnArea) const;
+	void DrawVerticesOverlap(const USpawnArea* SpawnArea) const;
 
 	/** Draws a debug sphere where the overlapping vertices were traced from, and draws debug points for
 	 *  the vertices if they were recalculated */
@@ -718,9 +599,6 @@ public:
 
 	/** Prints debug info about SpawnArea distance */
 	void PrintDebug_SpawnAreaDist(const USpawnArea* SpawnArea) const;
-
-	/** Prints debug info about GridBlocks */
-	static void PrintDebug_GridDFS(const FDFSLoopParams& LoopParams);
 
 	/** Prints debug info about Largest Rectangular area found */
 	static void PrintDebug_GridLargestRect(const FLargestRect& LargestRect, const int32 NumCols);
@@ -765,6 +643,9 @@ private:
 	
 	/** Pointer to TargetManager's BSConfig */
 	TSharedPtr<FBSConfig> BSConfig;
+	
+	/** BSConfig->TargetConfig */
+	FBS_TargetConfig& TargetConfig() const { return BSConfig->TargetConfig; };
 
 	/** The total amount of (-, horizontal, vertical) SpawnAreas in SpawnAreas */
 	FIntVector3 Size;
@@ -832,25 +713,7 @@ private:
 	/** The SpawnArea that contains the origin */
 	UPROPERTY()
 	USpawnArea* OriginSpawnArea;
-
-	/** Cardinal direction Index types that are valid to use when searching for GridBlocks */
-	const TSet<EBorderingDirection> GridBlockIndexTypes = {
-		EBorderingDirection::Left, EBorderingDirection::Right, EBorderingDirection::Up, EBorderingDirection::Down
-	};
-
-	/** Up-Down only index types */
-	const TSet<EBorderingDirection> VerticalIndexTypes = {EBorderingDirection::Up, EBorderingDirection::Down};
-
-	/** Left-right only index types */
-	const TSet<EBorderingDirection> HorizontalIndexTypes = {EBorderingDirection::Left, EBorderingDirection::Right};
-
-	/** All index types */
-	const TSet<EBorderingDirection> AllIndexTypes = {
-		EBorderingDirection::UpLeft, EBorderingDirection::UpRight, EBorderingDirection::DownLeft,
-		EBorderingDirection::DownRight, EBorderingDirection::Left, EBorderingDirection::Right, EBorderingDirection::Up,
-		EBorderingDirection::Down
-	};
-
+	
 	/** Delegate used to bind a timer handle to RemoveRecentFlagFromSpawnArea() */
 	FTimerDelegate RemoveFromRecentDelegate;
 
