@@ -37,7 +37,6 @@ USpawnAreaManagerComponent::USpawnAreaManagerComponent()
 	SpawnAreas = TSet<USpawnArea*>();
 	AreaKeyMap = TMap<FAreaKey, USpawnArea*>();
 	GuidMap = TMap<FGuid, USpawnArea*>();
-	IndexMap = TMap<int32, USpawnArea*>();
 	CachedExtrema = TSet<USpawnArea*>();
 	CachedManaged = TSet<USpawnArea*>();
 	CachedActivated = TSet<USpawnArea*>();
@@ -196,7 +195,6 @@ void USpawnAreaManagerComponent::InitializeSpawnAreas()
 	USpawnArea::SetSize(TotalSize);
 	
 	SpawnAreas.Reserve(TotalSize);
-	IndexMap.Reserve(TotalSize);
 	AreaKeyMap.Reserve(TotalSize);
 
 	for (float Z = MinZ; Z < MaxZ; Z += SpawnAreaInc.Z)
@@ -209,7 +207,6 @@ void USpawnAreaManagerComponent::InitializeSpawnAreas()
 			
 			SpawnAreas[ID]->Init(Index, Loc);
 			AreaKeyMap.Add(FAreaKey(Loc, SpawnAreaInc), SpawnAreas[ID]);
-			IndexMap.Add(Index, SpawnAreas[ID]);
 
 			Index++;
 			SizeY++;
@@ -228,17 +225,6 @@ void USpawnAreaManagerComponent::Clear()
 	GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
 	BSConfig.Reset();
 
-	#if !UE_BUILD_SHIPPING
-	bPrintDebug_SpawnAreaStateInfo = false;
-	bDebug_SpawnableSpawnAreas = false;
-	bDebug_ActivatableSpawnAreas = false;
-	bDebug_RemovedFromExtremaChange = false;
-	bDebug_Vertices = false;
-	bDebug_AllVertices = false;
-	bDebug_Grid = false;
-	bDebug_FilterBordering = false;
-	#endif 
-
 	Size = FIntVector3();
 	SpawnAreaInc = FIntVector3();
 	SpawnAreaScale = FVector();
@@ -249,7 +235,6 @@ void USpawnAreaManagerComponent::Clear()
 	SpawnAreas.Empty();
 	AreaKeyMap.Empty();
 	GuidMap.Empty();
-	IndexMap.Empty();
 	CachedExtrema.Empty();
 	CachedManaged.Empty();
 	CachedActivated.Empty();
@@ -468,7 +453,7 @@ void USpawnAreaManagerComponent::OnExtremaChanged(const FExtrema& Extrema)
 
 USpawnArea* USpawnAreaManagerComponent::GetSpawnArea(const int32 Index) const
 {
-	return IsSpawnAreaValid(Index) ? IndexMap.FindRef(Index) : nullptr;
+	return IsSpawnAreaValid(Index) ? SpawnAreas[FSetElementId::FromInteger(Index)] : nullptr;
 }
 
 USpawnArea* USpawnAreaManagerComponent::FindSpawnArea(const FVector& InLocation) const
@@ -549,7 +534,7 @@ bool USpawnAreaManagerComponent::IsSpawnAreaValid(const USpawnArea* InSpawnArea)
 
 bool USpawnAreaManagerComponent::IsSpawnAreaValid(const int32 InIndex) const
 {
-	return IndexMap.Contains(InIndex);
+	return InIndex >= 0 && InIndex < SpawnAreas.Num();
 }
 
 TSet<USpawnArea*> USpawnAreaManagerComponent::GetManagedSpawnAreas() const
@@ -885,9 +870,10 @@ USpawnArea* USpawnAreaManagerComponent::ChooseActivatableSpawnArea(const USpawnA
 		});
 
 		const int32 CandidateIndex = RequestRLCSpawnArea.Execute(PreviousIndex, ValidIndices);
-		if (IsSpawnAreaValid(CandidateIndex) && IndexMap.FindRef(CandidateIndex)->GetGuid().IsValid())
+		USpawnArea* Candidate = GetSpawnArea(CandidateIndex);
+		if (Candidate && Candidate->GetGuid().IsValid())
 		{
-			return IndexMap.FindRef(CandidateIndex);
+			return Candidate;
 		}
 	}
 
@@ -944,9 +930,9 @@ USpawnArea* USpawnAreaManagerComponent::ChooseSpawnableSpawnArea(const USpawnAre
 		});
 
 		const int32 CandidateIndex = RequestRLCSpawnArea.Execute(PreviousIndex, ValidIndices);
-		if (IsSpawnAreaValid(CandidateIndex))
+		if (USpawnArea* Candidate = GetSpawnArea(CandidateIndex))
 		{
-			return IndexMap.FindRef(CandidateIndex);
+			return Candidate;
 		}
 		UE_LOG(LogTargetManager, Warning, TEXT("Unable to Spawn at SpawnArea suggested by RLAgent."));
 	}
@@ -1143,7 +1129,7 @@ void USpawnAreaManagerComponent::FindAdjacentGridUsingDFS(TSet<USpawnArea*>& Val
 	
 			for (const int32 Index : AdjacentIndices)
 			{
-				if (USpawnArea* Adjacent = IndexMap.FindRef(Index))
+				if (USpawnArea* Adjacent = GetSpawnArea(Index))
 				{
 					if (!Visited.Contains(Adjacent) && ValidSpawnAreas.Contains(Adjacent))
 					{
@@ -1166,7 +1152,10 @@ TSet<USpawnArea*> USpawnAreaManagerComponent::GetAdjacentSpawnAreas(TSet<USpawnA
 	{
 		for (const int32 Index : SpawnArea->GetAdjacentIndices(Directions))
 		{
-			Out.Add(IndexMap.FindRef(Index));
+			if (USpawnArea* Adjacent = GetSpawnArea(Index))
+			{
+				Out.Add(Adjacent);
+			}
 		}
 	}
 	// Don't return any SpawnAreas in the original input
@@ -1229,11 +1218,11 @@ void USpawnAreaManagerComponent::FindGridBlockUsingLargestRect(TSet<USpawnArea*>
 		for (int32 j = StartJ; (bIncrement && j <= EndJ) || (!bIncrement && j >= EndJ); (bIncrement ? ++j : --j))
 		{
 			const int32 Index = bIAsRow ? i * Size.Y + j : j * Size.Y + i;
-			if (IsSpawnAreaValid(Index))
+			if (USpawnArea* SpawnArea = GetSpawnArea(Index))
 			{
-				ValidSpawnAreas.Add(IndexMap.FindRef(Index));
+				ValidSpawnAreas.Add(SpawnArea);
 				// Update MostRecentGridBlock set
-				MostRecentGridBlock.Add(IndexMap.FindRef(Index));
+				MostRecentGridBlock.Add(SpawnArea);
 			}
 			else UE_LOG(LogTargetManager, Warning, TEXT("Invalid Index: %d"), Index);
 			if (ValidSpawnAreas.Num() >= Rect.ActualBlockSize) break;
@@ -1250,10 +1239,12 @@ void USpawnAreaManagerComponent::FindGridBlockUsingLargestRect(TSet<USpawnArea*>
 
 	const auto [Row, Col] = BorderingInRect[FMath::RandRange(0, BorderingInRect.Num() - 1)];
 	const int32 Index = Row * Size.Y + Col;
-	if (!IsSpawnAreaValid(Index)) return;
 
-	ValidSpawnAreas.Add(IndexMap.FindRef(Index));
-	MostRecentGridBlock.Add(IndexMap.FindRef(Index));
+	if (USpawnArea* SpawnArea = GetSpawnArea(Index))
+	{
+		ValidSpawnAreas.Add(SpawnArea);
+		MostRecentGridBlock.Add(SpawnArea);
+	}
 }
 
 void USpawnAreaManagerComponent::ChooseRectIndices(FLargestRect& Rect, const bool bBordering) const
@@ -1458,7 +1449,10 @@ TSet<USpawnArea*> USpawnAreaManagerComponent::GetBorderingGridBlockSpawnAreas(co
 				const int32 MinUpRowIndex = FMath::Floor(TestIndex / Size.Y) * Size.Y + Size.Y;
 				if (UpLeftIndex >= MinUpRowIndex)
 				{
-					Out.Add(IndexMap.FindRef(UpLeftIndex));
+					if (USpawnArea* SpawnArea = GetSpawnArea(UpLeftIndex))
+					{
+						Out.Add(SpawnArea);
+					}
 				}
 			}
 		}
@@ -1470,7 +1464,10 @@ TSet<USpawnArea*> USpawnAreaManagerComponent::GetBorderingGridBlockSpawnAreas(co
 				const int32 MaxUpRowIndex = FMath::Floor(TestIndex / Size.Y) * Size.Y + Size.Y + Size.Y - 1;
 				if (UpRightIndex <= MaxUpRowIndex)
 				{
-					Out.Add(IndexMap.FindRef(UpRightIndex));
+					if (USpawnArea* SpawnArea = GetSpawnArea(UpRightIndex))
+					{
+						Out.Add(SpawnArea);
+					}
 				}
 			}
 		}
@@ -1482,7 +1479,10 @@ TSet<USpawnArea*> USpawnAreaManagerComponent::GetBorderingGridBlockSpawnAreas(co
 				const int32 MinDownRowIndex = FMath::Floor(TestIndex / Size.Y) * Size.Y - Size.Y;
 				if (DownLeftIndex >= MinDownRowIndex)
 				{
-					Out.Add(IndexMap.FindRef(DownLeftIndex));
+					if (USpawnArea* SpawnArea = GetSpawnArea(DownLeftIndex))
+					{
+						Out.Add(SpawnArea);
+					}
 				}
 			}
 		}
@@ -1494,24 +1494,27 @@ TSet<USpawnArea*> USpawnAreaManagerComponent::GetBorderingGridBlockSpawnAreas(co
 				const int32 MaxDownRowIndex = FMath::Floor(TestIndex / Size.Y) * Size.Y - 1;
 				if (DownRightIndex <= MaxDownRowIndex)
 				{
-					Out.Add(IndexMap.FindRef(DownRightIndex));
+					if (USpawnArea* SpawnArea = GetSpawnArea(DownRightIndex))
+					{
+						Out.Add(SpawnArea);
+					}
 				}
 			}
 		}
 		if (Row == MinRow && Directions.Contains(EBorderingDirection::Down))
 		{
 			const int32 DownIndex = TestIndex - Size.Y;
-			if (DownIndex >= 0)
+			if (USpawnArea* SpawnArea = GetSpawnArea(DownIndex))
 			{
-				Out.Add(IndexMap.FindRef(DownIndex));
+				Out.Add(SpawnArea);
 			}
 		}
 		if (Row == MaxRow && Directions.Contains(EBorderingDirection::Up))
 		{
 			const int32 UpIndex = TestIndex + Size.Y;
-			if (UpIndex < SpawnAreas.Num())
+			if (USpawnArea* SpawnArea = GetSpawnArea(UpIndex))
 			{
-				Out.Add(IndexMap.FindRef(UpIndex));
+				Out.Add(SpawnArea);
 			}
 		}
 		if (Col == MinCol && Directions.Contains(EBorderingDirection::Left))
@@ -1520,7 +1523,10 @@ TSet<USpawnArea*> USpawnAreaManagerComponent::GetBorderingGridBlockSpawnAreas(co
 			const int32 MinRowIndex = FMath::Floor(TestIndex / Size.Y) * Size.Y;
 			if (LeftIndex >= MinRowIndex)
 			{
-				Out.Add(IndexMap.FindRef(LeftIndex));
+				if (USpawnArea* SpawnArea = GetSpawnArea(LeftIndex))
+				{
+					Out.Add(SpawnArea);
+				}
 			}
 		}
 		if (Col == MaxCol && Directions.Contains(EBorderingDirection::Right))
@@ -1529,7 +1535,10 @@ TSet<USpawnArea*> USpawnAreaManagerComponent::GetBorderingGridBlockSpawnAreas(co
 			const int32 MaxRowIndex = FMath::Floor(TestIndex / Size.Y) * Size.Y + Size.Y - 1;
 			if (RightIndex <= MaxRowIndex)
 			{
-				Out.Add(IndexMap.FindRef(RightIndex));
+				if (USpawnArea* SpawnArea = GetSpawnArea(RightIndex))
+				{
+					Out.Add(SpawnArea);
+				}
 			}
 		}
 	}
@@ -1597,8 +1606,8 @@ int32 USpawnAreaManagerComponent::RemoveNonAdjacentIndices(TSet<USpawnArea*>& Va
 	#else
 	for (const int32 Index : Current->GetAdjacentIndices())
 	{
-		check(IndexMap.Contains(Index));
-		USpawnArea* SpawnArea = IndexMap[Index];
+		USpawnArea* SpawnArea = GetSpawnArea(Index);
+		check(SpawnArea);
 		if (ValidSpawnAreas.Contains(SpawnArea))
 		{
 			BorderingSpawnAreas.Add(SpawnArea);
@@ -1999,7 +2008,7 @@ void USpawnAreaManagerComponent::DrawDebug_Boxes(const TArray<int32>& InIndices,
 	const FVector HalfInc = FVector(0, GetSpawnAreaInc().Y * 0.5f, GetSpawnAreaInc().Z * 0.5f);
 	for (const int32 Index : InIndices)
 	{
-		const USpawnArea* SpawnArea = IndexMap.FindRef(Index);
+		const USpawnArea* SpawnArea = GetSpawnArea(Index);
 		if (!SpawnArea) continue;
 		FVector Loc = SpawnArea->GetBottomLeftVertex() + HalfInc;
 		DrawDebugBox(GetWorld(), Loc, FVector(0, HalfInc.Y, HalfInc.Z), InColor, bPersistentLines, Time,

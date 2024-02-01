@@ -24,13 +24,3 @@ const UBSInventoryItemFragment* UBSInventoryItemDefinition::FindFragmentByClass(
 
 	return nullptr;
 }
-
-const UBSInventoryItemFragment* UBSInventoryItemDefinition::FindItemDefinitionFragment(
-	TSubclassOf<UBSInventoryItemDefinition> ItemDef, TSubclassOf<UBSInventoryItemFragment> FragmentClass)
-{
-	if ((ItemDef != nullptr) && (FragmentClass != nullptr))
-	{
-		return GetDefault<UBSInventoryItemDefinition>(ItemDef)->FindFragmentByClass(FragmentClass);
-	}
-	return nullptr;
-}

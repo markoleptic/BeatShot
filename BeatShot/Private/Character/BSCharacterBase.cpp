@@ -538,9 +538,8 @@ void ABSCharacterBase::AddCharacterInventoryItems()
 	int32 Index = 0;
 	for (const TSubclassOf<UBSInventoryItemDefinition> Definition : InitialInventoryItems)
 	{
-		if (UBSInventoryItemInstance* ItemInstance = GetInventoryManager()->AddItemDefinition(Definition, 1))
+		if (UBSInventoryItemInstance* ItemInstance = GetInventoryManager()->AddItemInstance(Definition, 1))
 		{
-			GetInventoryManager()->AddItemInstance(ItemInstance);
 			GetInventoryManager()->AddItemToSlot(Index, ItemInstance);
 			Index++;
 		}

@@ -41,12 +41,19 @@ public:
 
 	UFUNCTION(BlueprintPure, Category=Equipment)
 	AActor* GetFirstSpawnedActor() const;
-
+	
+	/** Spawns the equipment actors from the ActorsToSpawn array */
 	virtual void SpawnEquipmentActors(const TArray<FBSEquipmentActorToSpawn>& ActorsToSpawn);
-	virtual void DestroyEquipmentActors();
-	virtual void OnEquipped();
-	virtual void OnUnequipped();
 
+	/** Destroys the equipment actors spawned when equipped. */
+	virtual void DestroyEquipmentActors();
+
+	/** Destroys the equipment actors spawned when equipped. */
+	virtual void OnEquipped();
+
+	/** Destroys the equipment actors spawned when equipped. */
+	virtual void OnUnequipped();
+	
 	UFUNCTION(BlueprintImplementableEvent, Category=Equipment, meta=(DisplayName="OnEquipped"))
 	void K2_OnEquipped();
 

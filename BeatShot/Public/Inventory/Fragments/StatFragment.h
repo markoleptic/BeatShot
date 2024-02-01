@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Inventory/BSInventoryItemDefinition.h"
-#include "InventoryFragment_Stats.generated.h"
+#include "StatFragment.generated.h"
 
 struct FGameplayTag;
 
 /** An inventory fragment that contains a map of item stats */
 UCLASS()
-class BEATSHOT_API UInventoryFragment_Stats : public UBSInventoryItemFragment
+class BEATSHOT_API UStatFragment : public UBSInventoryItemFragment
 {
 	GENERATED_BODY()
 

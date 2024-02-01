@@ -678,9 +678,6 @@ private:
 	 *  when the managed flag is removed */
 	UPROPERTY()
 	TMap<FGuid, USpawnArea*> GuidMap;
-
-	UPROPERTY()
-	TMap<int32, USpawnArea*> IndexMap;
 	
 	/** A set of SpawnAreas that fall within the current BoxBounds. All are added initially, updated when the SpawnBox
 	 *  extents changes through the OnExtremaChanged function */

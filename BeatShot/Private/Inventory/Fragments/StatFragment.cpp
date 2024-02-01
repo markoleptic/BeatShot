@@ -1,10 +1,10 @@
 ﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 
-#include "Inventory/Fragments/InventoryFragment_Stats.h"
+#include "Inventory/Fragments/StatFragment.h"
 #include "Inventory/BSInventoryItemInstance.h"
 
-void UInventoryFragment_Stats::OnInstanceCreated(UBSInventoryItemInstance* Instance) const
+void UStatFragment::OnInstanceCreated(UBSInventoryItemInstance* Instance) const
 {
 	Super::OnInstanceCreated(Instance);
 
@@ -14,7 +14,7 @@ void UInventoryFragment_Stats::OnInstanceCreated(UBSInventoryItemInstance* Insta
 	}
 }
 
-int32 UInventoryFragment_Stats::GetItemStatByTag(const FGameplayTag& Tag) const
+int32 UStatFragment::GetItemStatByTag(const FGameplayTag& Tag) const
 {
 	if (const int32* StatPtr = InitialItemStats.Find(Tag))
 	{

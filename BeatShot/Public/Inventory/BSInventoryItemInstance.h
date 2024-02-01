@@ -65,7 +65,14 @@ public:
 	template <typename ResultClass>
 	const ResultClass* FindFragmentByClass() const
 	{
-		return (ResultClass*)FindFragmentByClass(ResultClass::StaticClass());
+		if (const UBSInventoryItemFragment* Fragment = FindFragmentByClass(ResultClass::StaticClass()))
+		{
+			if (const ResultClass* Result = Cast<ResultClass>(Fragment))
+			{
+				return Result;
+			}
+		}
+		return nullptr;
 	}
 
 private:
@@ -78,7 +85,7 @@ private:
 	UPROPERTY(Replicated)
 	FGameplayTagContainer IdentifierTags;
 
-	/** Gameplay tag container for items with more extensive amount of stats, to be used with InventoryFragment_Stats */
+	/** Gameplay tag container for items with more extensive amount of stats, to be used with StatFragments */
 	UPROPERTY(Replicated)
 	FGameplayTagStackContainer StatTags;
 

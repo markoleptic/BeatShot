@@ -4,7 +4,7 @@
 #include "Inventory/BSInventoryManagerComponent.h"
 #include "Inventory/BSInventoryItemDefinition.h"
 #include "Inventory/BSInventoryItemInstance.h"
-#include "Inventory/Fragments/InventoryFragment_Equippable.h"
+#include "Inventory/Fragments/EquippableFragment.h"
 #include "Equipment/BSEquipmentDefinition.h"
 #include "Equipment/BSEquipmentManagerComponent.h"
 #include "Engine/ActorChannel.h"
@@ -129,14 +129,7 @@ void UBSInventoryManagerComponent::GetLifetimeReplicatedProps(TArray<FLifetimePr
 	DOREPLIFETIME(ThisClass, InventoryList);
 }
 
-bool UBSInventoryManagerComponent::CanAddItemDefinition(TSubclassOf<UBSInventoryItemDefinition> ItemDef,
-	int32 StackCount)
-{
-	//@TODO: Add support for stack limit / uniqueness checks / etc...
-	return true;
-}
-
-UBSInventoryItemInstance* UBSInventoryManagerComponent::AddItemDefinition(
+UBSInventoryItemInstance* UBSInventoryManagerComponent::AddItemInstance(
 	TSubclassOf<UBSInventoryItemDefinition> ItemDef, int32 StackCount)
 {
 	UBSInventoryItemInstance* Result = nullptr;
@@ -150,15 +143,6 @@ UBSInventoryItemInstance* UBSInventoryManagerComponent::AddItemDefinition(
 		}
 	}
 	return Result;
-}
-
-void UBSInventoryManagerComponent::AddItemInstance(UBSInventoryItemInstance* ItemInstance)
-{
-	InventoryList.AddEntry(ItemInstance->GetItemDef(), 1);
-	if (IsUsingRegisteredSubObjectList() && IsReadyForReplication() && ItemInstance)
-	{
-		AddReplicatedSubObject(ItemInstance);
-	}
 }
 
 void UBSInventoryManagerComponent::RemoveItemInstance(UBSInventoryItemInstance* ItemInstance)
@@ -324,11 +308,10 @@ void UBSInventoryManagerComponent::CycleActiveSlotBackward()
 
 void UBSInventoryManagerComponent::SetActiveSlotIndex_Implementation(int32 NewIndex)
 {
-	UE_LOG(LogTemp, Display, TEXT("SetActiveSlotIndex called"));
 	if (Slots.IsValidIndex(NewIndex) && (ActiveSlotIndex != NewIndex))
 	{
 		const int32 OldIndex = ActiveSlotIndex;
-
+		
 		UnequipItemInSlot();
 
 		ActiveSlotIndex = NewIndex;
@@ -343,11 +326,6 @@ void UBSInventoryManagerComponent::SetActiveSlotIndex_Implementation(int32 NewIn
 UBSInventoryItemInstance* UBSInventoryManagerComponent::GetActiveSlotItem() const
 {
 	return Slots.IsValidIndex(ActiveSlotIndex) ? Slots[ActiveSlotIndex] : nullptr;
-}
-
-UBSInventoryItemInstance* UBSInventoryManagerComponent::GetLastSlotItem() const
-{
-	return Slots.IsValidIndex(LastSlotIndex) ? Slots[LastSlotIndex] : nullptr;
 }
 
 int32 UBSInventoryManagerComponent::GetNextFreeItemSlot() const
@@ -406,20 +384,11 @@ UBSInventoryItemInstance* UBSInventoryManagerComponent::RemoveItemFromSlot(int32
 	return Result;
 }
 
-UBSEquipmentInstance* UBSInventoryManagerComponent::GetEquippedItem() const
+AActor* UBSInventoryManagerComponent::GetEquippedItemFirstSpawnedActor() const
 {
 	if (EquippedItem)
 	{
-		return EquippedItem.Get();
-	}
-	return nullptr;
-}
-
-AActor* UBSInventoryManagerComponent::GetEquippedItemFirstSpawnedActor() const
-{
-	if (GetEquippedItem())
-	{
-		return GetEquippedItem()->GetFirstSpawnedActor();
+		return EquippedItem->GetFirstSpawnedActor();
 	}
 	return nullptr;
 }
@@ -456,7 +425,7 @@ void UBSInventoryManagerComponent::UnequipItemInSlot()
 {
 	if (UBSEquipmentManagerComponent* EquipmentManager = FindEquipmentManager())
 	{
-		if (EquippedItem != nullptr)
+		if (EquippedItem)
 		{
 			EquipmentManager->UnequipItem(EquippedItem);
 			EquippedItem = nullptr;
@@ -471,8 +440,7 @@ void UBSInventoryManagerComponent::EquipItemInSlot()
 
 	if (UBSInventoryItemInstance* SlotItem = Slots[ActiveSlotIndex])
 	{
-		if (const UInventoryFragment_Equippable* EquipInfo = SlotItem->FindFragmentByClass<
-			UInventoryFragment_Equippable>())
+		if (const UEquippableFragment* EquipInfo = SlotItem->FindFragmentByClass<UEquippableFragment>())
 		{
 			const TSubclassOf<UBSEquipmentDefinition> EquipDef = EquipInfo->EquipmentDefinition;
 			if (EquipDef != nullptr)

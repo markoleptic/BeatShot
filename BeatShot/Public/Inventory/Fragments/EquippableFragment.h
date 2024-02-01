@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Inventory/BSInventoryItemDefinition.h"
-#include "InventoryFragment_Equippable.generated.h"
+#include "EquippableFragment.generated.h"
 
 class UBSEquipmentDefinition;
 
 /** An inventory fragment that can be equipped */
 UCLASS()
-class BEATSHOT_API UInventoryFragment_Equippable : public UBSInventoryItemFragment
+class BEATSHOT_API UEquippableFragment : public UBSInventoryItemFragment
 {
 	GENERATED_BODY()
 
