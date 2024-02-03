@@ -87,7 +87,7 @@ void UBSAT_AimToTarget::OnTimelineTick(const float Alpha) const
 	FRotator Rot;
 	Controller->GetActorEyesViewPoint(Loc, Rot);
 	Controller->SetControlRotation(UKismetMathLibrary::RLerp(Rot,
-		UKismetMathLibrary::FindLookAtRotation(Loc, Target->GetActorLocation()), Alpha, false));
+		UKismetMathLibrary::FindLookAtRotation(Loc, Target->GetActorLocation()), Alpha, true));
 }
 
 void UBSAT_AimToTarget::OnTimelineCompleted()

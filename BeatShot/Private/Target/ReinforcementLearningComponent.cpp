@@ -165,9 +165,9 @@ void UReinforcementLearningComponent::SetActiveTargetPairReward(const int32 Spaw
 	if (FTargetPair* FoundPair = FindTargetPairByCurrentIndex(SpawnAreaIndex))
 	{
 		// Update reward
-		FTargetPair Copy = *FoundPair;
-		FoundPair->SetReward(bHit ? -1.f : 1.f);
-		ActiveTargetPairs.RemoveSingle(Copy);
+		FTargetPair Copy = FTargetPair(*FoundPair);
+		Copy.SetReward(bHit ? -1.f : 1.f);
+		ActiveTargetPairs.RemoveSingle(*FoundPair);
 		TargetPairs.Enqueue(MoveTemp(Copy));
 		ClearCachedTargetPairs();
 	}

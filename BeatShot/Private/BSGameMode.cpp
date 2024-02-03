@@ -118,11 +118,16 @@ void ABSGameMode::InitializeGameMode(const TSharedPtr<FBSConfig> InConfig)
 	check(InConfig);
 	BSConfig = InConfig;
 
-	/* Spawn TargetManager and VisualizerManager */
-	TargetManager = GetWorld()->SpawnActor<ATargetManager>(TargetManagerClass, FVector::Zero(), FRotator::ZeroRotator,
-		SpawnParameters);
+	// Spawn TargetManager if not spawned, initialize it
+	if (!TargetManager)
+	{
+		TargetManager = GetWorld()->SpawnActor<ATargetManager>(TargetManagerClass, FVector::Zero(),
+			FRotator::ZeroRotator, SpawnParameters);
+	}
 	TargetManager->Init(BSConfig, PlayerSettings.Game);
 
+	
+	// Spawn VisualizerManager if not spawned, initialize it
 	if (!VisualizerManager)
 	{
 		VisualizerManager = GetWorld()->SpawnActor<AVisualizerManager>(VisualizerManagerClass);
@@ -221,36 +226,10 @@ void ABSGameMode::EndGameMode(const bool bSaveScores, const ETransitionState Tra
 	TimePlayedGameMode = TimerManager.GetTimerElapsed(GameModeLengthTimer);
 	TimerManager.ClearAllTimersForObject(this);
 	GameModeLengthTimerDelegate.Unbind();
-
-	TMap<ABSPlayerController*, FCommonScoreInfo> ScoreInfo;
-
+	
 	if (TargetManager)
 	{
 		TargetManager->SetShouldSpawn(false);
-
-		// Update Score information before TargetManager is destroyed
-		const FAccuracyData AccuracyData = TargetManager->GetLocationAccuracy();
-		
-		for (auto& CurrentPlayerScore : CurrentPlayerScores)
-		{
-			// Update location accuracy for the current player score
-			CurrentPlayerScore.Value.LocationAccuracy = AccuracyData.AccuracyRows;
-
-			// Find or add a Common Score Info instance
-			FCommonScoreInfo ScoreInfoInst = CurrentPlayerScore.Key->FindOrAddCommonScoreInfo(BSConfig->DefiningConfig);
-
-			// Update the Common Score Info Accuracy Data
-			ScoreInfoInst.UpdateAccuracy(AccuracyData);
-
-			// Update the Common Score Info QTable if settings permit
-			if (BSConfig->AIConfig.ReinforcementLearningMode != EReinforcementLearningMode::None)
-			{
-				TargetManager->UpdateCommonScoreInfoQTable(ScoreInfoInst);
-			}
-
-			// Add the Common Score Info instance to the map so it can be saved later
-			ScoreInfo.Add(CurrentPlayerScore.Key, ScoreInfoInst);
-		}
 
 		if (TargetManager->OnTargetActivated.IsBoundToObject(this))
 		{
@@ -260,9 +239,6 @@ void ABSGameMode::EndGameMode(const bool bSaveScores, const ETransitionState Tra
 		{
 			TargetManager->PostTargetDamageEvent.RemoveAll(this);
 		}
-
-		TargetManager->Destroy();
-		TargetManager = nullptr;
 	}
 
 	if (VisualizerManager)
@@ -283,7 +259,7 @@ void ABSGameMode::EndGameMode(const bool bSaveScores, const ETransitionState Tra
 		AAPlayer->UnloadPlayerAudio();
 		AAPlayer = nullptr;
 	}
-
+	
 	for (ABSPlayerController* Controller : Controllers)
 	{
 		if (Controller->IsPaused())
@@ -327,8 +303,11 @@ void ABSGameMode::EndGameMode(const bool bSaveScores, const ETransitionState Tra
 			break;
 		}
 	}
+	
+	// Handle saving scores before resetting Target Manager
+	HandleScoreSaving(bSaveScores);
 
-	HandleScoreSaving(bSaveScores, ScoreInfo);
+	TargetManager->Clear();
 
 	if (TransitionState == ETransitionState::QuitToMainMenu && !Controllers.IsEmpty())
 	{
@@ -644,8 +623,7 @@ void ABSGameMode::LoadMatchingPlayerScores()
 	}
 }
 
-void ABSGameMode::HandleScoreSaving(const bool bExternalSaveScores,
-	const TMap<ABSPlayerController*, FCommonScoreInfo>& InCommonScoreInfo)
+void ABSGameMode::HandleScoreSaving(const bool bExternalSaveScores)
 {
 	if (!bExternalSaveScores)
 	{
@@ -655,10 +633,29 @@ void ABSGameMode::HandleScoreSaving(const bool bExternalSaveScores,
 		}
 		return;
 	}
-
-	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	
+	// Get location accuracy from Target Manager
+	const FAccuracyData AccuracyData = TargetManager->GetLocationAccuracy();
+	
 	for (auto& CurrentPlayerScore : CurrentPlayerScores)
 	{
+		// Update location accuracy for the current player score
+		CurrentPlayerScore.Value.LocationAccuracy = AccuracyData.AccuracyRows;
+
+		// Find or add a Common Score Info instance
+		FCommonScoreInfo ScoreInfoInst = CurrentPlayerScore.Key->FindOrAddCommonScoreInfo(BSConfig->DefiningConfig);
+
+		// Update the Common Score Info Accuracy Data
+		ScoreInfoInst.UpdateAccuracy(AccuracyData);
+
+		// Update the Common Score Info QTable if settings permit
+		if (BSConfig->AIConfig.ReinforcementLearningMode != EReinforcementLearningMode::None)
+		{
+			TargetManager->UpdateCommonScoreInfoQTable(ScoreInfoInst);
+		}
+
+		UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+		
 		const bool bValidToSave = CurrentPlayerScore.Value.IsValidToSave();
 		if (bValidToSave)
 		{
@@ -687,11 +684,7 @@ void ABSGameMode::HandleScoreSaving(const bool bExternalSaveScores,
 			#endif // UE_BUILD_SHIPPING
 			
 			// Save common score info and completed scores locally
-			const FCommonScoreInfo* CommonScoreInfo = InCommonScoreInfo.Find(CurrentPlayerScore.Key);
-			if (CommonScoreInfo)
-			{
-				CurrentPlayerScore.Key->SaveCommonScoreInfo(BSConfig->DefiningConfig, *CommonScoreInfo);
-			}
+			CurrentPlayerScore.Key->SaveCommonScoreInfo(BSConfig->DefiningConfig, ScoreInfoInst);
 			GetCompletedPlayerScores(CurrentPlayerScore.Value);
 			CurrentPlayerScore.Key->SavePlayerScoreInstance(CurrentPlayerScore.Value);
 		}

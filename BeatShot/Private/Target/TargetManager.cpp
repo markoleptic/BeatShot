@@ -251,6 +251,10 @@ void ATargetManager::OnAudioAnalyzerBeat()
 
 	HandleRuntimeSpawning();
 	HandleTargetActivation();
+
+	#if !UE_BUILD_SHIPPING
+	SpawnAreaManager->RefreshDebugBoxes();
+	#endif
 }
 
 ATarget* ATargetManager::SpawnTarget(USpawnArea* InSpawnArea)

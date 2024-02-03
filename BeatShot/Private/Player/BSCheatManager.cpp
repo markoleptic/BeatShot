@@ -16,17 +16,18 @@
 #include "Kismet/GameplayStatics.h"
 #include "RangeActors/TimeOfDayManager.h"
 
-namespace BeatShotConsoleVariables
+namespace BeatShotCVars
 {
-	static TAutoConsoleVariable CVarCheat_AimBot(TEXT("bs_cheat.aimbot"), FString(), TEXT(
-		"Enable Aim Bot \n" "1: Enables for all locations \n" "0: Disables and removes from player \n\n"
-		"X={} Y={} Z={}: Only destroy targets at locations that are >= the value if all positive, \n"
-		"or <= if negative. If either Y or Z is left blank, only the other value is considered."));
-
+	static TAutoConsoleVariable CVarCheat_AimBot(TEXT("bs_cheat.aimbot"), FString(),
+		TEXT("Enable Aim Bot")
+		TEXT("1: Enables for all locations")
+		TEXT("0: Disables and removes from player")
+		TEXT("X={} Y={} Z={}: Only destroy targets at locations that are >= the value if all positive,")
+		TEXT("or <= if negative. If either Y or Z is left blank, only the other value is considered."));
 	
-	static TAutoConsoleVariable CVarClearDebug(TEXT("bs_cleardebug"),
+	static TAutoConsoleVariable CVarShowDebug(TEXT("bs_showdebug"),
 		0,
-		TEXT("Clears all visual and print debug options."));
+		TEXT("Shows/clears all visual and print debug options."));
 	
 
 	static TAutoConsoleVariable CVarPrintDebug_SpawnAreaStateInfo(TEXT("bs_printdebug.spawnareastateinfo"),
@@ -56,76 +57,81 @@ namespace BeatShotConsoleVariables
 	
 	static TAutoConsoleVariable CVarPrintDebug_QTableUpdate(TEXT("bs_printdebug.qtableupdate"),
 		0,
-		TEXT("Toggles printing the old and new QTable value each time the Reinforcement Learning Component "
-		"makes an update to the QTable."));
+		TEXT("Toggles printing the old and new QTable value each time the Reinforcement Learning Component")
+		TEXT("makes an update to the QTable."));
 
 
 	static TAutoConsoleVariable CVarPrintDebug_Grid(TEXT("bs_printdebug.grid"),
-	0,
-	TEXT("Toggles printing various grid-distribution related info."));
-
-
-	static TAutoConsoleVariable CVarShowDebug_TargetManager(TEXT("bs_showdebug.targetmanager"),
 		0,
-		TEXT("Toggles showing the SpawnBox, SpawnVolume, Valid Spawn Areas, and Removed Spawn Areas.\n"
-			"Blue Box: SpawnBox\n" "Orange Box: SpawnVolume\n" "Green Boxes: Valid Spawn Areas\n"
-			"Red Boxes: Removed Spawn Areas"));
-
+		TEXT("Toggles printing various grid-distribution related info."));
+	
 
 	static TAutoConsoleVariable CVarShowDebug_ReinforcementLearningWidget(TEXT("bs_showdebug.rlwidget"),
 		FString("avg"),
-		TEXT("Toggles showing the reinforcement learning widget.\n"
-			"\"avg\": Shows the average values across each QTable column (destination indices).\n"
-			"\"max\": Shows the max values across each QTable column (destination indices).\n"
-			"Can also use 0/1 and it will use max values."));
+		TEXT("Toggles showing the reinforcement learning widget.")
+		TEXT("\"avg\": Shows the average values across each QTable column (destination indices).")
+		TEXT("\"max\": Shows the max values across each QTable column (destination indices).")
+		TEXT("Can also use 0/1 and it will use max values."));
 
 
 	static TAutoConsoleVariable CVarShowDebug_SpawnBox(TEXT("bs_showdebug.spawnbox"),
 		0,
-		TEXT("Draw debug boxes for the SpawnBox and SpawnVolume.\n" "Blue: SpawnBox\n" "Orange: SpawnVolume"));
+		TEXT("Draw debug boxes for the SpawnBox and SpawnVolume.")
+		TEXT("Blue: SpawnBox")
+		TEXT("Orange: SpawnVolume"));
 
 
 	static TAutoConsoleVariable CVarShowDebug_DirectionalBoxes(TEXT("bs_showdebug.dirboxes"),
 		0,
-		TEXT("Draw debug boxes for the 6 directional boxes.\n X: Red \n Y: Green \n Z: Blue"));
+		TEXT("Draw debug boxes for the 6 directional boxes.")
+	    TEXT("X: Red")
+	    TEXT("Y: Green")
+	    TEXT("Z: Blue"));
 
 
 	static TAutoConsoleVariable CVarShowDebug_AllSpawnAreas(TEXT("bs_showdebug.allspawnareas"),
 		0,
-		TEXT("Toggles showing Cyan debug boxes for all Spawn Areas."));
+		TEXT("Toggles showing debug boxes for all Spawn Areas."));
 
 
-	static TAutoConsoleVariable CVarShowDebug_RemovedFromExtremaChange(TEXT("bs_showdebug.removedfromextrema"),
+	static TAutoConsoleVariable CVarShowDebug_RemovedFromExtremaChange(TEXT("bs_showdebug.removedextrema"),
 		0,
-		TEXT("Toggles showing Red debug boxes for removed Spawn Areas due to Extrema changes."));
+		TEXT("Toggles showing debug boxes for removed Spawn Areas due to BoxBounds."));
 
 	
 	static TAutoConsoleVariable CVarShowDebug_SpawnableSpawnAreas(TEXT("bs_showdebug.spawnable"),
 		0,
-		TEXT("Toggles showing green debug boxes for valid spawn locations at the beginning of GetValidSpawnAreas."));
+		TEXT("Toggles showing debug boxes for valid spawnable spawn areas."));
 
 	
 	static TAutoConsoleVariable CVarShowDebug_ActivatableSpawnAreas(TEXT("bs_showdebug.activatable"),
 		0,
-		TEXT("Toggles showing green debug boxes for valid spawn areas, turquoise for recent, cyan for activated, and blue for managed locations. "));
+		TEXT("Toggles showing debug boxes for valid activatable spawn areas."));
 
 	
-	static TAutoConsoleVariable CVarShowDebug_FilteredBordering(TEXT("bs_showdebug.filterbordering"),
-	0,
-	TEXT("Toggles showing Yellow debug boxes for filtered bordering Spawn Areas."));
-	
-	
-	static TAutoConsoleVariable CVarShowDebug_AllVertices(TEXT("bs_showdebug.allverts"),
+	static TAutoConsoleVariable CVarShowDebug_ActivatedSpawnAreas(TEXT("bs_showdebug.activated"),
 		0,
-		TEXT("Shows the overlapping vertices generated during RemoveOverlappingSpawnLocations function.\n"
-			"Draws a Magenta Debug Sphere showing the target that was used to generate the overlapping points.\n"
-			"Draws Red Debug Boxes for the removed overlapping vertices."));
+		TEXT("Toggles showing debug boxes for activated spawn areas."));
 
-
-	static TAutoConsoleVariable CVarShowDebug_Vertices(
-		TEXT("bs_showdebug.verts"),
+	
+	static TAutoConsoleVariable CVarShowDebug_DeactivatedSpawnAreas(TEXT("bs_showdebug.deactivated"),
 		0,
-		TEXT("Shows the overlapping vertices generated when Spawn Area was flagged as Managed or Activated.\n Draws a Magenta Debug Sphere showing the target that was used to generate the overlapping points.\n Draws Red Debug Boxes for the removed overlapping vertices.\n" "Draws Green Debug Boxes for valid."));
+		TEXT("Toggles showing debug boxes for deactivated spawn areas."));
+
+	
+	static TAutoConsoleVariable CVarShowDebug_RecentSpawnAreas(TEXT("bs_showdebug.recent"),
+		0,
+		TEXT("Toggles showing debug boxes for recent spawn areas."));
+	
+	
+	static TAutoConsoleVariable CVarShowDebug_NonAdjacent(TEXT("bs_showdebug.nonadjacent"),
+		0,
+		TEXT("Toggles debug boxes for spawn areas removed due to being non adjacent."));
+	
+	
+	static TAutoConsoleVariable CVarShowDebug_Vertices(TEXT("bs_showdebug.verts"),
+		0,
+		TEXT("Toggles showing debug points and a debug sphere for overlapping vertices of activated spawn areas."));
 
 
 	static TAutoConsoleVariable CVarShowDebug_FrontSpotLight(TEXT("bs_showdebug.frontspotlight"),
@@ -138,107 +144,42 @@ namespace BeatShotConsoleVariables
 		TEXT("Set the time of day to either \"day\" or \"night\"."));
 }
 
+using namespace BeatShotCVars;
 
 void UBSCheatManager::InitCheatManager()
 {
 	ReceiveInitCheatManager();
 
-	FConsoleVariableDelegate EnableAimBotDelegate;
-	EnableAimBotDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_Cheat_AimBot);
-	BeatShotConsoleVariables::CVarCheat_AimBot.AsVariable()->SetOnChangedCallback(EnableAimBotDelegate);
-
-	FConsoleVariableDelegate CVarClearDebugDelegate;
-	CVarClearDebugDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_ClearDebug);
-	BeatShotConsoleVariables::CVarClearDebug.AsVariable()->SetOnChangedCallback(CVarClearDebugDelegate);
-
-	FConsoleVariableDelegate SpawnAreaStateInfoDelegate;
-	SpawnAreaStateInfoDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_PrintDebug_SpawnAreaStateInfo);
-	BeatShotConsoleVariables::CVarPrintDebug_SpawnAreaStateInfo.AsVariable()->SetOnChangedCallback(
-		SpawnAreaStateInfoDelegate);
-
-	FConsoleVariableDelegate ChooseBestActionIndexDelegate;
-	ChooseBestActionIndexDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_PrintDebug_ChooseBestActionIndex);
-	BeatShotConsoleVariables::CVarPrintDebug_ChooseBestActionIndex.AsVariable()->SetOnChangedCallback(
-		ChooseBestActionIndexDelegate);
-
-	FConsoleVariableDelegate GetMaxIndexDelegate;
-	GetMaxIndexDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_PrintDebug_GetMaxIndex);
-	BeatShotConsoleVariables::CVarPrintDebug_GetMaxIndex.AsVariable()->SetOnChangedCallback(GetMaxIndexDelegate);
-
-	FConsoleVariableDelegate QTableUpdateDelegate;
-	QTableUpdateDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_PrintDebug_QTableUpdate);
-	BeatShotConsoleVariables::CVarPrintDebug_QTableUpdate.AsVariable()->SetOnChangedCallback(QTableUpdateDelegate);
-
-	FConsoleVariableDelegate QTableInitDelegate;
-	QTableInitDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_PrintDebug_QTableInit);
-	BeatShotConsoleVariables::CVarPrintDebug_QTableInit.AsVariable()->SetOnChangedCallback(QTableInitDelegate);
-
-	FConsoleVariableDelegate ActiveTargetPairsDelegate;
-	ActiveTargetPairsDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_PrintDebug_ActiveTargetPairs);
-	BeatShotConsoleVariables::CVarPrintDebug_ActiveTargetPairs.AsVariable()->SetOnChangedCallback(ActiveTargetPairsDelegate);
-
-	FConsoleVariableDelegate GridDelegate;
-	GridDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_PrintDebug_Grid);
-	BeatShotConsoleVariables::CVarPrintDebug_Grid.AsVariable()->SetOnChangedCallback(GridDelegate);
-
-	FConsoleVariableDelegate RLWidgetDelegate;
-	RLWidgetDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_ShowDebug_ReinforcementLearningWidget);
-	BeatShotConsoleVariables::CVarShowDebug_ReinforcementLearningWidget.AsVariable()->SetOnChangedCallback(
-		RLWidgetDelegate);
-
-	FConsoleVariableDelegate SpawnBoxDelegate;
-	SpawnBoxDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_ShowDebug_SpawnBox);
-	BeatShotConsoleVariables::CVarShowDebug_SpawnBox.AsVariable()->SetOnChangedCallback(SpawnBoxDelegate);
-
-	FConsoleVariableDelegate DirectionalBoxesDelegate;
-	DirectionalBoxesDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_ShowDebug_DirectionalBoxes);
-	BeatShotConsoleVariables::CVarShowDebug_DirectionalBoxes.AsVariable()->SetOnChangedCallback(
-		DirectionalBoxesDelegate);
-
-	FConsoleVariableDelegate AllSpawnAreasDelegate;
-	AllSpawnAreasDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_ShowDebug_AllSpawnAreas);
-	BeatShotConsoleVariables::CVarShowDebug_AllSpawnAreas.AsVariable()->SetOnChangedCallback(AllSpawnAreasDelegate);
-
-	FConsoleVariableDelegate SpawnableSpawnAreasDelegate;
-	SpawnableSpawnAreasDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_ShowDebug_SpawnableSpawnAreas);
-	BeatShotConsoleVariables::CVarShowDebug_SpawnableSpawnAreas.AsVariable()->SetOnChangedCallback(SpawnableSpawnAreasDelegate);
-
-	FConsoleVariableDelegate ActivatableSpawnAreasDelegate;
-	ActivatableSpawnAreasDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_ShowDebug_ActivatableSpawnAreas);
-	BeatShotConsoleVariables::CVarShowDebug_ActivatableSpawnAreas.AsVariable()->SetOnChangedCallback(ActivatableSpawnAreasDelegate);
-
-	FConsoleVariableDelegate ExtremaChangeDelegate;
-	ExtremaChangeDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_ShowDebug_RemovedFromExtremaChange);
-	BeatShotConsoleVariables::CVarShowDebug_RemovedFromExtremaChange.AsVariable()->SetOnChangedCallback(
-		ExtremaChangeDelegate);
-
-	FConsoleVariableDelegate FilteredBorderingDelegate;
-	FilteredBorderingDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_ShowDebug_FilteredBordering);
-	BeatShotConsoleVariables::CVarShowDebug_FilteredBordering.AsVariable()->SetOnChangedCallback(FilteredBorderingDelegate);
-
-	FConsoleVariableDelegate AllVerticesDelegate;
-	AllVerticesDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_ShowDebug_Vertices_Dynamic);
-	BeatShotConsoleVariables::CVarShowDebug_AllVertices.AsVariable()->SetOnChangedCallback(AllVerticesDelegate);
-
-	FConsoleVariableDelegate VerticesDelegate;
-	VerticesDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_ShowDebug_Vertices);
-	BeatShotConsoleVariables::CVarShowDebug_Vertices.AsVariable()->SetOnChangedCallback(VerticesDelegate);
-
-	FConsoleVariableDelegate TargetManagerDelegate;
-	TargetManagerDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_ShowDebug_TargetManager);
-	BeatShotConsoleVariables::CVarShowDebug_TargetManager.AsVariable()->SetOnChangedCallback(TargetManagerDelegate);
-
-	FConsoleVariableDelegate SpotLightFrontDelegate;
-	SpotLightFrontDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_ShowDebug_SpotLightFront);
-	BeatShotConsoleVariables::CVarShowDebug_FrontSpotLight.AsVariable()->SetOnChangedCallback(SpotLightFrontDelegate);
-
-	FConsoleVariableDelegate SetTimeOfDayDelegate;
-	SetTimeOfDayDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_SetTimeOfDay);
-	BeatShotConsoleVariables::CVarSetTimeOfDay.AsVariable()->SetOnChangedCallback(SetTimeOfDayDelegate);
+	BIND_BS_CVAR(CVarCheat_AimBot, this, &UBSCheatManager::Cheat_AimBot);
+	BIND_BS_CVAR(CVarShowDebug, this, &UBSCheatManager::ShowDebug);
+	BIND_BS_CVAR(CVarShowDebug_ReinforcementLearningWidget, this, &UBSCheatManager::ShowDebug_ReinforcementLearningWidget);
+	BIND_BS_CVAR(CVarShowDebug_SpawnBox, this, &UBSCheatManager::ShowDebug_SpawnBox);
+	BIND_BS_CVAR(CVarShowDebug_DirectionalBoxes, this, &UBSCheatManager::ShowDebug_DirectionalBoxes);
+	BIND_BS_CVAR(CVarShowDebug_FrontSpotLight, this, &UBSCheatManager::ShowDebug_SpotLightFront);
+	BIND_BS_CVAR(CVarSetTimeOfDay, this, &UBSCheatManager::SetTimeOfDay);
+	
+	BIND_BS_COMP_CVAR(CVarShowDebug_AllSpawnAreas, this, SetComponentDebugBool, &USpawnAreaManagerComponent::bShowDebug_AllSpawnAreas);
+	BIND_BS_COMP_CVAR(CVarShowDebug_SpawnableSpawnAreas, this, SetComponentDebugBool, &USpawnAreaManagerComponent::bShowDebug_SpawnableSpawnAreas);
+	BIND_BS_COMP_CVAR(CVarShowDebug_ActivatableSpawnAreas, this, SetComponentDebugBool, &USpawnAreaManagerComponent::bShowDebug_ActivatableSpawnAreas);
+	BIND_BS_COMP_CVAR(CVarShowDebug_ActivatedSpawnAreas, this, SetComponentDebugBool, &USpawnAreaManagerComponent::bShowDebug_ActivatedSpawnAreas);
+	BIND_BS_COMP_CVAR(CVarShowDebug_DeactivatedSpawnAreas, this, SetComponentDebugBool, &USpawnAreaManagerComponent::bShowDebug_DeactivatedSpawnAreas);
+	BIND_BS_COMP_CVAR(CVarShowDebug_RecentSpawnAreas, this, SetComponentDebugBool, &USpawnAreaManagerComponent::bShowDebug_RecentSpawnAreas);
+	BIND_BS_COMP_CVAR(CVarShowDebug_RemovedFromExtremaChange, this, SetComponentDebugBool, &USpawnAreaManagerComponent::bShowDebug_RemovedFromExtremaChange);
+	BIND_BS_COMP_CVAR(CVarShowDebug_NonAdjacent, this, SetComponentDebugBool, &USpawnAreaManagerComponent::bShowDebug_NonAdjacent);
+	BIND_BS_COMP_CVAR(CVarShowDebug_Vertices, this, SetComponentDebugBool, &USpawnAreaManagerComponent::bShowDebug_Vertices);
+	BIND_BS_COMP_CVAR(CVarPrintDebug_SpawnAreaStateInfo, this, SetComponentDebugBool, &USpawnAreaManagerComponent::bPrintDebug_SpawnAreaStateInfo);
+	BIND_BS_COMP_CVAR(CVarPrintDebug_Grid, this, SetComponentDebugBool, &USpawnAreaManagerComponent::bPrintDebug_Grid);
+	
+	BIND_BS_COMP_CVAR(CVarPrintDebug_ChooseBestActionIndex, this, SetComponentDebugBool, &UReinforcementLearningComponent::bPrintDebug_ChooseActionIndex);
+	BIND_BS_COMP_CVAR(CVarPrintDebug_GetMaxIndex, this, SetComponentDebugBool, &UReinforcementLearningComponent::bPrintDebug_GetMaxIndex);
+	BIND_BS_COMP_CVAR(CVarPrintDebug_QTableUpdate, this, SetComponentDebugBool, &UReinforcementLearningComponent::bPrintDebug_QTableUpdate);
+	BIND_BS_COMP_CVAR(CVarPrintDebug_QTableInit, this, SetComponentDebugBool, &UReinforcementLearningComponent::bPrintDebug_QTableInit);
+	BIND_BS_COMP_CVAR(CVarPrintDebug_ActiveTargetPairs, this, SetComponentDebugBool, &UReinforcementLearningComponent::bPrintDebug_ActiveTargetPairs);
 }
 
-void UBSCheatManager::CVarOnChanged_Cheat_AimBot(IConsoleVariable* Variable)
+void UBSCheatManager::Cheat_AimBot(IConsoleVariable* Variable)
 {
+
 	const ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	const ABSCharacterBase* Character = Cast<ABSCharacterBase>(
 		Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->GetPawn());
@@ -297,113 +238,33 @@ void UBSCheatManager::CVarOnChanged_Cheat_AimBot(IConsoleVariable* Variable)
 	UE_LOG(LogTemp, Display, TEXT("AimBot modified."));
 }
 
-void UBSCheatManager::CVarOnChanged_ClearDebug(IConsoleVariable* Variable)
+void UBSCheatManager::ShowDebug(IConsoleVariable* Variable)
 {
-	Variable->Set(false, ECVF_SetByCode);
-	CVarOnChanged_PrintDebug_SpawnAreaStateInfo(Variable);
-	CVarOnChanged_PrintDebug_ChooseBestActionIndex(Variable);
-	CVarOnChanged_PrintDebug_GetMaxIndex(Variable);
-	CVarOnChanged_PrintDebug_QTableUpdate(Variable);
-	CVarOnChanged_PrintDebug_QTableInit(Variable);
-	CVarOnChanged_PrintDebug_ActiveTargetPairs(Variable);
-	CVarOnChanged_ShowDebug_ReinforcementLearningWidget(Variable);
-	CVarOnChanged_ShowDebug_SpawnBox(Variable);
-	CVarOnChanged_ShowDebug_DirectionalBoxes(Variable);
-	CVarOnChanged_ShowDebug_AllSpawnAreas(Variable);
-	CVarOnChanged_ShowDebug_RemovedFromExtremaChange(Variable);
-	CVarOnChanged_ShowDebug_SpawnableSpawnAreas(Variable);
-	CVarOnChanged_ShowDebug_ActivatableSpawnAreas(Variable);
-	CVarOnChanged_ShowDebug_FilteredBordering(Variable);
-	CVarOnChanged_ShowDebug_Vertices(Variable);
-	CVarOnChanged_ShowDebug_Vertices_Dynamic(Variable);
+	ShowDebug_ReinforcementLearningWidget(Variable);
+	ShowDebug_SpawnBox(Variable);
+	ShowDebug_DirectionalBoxes(Variable);
+
+	SetComponentDebugBool(Variable, &USpawnAreaManagerComponent::bShowDebug_AllSpawnAreas);
+	SetComponentDebugBool(Variable, &USpawnAreaManagerComponent::bShowDebug_SpawnableSpawnAreas);
+	SetComponentDebugBool(Variable, &USpawnAreaManagerComponent::bShowDebug_ActivatableSpawnAreas);
+	SetComponentDebugBool(Variable, &USpawnAreaManagerComponent::bShowDebug_ActivatedSpawnAreas);
+	SetComponentDebugBool(Variable, &USpawnAreaManagerComponent::bShowDebug_DeactivatedSpawnAreas);
+	SetComponentDebugBool(Variable, &USpawnAreaManagerComponent::bShowDebug_RecentSpawnAreas);
+	SetComponentDebugBool(Variable, &USpawnAreaManagerComponent::bShowDebug_RemovedFromExtremaChange);
+	SetComponentDebugBool(Variable, &USpawnAreaManagerComponent::bShowDebug_NonAdjacent);
+	SetComponentDebugBool(Variable, &USpawnAreaManagerComponent::bShowDebug_Vertices);
+	SetComponentDebugBool(Variable, &USpawnAreaManagerComponent::bShowDebug_NonAdjacent);
+	SetComponentDebugBool(Variable, &USpawnAreaManagerComponent::bPrintDebug_SpawnAreaStateInfo);
+	SetComponentDebugBool(Variable, &USpawnAreaManagerComponent::bPrintDebug_Grid);
+
+	SetComponentDebugBool(Variable, &UReinforcementLearningComponent::bPrintDebug_ChooseActionIndex);
+	SetComponentDebugBool(Variable, &UReinforcementLearningComponent::bPrintDebug_GetMaxIndex);
+	SetComponentDebugBool(Variable, &UReinforcementLearningComponent::bPrintDebug_QTableUpdate);
+	SetComponentDebugBool(Variable, &UReinforcementLearningComponent::bPrintDebug_QTableInit);
+	SetComponentDebugBool(Variable, &UReinforcementLearningComponent::bPrintDebug_ActiveTargetPairs);
 }
 
-void UBSCheatManager::CVarOnChanged_PrintDebug_SpawnAreaStateInfo(IConsoleVariable* Variable)
-{
-	const ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-	if (!GameMode) return;
-
-	const ATargetManager* TargetManager = GameMode->GetTargetManager();
-	if (!TargetManager) return;
-	if (!TargetManager->SpawnAreaManager) return;
-	
-	TargetManager->SpawnAreaManager->bPrintDebug_SpawnAreaStateInfo = Variable->GetBool();
-}
-
-void UBSCheatManager::CVarOnChanged_PrintDebug_ChooseBestActionIndex(IConsoleVariable* Variable)
-{
-	const ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-	if (!GameMode) return;
-
-	const ATargetManager* TargetManager = GameMode->GetTargetManager();
-	if (!TargetManager || !TargetManager->RLComponent) return;
-
-	TargetManager->RLComponent->bPrintDebug_ChooseActionIndex = Variable->GetBool();
-}
-
-void UBSCheatManager::CVarOnChanged_PrintDebug_Grid(IConsoleVariable* Variable)
-{
-	const ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-	if (!GameMode) return;
-
-	const ATargetManager* TargetManager = GameMode->GetTargetManager();
-	if (!TargetManager || !TargetManager->SpawnAreaManager) return;
-
-	TargetManager->SpawnAreaManager->bDebug_Grid = Variable->GetBool();
-}
-
-void UBSCheatManager::CVarOnChanged_PrintDebug_GetMaxIndex(IConsoleVariable* Variable)
-{
-	const ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-	if (!GameMode) return;
-
-	const ATargetManager* TargetManager = GameMode->GetTargetManager();
-	if (!TargetManager || !TargetManager->RLComponent) return;
-
-	TargetManager->RLComponent->bPrintDebug_GetMaxIndex = Variable->GetBool();
-}
-
-void UBSCheatManager::CVarOnChanged_PrintDebug_QTableUpdate(IConsoleVariable* Variable)
-{
-	const ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-	if (!GameMode) return;
-
-	const ATargetManager* TargetManager = GameMode->GetTargetManager();
-	if (!TargetManager || !TargetManager->RLComponent) return;
-
-	TargetManager->RLComponent->bPrintDebug_QTableUpdate = Variable->GetBool();
-}
-
-void UBSCheatManager::CVarOnChanged_PrintDebug_QTableInit(IConsoleVariable* Variable)
-{
-	const ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-	if (!GameMode) return;
-
-	const ATargetManager* TargetManager = GameMode->GetTargetManager();
-	if (!TargetManager || !TargetManager->RLComponent) return;
-
-	TargetManager->RLComponent->bPrintDebug_QTableInit = Variable->GetBool();
-}
-
-void UBSCheatManager::CVarOnChanged_PrintDebug_ActiveTargetPairs(IConsoleVariable* Variable)
-{
-	const ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-	if (!GameMode) return;
-
-	const ATargetManager* TargetManager = GameMode->GetTargetManager();
-	if (!TargetManager || !TargetManager->RLComponent) return;
-
-	TargetManager->RLComponent->bPrintDebug_ActiveTargetPairs = Variable->GetBool();
-}
-
-void UBSCheatManager::CVarOnChanged_ShowDebug_TargetManager(IConsoleVariable* Variable)
-{
-	CVarOnChanged_ShowDebug_SpawnBox(Variable);
-	CVarOnChanged_ShowDebug_ActivatableSpawnAreas(Variable);
-	CVarOnChanged_ShowDebug_RemovedFromExtremaChange(Variable);
-}
-
-void UBSCheatManager::CVarOnChanged_ShowDebug_ReinforcementLearningWidget(IConsoleVariable* Variable)
+void UBSCheatManager::ShowDebug_ReinforcementLearningWidget(IConsoleVariable* Variable)
 {
 	const ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	if (!GameMode) return;
@@ -455,7 +316,7 @@ void UBSCheatManager::CVarOnChanged_ShowDebug_ReinforcementLearningWidget(IConso
 	}
 }
 
-void UBSCheatManager::CVarOnChanged_ShowDebug_SpawnBox(IConsoleVariable* Variable)
+void UBSCheatManager::ShowDebug_SpawnBox(IConsoleVariable* Variable)
 {
 	const ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	if (!GameMode) return;
@@ -491,7 +352,7 @@ void UBSCheatManager::CVarOnChanged_ShowDebug_SpawnBox(IConsoleVariable* Variabl
 	}
 }
 
-void UBSCheatManager::CVarOnChanged_ShowDebug_DirectionalBoxes(IConsoleVariable* Variable)
+void UBSCheatManager::ShowDebug_DirectionalBoxes(IConsoleVariable* Variable)
 {
 	const ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	if (!GameMode) return;
@@ -554,91 +415,7 @@ void UBSCheatManager::CVarOnChanged_ShowDebug_DirectionalBoxes(IConsoleVariable*
 	}
 }
 
-void UBSCheatManager::CVarOnChanged_ShowDebug_AllSpawnAreas(IConsoleVariable* Variable)
-{
-	const ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-	if (!GameMode) return;
-
-	const ATargetManager* TargetManager = GameMode->GetTargetManager();
-	if (!TargetManager || !TargetManager->SpawnAreaManager) return;
-
-	if (Variable->GetBool())
-	{
-		TargetManager->SpawnAreaManager->DrawDebug_AllSpawnAreas();
-	}
-	else
-	{
-		TargetManager->SpawnAreaManager->ClearDebug_AllSpawnAreas();
-	}
-}
-
-void UBSCheatManager::CVarOnChanged_ShowDebug_RemovedFromExtremaChange(IConsoleVariable* Variable)
-{
-	const ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-	if (!GameMode) return;
-
-	const ATargetManager* TargetManager = GameMode->GetTargetManager();
-	if (!TargetManager || !TargetManager->SpawnAreaManager) return;
-
-	TargetManager->SpawnAreaManager->bDebug_RemovedFromExtremaChange = Variable->GetBool();
-}
-
-void UBSCheatManager::CVarOnChanged_ShowDebug_SpawnableSpawnAreas(IConsoleVariable* Variable)
-{
-	const ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-	if (!GameMode) return;
-
-	const ATargetManager* TargetManager = GameMode->GetTargetManager();
-	if (!TargetManager || !TargetManager->SpawnAreaManager) return;
-
-	TargetManager->SpawnAreaManager->bDebug_SpawnableSpawnAreas = Variable->GetBool();
-}
-
-void UBSCheatManager::CVarOnChanged_ShowDebug_ActivatableSpawnAreas(IConsoleVariable* Variable)
-{
-	const ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-	if (!GameMode) return;
-
-	const ATargetManager* TargetManager = GameMode->GetTargetManager();
-	if (!TargetManager || !TargetManager->SpawnAreaManager) return;
-
-	TargetManager->SpawnAreaManager->bDebug_ActivatableSpawnAreas = Variable->GetBool();
-}
-
-void UBSCheatManager::CVarOnChanged_ShowDebug_FilteredBordering(IConsoleVariable* Variable)
-{
-	const ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-	if (!GameMode) return;
-
-	const ATargetManager* TargetManager = GameMode->GetTargetManager();
-	if (!TargetManager || !TargetManager->SpawnAreaManager) return;
-
-	TargetManager->SpawnAreaManager->bDebug_FilterBordering = Variable->GetBool();
-}
-
-void UBSCheatManager::CVarOnChanged_ShowDebug_Vertices(IConsoleVariable* Variable)
-{
-	const ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-	if (!GameMode) return;
-
-	const ATargetManager* TargetManager = GameMode->GetTargetManager();
-	if (!TargetManager || !TargetManager->SpawnAreaManager) return;
-
-	TargetManager->SpawnAreaManager->bDebug_Vertices = Variable->GetBool();
-}
-
-void UBSCheatManager::CVarOnChanged_ShowDebug_Vertices_Dynamic(IConsoleVariable* Variable)
-{
-	const ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-	if (!GameMode) return;
-
-	const ATargetManager* TargetManager = GameMode->GetTargetManager();
-	if (!TargetManager || !TargetManager->SpawnAreaManager) return;
-
-	TargetManager->SpawnAreaManager->bDebug_AllVertices = Variable->GetBool();
-}
-
-void UBSCheatManager::CVarOnChanged_ShowDebug_SpotLightFront(IConsoleVariable* Variable)
+void UBSCheatManager::ShowDebug_SpotLightFront(IConsoleVariable* Variable)
 {
 	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	if (GI->GetTimeOfDayManager())
@@ -647,7 +424,7 @@ void UBSCheatManager::CVarOnChanged_ShowDebug_SpotLightFront(IConsoleVariable* V
 	}
 }
 
-void UBSCheatManager::CVarOnChanged_SetTimeOfDay(IConsoleVariable* Variable)
+void UBSCheatManager::SetTimeOfDay(IConsoleVariable* Variable)
 {
 	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	if (GI->GetTimeOfDayManager())
@@ -662,4 +439,19 @@ void UBSCheatManager::CVarOnChanged_SetTimeOfDay(IConsoleVariable* Variable)
 		}
 	}
 }
+
+template<typename T, class ComponentClass>
+void UBSCheatManager::SetComponentDebugBool(IConsoleVariable* Variable, T ComponentClass::*DebugBool)
+{
+	const ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (!GameMode) return;
+
+	const ATargetManager* TargetManager = GameMode->GetTargetManager();
+	if (!TargetManager || !TargetManager->SpawnAreaManager) return;
+
+	ComponentClass* Comp = TargetManager->GetComponentByClass<ComponentClass>();
+
+	Comp->*DebugBool = Variable->GetBool();
+}
+
 #endif

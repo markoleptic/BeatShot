@@ -555,10 +555,6 @@ protected:
 	/** General SpawnAreas filter function that takes in a filter function to apply */
 	static TArray<int32> FilterIndices(TArray<USpawnArea*>& ValidSpawnAreas, bool (USpawnArea::*FilterFunc)() const);
 
-	/** Debug version of FilterIndices */
-	TArray<int32> FilterIndices(TArray<USpawnArea*>& ValidSpawnAreas, bool (USpawnArea::*FilterFunc)() const,
-		const bool bShowDebug, const FColor& DebugColor) const;
-
 public:
 	/** Gathers all total hits and total spawns for the game mode session and converts them into a 5X5 matrix using
 	 *  GetAveragedAccuracyData. Calls UpdateAccuracy once the values are copied over, and returns the struct */
@@ -567,78 +563,107 @@ public:
 	/* ----------- */
 	/* -- Debug -- */
 	/* ----------- */
-	
+
+	/** Debug box color for all spawn areas. */
+	UPROPERTY(EditAnywhere, Category="Debug")
+	FColor DebugColor_AllSpawnAreas = FColor::Cyan;
+
+	/** Debug box color for spawnable spawn areas. */
+	UPROPERTY(EditAnywhere, Category="Debug")
+	FColor DebugColor_SpawnableSpawnAreas = FColor::Emerald;
+
+	/** Debug box color for activatable spawn areas. */
+	UPROPERTY(EditAnywhere, Category="Debug")
+	FColor DebugColor_ActivatableSpawnAreas = FColor::Emerald;
+
+	/** Debug box color for activated spawn areas. */
+	UPROPERTY(EditAnywhere, Category="Debug")
+	FColor DebugColor_ActivatedSpawnAreas = FColor::Blue;
+
+	/** Debug box color for deactivated managed spawn areas. */
+	UPROPERTY(EditAnywhere, Category="Debug")
+	FColor DebugColor_DeactivatedSpawnAreas = FColor::Purple;
+
+	/** Debug box color for deactivated managed spawn areas. */
+	UPROPERTY(EditAnywhere, Category="Debug")
+	FColor DebugColor_RecentSpawnAreas = FColor::Orange;
+
+	/** Debug box color for spawn areas removed due to the BoxBounds. */
+	UPROPERTY(EditAnywhere, Category="Debug")
+	FColor DebugColor_RemovedFromExtremaChange = FColor::Red;
+
+	/** Debug box color for spawn areas removed due to being non adjacent. */
+	UPROPERTY(EditAnywhere, Category="Debug")
+	FColor DebugColor_NonAdjacent = FColor::Yellow;
 
 #if !UE_BUILD_SHIPPING
-	void PrintDebug_NumRecentNumActive() const;
+	/** Clears all debug persistent lines/boxes and draws new ones based on debug bool variables. */
+	void RefreshDebugBoxes() const;
+	
+	/** Draws debug boxes using SpawnAreas. */
+	void DrawDebug_Boxes(const TSet<USpawnArea*>& InSpawnAreas, const FColor& Color, const int32 Thickness,
+		const int32 Priority, bool bPersistent) const;
 
-	/** Shows the grid of spawn areas drawn as debug boxes */
-	void DrawDebug_AllSpawnAreas() const;
+	/** Draws debug points for the spawn areas' occupied vertices and non-occupied vertices as well as a debug sphere. */
+	void DrawDebug_Vertices(const TSet<USpawnArea*>& InSpawnAreas, const float InvalidSize, const float ValidSize,
+		const int32 Priority) const;
 
-	/** Removes the grid of spawn areas drawn as debug boxes */
-	void ClearDebug_AllSpawnAreas() const;
-
-	/** Draws debug boxes using SpawnAreas Indices */
-	void DrawDebug_Boxes(const TArray<int32>& InIndices, const FColor& InColor, const int32 InThickness,
-		const int32 InDepthPriority, bool bPersistentLines = false) const;
-
-	/** Draws debug boxes using SpawnAreas */
-	void DrawDebug_Boxes(const TSet<USpawnArea*>& InSpawnAreas, const FColor& InColor, const int32 InThickness,
-		const int32 InDepthPriority, bool bPersistentLines = false) const;
-
-	/** Draws a debug sphere where the overlapping vertices were traced from, and draws debug points for
-	 *  the vertices if they were recalculated */
-	void DrawVerticesOverlap(const USpawnArea* SpawnArea) const;
-
-	/** Draws a debug sphere where the overlapping vertices were traced from, and draws debug points for
-	 *  the vertices if they were recalculated */
-	void DrawVerticesOverlap(const TSet<USpawnArea*>& InSpawnAreas) const;
-
-	/** Prints debug info about a SpawnArea */
+	/** Prints the number of activated, recent, and managed targets. */
+	void PrintDebug_SpawnAreaStateInfo() const;
+	
+	/** Prints debug info about a SpawnArea. */
 	static void PrintDebug_SpawnArea(const USpawnArea* SpawnArea);
 
-	/** Prints debug info about SpawnArea distance */
+	/** Prints debug info about SpawnArea distance. */
 	void PrintDebug_SpawnAreaDist(const USpawnArea* SpawnArea) const;
 
-	/** Prints debug info about Largest Rectangular area found */
+	/** Prints debug info about Largest Rectangular area found. */
 	static void PrintDebug_GridLargestRect(const FLargestRect& LargestRect, const int32 NumCols);
 
-	/** Prints a formatted matrix (upside down from how indexes appear in SpawnAreas so that it matches in game)  */
+	/** Prints a formatted matrix (upside down from how indexes appear in SpawnAreas so that it matches in game). */
 	static void PrintDebug_Matrix(const TArray<int32>& Matrix, const int32 NumRows, const int32 NumCols);
 
-	/** Toggles printing the number managed, activated, and recent Spawn Areas */
-	bool bPrintDebug_SpawnAreaStateInfo;
+	/** Toggles showing debug boxes for all SpawnAreas. */
+	bool bShowDebug_AllSpawnAreas;
 	
-	/** Toggles showing green debug boxes for valid spawn locations at the beginning of GetValidSpawnAreas */
-	bool bDebug_SpawnableSpawnAreas;
+	/** Toggles showing debug boxes for valid spawnable spawn areas. */
+	bool bShowDebug_SpawnableSpawnAreas;
 
-	/** Toggles showing green debug boxes for valid spawn areas, turquoise for recent, cyan for activated,
-	 *  and blue for managed locations */
-	bool bDebug_ActivatableSpawnAreas;
+	/** Toggles showing debug boxes for valid activatable spawn areas. */
+	bool bShowDebug_ActivatableSpawnAreas;
 
-	/** Toggles showing red debug boxes for removed spawn due to the BoxBounds */
-	bool bDebug_RemovedFromExtremaChange;
+	/** Toggles showing debug boxes for activated spawn areas. */
+	bool bShowDebug_ActivatedSpawnAreas;
 
-	/** Toggles showing yellow debug boxes for filtered bordering SpawnAreas */
-	bool bDebug_FilterBordering;
+	/** Toggles showing debug boxes for deactivated managed spawn areas. */
+	bool bShowDebug_DeactivatedSpawnAreas;
 
-	/** Shows the overlapping vertices generated when flagging as activated as red DebugPoints.
-	 *  Draws a magenta Debug Sphere showing the target that was used to generate the overlapping points.
-	 *  Draws red Debug Boxes for the removed overlapping vertices, and green Debug Boxes for valid */
-	bool bDebug_Vertices;
+	/** Toggles showing debug boxes for recent spawn areas. */
+	bool bShowDebug_RecentSpawnAreas;
 
-	/** Shows the overlapping vertices generated during RemoveOverlappingSpawnAreas as red DebugPoints.
-	 *  Draws a magenta Debug Sphere showing the target that was used to generate the overlapping points.
-	 *  Draws red Debug Boxes for the removed overlapping vertices */
-	bool bDebug_AllVertices;
+	/** Toggles showing debug boxes for spawn areas removed due to the BoxBounds. */
+	bool bShowDebug_RemovedFromExtremaChange;
 
-	/** Prints various grid-distribution related info to log */
-	bool bDebug_Grid;
+	/** Toggles showing debug boxes for spawn areas removed due to being non adjacent. */
+	bool bShowDebug_NonAdjacent;
+
+	/** Toggles showing debug points and a debug sphere for overlapping vertices of activated spawn areas. */
+	bool bShowDebug_Vertices;
+	
+	/** Toggles printing the number managed, activated, and recent Spawn Areas. */
+	bool bPrintDebug_SpawnAreaStateInfo;
+
+	/** Toggles printing various grid-distribution related info. */
+	bool bPrintDebug_Grid;
+
+	mutable TSet<USpawnArea*> DebugCached_SpawnableValidSpawnAreas;
+	mutable TSet<USpawnArea*> DebugCached_RemovedFromExtremaChangeSpawnAreas;
+	mutable TSet<USpawnArea*> DebugCached_FilteredBorderingSpawnAreas;
 
 #endif
 	
 private:
-	/** Whether or not to broadcast the RequestRLCSpawnArea when finding SpawnAreas */
+	/** Whether or not to broadcast the RequestRLCSpawnArea delegate when finding SpawnAreas */
 	bool bShouldAskRLCForSpawnAreas;
 	
 	/** Pointer to TargetManager's BSConfig */

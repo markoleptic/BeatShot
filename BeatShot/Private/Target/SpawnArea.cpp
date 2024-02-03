@@ -278,6 +278,11 @@ TSet<FVector> USpawnArea::MakeOccupiedVertices(const float InMinDist, const FVec
 	return OutInvalid;
 }
 
+FVector USpawnArea::GetMiddleVertex() const
+{
+	return (Vertex_BottomLeft + Vertex_TopRight) / 2.f;
+}
+
 bool USpawnArea::IsBorderingIndex(const int32 InIndex) const
 {
 	return AdjacentIndices.Contains(InIndex);

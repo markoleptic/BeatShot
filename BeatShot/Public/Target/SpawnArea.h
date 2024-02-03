@@ -159,6 +159,9 @@ public:
 	
 	/** Returns the bottom left vertex of the spawn area 2D representation */
 	FVector GetBottomLeftVertex() const { return Vertex_BottomLeft; }
+
+	/** Returns the middle location between the bottom left and top left */
+	FVector GetMiddleVertex() const;
 	
 	/** Returns whether or not the SpawnArea contains an activated target */
 	bool IsActivated() const { return bIsActivated; }

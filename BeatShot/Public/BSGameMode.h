@@ -148,7 +148,6 @@ private:
 		UE_LOG(LogTemp, Warning, TEXT("Init Player Error"));
 	}
 	
-
 	void GoToMainMenu();
 	
 	/** Loads matching player scores into CurrentPlayerScore and calculates the MaxScorePerTarget */
@@ -156,7 +155,7 @@ private:
 
 	/** Saves player scores to slot and calls SaveScoresToDatabase() if bShouldSavePlayerScores is true and
 	 *  GetCompletedPlayerScores() returns a valid score object. Otherwise Broadcasts OnPostScoresResponse with "None" */
-	void HandleScoreSaving(const bool bExternalSaveScores, const TMap<ABSPlayerController*, FCommonScoreInfo>& InCommonScoreInfo);
+	void HandleScoreSaving(const bool bExternalSaveScores);
 	
 	/** Returns the current player scores, checking for NaNs and updating the time */
 	void GetCompletedPlayerScores(FPlayerScore& InScore);
