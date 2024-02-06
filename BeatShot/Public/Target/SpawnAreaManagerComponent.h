@@ -326,7 +326,7 @@ protected:
 	void SetMostRecentSpawnArea(USpawnArea* SpawnArea) { MostRecentSpawnArea = SpawnArea; }
 	
 	/** Sets InSpawnAreaInc, InSpawnAreaScale */
-	static void SetAppropriateSpawnMemoryValues(FIntVector3& OutSpawnAreaInc, FVector& OutSpawnAreaScale,
+	void SetAppropriateSpawnMemoryValues(FIntVector3& OutSpawnAreaInc, FVector& OutSpawnAreaScale,
 		const FBSConfig* InCfg, const FVector& InStaticExtents);
 
 	/** Initializes the SpawnCounter array */
@@ -559,6 +559,10 @@ public:
 	/** Gathers all total hits and total spawns for the game mode session and converts them into a 5X5 matrix using
 	 *  GetAveragedAccuracyData. Calls UpdateAccuracy once the values are copied over, and returns the struct */
 	FAccuracyData GetLocationAccuracy();
+	
+	/** Preferred SpawnMemory increments */
+	UPROPERTY(EditAnywhere, Category="SpawnArea")
+	TArray<int32> PreferredSpawnAreaIncScales = {50, 45, 40, 30, 25, 20, 15, 10, 5};
 
 	/* ----------- */
 	/* -- Debug -- */
@@ -567,6 +571,14 @@ public:
 	/** Debug box color for all spawn areas. */
 	UPROPERTY(EditAnywhere, Category="Debug")
 	FColor DebugColor_AllSpawnAreas = FColor::Cyan;
+
+	/** Debug box color for spawn areas removed due to overlap */
+	UPROPERTY(EditAnywhere, Category="Debug")
+	FColor DebugColor_InvalidOverlap = FColor::Red;
+
+	/** Debug box color for spawn areas not removed due to overlap */
+	UPROPERTY(EditAnywhere, Category="Debug")
+	FColor DebugColor_ValidOverlap = FColor::Emerald;
 
 	/** Debug box color for spawnable spawn areas. */
 	UPROPERTY(EditAnywhere, Category="Debug")
@@ -595,6 +607,14 @@ public:
 	/** Debug box color for spawn areas removed due to being non adjacent. */
 	UPROPERTY(EditAnywhere, Category="Debug")
 	FColor DebugColor_NonAdjacent = FColor::Yellow;
+
+	/** Line thickness for all debug boxes. */
+	UPROPERTY(EditAnywhere, Category="Debug")
+	float DebugBoxLineThickness = 4.f;
+
+	/** Size of the debug point for occupied vertices and non-occupied vertices. */
+	UPROPERTY(EditAnywhere, Category="Debug")
+	float DebugVertexSize = 4.f;
 
 #if !UE_BUILD_SHIPPING
 	/** Clears all debug persistent lines/boxes and draws new ones based on debug bool variables. */
@@ -638,6 +658,9 @@ public:
 	/** Toggles showing debug boxes for deactivated managed spawn areas. */
 	bool bShowDebug_DeactivatedSpawnAreas;
 
+	/** Toggles showing debug boxes for spawn areas removed due to overlap. */
+	bool bShowDebug_ValidInvalidSpawnAreas;
+
 	/** Toggles showing debug boxes for recent spawn areas. */
 	bool bShowDebug_RecentSpawnAreas;
 
@@ -655,10 +678,9 @@ public:
 
 	/** Toggles printing various grid-distribution related info. */
 	bool bPrintDebug_Grid;
-
+	
 	mutable TSet<USpawnArea*> DebugCached_SpawnableValidSpawnAreas;
-	mutable TSet<USpawnArea*> DebugCached_RemovedFromExtremaChangeSpawnAreas;
-	mutable TSet<USpawnArea*> DebugCached_FilteredBorderingSpawnAreas;
+	mutable TSet<USpawnArea*> DebugCached_NonAdjacentSpawnAreas;
 
 #endif
 	

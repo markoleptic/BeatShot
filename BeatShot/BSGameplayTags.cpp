@@ -77,6 +77,7 @@ void FBSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(State, "State", "");
 	AddTag(State_Crouching, "State.Crouching", "");
 	AddTag(State_Firing, "State.Firing", "");
+	AddTag(State_Recoiling, "State.Recoiling", "");
 	AddTag(State_Tracking, "State.Tracking", "");
 	AddTag(State_Inspecting, "State.Inspecting", "");
 	AddTag(State_KnifeAttacking, "State.KnifeAttacking", "");

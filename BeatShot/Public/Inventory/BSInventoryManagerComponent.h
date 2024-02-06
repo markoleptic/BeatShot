@@ -59,15 +59,9 @@ struct FBSInventoryList : public FFastArraySerializer
 
 	TArray<UBSInventoryItemInstance*> GetAllItems() const;
 
-	//~FFastArraySerializer contract
-	void PreReplicatedRemove(const TArrayView<int32> RemovedIndices, int32 FinalSize);
-	void PostReplicatedAdd(const TArrayView<int32> AddedIndices, int32 FinalSize);
-	void PostReplicatedChange(const TArrayView<int32> ChangedIndices, int32 FinalSize);
-	//~End of FFastArraySerializer contract
-
 	bool NetDeltaSerialize(FNetDeltaSerializeInfo& DeltaParms)
 	{
-		return FastArrayDeltaSerialize<FBSInventoryEntry, FBSInventoryList>(Entries, DeltaParms, *this);
+		return FFastArraySerializer::FastArrayDeltaSerialize<FBSInventoryEntry, FBSInventoryList>(Items, DeltaParms, *this);
 	}
 
 	UBSInventoryItemInstance* AddEntry(TSubclassOf<UBSInventoryItemDefinition> ItemDef, int32 StackCount);
@@ -78,7 +72,7 @@ private:
 
 	// Replicated list of items
 	UPROPERTY()
-	TArray<FBSInventoryEntry> Entries;
+	TArray<FBSInventoryEntry> Items;
 
 	UPROPERTY(NotReplicated)
 	TObjectPtr<UActorComponent> OwnerComponent;
@@ -103,6 +97,8 @@ class BEATSHOT_API UBSInventoryManagerComponent : public UActorComponent
 
 public:
 	UBSInventoryManagerComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	
 	/** Creates and returns an instance of the inventory item. Adds to the replicated sub object list. */
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Inventory")
@@ -195,7 +191,7 @@ public:
 
 private:
 	/** Calls UnequipItem using the Equipment Manager and clears the EquippedItem. */
-	void UnequipItemInSlot();
+	void ForceUnequipItemInSlot();
 
 	/** Calls EquipItem using the Equipment Manager and sets the EquippedItem. */
 	void EquipItemInSlot();
@@ -221,6 +217,8 @@ private:
 
 	UPROPERTY()
 	int32 LastSlotIndex = -1;
+
+	int32 LastRequestedSlotEquipIndex = -1;
 
 	UPROPERTY()
 	TObjectPtr<UBSEquipmentInstance> EquippedItem;

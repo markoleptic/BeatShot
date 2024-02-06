@@ -2,10 +2,14 @@
 
 
 #include "Character/BSRecoilComponent.h"
+
+#include "AbilitySystemComponent.h"
+#include "BeatShot/BSGameplayTags.h"
+#include "Character/BSCharacterBase.h"
 #include "Kismet/KismetMathLibrary.h"
 
 
-UBSRecoilComponent::UBSRecoilComponent()
+UBSRecoilComponent::UBSRecoilComponent(): RecoilCurve(nullptr), KickbackCurve(nullptr), KickbackIntensityCurve(nullptr)
 {
 	PrimaryComponentTick.bCanEverTick = true;
 	bIsFiring = false;
@@ -13,6 +17,7 @@ UBSRecoilComponent::UBSRecoilComponent()
 	KickbackAngle = 0.f;
 	ShotsFired = 0;
 	bShouldKickback = false;
+	bHasRecoil = false;
 }
 
 void UBSRecoilComponent::BeginPlay()
@@ -21,9 +26,9 @@ void UBSRecoilComponent::BeginPlay()
 
 	/* Bind UpdateRecoil to the Recoil vector curve and timeline */
 	FOnTimelineVector RecoilProgressFunction;
-	RecoilProgressFunction.BindUFunction(this, FName("UpdateRecoil"));
+	RecoilProgressFunction.BindDynamic(this, &UBSRecoilComponent::UpdateRecoil);
 	RecoilTimeline.AddInterpVector(RecoilCurve, RecoilProgressFunction);
-	FireRateDelegate.BindUObject(this, &UBSRecoilComponent::StopRecoil);
+	FireRateDelegate.BindUObject(this, &UBSRecoilComponent::OnFireRateTimerCompleted);
 }
 
 void UBSRecoilComponent::TickComponent(float DeltaTime, ELevelTick TickType,
@@ -31,7 +36,8 @@ void UBSRecoilComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	RecoilTimeline.TickTimeline(DeltaTime);
-	UpdateKickbackAndRecoil(DeltaTime);
+	UpdateKickback(DeltaTime);
+	SetRecoilRotation(DeltaTime);
 }
 
 FRotator UBSRecoilComponent::GetCurrentRecoilRotation() const
@@ -41,7 +47,20 @@ FRotator UBSRecoilComponent::GetCurrentRecoilRotation() const
 
 void UBSRecoilComponent::Recoil(const float FireRate)
 {
+	if (!bHasRecoil)
+	{
+		bHasRecoil = true;
+		if (const ABSCharacterBase* Character = Cast<ABSCharacterBase>(GetOwner()))
+		{
+			if (UAbilitySystemComponent* ASC = Character->GetAbilitySystemComponent())
+			{
+				ASC->AddLooseGameplayTag(FBSGameplayTags::Get().State_Recoiling);
+			}
+		}
+	}
+	
 	bIsFiring = true;
+	
 	RecoilTimeline.SetPlayRate(1.f);
 	GetWorld()->GetTimerManager().SetTimer(FireRateTimer, FireRateDelegate, FireRate, false, -1);
 	/* Resume timeline from current position if it hasn't fully recovered */
@@ -62,13 +81,27 @@ void UBSRecoilComponent::Recoil(const float FireRate)
 	KickbackAlpha = 0.f;
 }
 
-void UBSRecoilComponent::UpdateKickbackAndRecoil(float DeltaTime)
+void UBSRecoilComponent::SetRecoilRotation(float DeltaTime)
 {
-	UpdateKickback(DeltaTime);
 	const FRotator Current = GetRelativeRotation();
 	const FRotator UpdatedRotation = UKismetMathLibrary::RInterpTo(Current, CurrentShotCameraRecoilRotation, DeltaTime,
 		CameraRecoilInterpSpeed);
 	SetRelativeRotation(UpdatedRotation + FRotator(KickbackAngle, 0, 0));
+
+	if (bHasRecoil)
+	{
+		if (GetRelativeRotation().IsNearlyZero(0.1f))
+		{
+			bHasRecoil = false;
+			if (const ABSCharacterBase* Character = Cast<ABSCharacterBase>(GetOwner()))
+			{
+				if (UAbilitySystemComponent* ASC = Character->GetAbilitySystemComponent())
+				{
+					ASC->RemoveLooseGameplayTag(FBSGameplayTags::Get().State_Recoiling);
+				}
+			}
+		}
+	}
 }
 
 void UBSRecoilComponent::UpdateKickback(float DeltaTime)
@@ -91,7 +124,7 @@ void UBSRecoilComponent::UpdateKickback(float DeltaTime)
 	}
 
 	KickbackAngle = KickbackCurve->GetFloatValue(KickbackAlpha / KickbackDuration) * KickbackIntensityCurve->
-		GetFloatValue(FMath::Min(ShotsFired, 30.f) / 30.f);
+		GetFloatValue(FMath::Min(ShotsFired, static_cast<float>(MagazineSize)) / static_cast<float>(MagazineSize));
 }
 
 void UBSRecoilComponent::UpdateRecoil(FVector Output)
@@ -117,13 +150,13 @@ void UBSRecoilComponent::UpdateRecoil(FVector Output)
 	CurrentShotRecoilRotation.Pitch = Output.Y;
 }
 
-void UBSRecoilComponent::StopRecoil()
+void UBSRecoilComponent::OnFireRateTimerCompleted()
 {
 	bIsFiring = false;
 	CurrentShotRecoilRotation = FRotator(0, 0, 0);
 	CurrentShotCameraRecoilRotation = FRotator(0, 0, 0);
 
 	/* Reverse the timeline so that it takes time to recover to the beginning */
-	RecoilTimeline.SetPlayRate(5.454545f);
+	RecoilTimeline.SetPlayRate(ReverseTimelinePlayRate);
 	RecoilTimeline.Reverse();
 }

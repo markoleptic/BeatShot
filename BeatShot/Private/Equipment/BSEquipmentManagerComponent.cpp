@@ -19,38 +19,6 @@
 class FLifetimeProperty;
 struct FReplicationFlags;
 
-/* ---------------------- */
-/* -- FBSEquipmentList -- */
-/* ---------------------- */
-
-void FBSEquipmentList::PreReplicatedRemove(const TArrayView<int32> RemovedIndices, int32 FinalSize)
-{
-	for (const int32 Index : RemovedIndices)
-	{
-		const FBSAppliedEquipmentEntry& Entry = Entries[Index];
-		if (Entry.Instance)
-		{
-			Entry.Instance->OnUnequipped();
-		}
-	}
-}
-
-void FBSEquipmentList::PostReplicatedAdd(const TArrayView<int32> AddedIndices, int32 FinalSize)
-{
-	for (const int32 Index : AddedIndices)
-	{
-		const FBSAppliedEquipmentEntry& Entry = Entries[Index];
-		if (Entry.Instance)
-		{
-			Entry.Instance->OnEquipped();
-		}
-	}
-}
-
-void FBSEquipmentList::PostReplicatedChange(const TArrayView<int32> ChangedIndices, int32 FinalSize)
-{
-}
-
 UBSEquipmentInstance* FBSEquipmentList::AddEntry(TSubclassOf<UBSEquipmentDefinition> EquipmentDefinition)
 {
 	check(EquipmentDefinition);
@@ -65,7 +33,7 @@ UBSEquipmentInstance* FBSEquipmentList::AddEntry(TSubclassOf<UBSEquipmentDefinit
 		InstanceType = UBSEquipmentInstance::StaticClass();
 	}
 
-	FBSAppliedEquipmentEntry& NewEntry = Entries.AddDefaulted_GetRef();
+	FBSAppliedEquipmentEntry& NewEntry = Items.AddDefaulted_GetRef();
 	NewEntry.EquipmentDefinition = EquipmentDefinition;
 	NewEntry.Instance = NewObject<UBSEquipmentInstance>(OwnerComponent->GetOwner(), InstanceType);
 	UBSEquipmentInstance* Result = NewEntry.Instance.Get();
@@ -94,7 +62,7 @@ UBSEquipmentInstance* FBSEquipmentList::AddEntry(TSubclassOf<UBSEquipmentDefinit
 
 void FBSEquipmentList::RemoveEntry(UBSEquipmentInstance* Instance)
 {
-	for (auto EntryIt = Entries.CreateIterator(); EntryIt; ++EntryIt)
+	for (auto EntryIt = Items.CreateIterator(); EntryIt; ++EntryIt)
 	{
 		FBSAppliedEquipmentEntry& Entry = *EntryIt;
 		if (Entry.Instance == Instance)
@@ -158,16 +126,18 @@ UBSEquipmentInstance* UBSEquipmentManagerComponent::EquipItem(TSubclassOf<UBSEqu
 	return Result;
 }
 
-void UBSEquipmentManagerComponent::UnequipItem(UBSEquipmentInstance* ItemInstance)
+void UBSEquipmentManagerComponent::UnequipItem(UBSEquipmentInstance* ItemInstance, const bool bCallOnUnequipped)
 {
 	if (ItemInstance != nullptr)
 	{
+		if (bCallOnUnequipped)
+		{
+			ItemInstance->OnUnequipped();
+		}
 		if (IsUsingRegisteredSubObjectList())
 		{
 			RemoveReplicatedSubObject(ItemInstance);
 		}
-
-		ItemInstance->OnUnequipped();
 		EquipmentList.RemoveEntry(ItemInstance);
 	}
 }
@@ -177,7 +147,7 @@ bool UBSEquipmentManagerComponent::ReplicateSubobjects(UActorChannel* Channel, F
 {
 	bool WroteSomething = Super::ReplicateSubobjects(Channel, Bunch, RepFlags);
 
-	for (FBSAppliedEquipmentEntry& Entry : EquipmentList.Entries)
+	for (FBSAppliedEquipmentEntry& Entry : EquipmentList.Items)
 	{
 		UBSEquipmentInstance* Instance = Entry.Instance;
 
@@ -200,7 +170,7 @@ void UBSEquipmentManagerComponent::UninitializeComponent()
 	TArray<UBSEquipmentInstance*> AllEquipmentInstances;
 
 	// gathering all instances before removal to avoid side effects affecting the equipment list iterator	
-	for (const FBSAppliedEquipmentEntry& Entry : EquipmentList.Entries)
+	for (const FBSAppliedEquipmentEntry& Entry : EquipmentList.Items)
 	{
 		AllEquipmentInstances.Add(Entry.Instance.Get());
 	}
@@ -220,7 +190,7 @@ void UBSEquipmentManagerComponent::ReadyForReplication()
 	// Register existing BSEquipmentInstances
 	if (IsUsingRegisteredSubObjectList())
 	{
-		for (const FBSAppliedEquipmentEntry& Entry : EquipmentList.Entries)
+		for (const FBSAppliedEquipmentEntry& Entry : EquipmentList.Items)
 		{
 			UBSEquipmentInstance* Instance = Entry.Instance;
 
@@ -235,7 +205,7 @@ void UBSEquipmentManagerComponent::ReadyForReplication()
 UBSEquipmentInstance* UBSEquipmentManagerComponent::GetFirstInstanceOfType(
 	TSubclassOf<UBSEquipmentInstance> InstanceType)
 {
-	for (FBSAppliedEquipmentEntry& Entry : EquipmentList.Entries)
+	for (FBSAppliedEquipmentEntry& Entry : EquipmentList.Items)
 	{
 		if (UBSEquipmentInstance* Instance = Entry.Instance)
 		{
@@ -253,7 +223,7 @@ TArray<UBSEquipmentInstance*> UBSEquipmentManagerComponent::GetEquipmentInstance
 	TSubclassOf<UBSEquipmentInstance> InstanceType) const
 {
 	TArray<UBSEquipmentInstance*> Results;
-	for (const FBSAppliedEquipmentEntry& Entry : EquipmentList.Entries)
+	for (const FBSAppliedEquipmentEntry& Entry : EquipmentList.Items)
 	{
 		if (UBSEquipmentInstance* Instance = Entry.Instance)
 		{

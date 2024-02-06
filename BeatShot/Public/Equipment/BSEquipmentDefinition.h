@@ -26,6 +26,9 @@ struct FBSEquipmentActorToSpawn
 	FName AttachSocket;
 
 	UPROPERTY(EditAnywhere, Category="Equipment")
+	FName RootBone;
+
+	UPROPERTY(EditAnywhere, Category="Equipment")
 	FTransform AttachTransform;
 };
 

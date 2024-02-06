@@ -22,6 +22,9 @@ ATargetManager::ATargetManager()
 	SpawnBox = CreateDefaultSubobject<UBoxComponent>(TEXT("Spawn Box"));
 	RootComponent = SpawnBox;
 
+	StaticExtentsBox = CreateDefaultSubobject<UBoxComponent>(TEXT("Static Extents Box"));
+	StaticExtentsBox->SetupAttachment(SpawnBox);
+	
 	SpawnVolume = CreateDefaultSubobject<UBoxComponent>(TEXT("Spawn Volume"));
 	TopBox = CreateDefaultSubobject<UBoxComponent>(TEXT("Top Box"));
 	BottomBox = CreateDefaultSubobject<UBoxComponent>(TEXT("Bottom Box"));
@@ -29,15 +32,6 @@ ATargetManager::ATargetManager()
 	RightBox = CreateDefaultSubobject<UBoxComponent>(TEXT("Right Box"));
 	ForwardBox = CreateDefaultSubobject<UBoxComponent>(TEXT("Forward Box"));
 	BackwardBox = CreateDefaultSubobject<UBoxComponent>(TEXT("Backward Box"));
-
-	SpawnBox->SetLineThickness(5.f);
-	TopBox->SetLineThickness(5.f);
-	BottomBox->SetLineThickness(5.f);
-	LeftBox->SetLineThickness(5.f);
-	RightBox->SetLineThickness(5.f);
-	ForwardBox->SetLineThickness(5.f);
-	BackwardBox->SetLineThickness(5.f);
-
 	SpawnAreaManager = CreateDefaultSubobject<USpawnAreaManagerComponent>(TEXT("Spawn Area Manager Component"));
 	RLComponent = CreateDefaultSubobject<UReinforcementLearningComponent>(TEXT("Reinforcement Learning Component"));
 
@@ -85,7 +79,6 @@ void ATargetManager::Destroyed()
 void ATargetManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 	if (ShouldSpawn && TrackingTargetIsDamageable())
 	{
 		UpdateTotalPossibleDamage();
@@ -108,6 +101,7 @@ void ATargetManager::Init(const TSharedPtr<FBSConfig>& InConfig, const FPlayerSe
 	SpawnBox->SetRelativeLocation(GenerateStaticLocation(GetBSConfig().Get()));
 	StaticExtents = GenerateStaticExtents(GetBSConfig().Get());
 	SpawnBox->SetBoxExtent(StaticExtents);
+	StaticExtentsBox->SetBoxExtent(StaticExtents);
 	StaticExtrema = GenerateStaticExtrema(GetBSConfig().Get(), GetSpawnBoxOrigin(), StaticExtents);
 
 	// Initialize the CompositeCurveTables in case they need to be modified

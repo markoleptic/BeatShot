@@ -52,6 +52,33 @@ APawn* UBSEquipmentInstance::GetTypedPawn(TSubclassOf<APawn> PawnType) const
 	return Result;
 }
 
+AActor* UBSEquipmentInstance::GetTypedSpawnedActor(TSubclassOf<AActor> ActorType) const
+{
+	UClass* ActualActorType = ActorType;
+	for (AActor* Actor : SpawnedActors)
+	{
+		if (Actor->IsA(ActualActorType))
+		{
+			return Cast<AActor>(Actor);
+		}
+	}
+	return nullptr;
+}
+
+
+template <class T>
+T* UBSEquipmentInstance::GetTypedSpawnedActor() const
+{
+	for (AActor* Actor : SpawnedActors)
+	{
+		if (Actor->IsA<T>())
+		{
+			return Cast<T>(Actor);
+		}
+	}
+	return nullptr;
+}
+
 AActor* UBSEquipmentInstance::GetFirstSpawnedActor() const
 {
 	if (!SpawnedActors.IsEmpty())
@@ -86,7 +113,7 @@ void UBSEquipmentInstance::SpawnEquipmentActors(const TArray<FBSEquipmentActorTo
 					GameMode->RegisterGun(Gun);
 				}
 			}
-			NewActor->FinishSpawning(FTransform::Identity, /*bIsDefaultTransform=*/ true);
+			NewActor->FinishSpawning(FTransform::Identity, true);
 			NewActor->SetActorRelativeTransform(SpawnInfo.AttachTransform);
 			NewActor->AttachToComponent(AttachTarget, FAttachmentTransformRules::KeepRelativeTransform,
 				SpawnInfo.AttachSocket);
@@ -114,6 +141,16 @@ void UBSEquipmentInstance::OnEquipped()
 void UBSEquipmentInstance::OnUnequipped()
 {
 	K2_OnUnequipped();
+}
+
+void UBSEquipmentInstance::ConfirmUnequip()
+{
+	OnUnequipConfirmed.Broadcast(this);
+}
+
+void UBSEquipmentInstance::CancelUnequip()
+{
+	OnUnequipConfirmed.Clear();
 }
 
 void UBSEquipmentInstance::OnRep_Instigator()

@@ -8,8 +8,6 @@
 #include "Target/MatrixFunctions.h"
 #include "Target/TargetManager.h"
 
-/** Preferred SpawnMemory increments */
-const TArray PreferredSpawnAreaIncScales = {50, 45, 40, 30, 25, 20, 15, 10, 5};
 
 USpawnAreaManagerComponent::USpawnAreaManagerComponent()
 {
@@ -17,6 +15,7 @@ USpawnAreaManagerComponent::USpawnAreaManagerComponent()
 	
 	#if !UE_BUILD_SHIPPING
 	bShowDebug_AllSpawnAreas = false;
+	bShowDebug_ValidInvalidSpawnAreas = false;
 	bPrintDebug_SpawnAreaStateInfo = false;
 	bShowDebug_SpawnableSpawnAreas = false;
 	bShowDebug_ActivatableSpawnAreas = false;
@@ -338,7 +337,7 @@ void USpawnAreaManagerComponent::HandleTargetDamageEvent(const FTargetDamageEven
 	}
 
 	#if !UE_BUILD_SHIPPING
-	RefreshDebugBoxes();
+	//RefreshDebugBoxes();
 	#endif
 }
 
@@ -379,10 +378,6 @@ void USpawnAreaManagerComponent::HandleRecentTargetRemoval(USpawnArea* SpawnArea
 
 void USpawnAreaManagerComponent::OnExtremaChanged(const FExtrema& Extrema)
 {
-	#if !UE_BUILD_SHIPPING
-	TSet<USpawnArea*> RemovedSpawnAreas;
-	#endif
-
 	switch (TargetConfig().TargetDistributionPolicy)
 	{
 	case ETargetDistributionPolicy::None:
@@ -421,46 +416,31 @@ void USpawnAreaManagerComponent::OnExtremaChanged(const FExtrema& Extrema)
 					Temp.Add(SpawnArea_MaxY);
 				}
 			}
-
-			#if !UE_BUILD_SHIPPING
-			if (bShowDebug_RemovedFromExtremaChange)
-			{
-				RemovedSpawnAreas = SpawnAreas.Difference(Temp);
-			}
-			#endif
-
+			
 			CachedExtrema = MoveTemp(Temp);
 		}
 		break;
 	case ETargetDistributionPolicy::HeadshotHeightOnly:
 	case ETargetDistributionPolicy::FullRange:
-		for (USpawnArea* SpawnArea : SpawnAreas)
 		{
-			const FVector Location = SpawnArea->GetBottomLeftVertex();
-			if (Location.Y < Extrema.Min.Y || Location.Y >= Extrema.Max.Y || Location.Z < Extrema.Min.Z || Location.Z >=
-				Extrema.Max.Z)
+			for (USpawnArea* SpawnArea : SpawnAreas)
 			{
-				CachedExtrema.Remove(SpawnArea);
-
-				#if !UE_BUILD_SHIPPING
-				if (bShowDebug_RemovedFromExtremaChange) RemovedSpawnAreas.Add(SpawnArea);
-				#endif
-			}
-			else
-			{
-				CachedExtrema.Add(SpawnArea);
+				const FVector Location = SpawnArea->GetBottomLeftVertex();
+				if (Location.Y < Extrema.Min.Y ||
+					Location.Y >= Extrema.Max.Y ||
+					Location.Z < Extrema.Min.Z ||
+					Location.Z >= Extrema.Max.Z)
+				{
+					CachedExtrema.Remove(SpawnArea);
+				}
+				else
+				{
+					CachedExtrema.Add(SpawnArea);
+				}
 			}
 		}
 		break;
-	default:
-		break;
 	}
-	#if !UE_BUILD_SHIPPING
-	if (bShowDebug_RemovedFromExtremaChange)
-	{
-		DebugCached_RemovedFromExtremaChangeSpawnAreas = RemovedSpawnAreas;
-	}
-	#endif
 }
 
 /* ------------------------------- */
@@ -1561,7 +1541,7 @@ void USpawnAreaManagerComponent::RemoveOverlappingSpawnAreas(TSet<USpawnArea*>& 
 		}
 		Invalid.Append(SpawnArea->GetOccupiedVertices());
 	}
-
+	
 	for (const FVector& BotLeft : Invalid)
 	{
 		if (const USpawnArea* Found = AreaKeyMap.FindRef(FAreaKey(BotLeft, SpawnAreaInc)))
@@ -1592,7 +1572,7 @@ int32 USpawnAreaManagerComponent::RemoveNonAdjacentIndices(TSet<USpawnArea*>& Va
 	#if !UE_BUILD_SHIPPING
 	if (bShowDebug_NonAdjacent)
 	{
-		DebugCached_FilteredBorderingSpawnAreas = ValidSpawnAreas.Difference(BorderingSpawnAreas);
+		DebugCached_NonAdjacentSpawnAreas = ValidSpawnAreas.Difference(BorderingSpawnAreas);
 	}
 	#endif
 	
@@ -1941,53 +1921,87 @@ void USpawnAreaManagerComponent::RefreshDebugBoxes() const
 {
 	FlushPersistentDebugLines(GetWorld());
 	
-	const TSet<USpawnArea*> Activated = GetActivatedSpawnAreas();
-	const TSet<USpawnArea*> Deactivated = GetDeactivatedManagedSpawnAreas();
-	const TSet<USpawnArea*> Recent = GetRecentSpawnAreas();
-	TSet<USpawnArea*> ValidActivatable = GetManagedDeactivatedNotRecentSpawnAreas();
-	if (ValidActivatable.IsEmpty())
-	{
-		ValidActivatable = GetDeactivatedManagedSpawnAreas();
-	}
-	const TSet<USpawnArea*> ValidSpawnable = DebugCached_SpawnableValidSpawnAreas;
-	const TSet<USpawnArea*> RemovedExtrema = DebugCached_RemovedFromExtremaChangeSpawnAreas;
-	const TSet<USpawnArea*> RemovedBordering = DebugCached_FilteredBorderingSpawnAreas;
-
 	if (bShowDebug_AllSpawnAreas)
 	{
-		DrawDebug_Boxes(SpawnAreas, DebugColor_AllSpawnAreas, 6, 0, true);
+		DrawDebug_Boxes(SpawnAreas, DebugColor_AllSpawnAreas, DebugBoxLineThickness, 0, true);
 	}
 	if (bShowDebug_RemovedFromExtremaChange)
 	{
-		DrawDebug_Boxes(RemovedExtrema, DebugColor_RemovedFromExtremaChange, 6, 0, true);
+		const TSet<USpawnArea*> RemovedExtrema = SpawnAreas.Difference(CachedExtrema);
+		DrawDebug_Boxes(RemovedExtrema, DebugColor_RemovedFromExtremaChange, DebugBoxLineThickness, 0, true);
 	}
 	if (bShowDebug_NonAdjacent)
 	{
-		DrawDebug_Boxes(RemovedBordering, DebugColor_NonAdjacent, 6, 0, true);
+		const TSet<USpawnArea*> NonAdjacent = DebugCached_NonAdjacentSpawnAreas;
+		DrawDebug_Boxes(NonAdjacent, DebugColor_NonAdjacent, DebugBoxLineThickness, 0, true);
 	}
 	if (bShowDebug_SpawnableSpawnAreas)
 	{
-		DrawDebug_Boxes(ValidSpawnable, DebugColor_SpawnableSpawnAreas, 6, 0, true);
+		const TSet<USpawnArea*> ValidSpawnable = DebugCached_SpawnableValidSpawnAreas;
+		DrawDebug_Boxes(ValidSpawnable, DebugColor_SpawnableSpawnAreas, DebugBoxLineThickness, 0, true);
 	}
 	if (bShowDebug_ActivatableSpawnAreas)
 	{
-		DrawDebug_Boxes(ValidActivatable, DebugColor_ActivatableSpawnAreas, 6, 0, true);
+		TSet<USpawnArea*> ValidActivatable = GetManagedDeactivatedNotRecentSpawnAreas();
+		if (ValidActivatable.IsEmpty())
+		{
+			ValidActivatable = GetDeactivatedManagedSpawnAreas();
+		}
+		DrawDebug_Boxes(ValidActivatable, DebugColor_ActivatableSpawnAreas, DebugBoxLineThickness, 0, true);
 	}
 	if (bShowDebug_DeactivatedSpawnAreas)
 	{
-		DrawDebug_Boxes(Deactivated, DebugColor_DeactivatedSpawnAreas, 6, 0, true);
+		DrawDebug_Boxes(GetDeactivatedManagedSpawnAreas(), DebugColor_DeactivatedSpawnAreas, DebugBoxLineThickness, 0, true);
 	}
 	if (bShowDebug_RecentSpawnAreas)
 	{
-		DrawDebug_Boxes(Recent, DebugColor_RecentSpawnAreas, 6, 0, true);
+		DrawDebug_Boxes(GetRecentSpawnAreas(), DebugColor_RecentSpawnAreas, DebugBoxLineThickness, 0, true);
 	}
 	if (bShowDebug_ActivatedSpawnAreas)
 	{
-		DrawDebug_Boxes(Activated, DebugColor_ActivatedSpawnAreas, 6, 0, true);
+		DrawDebug_Boxes(GetActivatedSpawnAreas(), DebugColor_ActivatedSpawnAreas, DebugBoxLineThickness, 0, true);
+	}
+	if (bShowDebug_ValidInvalidSpawnAreas)
+	{
+		TSet<FVector> Invalid;
+		TSet<USpawnArea*> InvalidSpawnAreas;
+	
+		if (ShouldConsiderManagedAsInvalid())
+		{
+			InvalidSpawnAreas = GetManagedActivatedOrRecentSpawnAreas();
+		}
+		else
+		{
+			InvalidSpawnAreas = GetActivatedOrRecentSpawnAreas();
+		}
+		
+		for (USpawnArea* SpawnArea : InvalidSpawnAreas)
+		{
+
+			TSet Occupied = SpawnArea->GetOccupiedVertices();
+			if (Occupied.IsEmpty())
+			{
+				Occupied = SpawnArea->MakeOccupiedVertices(GetMinDist(), SpawnArea->GetTargetScale());
+			}
+			Invalid.Append(Occupied);
+		}
+		
+		TSet<USpawnArea*> OverlappingInvalid;
+		for (const FVector& BotLeft : Invalid)
+		{
+			if (USpawnArea* Found = AreaKeyMap.FindRef(FAreaKey(BotLeft, SpawnAreaInc)))
+			{
+				OverlappingInvalid.Add(Found);
+			}
+		}
+		
+		const TSet<USpawnArea*> OverlappingValid = SpawnAreas.Difference(OverlappingInvalid);
+		DrawDebug_Boxes(OverlappingInvalid, DebugColor_InvalidOverlap, DebugBoxLineThickness, 0, true);
+		DrawDebug_Boxes(OverlappingValid, DebugColor_ValidOverlap, DebugBoxLineThickness, 0, true);
 	}
 	if (bShowDebug_Vertices)
 	{
-		DrawDebug_Vertices(Activated, 12.f, 12.f, 0);
+		DrawDebug_Vertices(GetActivatedSpawnAreas(), DebugVertexSize, DebugVertexSize, 0);
 	}
 }
 

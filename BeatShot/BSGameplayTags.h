@@ -76,6 +76,7 @@ struct FBSGameplayTags
 	FGameplayTag State_KnifeAttacking;
 	FGameplayTag State_BackStabbing;
 	FGameplayTag State_Firing;
+	FGameplayTag State_Recoiling;
 	FGameplayTag State_Tracking;
 	FGameplayTag State_Jumping;
 	FGameplayTag State_Moving;

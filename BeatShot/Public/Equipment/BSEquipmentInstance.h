@@ -11,6 +11,8 @@ class AActor;
 class APawn;
 struct FFrame;
 
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnEnequipConfirmed, class UBSEquipmentInstance*);
+
 /** Represents a piece of spawned equipment for a pawn. Contains an array of actors (equipment) */
 UCLASS(BlueprintType, Blueprintable)
 class BEATSHOT_API UBSEquipmentInstance : public UObject
@@ -36,6 +38,9 @@ public:
 	UFUNCTION(BlueprintPure, Category=Equipment, meta=(DeterminesOutputType=PawnType))
 	APawn* GetTypedPawn(TSubclassOf<APawn> PawnType) const;
 
+	UFUNCTION(BlueprintPure, Category=Equipment, meta=(DeterminesOutputType=ActorType))
+	AActor* GetTypedSpawnedActor(TSubclassOf<AActor> ActorType) const;
+
 	UFUNCTION(BlueprintPure, Category=Equipment)
 	TArray<AActor*> GetSpawnedActors() const { return SpawnedActors; }
 
@@ -48,10 +53,10 @@ public:
 	/** Destroys the equipment actors spawned when equipped. */
 	virtual void DestroyEquipmentActors();
 
-	/** Destroys the equipment actors spawned when equipped. */
+	/** Called after adding to FBSEquipmentList. */
 	virtual void OnEquipped();
 
-	/** Destroys the equipment actors spawned when equipped. */
+	/** Called after removing from FBSEquipmentList. */
 	virtual void OnUnequipped();
 	
 	UFUNCTION(BlueprintImplementableEvent, Category=Equipment, meta=(DisplayName="OnEquipped"))
@@ -59,6 +64,17 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent, Category=Equipment, meta=(DisplayName="OnUnequipped"))
 	void K2_OnUnequipped();
+
+	UFUNCTION(BlueprintCallable, Category=Equipment)
+	void ConfirmUnequip();
+
+	UFUNCTION(BlueprintCallable, Category=Equipment)
+	void CancelUnequip();
+
+	template<class T>
+	T* GetTypedSpawnedActor() const;
+
+	FOnEnequipConfirmed OnUnequipConfirmed;
 
 private:
 	UFUNCTION()

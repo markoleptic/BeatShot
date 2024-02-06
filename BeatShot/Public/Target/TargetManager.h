@@ -53,11 +53,15 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void Destroyed() override;
 
-	/** The 2D spawn area */
+	/** The current 2D spawn area. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UBoxComponent> SpawnBox;
 
-	/** Three-dimensional spawn area that all targets must fit inside. Used to update boundary boxes */
+	/** The 2D spawn area representing the largest the SpawnBox will ever be. Visual only. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UBoxComponent> StaticExtentsBox;
+	
+	/** Three-dimensional spawn area that all targets must fit inside. Used to update boundary boxes. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UBoxComponent> SpawnVolume;
 

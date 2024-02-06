@@ -32,8 +32,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Recoil")
 	void Recoil(const float FireRate);
 
-	UFUNCTION(BlueprintCallable, Category = "Recoil")
-	void StopRecoil();
+	/** Callback function for FireRateTimer */
+	UFUNCTION()
+	void OnFireRateTimerCompleted();
 
 protected:
 	/** Vector curve that implements vertical and horizontal recoil */
@@ -48,17 +49,30 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Recoil")
 	UCurveFloat* KickbackIntensityCurve;
 
-	UPROPERTY(EditDefaultsOnly)
+	/** The interpolation speed of the recoil */
+	UPROPERTY(EditDefaultsOnly, Category = "Recoil")
 	float CameraRecoilInterpSpeed = 4.f;
+
+	/** The duration of each kickback animation */
+	UPROPERTY(EditDefaultsOnly, Category = "Recoil")
+	float KickbackDuration = 0.2f;
+
+	/** The speed to play the timeline at when reversing (recoil recover) */
+	UPROPERTY(EditDefaultsOnly, Category = "Recoil")
+	float ReverseTimelinePlayRate = 5.454545f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Recoil")
+	int32 MagazineSize = 30;
 
 	/** Interpolates the current gun recoil, camera recoil, and kickback inside of OnTick
 	 *  based on CurrentShotRecoilRotation, CurrentShotCameraRecoilRotation, and KickbackAngle */
-	virtual void UpdateKickbackAndRecoil(float DeltaTime);
+	virtual void SetRecoilRotation(float DeltaTime);
 
 	/** Update the screen-shake-like camera recoil */
 	virtual void UpdateKickback(float DeltaTime);
 
-	/** Updates CurrentShotRecoilRotation and CurrentShotCameraRecoilRotation. Bound to RecoilTimeline, which corresponds to the RecoilCurve */
+	/** Updates CurrentShotRecoilRotation and CurrentShotCameraRecoilRotation. Bound to RecoilTimeline,
+	 *  which corresponds to the RecoilCurve */
 	UFUNCTION()
 	void UpdateRecoil(FVector Output);
 
@@ -74,9 +88,12 @@ protected:
 	FTimerDelegate FireRateDelegate;
 	FTimerHandle FireRateTimer;
 
-	/** Whether or not the player is holding down left click */
-	UPROPERTY(BlueprintReadWrite)
+	/** Whether or not the fire rate timer is currently active */
+	UPROPERTY(BlueprintReadOnly, Category = "Recoil")
 	bool bIsFiring;
+
+	/** Whether or not the relative rotation is nearly equal to zero */
+	bool bHasRecoil;
 
 	/** Whether or not to increment KickbackAngle, which is applied to the owning character's CameraRecoilComponent */
 	bool bShouldKickback;
@@ -86,10 +103,7 @@ protected:
 
 	/** The value pulled from the KickbackCurve at time KickbackAlpha divided by KickbackDuration */
 	float KickbackAngle;
-
-	/** The duration of each kickback animation */
-	float KickbackDuration = 0.2f;
-
+	
 	/** Used in recoil to make sure the first shot has properly applied recoil */
 	int32 ShotsFired;
 };

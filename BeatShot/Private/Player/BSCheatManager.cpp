@@ -19,11 +19,12 @@
 namespace BeatShotCVars
 {
 	static TAutoConsoleVariable CVarCheat_AimBot(TEXT("bs_cheat.aimbot"), FString(),
-		TEXT("Enable Aim Bot")
-		TEXT("1: Enables for all locations")
-		TEXT("0: Disables and removes from player")
-		TEXT("X={} Y={} Z={}: Only destroy targets at locations that are >= the value if all positive,")
-		TEXT("or <= if negative. If either Y or Z is left blank, only the other value is considered."));
+		TEXT("Enable Aim Bot\n")
+		TEXT("1: Enables for all locations\n")
+		TEXT("0: Disables and removes from player\n")
+		TEXT("X={} Y={} Z={}: Only destroy targets at locations that are >= the value if all positive,\n")
+		TEXT("or <= if negative. If either Y or Z is left blank, only the other value is considered.\n"));
+
 	
 	static TAutoConsoleVariable CVarShowDebug(TEXT("bs_showdebug"),
 		0,
@@ -45,6 +46,7 @@ namespace BeatShotCVars
 		TEXT("Toggles printing the Reinforcement Learning Component's intermediate values when finding the max "
 		"action index."));
 
+	
 	static TAutoConsoleVariable CVarPrintDebug_ActiveTargetPairs(TEXT("bs_pringdebug.activetargetpairs"),
 		0,
 		TEXT("Toggles printing the target pairs that are added to the RL Component's ActiveTargetPairs."));
@@ -68,25 +70,28 @@ namespace BeatShotCVars
 
 	static TAutoConsoleVariable CVarShowDebug_ReinforcementLearningWidget(TEXT("bs_showdebug.rlwidget"),
 		FString("avg"),
-		TEXT("Toggles showing the reinforcement learning widget.")
-		TEXT("\"avg\": Shows the average values across each QTable column (destination indices).")
-		TEXT("\"max\": Shows the max values across each QTable column (destination indices).")
+		TEXT("Toggles showing the reinforcement learning widget.\n")
+		TEXT("\"avg\": Shows the average values across each QTable column (destination indices).\n")
+		TEXT("\"max\": Shows the max values across each QTable column (destination indices).\n")
 		TEXT("Can also use 0/1 and it will use max values."));
 
 
 	static TAutoConsoleVariable CVarShowDebug_SpawnBox(TEXT("bs_showdebug.spawnbox"),
 		0,
-		TEXT("Draw debug boxes for the SpawnBox and SpawnVolume.")
-		TEXT("Blue: SpawnBox")
-		TEXT("Orange: SpawnVolume"));
+		TEXT("Draw debug boxes for the SpawnBox and the StaticExtentsBox."));
+
+	
+	static TAutoConsoleVariable CVarShowDebug_SpawnVolume(TEXT("bs_showdebug.spawnvolume"),
+		0,
+		TEXT("Draw debug box for the SpawnVolume."));
 
 
 	static TAutoConsoleVariable CVarShowDebug_DirectionalBoxes(TEXT("bs_showdebug.dirboxes"),
 		0,
-		TEXT("Draw debug boxes for the 6 directional boxes.")
-	    TEXT("X: Red")
-	    TEXT("Y: Green")
-	    TEXT("Z: Blue"));
+		TEXT("Draw debug boxes for the 6 directional boxes.\n")
+	    TEXT("X: Red\n")
+	    TEXT("Y: Green\n")
+	    TEXT("Z: Blue\n"));
 
 
 	static TAutoConsoleVariable CVarShowDebug_AllSpawnAreas(TEXT("bs_showdebug.allspawnareas"),
@@ -97,6 +102,11 @@ namespace BeatShotCVars
 	static TAutoConsoleVariable CVarShowDebug_RemovedFromExtremaChange(TEXT("bs_showdebug.removedextrema"),
 		0,
 		TEXT("Toggles showing debug boxes for removed Spawn Areas due to BoxBounds."));
+
+	
+	static TAutoConsoleVariable CVarShowDebug_ValidInvalid(TEXT("bs_showdebug.validinvalid"),
+		0,
+		TEXT("Toggles showing debug boxes for all spawn areas removed due to overlap."));
 
 	
 	static TAutoConsoleVariable CVarShowDebug_SpawnableSpawnAreas(TEXT("bs_showdebug.spawnable"),
@@ -154,11 +164,13 @@ void UBSCheatManager::InitCheatManager()
 	BIND_BS_CVAR(CVarShowDebug, this, &UBSCheatManager::ShowDebug);
 	BIND_BS_CVAR(CVarShowDebug_ReinforcementLearningWidget, this, &UBSCheatManager::ShowDebug_ReinforcementLearningWidget);
 	BIND_BS_CVAR(CVarShowDebug_SpawnBox, this, &UBSCheatManager::ShowDebug_SpawnBox);
+	BIND_BS_CVAR(CVarShowDebug_SpawnVolume, this, &UBSCheatManager::ShowDebug_SpawnVolume);
 	BIND_BS_CVAR(CVarShowDebug_DirectionalBoxes, this, &UBSCheatManager::ShowDebug_DirectionalBoxes);
 	BIND_BS_CVAR(CVarShowDebug_FrontSpotLight, this, &UBSCheatManager::ShowDebug_SpotLightFront);
 	BIND_BS_CVAR(CVarSetTimeOfDay, this, &UBSCheatManager::SetTimeOfDay);
 	
 	BIND_BS_COMP_CVAR(CVarShowDebug_AllSpawnAreas, this, SetComponentDebugBool, &USpawnAreaManagerComponent::bShowDebug_AllSpawnAreas);
+	BIND_BS_COMP_CVAR(CVarShowDebug_ValidInvalid, this, SetComponentDebugBool, &USpawnAreaManagerComponent::bShowDebug_ValidInvalidSpawnAreas);
 	BIND_BS_COMP_CVAR(CVarShowDebug_SpawnableSpawnAreas, this, SetComponentDebugBool, &USpawnAreaManagerComponent::bShowDebug_SpawnableSpawnAreas);
 	BIND_BS_COMP_CVAR(CVarShowDebug_ActivatableSpawnAreas, this, SetComponentDebugBool, &USpawnAreaManagerComponent::bShowDebug_ActivatableSpawnAreas);
 	BIND_BS_COMP_CVAR(CVarShowDebug_ActivatedSpawnAreas, this, SetComponentDebugBool, &USpawnAreaManagerComponent::bShowDebug_ActivatedSpawnAreas);
@@ -242,9 +254,11 @@ void UBSCheatManager::ShowDebug(IConsoleVariable* Variable)
 {
 	ShowDebug_ReinforcementLearningWidget(Variable);
 	ShowDebug_SpawnBox(Variable);
+	ShowDebug_SpawnVolume(Variable);
 	ShowDebug_DirectionalBoxes(Variable);
 
 	SetComponentDebugBool(Variable, &USpawnAreaManagerComponent::bShowDebug_AllSpawnAreas);
+	SetComponentDebugBool(Variable, &USpawnAreaManagerComponent::bShowDebug_ValidInvalidSpawnAreas);
 	SetComponentDebugBool(Variable, &USpawnAreaManagerComponent::bShowDebug_SpawnableSpawnAreas);
 	SetComponentDebugBool(Variable, &USpawnAreaManagerComponent::bShowDebug_ActivatableSpawnAreas);
 	SetComponentDebugBool(Variable, &USpawnAreaManagerComponent::bShowDebug_ActivatedSpawnAreas);
@@ -327,26 +341,49 @@ void UBSCheatManager::ShowDebug_SpawnBox(IConsoleVariable* Variable)
 	if (Variable->GetBool())
 	{
 		TargetManager->SpawnBox->SetHiddenInGame(false);
-		TargetManager->SpawnVolume->SetHiddenInGame(false);
-
 		TargetManager->SpawnBox->ShapeColor = FColor::Blue;
-		TargetManager->SpawnVolume->ShapeColor = FColor::Orange;
-		
+		TargetManager->SpawnBox->SetLineThickness(6.f);
 		TargetManager->SpawnBox->SetVisibility(true);
-		TargetManager->SpawnVolume->SetVisibility(true);
-		
 		TargetManager->SpawnBox->MarkRenderStateDirty();
-		TargetManager->SpawnVolume->MarkRenderStateDirty();
+
+		TargetManager->StaticExtentsBox->SetHiddenInGame(false);
+		TargetManager->StaticExtentsBox->ShapeColor = FColor::Orange;
+		TargetManager->StaticExtentsBox->SetLineThickness(6.f);
+		TargetManager->StaticExtentsBox->SetVisibility(true);
+		TargetManager->StaticExtentsBox->MarkRenderStateDirty();
 	}
 	else
 	{
 		TargetManager->SpawnBox->SetHiddenInGame(true);
-		TargetManager->SpawnVolume->SetHiddenInGame(true);
-
 		TargetManager->SpawnBox->SetVisibility(false);
-		TargetManager->SpawnVolume->SetVisibility(false);
-
 		TargetManager->SpawnBox->MarkRenderStateDirty();
+
+		TargetManager->StaticExtentsBox->SetHiddenInGame(true);
+		TargetManager->StaticExtentsBox->SetVisibility(false);
+		TargetManager->StaticExtentsBox->MarkRenderStateDirty();
+	}
+}
+
+void UBSCheatManager::ShowDebug_SpawnVolume(IConsoleVariable* Variable)
+{
+	const ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (!GameMode) return;
+
+	const ATargetManager* TargetManager = GameMode->GetTargetManager();
+	if (!TargetManager) return;
+
+	if (Variable->GetBool())
+	{
+		TargetManager->SpawnVolume->SetHiddenInGame(false);
+		TargetManager->SpawnVolume->ShapeColor = FColor::Orange;
+		TargetManager->SpawnVolume->SetLineThickness(6.f);
+		TargetManager->SpawnVolume->SetVisibility(true);
+		TargetManager->SpawnVolume->MarkRenderStateDirty();
+	}
+	else
+	{
+		TargetManager->SpawnVolume->SetHiddenInGame(true);
+		TargetManager->SpawnVolume->SetVisibility(false);
 		TargetManager->SpawnVolume->MarkRenderStateDirty();
 
 	}
@@ -382,6 +419,13 @@ void UBSCheatManager::ShowDebug_DirectionalBoxes(IConsoleVariable* Variable)
 		TargetManager->RightBox->ShapeColor = FColor::Green;
 		TargetManager->ForwardBox->ShapeColor = FColor::Red;
 		TargetManager->BackwardBox->ShapeColor = FColor::Red;
+
+		TargetManager->TopBox->SetLineThickness(4.f);
+		TargetManager->BottomBox->SetLineThickness(4.f);
+		TargetManager->LeftBox->SetLineThickness(4.f);
+		TargetManager->RightBox->SetLineThickness(4.f);
+		TargetManager->ForwardBox->SetLineThickness(4.f);
+		TargetManager->BackwardBox->SetLineThickness(4.f);
 		
 		TargetManager->TopBox->MarkRenderStateDirty();
 		TargetManager->BottomBox->MarkRenderStateDirty();
@@ -447,9 +491,10 @@ void UBSCheatManager::SetComponentDebugBool(IConsoleVariable* Variable, T Compon
 	if (!GameMode) return;
 
 	const ATargetManager* TargetManager = GameMode->GetTargetManager();
-	if (!TargetManager || !TargetManager->SpawnAreaManager) return;
+	if (!TargetManager) return;
 
 	ComponentClass* Comp = TargetManager->GetComponentByClass<ComponentClass>();
+	if (!Comp) return;
 
 	Comp->*DebugBool = Variable->GetBool();
 }

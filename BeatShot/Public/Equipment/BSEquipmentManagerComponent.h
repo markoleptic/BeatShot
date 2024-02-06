@@ -28,8 +28,7 @@ struct FBSAppliedEquipmentEntry : public FFastArraySerializerItem
 	{
 		return FString::Printf(TEXT("%s of %s"), *GetNameSafe(Instance.Get()), *GetNameSafe(EquipmentDefinition.Get()));
 	};
-
-private:
+	
 	friend struct FBSEquipmentList;
 	friend class UBSEquipmentManagerComponent;
 
@@ -60,17 +59,10 @@ struct FBSEquipmentList : public FFastArraySerializer
 	FBSEquipmentList(UActorComponent* InOwnerComponent) : OwnerComponent(InOwnerComponent)
 	{
 	}
-
-public:
-	//~FFastArraySerializer contract
-	void PreReplicatedRemove(const TArrayView<int32> RemovedIndices, int32 FinalSize);
-	void PostReplicatedAdd(const TArrayView<int32> AddedIndices, int32 FinalSize);
-	void PostReplicatedChange(const TArrayView<int32> ChangedIndices, int32 FinalSize);
-	//~End of FFastArraySerializer contract
-
+	
 	bool NetDeltaSerialize(FNetDeltaSerializeInfo& DeltaParms)
 	{
-		return FFastArraySerializer::FastArrayDeltaSerialize<FBSAppliedEquipmentEntry, FBSEquipmentList>(Entries,
+		return FFastArraySerializer::FastArrayDeltaSerialize<FBSAppliedEquipmentEntry, FBSEquipmentList>(Items,
 			DeltaParms, *this);
 	}
 
@@ -87,7 +79,7 @@ private:
 
 	/** Replicated list of equipment entries */
 	UPROPERTY()
-	TArray<FBSAppliedEquipmentEntry> Entries;
+	TArray<FBSAppliedEquipmentEntry> Items;
 
 	UPROPERTY(NotReplicated)
 	TObjectPtr<UActorComponent> OwnerComponent;
@@ -111,11 +103,13 @@ class BEATSHOT_API UBSEquipmentManagerComponent : public UPawnComponent
 public:
 	UBSEquipmentManagerComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
-	UBSEquipmentInstance* EquipItem(TSubclassOf<UBSEquipmentDefinition> EquipmentDefinition);
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
-	void UnequipItem(UBSEquipmentInstance* ItemInstance);
+	UBSEquipmentInstance* EquipItem(TSubclassOf<UBSEquipmentDefinition> EquipmentDefinition);
+	
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
+	void UnequipItem(UBSEquipmentInstance* ItemInstance, const bool bCallOnUnequipped = true);
 
 	//~UObject interface
 	virtual bool ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch,

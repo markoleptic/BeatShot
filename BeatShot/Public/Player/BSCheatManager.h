@@ -34,12 +34,13 @@ public:
 	void Cheat_AimBot(IConsoleVariable* Variable);
 	void ShowDebug(IConsoleVariable* Variable);
 	void ShowDebug_SpawnBox(IConsoleVariable* Variable);
+	void ShowDebug_SpawnVolume(IConsoleVariable* Variable);
 	void ShowDebug_DirectionalBoxes(IConsoleVariable* Variable);
 	void ShowDebug_ReinforcementLearningWidget(IConsoleVariable* Variable);
 	void ShowDebug_SpotLightFront(IConsoleVariable* Variable);
 	void SetTimeOfDay(IConsoleVariable* Variable);
 
-	/** Sets the ComponentClass's DebugBool value to the value of the Variable. */
+	/** Sets the ComponentClass's DebugBool value to the bool value of the console variable. */
 	template<typename T, class ComponentClass>
 	void SetComponentDebugBool(IConsoleVariable* Variable, T ComponentClass::*DebugBool);
 	

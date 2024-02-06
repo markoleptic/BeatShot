@@ -37,8 +37,8 @@ FString FBSInventoryEntry::GetDebugString() const
 TArray<UBSInventoryItemInstance*> FBSInventoryList::GetAllItems() const
 {
 	TArray<UBSInventoryItemInstance*> Results;
-	Results.Reserve(Entries.Num());
-	for (const FBSInventoryEntry& Entry : Entries)
+	Results.Reserve(Items.Num());
+	for (const FBSInventoryEntry& Entry : Items)
 	{
 		if (Entry.Instance != nullptr) //@TODO: Would prefer to not deal with this here and hide it further?
 		{
@@ -46,34 +46,6 @@ TArray<UBSInventoryItemInstance*> FBSInventoryList::GetAllItems() const
 		}
 	}
 	return Results;
-}
-
-void FBSInventoryList::PreReplicatedRemove(const TArrayView<int32> RemovedIndices, int32 FinalSize)
-{
-	for (const int32 Index : RemovedIndices)
-	{
-		FBSInventoryEntry& Stack = Entries[Index];
-		Stack.LastObservedCount = 0;
-	}
-}
-
-void FBSInventoryList::PostReplicatedAdd(const TArrayView<int32> AddedIndices, int32 FinalSize)
-{
-	for (const int32 Index : AddedIndices)
-	{
-		FBSInventoryEntry& Stack = Entries[Index];
-		Stack.LastObservedCount = Stack.StackCount;
-	}
-}
-
-void FBSInventoryList::PostReplicatedChange(const TArrayView<int32> ChangedIndices, int32 FinalSize)
-{
-	for (const int32 Index : ChangedIndices)
-	{
-		FBSInventoryEntry& Stack = Entries[Index];
-		check(Stack.LastObservedCount != INDEX_NONE);
-		Stack.LastObservedCount = Stack.StackCount;
-	}
 }
 
 UBSInventoryItemInstance* FBSInventoryList::AddEntry(TSubclassOf<UBSInventoryItemDefinition> ItemDef, int32 StackCount)
@@ -84,7 +56,7 @@ UBSInventoryItemInstance* FBSInventoryList::AddEntry(TSubclassOf<UBSInventoryIte
 	const AActor* OwningActor = OwnerComponent->GetOwner();
 	check(OwningActor->HasAuthority());
 
-	FBSInventoryEntry& NewEntry = Entries.AddDefaulted_GetRef();
+	FBSInventoryEntry& NewEntry = Items.AddDefaulted_GetRef();
 	NewEntry.Instance = NewObject<UBSInventoryItemInstance>(OwnerComponent->GetOwner());
 	NewEntry.Instance->SetItemDef(ItemDef);
 	NewEntry.Instance->AddIdentifierTags(GetDefault<UBSInventoryItemDefinition>(ItemDef)->ItemTags);
@@ -105,7 +77,7 @@ UBSInventoryItemInstance* FBSInventoryList::AddEntry(TSubclassOf<UBSInventoryIte
 
 void FBSInventoryList::RemoveEntry(UBSInventoryItemInstance* Instance)
 {
-	for (auto EntryIt = Entries.CreateIterator(); EntryIt; ++EntryIt)
+	for (auto EntryIt = Items.CreateIterator(); EntryIt; ++EntryIt)
 	{
 		FBSInventoryEntry& Entry = *EntryIt;
 		if (Entry.Instance == Instance)
@@ -163,7 +135,7 @@ TArray<UBSInventoryItemInstance*> UBSInventoryManagerComponent::GetAllItems() co
 UBSInventoryItemInstance* UBSInventoryManagerComponent::FindFirstItemStackByDefinition(
 	TSubclassOf<UBSInventoryItemDefinition> ItemDef) const
 {
-	for (const FBSInventoryEntry& Entry : InventoryList.Entries)
+	for (const FBSInventoryEntry& Entry : InventoryList.Items)
 	{
 		UBSInventoryItemInstance* Instance = Entry.Instance;
 
@@ -182,7 +154,7 @@ UBSInventoryItemInstance* UBSInventoryManagerComponent::FindFirstItemStackByDefi
 int32 UBSInventoryManagerComponent::GetTotalItemCountByDefinition(TSubclassOf<UBSInventoryItemDefinition> ItemDef) const
 {
 	int32 TotalCount = 0;
-	for (const FBSInventoryEntry& Entry : InventoryList.Entries)
+	for (const FBSInventoryEntry& Entry : InventoryList.Items)
 	{
 		UBSInventoryItemInstance* Instance = Entry.Instance;
 
@@ -230,7 +202,7 @@ bool UBSInventoryManagerComponent::ReplicateSubobjects(UActorChannel* Channel, F
 {
 	bool WroteSomething = Super::ReplicateSubobjects(Channel, Bunch, RepFlags);
 
-	for (FBSInventoryEntry& Entry : InventoryList.Entries)
+	for (FBSInventoryEntry& Entry : InventoryList.Items)
 	{
 		UBSInventoryItemInstance* Instance = Entry.Instance;
 
@@ -250,7 +222,7 @@ void UBSInventoryManagerComponent::ReadyForReplication()
 	// Register existing UBSInventoryItemInstance
 	if (IsUsingRegisteredSubObjectList())
 	{
-		for (const FBSInventoryEntry& Entry : InventoryList.Entries)
+		for (const FBSInventoryEntry& Entry : InventoryList.Items)
 		{
 			UBSInventoryItemInstance* Instance = Entry.Instance;
 
@@ -308,19 +280,43 @@ void UBSInventoryManagerComponent::CycleActiveSlotBackward()
 
 void UBSInventoryManagerComponent::SetActiveSlotIndex_Implementation(int32 NewIndex)
 {
-	if (Slots.IsValidIndex(NewIndex) && (ActiveSlotIndex != NewIndex))
+	// don't cancel anim if spamming another slot index
+	/*|| (LastRequestedSlotEquipIndex != NewIndex && Slots.IsValidIndex(LastRequestedSlotEquipIndex))*/
+	if ((Slots.IsValidIndex(NewIndex) && ActiveSlotIndex != NewIndex))
 	{
-		const int32 OldIndex = ActiveSlotIndex;
-		
-		UnequipItemInSlot();
-
-		ActiveSlotIndex = NewIndex;
-		LastSlotIndex = OldIndex;
-
-		EquipItemInSlot();
-
-		OnRep_ActiveSlotIndex();
+		if (EquippedItem)
+		{
+			if (!EquippedItem->OnUnequipConfirmed.IsBound())
+			{
+				EquippedItem->OnUnequipConfirmed.AddLambda([this, NewIndex](UBSEquipmentInstance* Instance)
+				{
+					if (EquippedItem && EquippedItem == Instance /*&& LastRequestedSlotEquipIndex == NewIndex*/)
+					{
+						UE_LOG(LogTemp, Display, TEXT("Unequip Confirm %s"), *GetNameSafe(EquippedItem));
+						if (UBSEquipmentManagerComponent* EquipmentManager = FindEquipmentManager())
+						{
+							EquipmentManager->UnequipItem(EquippedItem, false);
+						}
+						LastSlotIndex = ActiveSlotIndex;
+						ActiveSlotIndex = NewIndex;
+						EquippedItem = nullptr;
+						EquipItemInSlot();
+						OnRep_ActiveSlotIndex();
+					}
+				});
+			}
+			EquippedItem->OnUnequipped();
+			UE_LOG(LogTemp, Display, TEXT("Unequip Request %s"), *EquippedItem->GetName());
+		}
+		else
+		{
+			LastSlotIndex = ActiveSlotIndex;
+			ActiveSlotIndex = NewIndex;
+			EquipItemInSlot();
+			OnRep_ActiveSlotIndex();
+		}
 	}
+	LastRequestedSlotEquipIndex = NewIndex;
 }
 
 UBSInventoryItemInstance* UBSInventoryManagerComponent::GetActiveSlotItem() const
@@ -366,7 +362,7 @@ UBSInventoryItemInstance* UBSInventoryManagerComponent::RemoveItemFromSlot(int32
 
 	if (ActiveSlotIndex == SlotIndex)
 	{
-		UnequipItemInSlot();
+		ForceUnequipItemInSlot();
 		ActiveSlotIndex = -1;
 	}
 
@@ -421,11 +417,11 @@ void UBSInventoryManagerComponent::BeginPlay()
 	}
 }
 
-void UBSInventoryManagerComponent::UnequipItemInSlot()
+void UBSInventoryManagerComponent::ForceUnequipItemInSlot()
 {
 	if (UBSEquipmentManagerComponent* EquipmentManager = FindEquipmentManager())
 	{
-		if (EquippedItem)
+		if (EquippedItem != nullptr)
 		{
 			EquipmentManager->UnequipItem(EquippedItem);
 			EquippedItem = nullptr;
