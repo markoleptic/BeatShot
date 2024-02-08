@@ -46,8 +46,17 @@ public:
 	
 	#endif
 	
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "BeatShot|Abilities")
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Debug")
 	TSubclassOf<UGameplayAbility> AimBotAbility;
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Debug")
+	float SpawnBoxLineThickness = 6.f;
+	
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Debug")
+	float StaticExtentsBoxLineThickness = 6.f;
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Debug")
+	float SpawnVolumeLineThickness = 6.f;
 
 	UPROPERTY()
 	FGameplayAbilitySpecHandle AimBotSpecHandle;

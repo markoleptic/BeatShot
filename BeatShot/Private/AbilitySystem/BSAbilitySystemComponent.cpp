@@ -189,7 +189,6 @@ TArray<FGameplayAbilitySpec*> UBSAbilitySystemComponent::GetAbilitySpecsFromGame
 void UBSAbilitySystemComponent::AbilitySpecInputPressed(FGameplayAbilitySpec& Spec)
 {
 	Super::AbilitySpecInputPressed(Spec);
-
 	// We don't support UGameplayAbility::bReplicateInputDirectly.
 	// Use replicated events instead so that the WaitInputPress ability task works.
 	if (Spec.IsActive())

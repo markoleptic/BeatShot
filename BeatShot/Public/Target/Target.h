@@ -28,6 +28,10 @@ struct FTargetDamageEvent
 {
 	GENERATED_BODY()
 
+	/** The target associated with this damage event */
+	UPROPERTY()
+	ATarget* Target;
+
 	/** The physical actor tied to this damage event */
 	UPROPERTY()
 	AActor* DamageCauser;
@@ -65,6 +69,9 @@ struct FTargetDamageEvent
 
 	/** The total amount of tracking damage possible at the time of the damage event. Updated in SetTargetManagerData */
 	double TotalPossibleTrackingDamage;
+
+	/** The amount of health required to deactivate if a Deactivation Condition is Specific Health Amount */
+	float CurrentDeactivationHealthThreshold;
 	
 	/** The transform of the target */
 	FTransform Transform;
@@ -74,6 +81,7 @@ struct FTargetDamageEvent
 
 	FTargetDamageEvent()
 	{
+		Target = nullptr;
 		DamageCauser = nullptr;
 		bDamagedSelf = false;
 		bOutOfHealth = false;
@@ -87,19 +95,20 @@ struct FTargetDamageEvent
 		DamageDelta = 0.f;
 		TimeAlive = -1.f;
 		TotalPossibleTrackingDamage = 0.f;
+		CurrentDeactivationHealthThreshold = 0.f;
 		
 		Transform = FTransform();
 		
 		Streak = -1;
 	}
 
-	FTargetDamageEvent(const FDamageEventData& InData, const float InTimeAlive, const ATarget* InTarget);
+	FTargetDamageEvent(const FDamageEventData& InData, const float InTimeAlive, ATarget* InTarget);
 
 	/** Called by the Target to set data that only it will have access to */
-	void SetTargetData(const bool bDeactivate, const bool bDestroy, const TArray<ETargetDamageType>& InTypes);
+	void SetTargetData(const float InCurrentDeactivationHealthThreshold, const TArray<ETargetDamageType>& InTypes);
 
 	/** Called by the TargetManager to set data that only it will have access to */
-	void SetTargetManagerData(const int32 InStreak, const float InTotalPossibleTrackingDamage);
+	void SetTargetManagerData(const bool bDeactivate, const bool bDestroy, const int32 InStreak, const float InTotalPossibleTrackingDamage);
 
 	FORCEINLINE bool operator ==(const FTargetDamageEvent& Other) const
 	{
@@ -112,12 +121,7 @@ struct FTargetDamageEvent
 };
 
 /** Broadcast when a target takes damage or the the ExpirationTimer timer expires */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTargetDamageEvent, FTargetDamageEvent, TargetDamageEvent);
-
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnDeactivationResponse_ChangeDirection, ATarget* InTarget,
-	const uint8 InSpawnActivationDeactivation);
-
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnDeactivationResponse_Reactivate, ATarget* Target);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnTargetDamageEvent, FTargetDamageEvent& TargetDamageEvent);
 
 /** Base target class for this game that is mostly self-managed. TargetManager is responsible for spawning,
  *  but the lifetime is mostly controlled by parameters passed to it */
@@ -135,7 +139,7 @@ protected:
 
 	UPROPERTY()
 	const UBSAttributeSetBase* AttributeSetBase;
-
+   
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
 	UCapsuleComponent* CapsuleComponent;
 
@@ -165,6 +169,15 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
 	TSubclassOf<UGameplayEffect> GE_ResetHealth;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
+	FName MaterialParameterColorName = "BaseColor";
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
+	FName TargetExplosionSphereRadiusParameterName = "SphereRadius";
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
+	FName TargetExplosionColorParameterName = "SphereColor";
 
 	UPROPERTY(EditDefaultsOnly, Category = "Target Properties")
 	UCurveFloat* StartToPeakCurve;
@@ -214,15 +227,9 @@ public:
 	/** Called when a gameplay effect is blocked because of immunity */
 	void OnImmunityBlockGameplayEffect(const FGameplayEffectSpec& Spec, const FActiveGameplayEffect* Effect);
 
-	/** Broadcast when the target needs a new direction because of a deactivation response */
-	FOnDeactivationResponse_ChangeDirection OnDeactivationResponse_ChangeDirection;
-
-	/** Broadcast when the target needs to immediately reactivate */
-	FOnDeactivationResponse_Reactivate OnDeactivationResponse_Reactivate;
-
 protected:
 	/** Called from HealthComponent when a target receives damage. Main Deactivation and Destruction handler */
-	virtual void OnIncomingDamageTaken(const FDamageEventData& InData);
+	void OnIncomingDamageTaken(const FDamageEventData& InData);
 
 	/** Callback function for when ExpirationTimer timer expires */
 	UFUNCTION()
@@ -238,23 +245,14 @@ public:
 	/** Starts the ExpirationTimer timer and starts playing StartToPeakTimeline if Lifespan > 0 */
 	virtual bool ActivateTarget(const float Lifespan);
 
-protected:
-	/** Calls StopAllTimelines, sets TargetScale_Deactivation, and calls HandleDeactivationResponses */
-	virtual void HandleDeactivation(const bool bExpired, const bool bOutOfHealth, const bool bWillDestroy);
-
-	/** Returns true if the target should be deactivated based on TargetDeactivationConditions */
-	virtual bool ShouldDeactivate(const bool bExpired, const float CurrentHealth) const;
-
-	/** Performs any responses to the target being deactivated */
-	virtual void HandleDeactivationResponses(const bool bExpired);
-
-	/** Returns true if the target should be destroyed based on TargetDestructionConditions */
-	virtual bool ShouldDestroy(const bool bExpired, const bool bOutOfHealth) const;
+	/** Calls StopAllTimelines, sets TargetScale_Deactivation */
+	void DeactivateTarget();
 
 	/** Checks to see if ResetHealth should be called based on TargetDestructionConditions, UnlimitedHealth, and
 	 *  if the target is out of health */
 	void CheckForHealthReset(const bool bOutOfHealth);
 
+protected:
 	/** Play the StartToPeakTimeline, which corresponds to the StartToPeakCurve */
 	UFUNCTION()
 	void PlayStartToPeakTimeline();
@@ -289,17 +287,16 @@ public:
 	/** Sets the color of the Base Target */
 	UFUNCTION(BlueprintCallable)
 	virtual void SetTargetColor(const FLinearColor& Color);
-
 	/** Sets the color of the Target Outline */
 	UFUNCTION(BlueprintCallable)
-	virtual void SetTargetOutlineColor(const FLinearColor& Color);
+	void SetTargetOutlineColor(const FLinearColor& Color);
 
 	/** Toggles between using the BaseColor or a separate OutlineColor in the Sphere Material */
-	virtual void SetUseSeparateOutlineColor(const bool bUseSeparateOutlineColor);
+	void SetUseSeparateOutlineColor(const bool bUseSeparateOutlineColor);
 
 	/** Set the color to inactive target color */
 	UFUNCTION()
-	virtual void SetTargetColorToInactiveColor();
+	void SetTargetColorToInactiveColor();
 
 	/** Sets the velocity of the ProjectileMovementComponent by multiplying the InitialSpeed and the new direction */
 	void SetTargetDirection(const FVector& NewDirection) const;
@@ -352,9 +349,6 @@ public:
 
 	/** Returns whether or not the target is currently activated */
 	bool IsActivated() const;
-
-	/** Returns whether or not the target can be reactivated */
-	bool CanBeReactivated() const;
 
 	/** Whether or not the target is immune to all damage */
 	bool IsImmuneToDamage() const;
@@ -462,9 +456,6 @@ protected:
 	
 	/** Whether or not to apply the LifetimeTargetScaling Method */
 	bool bApplyLifetimeTargetScaling;
-
-	/** False if the target is currently activated */
-	bool bCanBeReactivated;
 
 	/** Whether or not the target has ever been activated */
 	bool bHasBeenActivated;

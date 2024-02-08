@@ -500,11 +500,11 @@ USpawnArea* USpawnAreaManagerComponent::FindOldestRecentSpawnArea() const
 	return MostRecent;
 }
 
-USpawnArea* USpawnAreaManagerComponent::FindOldestDeactivatedManagedSpawnArea() const
+USpawnArea* USpawnAreaManagerComponent::FindOldestDeactivatedSpawnArea() const
 {
 	USpawnArea* MostRecent = nullptr;
 
-	for (USpawnArea* SpawnArea : GetDeactivatedManagedSpawnAreas())
+	for (USpawnArea* SpawnArea : GetDeactivatedSpawnAreas())
 	{
 		if (!MostRecent)
 		{
@@ -538,7 +538,7 @@ TSet<USpawnArea*> USpawnAreaManagerComponent::GetManagedSpawnAreas() const
 	return CachedManaged;
 }
 
-TSet<USpawnArea*> USpawnAreaManagerComponent::GetDeactivatedManagedSpawnAreas() const
+TSet<USpawnArea*> USpawnAreaManagerComponent::GetDeactivatedSpawnAreas() const
 {
 	return CachedManaged.Difference(CachedActivated);
 }
@@ -565,7 +565,7 @@ TSet<USpawnArea*> USpawnAreaManagerComponent::GetManagedActivatedOrRecentSpawnAr
 
 TSet<USpawnArea*> USpawnAreaManagerComponent::GetManagedDeactivatedNotRecentSpawnAreas() const
 {
-	return CachedManaged.Difference(GetActivatedOrRecentSpawnAreas());
+	return GetDeactivatedSpawnAreas().Difference(CachedRecent);
 }
 
 TSet<USpawnArea*> USpawnAreaManagerComponent::GetUnflaggedSpawnAreas() const
@@ -743,7 +743,7 @@ TSet<USpawnArea*> USpawnAreaManagerComponent::GetActivatableSpawnAreas(const int
 	 * which is why this condition exists */
 	if (ValidSpawnAreas.IsEmpty())
 	{
-		ValidSpawnAreas = GetDeactivatedManagedSpawnAreas();
+		ValidSpawnAreas = GetDeactivatedSpawnAreas();
 	}
 
 	// ReSharper disable once CppLocalVariableMayBeConst
@@ -1925,6 +1925,63 @@ void USpawnAreaManagerComponent::RefreshDebugBoxes() const
 	{
 		DrawDebug_Boxes(SpawnAreas, DebugColor_AllSpawnAreas, DebugBoxLineThickness, 0, true);
 	}
+	if (bShowDebug_ValidInvalidSpawnAreas)
+	{
+		TSet<FVector> Invalid;
+		TSet<FVector> InvalidRecent;
+		TSet<USpawnArea*> InvalidSpawnAreas;
+		TSet<USpawnArea*> RecentSpawnAreas = CachedRecent;
+		
+		if (ShouldConsiderManagedAsInvalid())
+		{
+			InvalidSpawnAreas = CachedManaged.Union(CachedActivated);
+		}
+		else
+		{
+			InvalidSpawnAreas = CachedActivated;
+		}
+		
+		for (USpawnArea* SpawnArea : InvalidSpawnAreas)
+		{
+			TSet Occupied = SpawnArea->GetOccupiedVertices();
+			if (Occupied.IsEmpty())
+			{
+				Occupied = SpawnArea->MakeOccupiedVertices(GetMinDist(), SpawnArea->GetTargetScale());
+			}
+			Invalid.Append(Occupied);
+		}
+		for (USpawnArea* SpawnArea : RecentSpawnAreas)
+		{
+			TSet Occupied = SpawnArea->GetOccupiedVertices();
+			if (Occupied.IsEmpty())
+			{
+				Occupied = SpawnArea->MakeOccupiedVertices(GetMinDist(), SpawnArea->GetTargetScale());
+			}
+			InvalidRecent.Append(Occupied);
+		}
+		
+		TSet<USpawnArea*> OverlappingInvalid;
+		TSet<USpawnArea*> OverlappingRecentInvalid;
+		for (const FVector& BotLeft : Invalid)
+		{
+			if (USpawnArea* Found = AreaKeyMap.FindRef(FAreaKey(BotLeft, SpawnAreaInc)))
+			{
+				OverlappingInvalid.Add(Found);
+			}
+		}
+		for (const FVector& BotLeft : InvalidRecent)
+		{
+			if (USpawnArea* Found = AreaKeyMap.FindRef(FAreaKey(BotLeft, SpawnAreaInc)))
+			{
+				OverlappingRecentInvalid.Add(Found);
+			}
+		}
+		
+		const TSet<USpawnArea*> OverlappingValid = CachedExtrema.Difference(OverlappingInvalid.Union(OverlappingRecentInvalid));
+		DrawDebug_Boxes(OverlappingValid, DebugColor_ValidOverlap, DebugBoxLineThickness, 0, true);
+		DrawDebug_Boxes(OverlappingRecentInvalid, DebugColor_RecentSpawnAreas, DebugBoxLineThickness, 0, true);
+		DrawDebug_Boxes(OverlappingInvalid, DebugColor_InvalidOverlap, DebugBoxLineThickness, 0, true);
+	}
 	if (bShowDebug_RemovedFromExtremaChange)
 	{
 		const TSet<USpawnArea*> RemovedExtrema = SpawnAreas.Difference(CachedExtrema);
@@ -1945,13 +2002,13 @@ void USpawnAreaManagerComponent::RefreshDebugBoxes() const
 		TSet<USpawnArea*> ValidActivatable = GetManagedDeactivatedNotRecentSpawnAreas();
 		if (ValidActivatable.IsEmpty())
 		{
-			ValidActivatable = GetDeactivatedManagedSpawnAreas();
+			ValidActivatable = GetDeactivatedSpawnAreas();
 		}
 		DrawDebug_Boxes(ValidActivatable, DebugColor_ActivatableSpawnAreas, DebugBoxLineThickness, 0, true);
 	}
 	if (bShowDebug_DeactivatedSpawnAreas)
 	{
-		DrawDebug_Boxes(GetDeactivatedManagedSpawnAreas(), DebugColor_DeactivatedSpawnAreas, DebugBoxLineThickness, 0, true);
+		DrawDebug_Boxes(GetDeactivatedSpawnAreas(), DebugColor_DeactivatedSpawnAreas, DebugBoxLineThickness, 0, true);
 	}
 	if (bShowDebug_RecentSpawnAreas)
 	{
@@ -1960,44 +2017,6 @@ void USpawnAreaManagerComponent::RefreshDebugBoxes() const
 	if (bShowDebug_ActivatedSpawnAreas)
 	{
 		DrawDebug_Boxes(GetActivatedSpawnAreas(), DebugColor_ActivatedSpawnAreas, DebugBoxLineThickness, 0, true);
-	}
-	if (bShowDebug_ValidInvalidSpawnAreas)
-	{
-		TSet<FVector> Invalid;
-		TSet<USpawnArea*> InvalidSpawnAreas;
-	
-		if (ShouldConsiderManagedAsInvalid())
-		{
-			InvalidSpawnAreas = GetManagedActivatedOrRecentSpawnAreas();
-		}
-		else
-		{
-			InvalidSpawnAreas = GetActivatedOrRecentSpawnAreas();
-		}
-		
-		for (USpawnArea* SpawnArea : InvalidSpawnAreas)
-		{
-
-			TSet Occupied = SpawnArea->GetOccupiedVertices();
-			if (Occupied.IsEmpty())
-			{
-				Occupied = SpawnArea->MakeOccupiedVertices(GetMinDist(), SpawnArea->GetTargetScale());
-			}
-			Invalid.Append(Occupied);
-		}
-		
-		TSet<USpawnArea*> OverlappingInvalid;
-		for (const FVector& BotLeft : Invalid)
-		{
-			if (USpawnArea* Found = AreaKeyMap.FindRef(FAreaKey(BotLeft, SpawnAreaInc)))
-			{
-				OverlappingInvalid.Add(Found);
-			}
-		}
-		
-		const TSet<USpawnArea*> OverlappingValid = SpawnAreas.Difference(OverlappingInvalid);
-		DrawDebug_Boxes(OverlappingInvalid, DebugColor_InvalidOverlap, DebugBoxLineThickness, 0, true);
-		DrawDebug_Boxes(OverlappingValid, DebugColor_ValidOverlap, DebugBoxLineThickness, 0, true);
 	}
 	if (bShowDebug_Vertices)
 	{
@@ -2011,10 +2030,11 @@ void USpawnAreaManagerComponent::DrawDebug_Boxes(const TSet<USpawnArea*>& InSpaw
 	const float Time = bPersistent ? -1.f : TargetConfig().TargetSpawnCD;
 	const float PriorityOffset = Priority * Thickness;
 	const FVector HalfInc = { 0, (GetSpawnAreaInc().Y - PriorityOffset ) * 0.5f, (GetSpawnAreaInc().Z - PriorityOffset) * 0.5f };
+	const FVector Offset = { DebugBoxXOffset, 0.f, 0.f };
 	const UWorld* World = GetWorld();
 	for (const USpawnArea* SpawnArea : InSpawnAreas)
 	{
-		DrawDebugBox(World, SpawnArea->GetMiddleVertex(), HalfInc, Color, bPersistent, Time, 0, Thickness);
+		DrawDebugBox(World, SpawnArea->GetMiddleVertex() + Offset, HalfInc, Color, bPersistent, Time, 0, Thickness);
 	}
 }
 
@@ -2037,8 +2057,13 @@ void USpawnAreaManagerComponent::DrawDebug_Vertices(const TSet<USpawnArea*>& InS
 		Radius += FMath::Max(SpawnArea->Width, SpawnArea->Height);
 		
 		DrawDebugSphere(GetWorld(), SpawnArea->ChosenPoint, Radius, 10, FColor::Magenta, true);
-		
-		for (const FVector& Vertex : SpawnArea->GetOccupiedVertices())
+
+		TSet Occupied = SpawnArea->GetOccupiedVertices();
+		if (Occupied.IsEmpty())
+		{
+			Occupied = SpawnArea->MakeOccupiedVertices(GetMinDist(), SpawnArea->GetTargetScale());
+		}
+		for (const FVector& Vertex : Occupied)
 		{
 			DrawDebugPoint(GetWorld(), Vertex + InvalidOffset, InvalidSize, FColor::Red, true);
 		}

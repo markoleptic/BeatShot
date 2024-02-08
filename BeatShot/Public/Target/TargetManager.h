@@ -21,6 +21,10 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FOnTargetActivated_AimBot, ATarget* Target);
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTargetManager, Log, All);
 
+static constexpr int32 DefaultNumTargetsToActivate = 100;
+static constexpr int32 DefaultMinToActivate_MinClamp = 1;
+static constexpr int32 MaxToActivate_MinClamp = 1;
+
 /** Class responsible for spawning and managing targets for all game modes */
 UCLASS()
 class BEATSHOT_API ATargetManager : public AActor, public ISaveLoadInterface
@@ -134,6 +138,15 @@ protected:
 	/** Executes any Target Activation Responses and calls ActivateTarget on InTarget */
 	bool ActivateTarget(ATarget* InTarget) const;
 
+	/** Calls DeactivateTarget and Executes any deactivation responses to the target being deactivated */
+	virtual void DeactivateTarget(ATarget* InTarget, const bool bExpired) const;
+
+	/** Returns true if the target should be deactivated based on TargetDeactivationConditions */
+	bool ShouldDeactivateTarget(const bool bExpired, const float CurrentHealth, const float DeactivationThreshold) const;
+
+	/** Returns true if the target should be destroyed based on TargetDestructionConditions */
+	bool ShouldDestroyTarget(const bool bExpired, const bool bOutOfHealth) const;
+
 	/** Tries to spawn a target if there are less targets in ManagedTargets than MaxNumTargetsAtOnce */
 	int32 HandleRuntimeSpawning();
 
@@ -155,7 +168,7 @@ protected:
 	int32 GetNumberOfRuntimeTargetsToSpawn() const;
 
 	/** Returns the number of targets that are allowed to be activated at once. Will only return values >= 0 */
-	int32 GetNumberOfTargetsToActivateAtOnce(const int32 MaxPossibleToActivate) const;
+	int32 GetNumberOfTargetsToActivate(const int32 MaxAvailable, const int32 NumActivated) const;
 
 	/** Returns the scale for next target */
 	FVector FindNextSpawnedTargetScale() const;
@@ -163,16 +176,13 @@ protected:
 	/** Finds suitable SpawnArea(s) to spawn NumToSpawn targets given the mode */
 	TSet<USpawnArea*> FindNextSpawnAreasForSpawn(const int32 NumToSpawn) const;
 
-	/** Finds suitable SpawnArea(s) to activate NumToActivate targets */
-	TSet<USpawnArea*> FindNextSpawnAreasForActivation(int32 NumToActivate) const;
-
 	/** Finds the correct damage type for the next target spawn */
 	ETargetDamageType FindNextTargetDamageType();
 	
 	/** The expiration or destruction of any target is bound to this function, which handles firing delegates,
 	 *  target flags, target removal */
 	UFUNCTION()
-	void OnTargetDamageEvent(FTargetDamageEvent Event);
+	void OnTargetDamageEvent(FTargetDamageEvent& Event);
 
 	/** Updates CurrentStreak, based on if the target expired or not */
 	void UpdateCurrentStreak(const FTargetDamageEvent& Event);
@@ -242,10 +252,6 @@ protected:
 	/** Returns a new unit vector direction for a target */
 	FVector GetNewTargetDirection(const FVector& LocationBeforeChange, const bool bLastDirectionChangeHorizontal) const;
 
-	/** Bound to targets' OnDeactivationResponse_Reactivate delegate to immediately reactivate a target after
-	 *  deactivation. Not broadcast if the target will destroy */
-	void OnReactivationRequested(ATarget* Target);
-
 	/** Updates the total amount of damage that can be done if a tracking target is damageable */
 	void UpdateTotalPossibleDamage();
 
@@ -273,6 +279,9 @@ public:
 	void UpdateCommonScoreInfoQTable(FCommonScoreInfo& InCommonScoreInfo) const;
 
 protected:
+	
+	FRandomStream RandomNumToActivateStream;
+	
 	/** Initialized at start of game mode by DefaultGameMode */
 	TSharedPtr<FBSConfig> BSConfig;
 
@@ -319,6 +328,9 @@ protected:
 
 	/** Whether or not the last spawned target direction change was horizontal */
 	mutable bool bLastSpawnedTargetDirectionChangeHorizontal;
+
+	/** Spawn parameters for spawning targets */
+	FActorSpawnParameters TargetSpawnInfo;
 
 	#if !UE_BUILD_SHIPPING
 	/** Delegate used to record execution time taken for SpawnAreaManager's GetSpawnableSpawnAreas function. */

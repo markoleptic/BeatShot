@@ -625,7 +625,7 @@ void ABSPlayerController::ShowCombatText(const int32 Streak, const FTransform& T
 	if (!IsLocalController()) return;
 	if (!bShowStreakCombatText) return;
 
-	if (CombatTextFrequency != 0 && Streak % CombatTextFrequency == 0)
+	if (Streak > 0 && CombatTextFrequency != 0 && Streak % CombatTextFrequency == 0)
 	{
 		AFloatingTextActor* CombatText = GetWorld()->SpawnActorDeferred<AFloatingTextActor>(FloatingTextActorClass,
 		FTransform(), this, nullptr, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);

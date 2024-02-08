@@ -16,8 +16,9 @@
 #include "Kismet/KismetMathLibrary.h"
 
 
-FTargetDamageEvent::FTargetDamageEvent(const FDamageEventData& InData, const float InTimeAlive, const ATarget* InTarget)
+FTargetDamageEvent::FTargetDamageEvent(const FDamageEventData& InData, const float InTimeAlive, ATarget* InTarget)
 {
+	Target = InTarget;
 	// For testing and main menu purposes
 	if (InData.EffectSpec->GetDynamicAssetTags().HasTagExact(FBSGameplayTags::Get().Target_TreatAsExternalDamage))
 	{
@@ -45,18 +46,21 @@ FTargetDamageEvent::FTargetDamageEvent(const FDamageEventData& InData, const flo
 	VulnerableToDamageTypes = TArray<ETargetDamageType>();
 	TotalPossibleTrackingDamage = 0.f;
 	Streak = -1;
+	CurrentDeactivationHealthThreshold = 0.f;
 }
 
-void FTargetDamageEvent::SetTargetData(const bool bDeactivate, const bool bDestroy,
+void FTargetDamageEvent::SetTargetData(const float InCurrentDeactivationHealthThreshold,
 	const TArray<ETargetDamageType>& InTypes)
 {
-	bWillDeactivate = bDeactivate;
-	bWillDestroy = bDestroy;
+	CurrentDeactivationHealthThreshold = InCurrentDeactivationHealthThreshold;
 	VulnerableToDamageTypes = InTypes;
 }
 
-void FTargetDamageEvent::SetTargetManagerData(const int32 InStreak, const float InTotalPossibleTrackingDamage)
+void FTargetDamageEvent::SetTargetManagerData(const bool bDeactivate, const bool bDestroy, const int32 InStreak,
+	const float InTotalPossibleTrackingDamage)
 {
+	bWillDeactivate = bDeactivate;
+	bWillDestroy = bDestroy;
 	TotalPossibleTrackingDamage = InTotalPossibleTrackingDamage;
 	Streak = InStreak;
 }
@@ -125,7 +129,6 @@ ATarget::ATarget()
 	ColorWhenDamageTaken = FLinearColor();
 	StartToPeakTimelinePlayRate = 1.f;
 	PeakToEndTimelinePlayRate = 1.f;
-	bCanBeReactivated = true;
 	bApplyLifetimeTargetScaling = false;
 	bHasBeenActivated = false;
 }
@@ -375,10 +378,6 @@ void ATarget::OnImmunityBlockGameplayEffect(const FGameplayEffectSpec& Spec, con
 	UE_LOG(LogTemp, Display, TEXT("Blocked tag"));
 }
 
-/* ---------------------------- */
-/* -- GameplayTags functions -- */
-/* ---------------------------- */
-
 void ATarget::GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const
 {
 	GetAbilitySystemComponent()->GetOwnedGameplayTags(TagContainer);
@@ -398,34 +397,21 @@ void ATarget::OnIncomingDamageTaken(const FDamageEventData& InData)
 	FTimerManager& TimerManager = GetWorldTimerManager();
 	const float ElapsedTime = TimerManager.GetTimerElapsed(ExpirationTimer);
 
-	// TODO: why dis here
-	if (InData.DamageType != ETargetDamageType::Tracking) TimerManager.ClearTimer(ExpirationTimer);
-	
-	FTargetDamageEvent Event(InData, ElapsedTime, this);
+	// Don't stop timer if tracking damage type
+	if (InData.DamageType != ETargetDamageType::Tracking)
+	{
+		TimerManager.ClearTimer(ExpirationTimer);
+	}
 
-	const bool bDeactivate = ShouldDeactivate(Event.bDamagedSelf, Event.CurrentHealth);
-	const bool bDestroy = ShouldDestroy(Event.bDamagedSelf, Event.bOutOfHealth);
-
-	TArray<ETargetDamageType> VulnerableDamageTypes;
-	VulnerableDamageTypes.Add(ETargetDamageType::Self);
-	VulnerableDamageTypes.Add(GetTargetDamageType());
-	Event.SetTargetData(bDeactivate, bDestroy, VulnerableDamageTypes);
-	OnTargetDamageEvent.Broadcast(Event);
+	// Save current color for use during deactivation responses
 	if (TargetColorChangeMaterial)
 	{
-		ColorWhenDamageTaken = TargetColorChangeMaterial->K2_GetVectorParameterValue("BaseColor");
+		TargetColorChangeMaterial->GetVectorParameterValue(MaterialParameterColorName, ColorWhenDamageTaken);
 	}
-	if (bDeactivate) HandleDeactivation(Event.bDamagedSelf, Event.bOutOfHealth, bDestroy);
-
-	if (bDestroy)
-	{
-		Destroy();
-	}
-	else
-	{
-		CheckForHealthReset(Event.bOutOfHealth);
-		bCanBeReactivated = true;
-	}
+	
+	FTargetDamageEvent Event(InData, ElapsedTime, this);
+	Event.SetTargetData(CurrentDeactivationHealthThreshold, { ETargetDamageType::Self, GetTargetDamageType() });
+	OnTargetDamageEvent.Broadcast(Event);
 }
 
 void ATarget::OnLifeSpanExpired()
@@ -468,7 +454,7 @@ void ATarget::ResetHealth()
 
 bool ATarget::ActivateTarget(const float Lifespan)
 {
-	if (!CanBeReactivated() && IsActivated()) return false;
+	if (IsActivated() && !Config.bAllowActivationWhileActivated) return false;
 
 	// Don't update activation target scale for re-activations
 	if (!IsActivated()) TargetScale_Activation = GetTargetScale_Current();
@@ -489,165 +475,18 @@ bool ATarget::ActivateTarget(const float Lifespan)
 	// This is the only place where this value changes
 	bHasBeenActivated = true;
 
-	// This value is only changed here and HandleDeactivation
+	// This value is only changed here and DeactivateTarget
 	bIsCurrentlyActivated = true;
 	
 	return true;
 }
 
-bool ATarget::ShouldDeactivate(const bool bExpired, const float CurrentHealth) const
-{
-	const bool bOutOfHealth = CurrentHealth <= 0.f;
-	if (Config.TargetDeactivationConditions.Contains(ETargetDeactivationCondition::Persistent))
-	{
-		return false;
-	}
-	if (bExpired && Config.TargetDeactivationConditions.Contains(ETargetDeactivationCondition::OnExpiration))
-	{
-		return true;
-	}
-	if (bOutOfHealth &&
-		Config.TargetDeactivationConditions.Contains(ETargetDeactivationCondition::OnHealthReachedZero))
-	{
-		return true;
-	}
-	if (CurrentHealth <= CurrentDeactivationHealthThreshold &&
-		Config.TargetDeactivationConditions.Contains(ETargetDeactivationCondition::OnSpecificHealthLost))
-	{
-		return true;
-	}
-	if (!bExpired && Config.TargetDeactivationConditions.Contains(
-		ETargetDeactivationCondition::OnAnyExternalDamageTaken))
-	{
-		return true;
-	}
-	return false;
-}
-
-void ATarget::HandleDeactivation(const bool bExpired, const bool bOutOfHealth, const bool bWillDestroy)
+void ATarget::DeactivateTarget()
 {
 	StopAllTimelines();
 	TargetScale_Deactivation = GetTargetScale_Current();
 	CurrentDeactivationHealthThreshold -= Config.DeactivationHealthLostThreshold;
-	HandleDeactivationResponses(bExpired);
 	bIsCurrentlyActivated = false;
-	if (!bWillDestroy && Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::Reactivate))
-	{
-		OnDeactivationResponse_Reactivate.Broadcast(this);
-	}
-}
-
-void ATarget::HandleDeactivationResponses(const bool bExpired)
-{
-	// Immunity
-	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::RemoveImmunity))
-	{
-		RemoveImmunityEffect();
-	}
-	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::AddImmunity))
-	{
-		ApplyImmunityEffect();
-	}
-	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ToggleImmunity))
-	{
-		IsImmuneToDamage() ? RemoveImmunityEffect() : ApplyImmunityEffect();
-	}
-
-	// Scale
-	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ResetScaleToSpawnedScale))
-	{
-		SetTargetScale(GetTargetScale_Spawn());
-	}
-	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ResetScaleToActivatedScale))
-	{
-		SetTargetScale(GetTargetScale_Activation());
-	}
-	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ApplyDeactivatedTargetScaleMultiplier))
-	{
-		SetTargetScale(GetTargetScale_Current() * Config.ConsecutiveChargeScaleMultiplier);
-	}
-
-	// Position
-	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ResetPositionToSpawnedPosition))
-	{
-		SetActorLocation(GetTargetLocation_Spawn());
-	}
-	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ResetPositionToActivatedPosition))
-	{
-		SetActorLocation(GetTargetLocation_Activation());
-	}
-
-	// Velocity
-	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ChangeVelocity))
-	{
-		SetTargetSpeed(FMath::FRandRange(Config.MinDeactivatedTargetSpeed, Config.MaxDeactivatedTargetSpeed));
-		if (!Config.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeDirection) && Config.
-			MovingTargetDirectionMode != EMovingTargetDirectionMode::None)
-		{
-			OnDeactivationResponse_ChangeDirection.Broadcast(this, 2);
-		}
-	}
-
-	// Direction
-	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ChangeDirection))
-	{
-		if (OnDeactivationResponse_ChangeDirection.IsBound())
-		{
-			OnDeactivationResponse_ChangeDirection.Broadcast(this, 2);
-		}
-	}
-
-	// Effects
-	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ShrinkQuickGrowSlow) && !bExpired)
-	{
-		PlayShrinkQuickAndGrowSlowTimeline();
-	}
-	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::PlayExplosionEffect) && !bExpired)
-	{
-		PlayExplosionEffect(SphereMesh->GetComponentLocation(), SphereTargetRadius * GetTargetScale_Current().X,
-			ColorWhenDamageTaken);
-	}
-
-	// Hide target
-	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::HideTarget))
-	{
-		SetActorHiddenInGame(true);
-	}
-
-	// Colors
-	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ResetColorToInactiveColor))
-	{
-		SetTargetColor(Config.InactiveTargetColor);
-	}
-}
-
-bool ATarget::ShouldDestroy(const bool bExpired, const bool bOutOfHealth) const
-{
-	if (Config.TargetDestructionConditions.Contains(ETargetDestructionCondition::Persistent))
-	{
-		return false;
-	}
-	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::Destroy))
-	{
-		return true;
-	}
-	if (Config.TargetDestructionConditions.Contains(ETargetDestructionCondition::OnDeactivation))
-	{
-		return true;
-	}
-	if (Config.TargetDestructionConditions.Contains(ETargetDestructionCondition::OnExpiration) && bExpired)
-	{
-		return true;
-	}
-	if (Config.TargetDestructionConditions.Contains(ETargetDestructionCondition::OnHealthReachedZero) && bOutOfHealth)
-	{
-		return true;
-	}
-	if (Config.TargetDestructionConditions.Contains(ETargetDestructionCondition::OnAnyExternalDamageTaken) && !bExpired)
-	{
-		return true;
-	}
-	return false;
 }
 
 void ATarget::CheckForHealthReset(const bool bOutOfHealth)
@@ -807,8 +646,8 @@ void ATarget::PlayExplosionEffect(const FVector& ExplosionLocation, const float 
 		if (UNiagaraComponent* ExplosionComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), TargetExplosion,
 			ExplosionLocation))
 		{
-			ExplosionComp->SetFloatParameter(FName("SphereRadius"), SphereRadius);
-			ExplosionComp->SetColorParameter(FName("SphereColor"), InColorWhenDestroyed);
+			ExplosionComp->SetFloatParameter(TargetExplosionSphereRadiusParameterName, SphereRadius);
+			ExplosionComp->SetColorParameter(TargetExplosionColorParameterName, InColorWhenDestroyed);
 		}
 	}
 }
@@ -850,11 +689,6 @@ bool ATarget::HasBeenActivatedBefore() const
 bool ATarget::IsActivated() const
 {
 	return bIsCurrentlyActivated;
-}
-
-bool ATarget::CanBeReactivated() const
-{
-	return Config.bAllowActivationWhileActivated;
 }
 
 bool ATarget::IsImmuneToDamage() const

@@ -321,6 +321,9 @@ public:
 	/** Called when the BoxBounds of the TargetManager are changed to update CachedExtrema or CachedEdgeOnly sets */
 	void OnExtremaChanged(const FExtrema& Extrema);
 
+	int32 GetNumActivated() const { return CachedActivated.Num(); }
+	int32 GetNumDeactivated() const { return GetDeactivatedSpawnAreas().Num(); }
+	
 protected:
 	/** Sets the most recently activated SpawnArea. Called at end of FlagSpawnAreaAsActivated. */
 	void SetMostRecentSpawnArea(USpawnArea* SpawnArea) { MostRecentSpawnArea = SpawnArea; }
@@ -365,7 +368,7 @@ public:
 	USpawnArea* FindOldestRecentSpawnArea() const;
 
 	/** Returns the oldest SpawnArea flagged as deactivated and managed */
-	USpawnArea* FindOldestDeactivatedManagedSpawnArea() const;
+	USpawnArea* FindOldestDeactivatedSpawnArea() const;
 
 	/** Returns true if the SpawnArea is contained in SpawnAreas */
 	bool IsSpawnAreaValid(const USpawnArea* InSpawnArea) const;
@@ -378,7 +381,7 @@ public:
 
 	/** Returns a set of SpawnAreas that are flagged as currently managed and not flagged as activated
 	 *  (Cached Managed difference Cached Activated) */
-	TSet<USpawnArea*> GetDeactivatedManagedSpawnAreas() const;
+	TSet<USpawnArea*> GetDeactivatedSpawnAreas() const;
 
 	/** Returns a set of SpawnAreas containing only SpawnAreas flagged as recent */
 	TSet<USpawnArea*> GetRecentSpawnAreas() const;
@@ -445,7 +448,7 @@ public:
 	/** Returns an array of valid SpawnAreas filtered from the SpawnAreas array. Broadest search since SpawnAreas
 	 *  do not have to be linked to a managed target to be considered. Also considers the Target Distribution Policy
 	 *  and Bounds Scaling Policy */
-	TSet<USpawnArea*> GetSpawnableSpawnAreas(const TArray<FVector>& Scales, int32 NumToSpawn) const;
+	TSet<USpawnArea*> GetSpawnableSpawnAreas(const TArray<FVector>& Scales, const int32 NumToSpawn) const;
 
 protected:
 	/** Uses a priority list to return a SpawnArea to activate. Always verifies that the candidate has a valid Guid,
@@ -615,6 +618,9 @@ public:
 	/** Size of the debug point for occupied vertices and non-occupied vertices. */
 	UPROPERTY(EditAnywhere, Category="Debug")
 	float DebugVertexSize = 4.f;
+
+	UPROPERTY(EditAnywhere, Category="Debug")
+	float DebugBoxXOffset = 2.f;
 
 #if !UE_BUILD_SHIPPING
 	/** Clears all debug persistent lines/boxes and draws new ones based on debug bool variables. */

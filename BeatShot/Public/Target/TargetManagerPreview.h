@@ -40,6 +40,9 @@ protected:
 	/** Updates the SpawnVolume and all directional boxes to match the current SpawnBox. */
 	virtual void UpdateSpawnVolume(const float Factor) const override;
 
+	/** Calls DeactivateTarget and Executes any deactivation responses to the target being deactivated */
+	virtual void DeactivateTarget(ATarget* InTarget, const bool bExpired) const override;
+
 	UPROPERTY()
 	TObjectPtr<UCGMWC_Preview> GameModePreviewWidget;
 

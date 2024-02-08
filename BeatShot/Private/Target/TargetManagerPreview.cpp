@@ -115,3 +115,17 @@ void ATargetManagerPreview::UpdateSpawnVolume(const float Factor) const
 		GameModePreviewWidget->SetStaticBoundsHeight(CurrentZ);
 	}
 }
+
+void ATargetManagerPreview::DeactivateTarget(ATarget* InTarget, const bool bExpired) const
+{
+	Super::DeactivateTarget(InTarget, bExpired);
+	
+	// Hide target
+	if (InTarget && BSConfig->TargetConfig.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::HideTarget))
+	{
+		if (const ATargetPreview* TargetPreview = Cast<ATargetPreview>(InTarget))
+		{
+			TargetPreview->SetTargetWidgetOpacity(0.2f);
+		}
+	}
+}

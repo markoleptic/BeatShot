@@ -342,13 +342,13 @@ void UBSCheatManager::ShowDebug_SpawnBox(IConsoleVariable* Variable)
 	{
 		TargetManager->SpawnBox->SetHiddenInGame(false);
 		TargetManager->SpawnBox->ShapeColor = FColor::Blue;
-		TargetManager->SpawnBox->SetLineThickness(6.f);
+		TargetManager->SpawnBox->SetLineThickness(SpawnBoxLineThickness);
 		TargetManager->SpawnBox->SetVisibility(true);
 		TargetManager->SpawnBox->MarkRenderStateDirty();
 
 		TargetManager->StaticExtentsBox->SetHiddenInGame(false);
 		TargetManager->StaticExtentsBox->ShapeColor = FColor::Orange;
-		TargetManager->StaticExtentsBox->SetLineThickness(6.f);
+		TargetManager->StaticExtentsBox->SetLineThickness(StaticExtentsBoxLineThickness);
 		TargetManager->StaticExtentsBox->SetVisibility(true);
 		TargetManager->StaticExtentsBox->MarkRenderStateDirty();
 	}
@@ -376,7 +376,7 @@ void UBSCheatManager::ShowDebug_SpawnVolume(IConsoleVariable* Variable)
 	{
 		TargetManager->SpawnVolume->SetHiddenInGame(false);
 		TargetManager->SpawnVolume->ShapeColor = FColor::Orange;
-		TargetManager->SpawnVolume->SetLineThickness(6.f);
+		TargetManager->SpawnVolume->SetLineThickness(SpawnVolumeLineThickness);
 		TargetManager->SpawnVolume->SetVisibility(true);
 		TargetManager->SpawnVolume->MarkRenderStateDirty();
 	}

@@ -55,6 +55,15 @@ ATargetManager::ATargetManager()
 void ATargetManager::BeginPlay()
 {
 	Super::BeginPlay();
+	TargetSpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	TargetSpawnInfo.Owner = this;
+	TargetSpawnInfo.CustomPreSpawnInitalization = [this] (AActor* SpawnedActor)
+	{
+		if (ATarget* Target = Cast<ATarget>(SpawnedActor))
+		{
+			Target->Init(GetBSConfig()->TargetConfig);
+		}
+	};
 }
 
 void ATargetManager::Destroyed()
@@ -142,6 +151,8 @@ void ATargetManager::Init(const TSharedPtr<FBSConfig>& InConfig, const FPlayerSe
 
 	SpawnAreaManager->SetShouldAskRLCForSpawnAreas(RLComponent->GetReinforcementLearningMode() == EReinforcementLearningMode::Exploration || RLComponent->
 		GetReinforcementLearningMode() == EReinforcementLearningMode::ActiveAgent);
+
+	RandomNumToActivateStream.Initialize(FMath::Rand());
 
 	// Spawn any targets if needed
 	if (GetBSConfig()->TargetConfig.TargetSpawningPolicy == ETargetSpawningPolicy::UpfrontOnly)
@@ -242,10 +253,12 @@ void ATargetManager::OnPlayerStopTrackingTarget()
 void ATargetManager::OnAudioAnalyzerBeat()
 {
 	if (!ShouldSpawn) return;
-
+	
+	const int32 LastSeed = RandomNumToActivateStream.GetCurrentSeed();
 	HandleRuntimeSpawning();
+	RandomNumToActivateStream.Initialize(LastSeed);
 	HandleTargetActivation();
-
+	
 	#if !UE_BUILD_SHIPPING
 	SpawnAreaManager->RefreshDebugBoxes();
 	#endif
@@ -256,18 +269,9 @@ ATarget* ATargetManager::SpawnTarget(USpawnArea* InSpawnArea)
 	if (!InSpawnArea) return nullptr;
 	
 	const FTransform TForm(FRotator(0), InSpawnArea->GetChosenPoint(), InSpawnArea->GetTargetScale());
-	FActorSpawnParameters SpawnInfo;
-	SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	SpawnInfo.Owner = this;
-	SpawnInfo.CustomPreSpawnInitalization = [this] (AActor* SpawnedActor)
-	{
-		Cast<ATarget>(SpawnedActor)->Init(GetBSConfig()->TargetConfig);
-	};
-	ATarget* Target = GetWorld()->SpawnActor<ATarget>(TargetToSpawn, TForm, SpawnInfo);
+	ATarget* Target = GetWorld()->SpawnActor<ATarget>(TargetToSpawn, TForm, TargetSpawnInfo);
 	Target->SetTargetDamageType(FindNextTargetDamageType());
-	Target->OnTargetDamageEvent.AddDynamic(this, &ATargetManager::OnTargetDamageEvent);
-	Target->OnDeactivationResponse_ChangeDirection.AddUObject(this, &ATargetManager::ChangeTargetDirection);
-	Target->OnDeactivationResponse_Reactivate.AddUObject(this, &ATargetManager::OnReactivationRequested);
+	Target->OnTargetDamageEvent.AddUObject(this, &ATargetManager::OnTargetDamageEvent);
 	AddToManagedTargets(Target, InSpawnArea);
 
 	if (!Target) return nullptr;
@@ -305,13 +309,12 @@ void ATargetManager::AddToManagedTargets(ATarget* SpawnTarget, USpawnArea* Spawn
 
 bool ATargetManager::ActivateTarget(ATarget* InTarget) const
 {
-	// TargetManager handles all TargetActivationResponses
-	// Each target handles their own TargetDeactivationResponses & TargetDestructionConditions
-
 	if (!InTarget || !SpawnAreaManager->IsSpawnAreaValid(SpawnAreaManager->FindSpawnArea(InTarget->GetGuid())))
 	{
 		return false;
 	}
+
+	const TArray<ETargetActivationResponse>& Responses = BSConfig->TargetConfig.TargetActivationResponses;
 	
 	// Only perform some Activation Responses if already activated
 	const bool bAlreadyActivated = InTarget->IsActivated();
@@ -321,39 +324,36 @@ bool ATargetManager::ActivateTarget(ATarget* InTarget) const
 	{
 		InTarget->SetActorHiddenInGame(false);
 	}
-	if (!bAlreadyActivated && GetBSConfig()->TargetConfig.TargetActivationResponses.Contains(
-		ETargetActivationResponse::AddImmunity))
+	if (!bAlreadyActivated && Responses.Contains(ETargetActivationResponse::AddImmunity))
 	{
 		InTarget->ApplyImmunityEffect();
 	}
-	if (!bAlreadyActivated && GetBSConfig()->TargetConfig.TargetActivationResponses.Contains(
-		ETargetActivationResponse::RemoveImmunity))
+	if (!bAlreadyActivated && Responses.Contains(ETargetActivationResponse::RemoveImmunity))
 	{
 		InTarget->RemoveImmunityEffect();
 	}
-	if (!bAlreadyActivated && GetBSConfig()->TargetConfig.TargetActivationResponses.Contains(
-		ETargetActivationResponse::ToggleImmunity))
+	if (!bAlreadyActivated && Responses.Contains(ETargetActivationResponse::ToggleImmunity))
 	{
 		InTarget->IsImmuneToDamage() ? InTarget->RemoveImmunityEffect() : InTarget->ApplyImmunityEffect();
 	}
-	if (GetBSConfig()->TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeVelocity))
+	if (Responses.Contains(ETargetActivationResponse::ChangeVelocity))
 	{
 		InTarget->SetTargetSpeed(FMath::FRandRange(GetBSConfig()->TargetConfig.MinActivatedTargetSpeed,
 			GetBSConfig()->TargetConfig.MaxActivatedTargetSpeed));
-		if (!GetBSConfig()->TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeDirection)
+		if (!Responses.Contains(ETargetActivationResponse::ChangeDirection)
 			&& GetBSConfig()->TargetConfig.MovingTargetDirectionMode != EMovingTargetDirectionMode::None)
 		{
 			ChangeTargetDirection(InTarget, 1);
 		}
 	}
-	if (GetBSConfig()->TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeDirection))
+	if (Responses.Contains(ETargetActivationResponse::ChangeDirection))
 	{
 		ChangeTargetDirection(InTarget, 1);
 	}
 
 	// TODO: Overall weird and confusing setting, probably remove or refactor
-	if (!bAlreadyActivated && InTarget->HasBeenActivatedBefore() && GetBSConfig()->TargetConfig.
-		TargetActivationResponses.Contains(ETargetActivationResponse::ApplyConsecutiveTargetScale))
+	if (!bAlreadyActivated && InTarget->HasBeenActivatedBefore() &&
+		Responses.Contains(ETargetActivationResponse::ApplyConsecutiveTargetScale))
 	{
 		InTarget->SetTargetScale(FindNextSpawnedTargetScale());
 	}
@@ -389,6 +389,155 @@ bool ATargetManager::ActivateTarget(ATarget* InTarget) const
 	return true;
 }
 
+void ATargetManager::DeactivateTarget(ATarget* InTarget, const bool bExpired) const
+{
+	const FBS_TargetConfig& Config = BSConfig->TargetConfig;
+	const TArray<ETargetDeactivationResponse>& Responses = BSConfig->TargetConfig.TargetDeactivationResponses;
+	
+	// Immunity
+	if (Responses.Contains(ETargetDeactivationResponse::RemoveImmunity))
+	{
+		InTarget->RemoveImmunityEffect();
+	}
+	if (Responses.Contains(ETargetDeactivationResponse::AddImmunity))
+	{
+		InTarget->ApplyImmunityEffect();
+	}
+	if (Responses.Contains(ETargetDeactivationResponse::ToggleImmunity))
+	{
+		InTarget->IsImmuneToDamage() ? InTarget->RemoveImmunityEffect() : InTarget->ApplyImmunityEffect();
+	}
+
+	// Scale
+	if (Responses.Contains(ETargetDeactivationResponse::ResetScaleToSpawnedScale))
+	{
+		InTarget->SetTargetScale(InTarget->GetTargetScale_Spawn());
+	}
+	if (Responses.Contains(ETargetDeactivationResponse::ResetScaleToActivatedScale))
+	{
+		InTarget->SetTargetScale(InTarget->GetTargetScale_Activation());
+	}
+	if (Responses.Contains(ETargetDeactivationResponse::ApplyDeactivatedTargetScaleMultiplier))
+	{
+		InTarget->SetTargetScale(InTarget->GetTargetScale_Current() * Config.ConsecutiveChargeScaleMultiplier);
+	}
+
+	// Position
+	if (Responses.Contains(ETargetDeactivationResponse::ResetPositionToSpawnedPosition))
+	{
+		InTarget->SetActorLocation(InTarget->GetTargetLocation_Spawn());
+	}
+	if (Responses.Contains(ETargetDeactivationResponse::ResetPositionToActivatedPosition))
+	{
+		InTarget->SetActorLocation(InTarget->GetTargetLocation_Activation());
+	}
+
+	// Velocity
+	if (Responses.Contains(ETargetDeactivationResponse::ChangeVelocity))
+	{
+		InTarget->SetTargetSpeed(FMath::FRandRange(Config.MinDeactivatedTargetSpeed, Config.MaxDeactivatedTargetSpeed));
+		
+		if (!Responses.Contains(ETargetDeactivationResponse::ChangeDirection) &&
+			Config.MovingTargetDirectionMode != EMovingTargetDirectionMode::None)
+		{
+			ChangeTargetDirection(InTarget, 2);
+		}
+	}
+
+	// Direction
+	if (Responses.Contains(ETargetDeactivationResponse::ChangeDirection))
+	{
+		ChangeTargetDirection(InTarget, 2);
+	}
+
+	// Effects
+	if (Responses.Contains(ETargetDeactivationResponse::ShrinkQuickGrowSlow) && !bExpired)
+	{
+		InTarget->PlayShrinkQuickAndGrowSlowTimeline();
+	}
+	if (Responses.Contains(ETargetDeactivationResponse::PlayExplosionEffect) && !bExpired)
+	{
+		const FVector Loc = InTarget->SphereMesh->GetComponentLocation();
+		const float SphereRadius =  SphereTargetRadius * InTarget->GetTargetScale_Current().X;
+		InTarget->PlayExplosionEffect(Loc, SphereRadius, InTarget->ColorWhenDamageTaken);
+	}
+
+	// Hide target
+	if (Responses.Contains(ETargetDeactivationResponse::HideTarget))
+	{
+		InTarget->SetActorHiddenInGame(true);
+	}
+
+	// Colors
+	if (Responses.Contains(ETargetDeactivationResponse::ResetColorToInactiveColor))
+	{
+		InTarget->SetTargetColor(Config.InactiveTargetColor);
+	}
+
+	InTarget->DeactivateTarget();
+}
+
+bool ATargetManager::ShouldDeactivateTarget(const bool bExpired, const float CurrentHealth,
+	const float DeactivationThreshold) const
+{
+	const bool bOutOfHealth = CurrentHealth <= 0.f;
+	const bool ThresholdPassed = CurrentHealth <= DeactivationThreshold;
+	const TArray<ETargetDeactivationCondition>& Conditions = BSConfig->TargetConfig.TargetDeactivationConditions;
+	
+	if (Conditions.Contains(ETargetDeactivationCondition::Persistent))
+	{
+		return false;
+	}
+	if (bExpired && Conditions.Contains(ETargetDeactivationCondition::OnExpiration))
+	{
+		return true;
+	}
+	if (bOutOfHealth && Conditions.Contains(ETargetDeactivationCondition::OnHealthReachedZero))
+	{
+		return true;
+	}
+	if (ThresholdPassed && Conditions.Contains(ETargetDeactivationCondition::OnSpecificHealthLost))
+	{
+		return true;
+	}
+	if (!bExpired && Conditions.Contains(ETargetDeactivationCondition::OnAnyExternalDamageTaken))
+	{
+		return true;
+	}
+	return false;
+}
+
+bool ATargetManager::ShouldDestroyTarget(const bool bExpired, const bool bOutOfHealth) const
+{
+	const TArray<ETargetDestructionCondition>& Conditions = BSConfig->TargetConfig.TargetDestructionConditions;
+
+	if (Conditions.Contains(ETargetDestructionCondition::Persistent))
+	{
+		return false;
+	}
+	if (BSConfig->TargetConfig.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::Destroy))
+	{
+		return true;
+	}
+	if (Conditions.Contains(ETargetDestructionCondition::OnDeactivation))
+	{
+		return true;
+	}
+	if (Conditions.Contains(ETargetDestructionCondition::OnExpiration) && bExpired)
+	{
+		return true;
+	}
+	if (Conditions.Contains(ETargetDestructionCondition::OnHealthReachedZero) && bOutOfHealth)
+	{
+		return true;
+	}
+	if (Conditions.Contains(ETargetDestructionCondition::OnAnyExternalDamageTaken) && !bExpired)
+	{
+		return true;
+	}
+	return false;
+}
+
 void ATargetManager::HandleUpfrontSpawning()
 {
 	if (GetBSConfig()->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::Grid)
@@ -401,34 +550,43 @@ void ATargetManager::HandleUpfrontSpawning()
 	}
 	else
 	{
-		const int32 NumToSpawn = GetBSConfig()->TargetConfig.NumUpfrontTargetsToSpawn;
-		for (USpawnArea* SpawnArea : FindNextSpawnAreasForSpawn(NumToSpawn))
+		for (USpawnArea* SpawnArea : FindNextSpawnAreasForSpawn(GetBSConfig()->TargetConfig.NumUpfrontTargetsToSpawn))
 		{
-			if (SpawnArea) SpawnTarget(SpawnArea);
+			if (SpawnArea)
+			{
+				SpawnTarget(SpawnArea);
+			}
 		}
 	}
 }
 
 int32 ATargetManager::HandleRuntimeSpawning()
 {
-	if (GetBSConfig()->TargetConfig.TargetSpawningPolicy != ETargetSpawningPolicy::RuntimeOnly) return 0;
+	const auto& Cfg = GetBSConfig()->TargetConfig;
+	
+	if (Cfg.TargetSpawningPolicy != ETargetSpawningPolicy::RuntimeOnly) return 0;
 	
 	int32 NumberToSpawn = GetNumberOfRuntimeTargetsToSpawn();
 
 	// Only spawn targets that can be activated unless allowed
-	if (!GetBSConfig()->TargetConfig.bAllowSpawnWithoutActivation)
+	if (!Cfg.bAllowSpawnWithoutActivation)
 	{
-		const int32 NumberToActivate = GetNumberOfTargetsToActivateAtOnce(NumberToSpawn);
-		if (NumberToSpawn > NumberToActivate)
+		int32 MaxToActivate = FMath::Max(Cfg.MinNumTargetsToActivateAtOnce, Cfg.MaxNumTargetsToActivateAtOnce);
+		if (Cfg.MaxNumActivatedTargetsAtOnce >= 1)
 		{
-			NumberToSpawn = NumberToActivate;
+			MaxToActivate = FMath::Min(Cfg.MaxNumActivatedTargetsAtOnce, MaxToActivate);
 		}
+		const int32 MaxAvailable = FMath::Min(NumberToSpawn, MaxToActivate);
+		NumberToSpawn = GetNumberOfTargetsToActivate(MaxAvailable, SpawnAreaManager->GetNumActivated());
 	}
 
 	int32 NumSpawned = 0;
 	for (USpawnArea* SpawnArea : FindNextSpawnAreasForSpawn(NumberToSpawn))
 	{
-		if (SpawnArea && SpawnTarget(SpawnArea)) NumSpawned++;
+		if (SpawnArea && SpawnTarget(SpawnArea))
+		{
+			NumSpawned++;
+		}
 	}
 	return NumSpawned;
 }
@@ -437,26 +595,60 @@ int32 ATargetManager::HandleTargetActivation()
 {
 	if (GetManagedTargets().IsEmpty()) return 0;
 
+	const auto& Cfg = GetBSConfig()->TargetConfig;
+
 	// Persistent Targets are the only type that can always receive continuous activation
-	if (GetBSConfig()->TargetConfig.TargetDeactivationConditions.Contains(ETargetDeactivationCondition::Persistent))
+	if (Cfg.TargetDeactivationConditions.Contains(ETargetDeactivationCondition::Persistent))
 	{
 		HandlePermanentlyActiveTargetActivation();
 		return 0;
 	}
 	
-	// Check to see if theres any targets available to activate
-	const int32 NumAvailableToActivate = SpawnAreaManager->GetDeactivatedManagedSpawnAreas().Num();
-	const int32 NumToActivate = GetNumberOfTargetsToActivateAtOnce(NumAvailableToActivate);
+	// See if theres any Spawn Areas available to activate
+	const int32 NumAvailableToActivate = SpawnAreaManager->GetNumDeactivated();
+	const int32 NumCurrentlyActivated = SpawnAreaManager->GetNumActivated();
 
+	// If not allowed to spawn without activation and runtime spawning,
+	// HandleRuntimeSpawning spawned the number of targets that can be activated
+	const int32 NumToActivate = !Cfg.bAllowSpawnWithoutActivation &&
+		Cfg.TargetSpawningPolicy == ETargetSpawningPolicy::RuntimeOnly
+		? NumAvailableToActivate 
+		: GetNumberOfTargetsToActivate(NumAvailableToActivate, NumCurrentlyActivated);
+
+	#if !UE_BUILD_SHIPPING
+	if (!Cfg.bAllowSpawnWithoutActivation && Cfg.TargetSpawningPolicy == ETargetSpawningPolicy::RuntimeOnly)
+	{
+		// Max Allowed has higher priority than Max Available
+		const int32 MaxAllowed = Cfg.MaxNumActivatedTargetsAtOnce >= 1
+			? Cfg.MaxNumActivatedTargetsAtOnce
+			: DefaultNumTargetsToActivate;
+		const int32 RemainingActivations = FMath::Max(0, MaxAllowed - NumCurrentlyActivated);
+		const int32 NumToActivateCheck = FMath::Min(RemainingActivations, NumAvailableToActivate);
+		if (NumToActivateCheck != NumAvailableToActivate)
+		{
+			if (NumToActivateCheck < NumAvailableToActivate)
+			{
+				UE_LOG(LogTemp, Display, TEXT("NumToActivateCheck < NumAvailableToActivate %d %d"),
+					NumToActivateCheck, NumAvailableToActivate);
+			}
+			else
+			{
+				UE_LOG(LogTemp, Display, TEXT("NumToActivateCheck > NumAvailableToActivate %d %d"),
+					NumToActivateCheck, NumAvailableToActivate);
+			}
+		}
+	}
+	#endif
+	
 	// Scuffed temporary solution to make tracking more interesting
-	if (NumAvailableToActivate == 0 && NumToActivate == 0 && GetBSConfig()->TargetConfig.bAllowActivationWhileActivated)
+	if (NumAvailableToActivate == 0 && NumToActivate == 0 && Cfg.bAllowActivationWhileActivated)
 	{
 		HandleActivateAlreadyActivated();
 		return 0;
 	}
 
 	int32 NumActivated = 0;
-	for (const USpawnArea* SpawnArea : FindNextSpawnAreasForActivation(NumToActivate))
+	for (const USpawnArea* SpawnArea : SpawnAreaManager->GetActivatableSpawnAreas(NumToActivate))
 	{
 		if (ATarget* Target = ManagedTargets.FindRef(SpawnArea->GetGuid()))
 		{
@@ -483,7 +675,7 @@ void ATargetManager::HandlePermanentlyActiveTargetActivation() const
 	auto SpawnAreas = SpawnAreaManager->GetActivatedSpawnAreas();
 	if (SpawnAreas.IsEmpty())
 	{
-		SpawnAreas = SpawnAreaManager->GetDeactivatedManagedSpawnAreas();
+		SpawnAreas = SpawnAreaManager->GetDeactivatedSpawnAreas();
 	}
 
 	for (const USpawnArea* SpawnArea : SpawnAreas)
@@ -536,82 +728,75 @@ void ATargetManager::HandleActivateAlreadyActivated()
 
 int32 ATargetManager::GetNumberOfRuntimeTargetsToSpawn() const
 {
-	// Depends on: MaxNumTargetsAtOnce, NumRuntimeTargetsToSpawn, ManagedTargets, bUseBatchSpawning
-
+	const auto& Cfg = GetBSConfig()->TargetConfig;
+	const int32 NumManaged = GetManagedTargets().Num();
+	
 	// Batch spawning waits until there are no more Activated and Deactivated target(s)
-	if (GetBSConfig()->TargetConfig.bUseBatchSpawning)
+	if (Cfg.bUseBatchSpawning)
 	{
-		if (GetManagedTargets().Num() > 0 || SpawnAreaManager->GetActivatedSpawnAreas().Num() > 0 || SpawnAreaManager->
-			GetDeactivatedManagedSpawnAreas().Num() > 0)
-		{
-			return 0;
-		}
+		if (NumManaged > 0) return 0;
+		if (SpawnAreaManager->GetNumActivated() > 0) return 0;
+		if (SpawnAreaManager->GetNumDeactivated() > 0) return 0;
 	}
 
 	// Set default value to number of runtime targets to spawn to NumRuntimeTargetsToSpawn
-	int32 NumAllowedToSpawn = (GetBSConfig()->TargetConfig.NumRuntimeTargetsToSpawn == -1)
-		? 1
-		: GetBSConfig()->TargetConfig.NumRuntimeTargetsToSpawn;
+	int32 NumAllowedToSpawn = Cfg.NumRuntimeTargetsToSpawn == -1 ? 1 : Cfg.NumRuntimeTargetsToSpawn;
 
 	// Return NumRuntimeTargetsToSpawn if no Max
-	if (GetBSConfig()->TargetConfig.MaxNumTargetsAtOnce == -1)
+	if (Cfg.MaxNumTargetsAtOnce == -1)
 	{
 		return NumAllowedToSpawn;
 	}
 
-	NumAllowedToSpawn = GetBSConfig()->TargetConfig.MaxNumTargetsAtOnce - GetManagedTargets().Num();
+	NumAllowedToSpawn = Cfg.MaxNumTargetsAtOnce - NumManaged;
 
 	// Don't let NumAllowedToSpawn exceed NumRuntimeTargetsToSpawn
-	if (NumAllowedToSpawn > GetBSConfig()->TargetConfig.NumRuntimeTargetsToSpawn)
+	if (NumAllowedToSpawn > Cfg.NumRuntimeTargetsToSpawn)
 	{
-		return GetBSConfig()->TargetConfig.NumRuntimeTargetsToSpawn;
+		return Cfg.NumRuntimeTargetsToSpawn;
 	}
 
 	return NumAllowedToSpawn;
 }
 
-int32 ATargetManager::GetNumberOfTargetsToActivateAtOnce(const int32 MaxPossibleToActivate) const
+int32 ATargetManager::GetNumberOfTargetsToActivate(const int32 MaxAvailable, const int32 NumActivated) const
 {
-	// Depends on: MaxNumActivatedTargetsAtOnce, MinNumTargetsToActivateAtOnce, MaxNumTargetsToActivateAtOnce, ActivatedSpawnAreas
+	const auto& Cfg = GetBSConfig()->TargetConfig;
+	
+	const int32 MaxAllowed = Cfg.MaxNumActivatedTargetsAtOnce >= 1
+		? Cfg.MaxNumActivatedTargetsAtOnce
+		: DefaultNumTargetsToActivate;
 
-	// Default to very high number if less than 1
-	const int32 MaxAllowed = GetBSConfig()->TargetConfig.MaxNumActivatedTargetsAtOnce < 1
-		? 100
-		: GetBSConfig()->TargetConfig.MaxNumActivatedTargetsAtOnce;
-
-	// Constraints: Max Possible & Max Allowed (both must be satisfied, so pick min)
-	const int32 ConstrainedLimit = FMath::Min(MaxAllowed - SpawnAreaManager->GetActivatedSpawnAreas().Num(),
-		MaxPossibleToActivate);
-	if (ConstrainedLimit <= 0)
-	{
-		return 0;
-	}
-
+	// Constraints: Max Available & Max Allowed (both must be satisfied, so pick min)
+	const int32 UpperLimit = FMath::Min(FMath::Max(0, MaxAllowed - NumActivated), MaxAvailable);
+	
+	if (UpperLimit <= 0) return 0;
+	
 	// Can activate at least 1 at this point
+	int32 MinToActivate = FMath::Min(Cfg.MinNumTargetsToActivateAtOnce, Cfg.MaxNumTargetsToActivateAtOnce);
+	int32 MaxToActivate = FMath::Max(Cfg.MinNumTargetsToActivateAtOnce, Cfg.MaxNumTargetsToActivateAtOnce);
 
-	int32 MinToActivate = FMath::Min(GetBSConfig()->TargetConfig.MinNumTargetsToActivateAtOnce,
-		GetBSConfig()->TargetConfig.MaxNumTargetsToActivateAtOnce);
-	int32 MaxToActivate = FMath::Max(GetBSConfig()->TargetConfig.MinNumTargetsToActivateAtOnce,
-		GetBSConfig()->TargetConfig.MaxNumTargetsToActivateAtOnce);
+	// Allow for a minimum of 0, but default to 1 unless explicitly chosen
+	int32 MinToActivate_MinClamp = MinToActivate == 0
+		? MinToActivate_MinClamp = MinToActivate
+		: MinToActivate_MinClamp = DefaultMinToActivate_MinClamp;
+	
+	MinToActivate = FMath::Clamp(MinToActivate, MinToActivate_MinClamp, UpperLimit);
+	MaxToActivate = FMath::Clamp(MaxToActivate, MaxToActivate_MinClamp, UpperLimit);
 
-	// Allow 0, but don't default to it
-	const int32 MinClampValue = MinToActivate == 0 ? 0 : 1;
-	MinToActivate = FMath::Clamp(MinToActivate, MinClampValue, ConstrainedLimit);
-	MaxToActivate = FMath::Clamp(MaxToActivate, 1, ConstrainedLimit);
-
-	return FMath::RandRange(MinToActivate, MaxToActivate);
+	return RandomNumToActivateStream.RandRange(MinToActivate, MaxToActivate);
 }
 
 FVector ATargetManager::FindNextSpawnedTargetScale() const
 {
-	if (GetBSConfig()->TargetConfig.ConsecutiveTargetScalePolicy == EConsecutiveTargetScalePolicy::SkillBased)
+	const auto& Cfg = GetBSConfig()->TargetConfig;
+	
+	if (Cfg.ConsecutiveTargetScalePolicy == EConsecutiveTargetScalePolicy::SkillBased)
 	{
 		const float NewFactor = GetCurveTableValue(false, DynamicLookUpValue_TargetScale);
-		return FVector(UKismetMathLibrary::Lerp(GetBSConfig()->TargetConfig.MaxSpawnedTargetScale,
-			GetBSConfig()->TargetConfig.MinSpawnedTargetScale, NewFactor));
+		return FVector(UKismetMathLibrary::Lerp(Cfg.MaxSpawnedTargetScale, Cfg.MinSpawnedTargetScale, NewFactor));
 	}
-	return FVector(FMath::FRandRange(GetBSConfig()->TargetConfig.MinSpawnedTargetScale,
-		GetBSConfig()->TargetConfig.MaxSpawnedTargetScale));
+	return FVector(FMath::FRandRange(Cfg.MinSpawnedTargetScale, Cfg.MaxSpawnedTargetScale));
 }
 
 TSet<USpawnArea*> ATargetManager::FindNextSpawnAreasForSpawn(const int32 NumToSpawn) const
@@ -656,19 +841,6 @@ TSet<USpawnArea*> ATargetManager::FindNextSpawnAreasForSpawn(const int32 NumToSp
 	return Out;
 }
 
-TSet<USpawnArea*> ATargetManager::FindNextSpawnAreasForActivation(const int32 NumToActivate) const
-{
-	TSet<USpawnArea*> Out;
-
-	if (NumToActivate <= 0) return Out;
-
-	Out = SpawnAreaManager->GetActivatableSpawnAreas(NumToActivate);
-	
-	if (Out.IsEmpty()) UE_LOG(LogTargetManager, Display, TEXT("ValidActivatableSpawnAreas is empty."));
-	
-	return Out;
-}
-
 ETargetDamageType ATargetManager::FindNextTargetDamageType()
 {
 	if (GetBSConfig()->TargetConfig.TargetDamageType == ETargetDamageType::Combined)
@@ -685,26 +857,56 @@ ETargetDamageType ATargetManager::FindNextTargetDamageType()
 /* -- Deactivation and Destruction -- */
 /* ---------------------------------- */
 
-void ATargetManager::OnTargetDamageEvent(FTargetDamageEvent Event)
+void ATargetManager::OnTargetDamageEvent(FTargetDamageEvent& Event)
 {
-	// Needs to be called first so that CurrentStreak is up to date
+	// Set TargetManagerData
+	Event.SetTargetManagerData(
+		ShouldDeactivateTarget(Event.bDamagedSelf, Event.CurrentHealth, Event.CurrentDeactivationHealthThreshold),
+		ShouldDestroyTarget(Event.bDamagedSelf, Event.bOutOfHealth),
+		CurrentStreak,
+		TotalPossibleDamage);
+
+	// Can deactivate immediately
+	if (Event.bWillDeactivate)
+	{
+		DeactivateTarget(Event.Target, Event.bDamagedSelf);
+	}
+	
+	// Update CurrentStreak and look up values before setting TargetManager data
 	UpdateCurrentStreak(Event);
 	UpdateDynamicLookUpValues(Event);
-
-	// Set TargetManagerData and broadcast to GameMode
-	Event.SetTargetManagerData(CurrentStreak, TotalPossibleDamage);
-	const USpawnArea* Found = SpawnAreaManager->FindSpawnArea(Event.Guid);
+	
+	// Broadcast event to game mode
 	PostTargetDamageEvent.Broadcast(Event);
-	
+
+	// Pass event to Spawn Area Manager
 	SpawnAreaManager->HandleTargetDamageEvent(Event);
-	if (Event.bWillDestroy) RemoveFromManagedTargets(Event.Guid);
-
-	// Update RLC
-	if (RLComponent->GetReinforcementLearningMode() == EReinforcementLearningMode::None) return;
 	
-	if (!Found) return;
-	RLComponent->SetActiveTargetPairReward(Found->GetIndex(), !Event.bDamagedSelf);
+	// Update RLC if settings permit
+	if (RLComponent->GetReinforcementLearningMode() != EReinforcementLearningMode::None)
+	{
+		if (const USpawnArea* Found = SpawnAreaManager->FindSpawnArea(Event.Guid))
+		{
+			RLComponent->SetActiveTargetPairReward(Found->GetIndex(), !Event.bDamagedSelf);
+		}
+	}
 
+	// Handle destruction after everything else is handled
+	if (Event.bWillDestroy)
+	{
+		RemoveFromManagedTargets(Event.Guid);
+		Event.Target->Destroy();
+	}
+	else
+	{
+		Event.Target->CheckForHealthReset(Event.bOutOfHealth);
+		// Handle this target deactivation response separately from DeactivateTarget
+		if (BSConfig->TargetConfig.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::Reactivate))
+		{
+			ActivateTarget(Event.Target);
+		}
+	}
+	
 	// TODO Immediately spawn targets if ...?
 }
 
@@ -1117,11 +1319,6 @@ FVector ATargetManager::GetNewTargetDirection(const FVector& LocationBeforeChang
 		break;
 	}
 	return FVector::ZeroVector;
-}
-
-void ATargetManager::OnReactivationRequested(ATarget* Target)
-{
-	ActivateTarget(Target);
 }
 
 void ATargetManager::UpdateTotalPossibleDamage()

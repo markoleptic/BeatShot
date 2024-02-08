@@ -53,14 +53,9 @@ public:
 	float DestroyChance = 0.f;
 
 protected:
-	/** Called from HealthComponent when a target receives damage. Main Deactivation and Destruction handler */
-	virtual void OnIncomingDamageTaken(const FDamageEventData& InData) override;
 
 	/** Callback function for when ExpirationTimer timer expires */
 	virtual void OnLifeSpanExpired() override;
-
-	/** Performs any responses to the target being deactivated */
-	virtual void HandleDeactivationResponses(const bool bExpired) override;
 
 	/** Reference to the target widget in CustomGameModesWidget_Preview */
 	TObjectPtr<UTargetWidget> TargetWidget;
@@ -78,4 +73,7 @@ public:
 
 	/** Change the position of the target widget in the viewport */
 	void SetTargetWidgetLocation(const FVector& NewLocation) const;
+
+	/** Change the opacity of the target widget in the viewport */
+	void SetTargetWidgetOpacity(const float NewOpacity) const;
 };

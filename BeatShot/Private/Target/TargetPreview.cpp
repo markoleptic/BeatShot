@@ -46,6 +46,7 @@ void ATargetPreview::InitTargetWidget(const TObjectPtr<UTargetWidget> InTargetWi
 	BoxBoundsOrigin = InBoxBoundsOrigin;
 	SetTargetWidgetLocation(InStartLocation);
 	TargetWidget->SetTargetScale(CapsuleComponent->GetRelativeScale3D());
+	TargetWidget->SetTargetColor(Config.OnSpawnColor);
 }
 
 void ATargetPreview::SetSimulatePlayerDestroying(const bool bInSimulatePlayerDestroying, const float InDestroyChance)
@@ -102,61 +103,10 @@ void ATargetPreview::OnSimulatePlayerDestroyingTimerExpired()
 	DamageSelf(true);
 }
 
-void ATargetPreview::OnIncomingDamageTaken(const FDamageEventData& InData)
-{
-	if (InData.NewValue > InData.OldValue)
-	{
-		return;
-	}
-	
-	FTimerManager& TimerManager = GetWorldTimerManager();
-	const float ElapsedTime = TimerManager.GetTimerElapsed(ExpirationTimer);
-	TimerManager.ClearTimer(ExpirationTimer);
-	
-	// Replace self damage with game mode damage type
-	FTargetDamageEvent Event(InData, ElapsedTime, this);
-
-	const bool bDeactivate = ShouldDeactivate(Event.bDamagedSelf, Event.CurrentHealth);
-	const bool bDestroy = ShouldDestroy(Event.bDamagedSelf, Event.bOutOfHealth);
-	
-	TArray<ETargetDamageType> VulnerableDamageTypes;
-	VulnerableDamageTypes.Add(ETargetDamageType::Self);
-	VulnerableDamageTypes.Add(GetTargetDamageType());
-	Event.SetTargetData(bDeactivate, bDestroy, VulnerableDamageTypes);
-	OnTargetDamageEvent.Broadcast(Event);
-	
-	ColorWhenDamageTaken = TargetColorChangeMaterial->K2_GetVectorParameterValue("BaseColor");
-	if (bDeactivate) HandleDeactivation(Event.bDamagedSelf, Event.bOutOfHealth, bDestroy);
-	
-	if (bDestroy)
-	{
-		Destroy();
-	}
-	else
-	{
-		CheckForHealthReset(Event.bOutOfHealth);
-		bCanBeReactivated = true;
-	}
-}
-
 void ATargetPreview::OnLifeSpanExpired()
 {
 	GetWorldTimerManager().ClearTimer(SimulatePlayerDestroyingTimer);
 	Super::OnLifeSpanExpired();
-}
-
-void ATargetPreview::HandleDeactivationResponses(const bool bExpired)
-{
-	Super::HandleDeactivationResponses(bExpired);
-
-	// Hide target
-	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::HideTarget))
-	{
-		if (TargetWidget)
-		{
-			TargetWidget->SetRenderOpacity(0.2f);
-		}
-	}
 }
 
 void ATargetPreview::SetTargetColor(const FLinearColor& Color)
@@ -185,4 +135,9 @@ void ATargetPreview::SetTargetWidgetLocation(const FVector& NewLocation) const
 		const float Y = NewLocation.Z - BoxBoundsHeight;
 		TargetWidget->SetTargetPosition(FVector2d(X, Y));
 	}
+}
+
+void ATargetPreview::SetTargetWidgetOpacity(const float NewOpacity) const
+{
+	TargetWidget->SetRenderOpacity(NewOpacity);
 }
