@@ -41,7 +41,7 @@ protected:
 	virtual void UpdateSpawnVolume(const float Factor) const override;
 
 	/** Calls DeactivateTarget and Executes any deactivation responses to the target being deactivated */
-	virtual void DeactivateTarget(ATarget* InTarget, const bool bExpired) const override;
+	virtual void DeactivateTarget(ATarget* InTarget, const bool bExpired, const bool bOutOfHealth) const override;
 
 	UPROPERTY()
 	TObjectPtr<UCGMWC_Preview> GameModePreviewWidget;

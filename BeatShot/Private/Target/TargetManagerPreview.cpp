@@ -116,9 +116,9 @@ void ATargetManagerPreview::UpdateSpawnVolume(const float Factor) const
 	}
 }
 
-void ATargetManagerPreview::DeactivateTarget(ATarget* InTarget, const bool bExpired) const
+void ATargetManagerPreview::DeactivateTarget(ATarget* InTarget, const bool bExpired, const bool bOutOfHealth) const
 {
-	Super::DeactivateTarget(InTarget, bExpired);
+	Super::DeactivateTarget(InTarget, bExpired, bOutOfHealth);
 	
 	// Hide target
 	if (InTarget && BSConfig->TargetConfig.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::HideTarget))

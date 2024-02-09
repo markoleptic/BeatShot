@@ -105,6 +105,9 @@ class BEATSHOT_API USpawnArea : public UObject
 	/** The scale associated with the target if the SpawnArea is currently representing one */
 	FVector TargetScale;
 
+	/** The scale last used to generate occupied vertices. */
+	FVector LastOccupiedVerticesTargetScale;
+
 	/** The total number of target spawns in this SpawnArea */
 	int32 TotalSpawns;
 
@@ -259,7 +262,7 @@ private:
 
 	/** Finds and returns the vertices that overlap with SpawnArea by tracing a circle around the SpawnArea based on
 	 *  the target scale, minimum distance between targets, minimum overlap radius, and size of the SpawnArea */
-	TSet<FVector> MakeOccupiedVertices(const float InMinDist, const FVector& InScale) const;
+	TSet<FVector> MakeOccupiedVertices(const float InMinDist, const FVector& InScale);
 
 	/** Increments the total amount of spawns in this SpawnArea, including handling special case where it has not
 	 *  spawned there yet */

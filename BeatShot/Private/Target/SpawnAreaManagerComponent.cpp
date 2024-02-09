@@ -1923,23 +1923,20 @@ void USpawnAreaManagerComponent::RefreshDebugBoxes() const
 	
 	if (bShowDebug_AllSpawnAreas)
 	{
-		DrawDebug_Boxes(SpawnAreas, DebugColor_AllSpawnAreas, DebugBoxLineThickness, 0, true);
+		DrawDebug_Boxes(SpawnAreas, DebugColor_AllSpawnAreas, DebugBoxLineThickness, true);
 	}
 	if (bShowDebug_ValidInvalidSpawnAreas)
 	{
-		TSet<FVector> Invalid;
-		TSet<FVector> InvalidRecent;
-		TSet<USpawnArea*> InvalidSpawnAreas;
-		TSet<USpawnArea*> RecentSpawnAreas = CachedRecent;
+		const TSet<USpawnArea*> InvalidSpawnAreas = ShouldConsiderManagedAsInvalid()
+			? CachedManaged.Union(CachedActivated)
+			: CachedActivated;
+		const TSet<USpawnArea*> RecentSpawnAreas = CachedRecent;
 		
-		if (ShouldConsiderManagedAsInvalid())
-		{
-			InvalidSpawnAreas = CachedManaged.Union(CachedActivated);
-		}
-		else
-		{
-			InvalidSpawnAreas = CachedActivated;
-		}
+		TSet<FVector> InvalidLocations;
+		TSet<FVector> RecentLocations;
+
+		TSet<USpawnArea*> OverlappingInvalid;
+		TSet<USpawnArea*> OverlappingRecent;
 		
 		for (USpawnArea* SpawnArea : InvalidSpawnAreas)
 		{
@@ -1948,8 +1945,16 @@ void USpawnAreaManagerComponent::RefreshDebugBoxes() const
 			{
 				Occupied = SpawnArea->MakeOccupiedVertices(GetMinDist(), SpawnArea->GetTargetScale());
 			}
-			Invalid.Append(Occupied);
+			InvalidLocations.Append(Occupied);
 		}
+		for (const FVector& BotLeft : InvalidLocations)
+		{
+			if (USpawnArea* Found = AreaKeyMap.FindRef(FAreaKey(BotLeft, SpawnAreaInc)))
+			{
+				OverlappingInvalid.Add(Found);
+			}
+		}
+		
 		for (USpawnArea* SpawnArea : RecentSpawnAreas)
 		{
 			TSet Occupied = SpawnArea->GetOccupiedVertices();
@@ -1957,45 +1962,35 @@ void USpawnAreaManagerComponent::RefreshDebugBoxes() const
 			{
 				Occupied = SpawnArea->MakeOccupiedVertices(GetMinDist(), SpawnArea->GetTargetScale());
 			}
-			InvalidRecent.Append(Occupied);
+			RecentLocations.Append(Occupied);
 		}
-		
-		TSet<USpawnArea*> OverlappingInvalid;
-		TSet<USpawnArea*> OverlappingRecentInvalid;
-		for (const FVector& BotLeft : Invalid)
+		for (const FVector& BotLeft : RecentLocations)
 		{
 			if (USpawnArea* Found = AreaKeyMap.FindRef(FAreaKey(BotLeft, SpawnAreaInc)))
 			{
-				OverlappingInvalid.Add(Found);
-			}
-		}
-		for (const FVector& BotLeft : InvalidRecent)
-		{
-			if (USpawnArea* Found = AreaKeyMap.FindRef(FAreaKey(BotLeft, SpawnAreaInc)))
-			{
-				OverlappingRecentInvalid.Add(Found);
+				OverlappingRecent.Add(Found);
 			}
 		}
 		
-		const TSet<USpawnArea*> OverlappingValid = CachedExtrema.Difference(OverlappingInvalid.Union(OverlappingRecentInvalid));
-		DrawDebug_Boxes(OverlappingValid, DebugColor_ValidOverlap, DebugBoxLineThickness, 0, true);
-		DrawDebug_Boxes(OverlappingRecentInvalid, DebugColor_RecentSpawnAreas, DebugBoxLineThickness, 0, true);
-		DrawDebug_Boxes(OverlappingInvalid, DebugColor_InvalidOverlap, DebugBoxLineThickness, 0, true);
+		const TSet<USpawnArea*> OverlappingValid = CachedExtrema.Difference(OverlappingInvalid.Union(OverlappingRecent));
+		DrawDebug_Boxes(OverlappingValid, DebugColor_ValidOverlap, DebugBoxLineThickness, true);
+		DrawDebug_Boxes(OverlappingRecent, DebugColor_RecentSpawnAreas, DebugBoxLineThickness, true);
+		DrawDebug_Boxes(OverlappingInvalid, DebugColor_InvalidOverlap, DebugBoxLineThickness, true);
 	}
 	if (bShowDebug_RemovedFromExtremaChange)
 	{
 		const TSet<USpawnArea*> RemovedExtrema = SpawnAreas.Difference(CachedExtrema);
-		DrawDebug_Boxes(RemovedExtrema, DebugColor_RemovedFromExtremaChange, DebugBoxLineThickness, 0, true);
+		DrawDebug_Boxes(RemovedExtrema, DebugColor_RemovedFromExtremaChange, DebugBoxLineThickness, true);
 	}
 	if (bShowDebug_NonAdjacent)
 	{
 		const TSet<USpawnArea*> NonAdjacent = DebugCached_NonAdjacentSpawnAreas;
-		DrawDebug_Boxes(NonAdjacent, DebugColor_NonAdjacent, DebugBoxLineThickness, 0, true);
+		DrawDebug_Boxes(NonAdjacent, DebugColor_NonAdjacent, DebugBoxLineThickness, true);
 	}
 	if (bShowDebug_SpawnableSpawnAreas)
 	{
 		const TSet<USpawnArea*> ValidSpawnable = DebugCached_SpawnableValidSpawnAreas;
-		DrawDebug_Boxes(ValidSpawnable, DebugColor_SpawnableSpawnAreas, DebugBoxLineThickness, 0, true);
+		DrawDebug_Boxes(ValidSpawnable, DebugColor_SpawnableSpawnAreas, DebugBoxLineThickness, true);
 	}
 	if (bShowDebug_ActivatableSpawnAreas)
 	{
@@ -2004,32 +1999,31 @@ void USpawnAreaManagerComponent::RefreshDebugBoxes() const
 		{
 			ValidActivatable = GetDeactivatedSpawnAreas();
 		}
-		DrawDebug_Boxes(ValidActivatable, DebugColor_ActivatableSpawnAreas, DebugBoxLineThickness, 0, true);
+		DrawDebug_Boxes(ValidActivatable, DebugColor_ActivatableSpawnAreas, DebugBoxLineThickness, true);
 	}
 	if (bShowDebug_DeactivatedSpawnAreas)
 	{
-		DrawDebug_Boxes(GetDeactivatedSpawnAreas(), DebugColor_DeactivatedSpawnAreas, DebugBoxLineThickness, 0, true);
+		DrawDebug_Boxes(GetDeactivatedSpawnAreas(), DebugColor_DeactivatedSpawnAreas, DebugBoxLineThickness, true);
 	}
 	if (bShowDebug_RecentSpawnAreas)
 	{
-		DrawDebug_Boxes(GetRecentSpawnAreas(), DebugColor_RecentSpawnAreas, DebugBoxLineThickness, 0, true);
+		DrawDebug_Boxes(GetRecentSpawnAreas(), DebugColor_RecentSpawnAreas, DebugBoxLineThickness, true);
 	}
 	if (bShowDebug_ActivatedSpawnAreas)
 	{
-		DrawDebug_Boxes(GetActivatedSpawnAreas(), DebugColor_ActivatedSpawnAreas, DebugBoxLineThickness, 0, true);
+		DrawDebug_Boxes(GetActivatedSpawnAreas(), DebugColor_ActivatedSpawnAreas, DebugBoxLineThickness, true);
 	}
 	if (bShowDebug_Vertices)
 	{
-		DrawDebug_Vertices(GetActivatedSpawnAreas(), DebugVertexSize, DebugVertexSize, 0);
+		DrawDebug_Vertices(GetActivatedSpawnAreas(), false);
 	}
 }
 
 void USpawnAreaManagerComponent::DrawDebug_Boxes(const TSet<USpawnArea*>& InSpawnAreas, const FColor& Color,
-	const int32 Thickness, const int32 Priority, const bool bPersistent) const
+	const int32 Thickness, const bool bPersistent) const
 {
 	const float Time = bPersistent ? -1.f : TargetConfig().TargetSpawnCD;
-	const float PriorityOffset = Priority * Thickness;
-	const FVector HalfInc = { 0, (GetSpawnAreaInc().Y - PriorityOffset ) * 0.5f, (GetSpawnAreaInc().Z - PriorityOffset) * 0.5f };
+	const FVector HalfInc = { 0.f, GetSpawnAreaInc().Y * 0.5f, GetSpawnAreaInc().Z * 0.5f };
 	const FVector Offset = { DebugBoxXOffset, 0.f, 0.f };
 	const UWorld* World = GetWorld();
 	for (const USpawnArea* SpawnArea : InSpawnAreas)
@@ -2038,39 +2032,70 @@ void USpawnAreaManagerComponent::DrawDebug_Boxes(const TSet<USpawnArea*>& InSpaw
 	}
 }
 
-void USpawnAreaManagerComponent::DrawDebug_Vertices(const TSet<USpawnArea*>& InSpawnAreas, const float InvalidSize,
-	const float ValidSize, const int32 Priority) const
+void USpawnAreaManagerComponent::DrawDebug_Vertices(const TSet<USpawnArea*>& InSpawnAreas, const bool bGenerateNew) const
 {
-	const FVector InvalidOffset = FVector(Priority * InvalidSize, 0.f, 0.f);
-	const FVector ValidOffset = FVector(Priority * ValidSize, 0.f, 0.f);
-	for (const USpawnArea* SpawnArea : InSpawnAreas)
+	TSet<FVector> InvalidVertices, ValidVertices;
+	if (bGenerateNew)
 	{
-		const float ScaledRadius = SpawnArea->GetTargetScale().X * SphereTargetRadius;
-		
-		// Multiply by two so that any point outside the sphere will not be overlapping
-		float Radius = ScaledRadius * 2.f + (GetMinDist()* 0.5f);
-
-		// Radius can never be less than MinOverlapRadius
-		Radius = FMath::Max(Radius, SpawnArea->GetMinOverlapRadius());
-
-		// Add max of height/width to account for random spawning within a SpawnArea
-		Radius += FMath::Max(SpawnArea->Width, SpawnArea->Height);
-		
-		DrawDebugSphere(GetWorld(), SpawnArea->ChosenPoint, Radius, 10, FColor::Magenta, true);
-
-		TSet Occupied = SpawnArea->GetOccupiedVertices();
-		if (Occupied.IsEmpty())
+		for (USpawnArea* SpawnArea : InSpawnAreas)
 		{
-			Occupied = SpawnArea->MakeOccupiedVertices(GetMinDist(), SpawnArea->GetTargetScale());
+			const float ScaledRadius = SpawnArea->GetTargetScale().X * SphereTargetRadius;
+		
+			// Multiply by two so that any point outside the sphere will not be overlapping
+			float Radius = ScaledRadius * 2.f + (GetMinDist()* 0.5f);
+
+			// Radius can never be less than MinOverlapRadius
+			Radius = FMath::Max(Radius, SpawnArea->GetMinOverlapRadius());
+
+			// Add max of height/width to account for random spawning within a SpawnArea
+			Radius += FMath::Max(SpawnArea->Width, SpawnArea->Height);
+		
+			DrawDebugSphere(GetWorld(), SpawnArea->ChosenPoint, Radius, DebugSphereSegments, FColor::Magenta, true);
+			
+			InvalidVertices.Append(SpawnArea->MakeOccupiedVertices(GetMinDist(), SpawnArea->GetTargetScale()));
+			ValidVertices.Append(SpawnArea->GetUnoccupiedVertices(GetMinDist(), SpawnArea->GetTargetScale()));
 		}
-		for (const FVector& Vertex : Occupied)
+	}
+	else
+	{
+		for (USpawnArea* SpawnArea : InSpawnAreas)
 		{
-			DrawDebugPoint(GetWorld(), Vertex + InvalidOffset, InvalidSize, FColor::Red, true);
+			const float ScaledRadius = SpawnArea->LastOccupiedVerticesTargetScale.X * SphereTargetRadius;
+		
+			// Multiply by two so that any point outside the sphere will not be overlapping
+			float Radius = ScaledRadius * 2.f + (GetMinDist()* 0.5f);
+
+			// Radius can never be less than MinOverlapRadius
+			Radius = FMath::Max(Radius, SpawnArea->GetMinOverlapRadius());
+
+			// Add max of height/width to account for random spawning within a SpawnArea
+			Radius += FMath::Max(SpawnArea->Width, SpawnArea->Height);
+		
+			DrawDebugSphere(GetWorld(), SpawnArea->ChosenPoint, Radius, DebugSphereSegments, FColor::Magenta, true);
+
+			TSet<FVector> GeneratedVertices = SpawnArea->GetOccupiedVertices();
+			if (GeneratedVertices.IsEmpty())
+			{
+				GeneratedVertices = SpawnArea->MakeOccupiedVertices(GetMinDist(), SpawnArea->GetTargetScale());
+			}
+			InvalidVertices.Append(SpawnArea->GetOccupiedVertices());
+			ValidVertices.Append(SpawnArea->GetUnoccupiedVertices(GetMinDist(), SpawnArea->LastOccupiedVerticesTargetScale));
 		}
-		for (const FVector& Vertex: SpawnArea->GetUnoccupiedVertices(GetMinDist(), SpawnArea->GetTargetScale()))
-        {
-			DrawDebugPoint(GetWorld(), Vertex + ValidOffset, ValidSize, FColor::Green, true);
-        }
+	}
+	
+	ValidVertices = ValidVertices.Difference(InvalidVertices);
+	
+	for (const FVector& Vertex: ValidVertices)
+	{
+		if (Vertex.Y > StaticExtrema.Max.Y || Vertex.Z > StaticExtrema.Max.Z) continue;
+		if (Vertex.Y < StaticExtrema.Min.Y || Vertex.Z < StaticExtrema.Min.Z) continue;
+		DrawDebugPoint(GetWorld(), Vertex, DebugVertexSize, FColor::Green, true);
+	}
+	for (const FVector& Vertex : InvalidVertices)
+	{
+		if (Vertex.Y > StaticExtrema.Max.Y || Vertex.Z > StaticExtrema.Max.Z) continue;
+		if (Vertex.Y < StaticExtrema.Min.Y || Vertex.Z < StaticExtrema.Min.Z) continue;
+		DrawDebugPoint(GetWorld(), Vertex, DebugVertexSize, FColor::Red, true);
 	}
 }
 

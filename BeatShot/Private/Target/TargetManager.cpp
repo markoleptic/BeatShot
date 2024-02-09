@@ -389,7 +389,7 @@ bool ATargetManager::ActivateTarget(ATarget* InTarget) const
 	return true;
 }
 
-void ATargetManager::DeactivateTarget(ATarget* InTarget, const bool bExpired) const
+void ATargetManager::DeactivateTarget(ATarget* InTarget, const bool bExpired, const bool bOutOfHealth) const
 {
 	const FBS_TargetConfig& Config = BSConfig->TargetConfig;
 	const TArray<ETargetDeactivationResponse>& Responses = BSConfig->TargetConfig.TargetDeactivationResponses;
@@ -475,6 +475,13 @@ void ATargetManager::DeactivateTarget(ATarget* InTarget, const bool bExpired) co
 	}
 
 	InTarget->DeactivateTarget();
+	InTarget->CheckForHealthReset(bOutOfHealth);
+	
+	// Handle reactivation
+	if (Responses.Contains(ETargetDeactivationResponse::Reactivate))
+	{
+		ActivateTarget(InTarget);
+	}
 }
 
 bool ATargetManager::ShouldDeactivateTarget(const bool bExpired, const float CurrentHealth,
@@ -869,7 +876,7 @@ void ATargetManager::OnTargetDamageEvent(FTargetDamageEvent& Event)
 	// Can deactivate immediately
 	if (Event.bWillDeactivate)
 	{
-		DeactivateTarget(Event.Target, Event.bDamagedSelf);
+		DeactivateTarget(Event.Target, Event.bDamagedSelf, Event.bOutOfHealth);
 	}
 	
 	// Update CurrentStreak and look up values before setting TargetManager data
@@ -896,15 +903,6 @@ void ATargetManager::OnTargetDamageEvent(FTargetDamageEvent& Event)
 	{
 		RemoveFromManagedTargets(Event.Guid);
 		Event.Target->Destroy();
-	}
-	else
-	{
-		Event.Target->CheckForHealthReset(Event.bOutOfHealth);
-		// Handle this target deactivation response separately from DeactivateTarget
-		if (BSConfig->TargetConfig.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::Reactivate))
-		{
-			ActivateTarget(Event.Target);
-		}
 	}
 	
 	// TODO Immediately spawn targets if ...?

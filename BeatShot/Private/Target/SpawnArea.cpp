@@ -18,6 +18,7 @@ USpawnArea::USpawnArea()
 	CenterPoint = FVector(-1);
 	ChosenPoint = FVector(-1);
 	TargetScale = FVector(1);
+	LastOccupiedVerticesTargetScale = FVector(1.f);
 	TotalHits = 0;
 	TotalSpawns = INDEX_NONE;
 	TotalTrackingDamage = 0;
@@ -43,7 +44,8 @@ void USpawnArea::Init(const int32 InIndex, const FVector& InBottomLeftVertex)
 	Vertex_TopRight = Vertex_BottomLeft + FVector(0, Width, Height);
 
 	ChosenPoint = Vertex_BottomLeft;
-	TargetScale = FVector(1);
+	TargetScale = FVector(1.f);
+	LastOccupiedVerticesTargetScale = FVector(1.f);
 
 	TotalSpawns = INDEX_NONE;
 	TotalHits = 0;
@@ -192,6 +194,11 @@ FVector USpawnArea::GenerateRandomPointInSpawnArea() const
 void USpawnArea::SetIsManaged(const bool bManaged)
 {
 	bIsManaged = bManaged;
+	if (!bIsManaged)
+	{
+		OccupiedVertices.Empty();
+		LastOccupiedVerticesTargetScale = FVector(1.f);
+	}
 }
 
 void USpawnArea::SetIsActivated(const bool bActivated, const bool bAllow)
@@ -233,8 +240,10 @@ void USpawnArea::SetOccupiedVertices(const TSet<FVector>& InVertices)
 	OccupiedVertices = InVertices;
 }
 
-TSet<FVector> USpawnArea::MakeOccupiedVertices(const float InMinDist, const FVector& InScale) const
+TSet<FVector> USpawnArea::MakeOccupiedVertices(const float InMinDist, const FVector& InScale)
 {
+	LastOccupiedVerticesTargetScale = InScale;
+	
 	TSet<FVector> OutInvalid;
 
 	const float ScaledRadius = InScale.X * SphereTargetRadius;

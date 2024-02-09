@@ -30,14 +30,14 @@ UCLASS()
 class BEATSHOT_API ATargetManager : public AActor, public ISaveLoadInterface
 {
 	GENERATED_BODY()
-
-	friend class ABSGameMode;
+	
 	friend class UBSCheatManager;
 	friend class ABeatShotGameModeFunctionalTest;
 	friend class FBSAutomationTestBase;
 
 public:
 	ATargetManager();
+	
 	virtual void Tick(float DeltaTime) override;
 
 	/** Delegate that is executed every time a target has been activated */
@@ -135,12 +135,14 @@ protected:
 	/** Adds a Target to the ManagedTargets array, and updates the associated SpawnArea IsManaged flag */
 	void AddToManagedTargets(ATarget* SpawnTarget, USpawnArea* SpawnArea);
 
-	/** Executes any Target Activation Responses and calls ActivateTarget on InTarget */
+	/** Returns whether or not the target was activated. Executes any Target Activation Responses
+	 *  and calls ActivateTarget on InTarget */
 	bool ActivateTarget(ATarget* InTarget) const;
 
-	/** Calls DeactivateTarget and Executes any deactivation responses to the target being deactivated */
-	virtual void DeactivateTarget(ATarget* InTarget, const bool bExpired) const;
-
+	/** Calls DeactivateTarget and executes any deactivation responses to the target being deactivated.
+	 *  Possible to reactivate the target if conditions permit. */
+	virtual void DeactivateTarget(ATarget* InTarget, const bool bExpired, const bool bOutOfHealth) const;
+	
 	/** Returns true if the target should be deactivated based on TargetDeactivationConditions */
 	bool ShouldDeactivateTarget(const bool bExpired, const float CurrentHealth, const float DeactivationThreshold) const;
 
@@ -267,11 +269,12 @@ protected:
 	/** Evaluates the specified curve at InTime */
 	float GetCurveTableValue(const bool bIsSpawnArea, const int32 InTime) const;
 
+public:
+	
 	/** Function called from BSGameMode any time a player changes settings.
 	 *  Propagates to all targets currently active */
 	void UpdatePlayerSettings(const FPlayerSettings_Game& InPlayerSettings);
-
-public:
+	
 	/** Called from DefaultGameMode, returns the player accuracy matrix */
 	FAccuracyData GetLocationAccuracy() const;
 
@@ -279,7 +282,7 @@ public:
 	void UpdateCommonScoreInfoQTable(FCommonScoreInfo& InCommonScoreInfo) const;
 
 protected:
-	
+	/** Random number stream to keep randomization in sync between HandleRuntimeSpawning and HandleTargetActivation */
 	FRandomStream RandomNumToActivateStream;
 	
 	/** Initialized at start of game mode by DefaultGameMode */

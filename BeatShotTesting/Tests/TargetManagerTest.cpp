@@ -11,6 +11,7 @@
 const TCHAR* GameModeDataAssetPath = TEXT("/Game/Blueprints/GameModes/DA_DefaultGameModes.DA_DefaultGameModes");
 const TCHAR* EnumTagMapDataAssetPath = TEXT("/Game/Blueprints/DA_EnumTagMap.DA_EnumTagMap");
 const TCHAR* TargetManagerAssetPath = TEXT("/Game/Blueprints/Targets/BP_TargetManager.BP_TargetManager");
+const TCHAR* TargetAssetPath = TEXT("/Game/Blueprints/Targets/BP_Target.BP_Target");
 
 /** Base class for unit tests dealing with the TargetManager. */
 class FBSAutomationTestBase : public FAutomationTestBase
@@ -52,6 +53,7 @@ public:
 
 protected:
 	TObjectPtr<USpawnAreaManagerComponent> GetSpawnAreaManager() const { return TargetManager->SpawnAreaManager; }
+	TMap<FGuid, ATarget*> GetManagedTargets() const { return TargetManager->ManagedTargets; }
 	virtual FString GetBeautifiedTestName() const override { return "TargetManager"; }
 	UWorld* World;
 	TSharedPtr<ATargetManager> TargetManager;
@@ -63,7 +65,7 @@ protected:
 public:
 	virtual bool Init()
 	{
-		World = FAutomationEditorCommonUtils::CreateNewMap();
+		//World = FAutomationEditorCommonUtils::CreateNewMap();
 		UObject* LoadedObject = StaticFindObject(UBSGameModeDataAsset::StaticClass(), nullptr, GameModeDataAssetPath,
 			true);
 		if (!LoadedObject) return false;
@@ -127,8 +129,14 @@ bool FTestInit::RunTest(const FString& Parameters)
 	BSConfig = MakeShareable(new FBSConfig(GameModeDataAsset->GetDefaultGameModesMap().FindRef(DefHard)));
 	const FPlayerSettings_Game GameSettings;
 	TargetManager->Init(BSConfig, GameSettings);
+	TargetManager->SetShouldSpawn(true);
 	TestNotNull("SpawnAreaManager not null", GetSpawnAreaManager().Get());
-
+	for (int i = 0; i < 10; i++)
+	{
+		TargetManager->OnAudioAnalyzerBeat();
+	}
+	TestFalse("Managed Targets is empty", GetManagedTargets().IsEmpty());
+	AddInfo(FString::Printf(TEXT("%d targets spawned"), GetManagedTargets().Num()));
 	return true;
 }
 

@@ -622,17 +622,19 @@ public:
 	UPROPERTY(EditAnywhere, Category="Debug")
 	float DebugBoxXOffset = 2.f;
 
+	UPROPERTY(EditAnywhere, Category="Debug")
+	int32 DebugSphereSegments = 10;
+
 #if !UE_BUILD_SHIPPING
 	/** Clears all debug persistent lines/boxes and draws new ones based on debug bool variables. */
 	void RefreshDebugBoxes() const;
 	
 	/** Draws debug boxes using SpawnAreas. */
 	void DrawDebug_Boxes(const TSet<USpawnArea*>& InSpawnAreas, const FColor& Color, const int32 Thickness,
-		const int32 Priority, bool bPersistent) const;
+		bool bPersistent) const;
 
 	/** Draws debug points for the spawn areas' occupied vertices and non-occupied vertices as well as a debug sphere. */
-	void DrawDebug_Vertices(const TSet<USpawnArea*>& InSpawnAreas, const float InvalidSize, const float ValidSize,
-		const int32 Priority) const;
+	void DrawDebug_Vertices(const TSet<USpawnArea*>& InSpawnAreas, const bool bGenerateNew) const;
 
 	/** Prints the number of activated, recent, and managed targets. */
 	void PrintDebug_SpawnAreaStateInfo() const;
@@ -685,6 +687,7 @@ public:
 	/** Toggles printing various grid-distribution related info. */
 	bool bPrintDebug_Grid;
 	
+	// ReSharper disable twice CppUE4ProbableMemoryIssuesWithUObjectsInContainer
 	mutable TSet<USpawnArea*> DebugCached_SpawnableValidSpawnAreas;
 	mutable TSet<USpawnArea*> DebugCached_NonAdjacentSpawnAreas;
 
