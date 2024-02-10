@@ -11,6 +11,7 @@ float USpawnArea::Height = 0.f;
 int32 USpawnArea::TotalNumHorizontalSpawnAreas = 0;
 int32 USpawnArea::TotalNumVerticalSpawnAreas = 0;
 int32 USpawnArea::Size = 0;
+float USpawnArea::MinDistanceBetweenTargets = 10.f;
 
 USpawnArea::USpawnArea()
 {
@@ -184,13 +185,6 @@ EGridIndexType USpawnArea::FindIndexType(const int32 InIndex, const int32 InSize
 	return EGridIndexType::Middle;
 }
 
-FVector USpawnArea::GenerateRandomPointInSpawnArea() const
-{
-	const float Y = roundf(FMath::FRandRange(Vertex_BottomLeft.Y, Vertex_BottomRight.Y - 1.f));
-	const float Z = roundf(FMath::FRandRange(Vertex_BottomLeft.Z, Vertex_TopLeft.Z - 1.f));
-	return FVector(Vertex_BottomLeft.X, Y, Z);
-}
-
 void USpawnArea::SetIsManaged(const bool bManaged)
 {
 	bIsManaged = bManaged;
@@ -217,9 +211,9 @@ void USpawnArea::SetTargetScale(const FVector& InScale)
 	TargetScale = InScale;
 }
 
-void USpawnArea::SetRandomChosenPoint()
+void USpawnArea::SetChosenPoint(const FVector& InLocation)
 {
-	ChosenPoint = GenerateRandomPointInSpawnArea();
+	ChosenPoint = Vertex_BottomLeft + InLocation;
 }
 
 void USpawnArea::SetIsRecent(const bool bSetIsRecent)
@@ -240,34 +234,25 @@ void USpawnArea::SetOccupiedVertices(const TSet<FVector>& InVertices)
 	OccupiedVertices = InVertices;
 }
 
-TSet<FVector> USpawnArea::MakeOccupiedVertices(const float InMinDist, const FVector& InScale)
+TSet<FVector> USpawnArea::MakeOccupiedVertices(const FVector& InScale)
 {
 	LastOccupiedVerticesTargetScale = InScale;
 	
 	TSet<FVector> OutInvalid;
-
-	const float ScaledRadius = InScale.X * SphereTargetRadius;
+	
 	// Multiply by two so that any point outside the sphere will not be overlapping
-	float Radius = ScaledRadius * 2.f + (InMinDist * 0.5f);
+	float Radius = InScale.X * SphereTargetRadius * 2.0f + MinDistanceBetweenTargets * 0.5f;
 
 	// Radius can never be less than MinOverlapRadius
 	Radius = FMath::Max(Radius, GetMinOverlapRadius());
 
 	// Add max of height/width to account for random spawning within a SpawnArea
 	Radius += FMath::Max(Width, Height);
-
-	const FSphere Sphere = FSphere(ChosenPoint, Radius);
-	int32 IncrementsInYRadius = 1;
-	int32 IncrementsInZRadius = 1;
-
-	if (Radius > Width)
-	{
-		IncrementsInYRadius = floor(Radius / Width);
-	}
-	if (Radius > Height)
-	{
-		IncrementsInZRadius = floor(Radius / Height);
-	}
+	
+	const FSphere Sphere = FSphere(Vertex_BottomLeft, Radius);
+	
+	const int32 IncrementsInYRadius = Radius > Width ? floor(Radius / Width) : 1;
+	const int32 IncrementsInZRadius = Radius > Height ? floor(Radius / Height) : 1;
 
 	const float MinY = Vertex_BottomLeft.Y - IncrementsInYRadius * Width;
 	const float MaxY = Vertex_TopRight.Y + IncrementsInYRadius * Width;
@@ -278,18 +263,20 @@ TSet<FVector> USpawnArea::MakeOccupiedVertices(const float InMinDist, const FVec
 	{
 		for (float Y = MinY; Y <= MaxY; Y += Width)
 		{
-			if (FVector Loc = FVector(ChosenPoint.X, Y, Z); Sphere.IsInside(Loc))
+			if (FVector Vertex(Vertex_BottomLeft.X, Y, Z); Sphere.IsInside(Vertex))
 			{
-				OutInvalid.Add(Loc);
+				OutInvalid.Add(Vertex);
 			}
 		}
 	}
 	return OutInvalid;
 }
 
-FVector USpawnArea::GetMiddleVertex() const
+FVector USpawnArea::GenerateRandomOffset()
 {
-	return (Vertex_BottomLeft + Vertex_TopRight) / 2.f;
+	const float Y = roundf(FMath::FRandRange(0.f, Width - 1.f));
+	const float Z = roundf(FMath::FRandRange(0.f, Height - 1.f));
+	return FVector(0.f, Y, Z);
 }
 
 bool USpawnArea::IsBorderingIndex(const int32 InIndex) const
@@ -310,32 +297,22 @@ TSet<int32> USpawnArea::GetAdjacentIndices(const TSet<EBorderingDirection>& Dire
 	return Out;
 }
 
-TSet<FVector> USpawnArea::GetUnoccupiedVertices(const float InMinDist, const FVector& InScale) const
+TSet<FVector> USpawnArea::MakeUnoccupiedVertices(const FVector& InScale) const
 {
 	TSet<FVector> OutValid;
-
-	const float ScaledRadius = InScale.X * SphereTargetRadius;
+	
 	// Multiply by two so that any point outside the sphere will not be overlapping
-	float Radius = ScaledRadius * 2.f + (InMinDist * 0.5f);
+	float Radius = InScale.X * SphereTargetRadius * 2.0f + MinDistanceBetweenTargets * 0.5f;
 	
 	// Radius can never be less than MinOverlapRadius
 	Radius = FMath::Max(Radius, GetMinOverlapRadius());
 
 	// Add max of height/width to account for random spawning within a SpawnArea
 	Radius += FMath::Max(Width, Height);
-
-	const FSphere Sphere = FSphere(ChosenPoint, Radius);
-	int32 IncrementsInYRadius = 1;
-	int32 IncrementsInZRadius = 1;
-
-	if (Radius > Width)
-	{
-		IncrementsInYRadius = floor(Radius / Width);
-	}
-	if (Radius > Height)
-	{
-		IncrementsInZRadius = floor(Radius / Height);
-	}
+	
+	const FSphere Sphere = FSphere(Vertex_BottomLeft, Radius);
+	const int32 IncrementsInYRadius = Radius > Width ? floor(Radius / Width) : 1;
+	const int32 IncrementsInZRadius = Radius > Height ? floor(Radius / Height) : 1;
 
 	const float MinY = Vertex_BottomLeft.Y - IncrementsInYRadius * Width;
 	const float MaxY = Vertex_TopRight.Y + IncrementsInYRadius * Width;
@@ -346,9 +323,9 @@ TSet<FVector> USpawnArea::GetUnoccupiedVertices(const float InMinDist, const FVe
 	{
 		for (float Y = MinY; Y <= MaxY; Y += Width)
 		{
-			if (FVector Loc = FVector(ChosenPoint.X, Y, Z); !Sphere.IsInside(Loc))
+			if (FVector Vertex(Vertex_BottomLeft.X, Y, Z); !Sphere.IsInside(Vertex))
 			{
-				OutValid.Add(Loc);
+				OutValid.Add(Vertex);
 			}
 		}
 	}

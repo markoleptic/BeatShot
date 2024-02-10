@@ -137,6 +137,9 @@ void ATarget::BeginPlay()
 {
 	Super::BeginPlay();
 
+	#if !UE_BUILD_SHIPPING
+	if (GIsAutomationTesting) return;
+	#endif
 	/* Use Color Changing Material, this is required in order to change color using C++ */
 	TargetColorChangeMaterial = UMaterialInstanceDynamic::Create(SphereMesh->GetMaterial(0), this);
 	SphereMesh->SetMaterial(0, TargetColorChangeMaterial);
@@ -159,7 +162,7 @@ void ATarget::BeginPlay()
 	StartToPeakTimeline.SetPlayRate(StartToPeakTimelinePlayRate);
 	PeakToEndTimeline.SetPlayRate(PeakToEndTimelinePlayRate);
 	ShrinkQuickAndGrowSlowTimeline.SetPlayRate(StartToPeakTimelinePlayRate);
-
+	
 	SetTargetColor(Config.OnSpawnColor);
 
 	if (Config.bUseSeparateOutlineColor)
@@ -576,16 +579,25 @@ void ATarget::InterpShrinkQuickAndGrowSlow(const float Alpha)
 
 void ATarget::SetTargetColor(const FLinearColor& Color)
 {
+	#if !UE_BUILD_SHIPPING
+	if (GIsAutomationTesting) return;
+	#endif
 	TargetColorChangeMaterial->SetVectorParameterValue(TEXT("BaseColor"), Color);
 }
 
 void ATarget::SetTargetOutlineColor(const FLinearColor& Color)
 {
+	#if !UE_BUILD_SHIPPING
+	if (GIsAutomationTesting) return;
+	#endif
 	TargetColorChangeMaterial->SetVectorParameterValue(TEXT("OutlineColor"), Color);
 }
 
 void ATarget::SetUseSeparateOutlineColor(const bool bUseSeparateOutlineColor)
 {
+	#if !UE_BUILD_SHIPPING
+	if (GIsAutomationTesting) return;
+	#endif
 	if (bUseSeparateOutlineColor)
 	{
 		SetTargetOutlineColor(Config.OutlineColor);
@@ -641,6 +653,9 @@ void ATarget::SetTargetDamageType(const ETargetDamageType& InType)
 void ATarget::PlayExplosionEffect(const FVector& ExplosionLocation, const float SphereRadius,
 	const FLinearColor& InColorWhenDestroyed) const
 {
+	#if !UE_BUILD_SHIPPING
+	if (GIsAutomationTesting) return;
+	#endif
 	if (TargetExplosion && Config.TargetDamageType == ETargetDamageType::Hit)
 	{
 		if (UNiagaraComponent* ExplosionComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), TargetExplosion,

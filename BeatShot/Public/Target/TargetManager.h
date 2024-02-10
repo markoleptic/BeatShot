@@ -33,7 +33,7 @@ class BEATSHOT_API ATargetManager : public AActor, public ISaveLoadInterface
 	
 	friend class UBSCheatManager;
 	friend class ABeatShotGameModeFunctionalTest;
-	friend class FBSAutomationTestBase;
+	friend class FTargetManagerTestBase;
 
 public:
 	ATargetManager();

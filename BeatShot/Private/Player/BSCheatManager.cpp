@@ -141,7 +141,12 @@ namespace BeatShotCVars
 	
 	static TAutoConsoleVariable CVarShowDebug_Vertices(TEXT("bs_showdebug.verts"),
 		0,
-		TEXT("Toggles showing debug points and a debug sphere for overlapping vertices of activated spawn areas."));
+		TEXT("Toggles showing debug points and a debug sphere for overlapping vertices of activated spawn areas.\n")
+		TEXT("0: Off.\n")
+		TEXT("1: Generates new overlapping vertices and draws debug spheres.\n")
+		TEXT("2: Generates new overlapping vertices but does not draw debug spheres.\n")
+		TEXT("3: Uses existing overlapping vertices and draws debug spheres.\n")
+		TEXT("4: Uses existing overlapping vertices but does not draw debug spheres.\n"));
 
 
 	static TAutoConsoleVariable CVarShowDebug_FrontSpotLight(TEXT("bs_showdebug.frontspotlight"),
@@ -169,24 +174,24 @@ void UBSCheatManager::InitCheatManager()
 	BIND_BS_CVAR(CVarShowDebug_FrontSpotLight, this, &UBSCheatManager::ShowDebug_SpotLightFront);
 	BIND_BS_CVAR(CVarSetTimeOfDay, this, &UBSCheatManager::SetTimeOfDay);
 	
-	BIND_BS_COMP_CVAR(CVarShowDebug_AllSpawnAreas, this, SetComponentDebugBool, &USpawnAreaManagerComponent::bShowDebug_AllSpawnAreas);
-	BIND_BS_COMP_CVAR(CVarShowDebug_ValidInvalid, this, SetComponentDebugBool, &USpawnAreaManagerComponent::bShowDebug_ValidInvalidSpawnAreas);
-	BIND_BS_COMP_CVAR(CVarShowDebug_SpawnableSpawnAreas, this, SetComponentDebugBool, &USpawnAreaManagerComponent::bShowDebug_SpawnableSpawnAreas);
-	BIND_BS_COMP_CVAR(CVarShowDebug_ActivatableSpawnAreas, this, SetComponentDebugBool, &USpawnAreaManagerComponent::bShowDebug_ActivatableSpawnAreas);
-	BIND_BS_COMP_CVAR(CVarShowDebug_ActivatedSpawnAreas, this, SetComponentDebugBool, &USpawnAreaManagerComponent::bShowDebug_ActivatedSpawnAreas);
-	BIND_BS_COMP_CVAR(CVarShowDebug_DeactivatedSpawnAreas, this, SetComponentDebugBool, &USpawnAreaManagerComponent::bShowDebug_DeactivatedSpawnAreas);
-	BIND_BS_COMP_CVAR(CVarShowDebug_RecentSpawnAreas, this, SetComponentDebugBool, &USpawnAreaManagerComponent::bShowDebug_RecentSpawnAreas);
-	BIND_BS_COMP_CVAR(CVarShowDebug_RemovedFromExtremaChange, this, SetComponentDebugBool, &USpawnAreaManagerComponent::bShowDebug_RemovedFromExtremaChange);
-	BIND_BS_COMP_CVAR(CVarShowDebug_NonAdjacent, this, SetComponentDebugBool, &USpawnAreaManagerComponent::bShowDebug_NonAdjacent);
-	BIND_BS_COMP_CVAR(CVarShowDebug_Vertices, this, SetComponentDebugBool, &USpawnAreaManagerComponent::bShowDebug_Vertices);
-	BIND_BS_COMP_CVAR(CVarPrintDebug_SpawnAreaStateInfo, this, SetComponentDebugBool, &USpawnAreaManagerComponent::bPrintDebug_SpawnAreaStateInfo);
-	BIND_BS_COMP_CVAR(CVarPrintDebug_Grid, this, SetComponentDebugBool, &USpawnAreaManagerComponent::bPrintDebug_Grid);
+	BIND_BS_COMP_CVAR(CVarShowDebug_AllSpawnAreas, this, SetComponentDebugValue, &USpawnAreaManagerComponent::bShowDebug_AllSpawnAreas);
+	BIND_BS_COMP_CVAR(CVarShowDebug_ValidInvalid, this, SetComponentDebugValue, &USpawnAreaManagerComponent::bShowDebug_ValidInvalidSpawnAreas);
+	BIND_BS_COMP_CVAR(CVarShowDebug_SpawnableSpawnAreas, this, SetComponentDebugValue, &USpawnAreaManagerComponent::bShowDebug_SpawnableSpawnAreas);
+	BIND_BS_COMP_CVAR(CVarShowDebug_ActivatableSpawnAreas, this, SetComponentDebugValue, &USpawnAreaManagerComponent::bShowDebug_ActivatableSpawnAreas);
+	BIND_BS_COMP_CVAR(CVarShowDebug_ActivatedSpawnAreas, this, SetComponentDebugValue, &USpawnAreaManagerComponent::bShowDebug_ActivatedSpawnAreas);
+	BIND_BS_COMP_CVAR(CVarShowDebug_DeactivatedSpawnAreas, this, SetComponentDebugValue, &USpawnAreaManagerComponent::bShowDebug_DeactivatedSpawnAreas);
+	BIND_BS_COMP_CVAR(CVarShowDebug_RecentSpawnAreas, this, SetComponentDebugValue, &USpawnAreaManagerComponent::bShowDebug_RecentSpawnAreas);
+	BIND_BS_COMP_CVAR(CVarShowDebug_RemovedFromExtremaChange, this, SetComponentDebugValue, &USpawnAreaManagerComponent::bShowDebug_RemovedFromExtremaChange);
+	BIND_BS_COMP_CVAR(CVarShowDebug_NonAdjacent, this, SetComponentDebugValue, &USpawnAreaManagerComponent::bShowDebug_NonAdjacent);
+	BIND_BS_COMP_CVAR(CVarShowDebug_Vertices, this, SetComponentDebugValue, &USpawnAreaManagerComponent::ShowDebug_Vertices);
+	BIND_BS_COMP_CVAR(CVarPrintDebug_SpawnAreaStateInfo, this, SetComponentDebugValue, &USpawnAreaManagerComponent::bPrintDebug_SpawnAreaStateInfo);
+	BIND_BS_COMP_CVAR(CVarPrintDebug_Grid, this, SetComponentDebugValue, &USpawnAreaManagerComponent::bPrintDebug_Grid);
 	
-	BIND_BS_COMP_CVAR(CVarPrintDebug_ChooseBestActionIndex, this, SetComponentDebugBool, &UReinforcementLearningComponent::bPrintDebug_ChooseActionIndex);
-	BIND_BS_COMP_CVAR(CVarPrintDebug_GetMaxIndex, this, SetComponentDebugBool, &UReinforcementLearningComponent::bPrintDebug_GetMaxIndex);
-	BIND_BS_COMP_CVAR(CVarPrintDebug_QTableUpdate, this, SetComponentDebugBool, &UReinforcementLearningComponent::bPrintDebug_QTableUpdate);
-	BIND_BS_COMP_CVAR(CVarPrintDebug_QTableInit, this, SetComponentDebugBool, &UReinforcementLearningComponent::bPrintDebug_QTableInit);
-	BIND_BS_COMP_CVAR(CVarPrintDebug_ActiveTargetPairs, this, SetComponentDebugBool, &UReinforcementLearningComponent::bPrintDebug_ActiveTargetPairs);
+	BIND_BS_COMP_CVAR(CVarPrintDebug_ChooseBestActionIndex, this, SetComponentDebugValue, &UReinforcementLearningComponent::bPrintDebug_ChooseActionIndex);
+	BIND_BS_COMP_CVAR(CVarPrintDebug_GetMaxIndex, this, SetComponentDebugValue, &UReinforcementLearningComponent::bPrintDebug_GetMaxIndex);
+	BIND_BS_COMP_CVAR(CVarPrintDebug_QTableUpdate, this, SetComponentDebugValue, &UReinforcementLearningComponent::bPrintDebug_QTableUpdate);
+	BIND_BS_COMP_CVAR(CVarPrintDebug_QTableInit, this, SetComponentDebugValue, &UReinforcementLearningComponent::bPrintDebug_QTableInit);
+	BIND_BS_COMP_CVAR(CVarPrintDebug_ActiveTargetPairs, this, SetComponentDebugValue, &UReinforcementLearningComponent::bPrintDebug_ActiveTargetPairs);
 }
 
 void UBSCheatManager::Cheat_AimBot(IConsoleVariable* Variable)
@@ -257,25 +262,25 @@ void UBSCheatManager::ShowDebug(IConsoleVariable* Variable)
 	ShowDebug_SpawnVolume(Variable);
 	ShowDebug_DirectionalBoxes(Variable);
 
-	SetComponentDebugBool(Variable, &USpawnAreaManagerComponent::bShowDebug_AllSpawnAreas);
-	SetComponentDebugBool(Variable, &USpawnAreaManagerComponent::bShowDebug_ValidInvalidSpawnAreas);
-	SetComponentDebugBool(Variable, &USpawnAreaManagerComponent::bShowDebug_SpawnableSpawnAreas);
-	SetComponentDebugBool(Variable, &USpawnAreaManagerComponent::bShowDebug_ActivatableSpawnAreas);
-	SetComponentDebugBool(Variable, &USpawnAreaManagerComponent::bShowDebug_ActivatedSpawnAreas);
-	SetComponentDebugBool(Variable, &USpawnAreaManagerComponent::bShowDebug_DeactivatedSpawnAreas);
-	SetComponentDebugBool(Variable, &USpawnAreaManagerComponent::bShowDebug_RecentSpawnAreas);
-	SetComponentDebugBool(Variable, &USpawnAreaManagerComponent::bShowDebug_RemovedFromExtremaChange);
-	SetComponentDebugBool(Variable, &USpawnAreaManagerComponent::bShowDebug_NonAdjacent);
-	SetComponentDebugBool(Variable, &USpawnAreaManagerComponent::bShowDebug_Vertices);
-	SetComponentDebugBool(Variable, &USpawnAreaManagerComponent::bShowDebug_NonAdjacent);
-	SetComponentDebugBool(Variable, &USpawnAreaManagerComponent::bPrintDebug_SpawnAreaStateInfo);
-	SetComponentDebugBool(Variable, &USpawnAreaManagerComponent::bPrintDebug_Grid);
+	SetComponentDebugValue(Variable, &USpawnAreaManagerComponent::bShowDebug_AllSpawnAreas);
+	SetComponentDebugValue(Variable, &USpawnAreaManagerComponent::bShowDebug_ValidInvalidSpawnAreas);
+	SetComponentDebugValue(Variable, &USpawnAreaManagerComponent::bShowDebug_SpawnableSpawnAreas);
+	SetComponentDebugValue(Variable, &USpawnAreaManagerComponent::bShowDebug_ActivatableSpawnAreas);
+	SetComponentDebugValue(Variable, &USpawnAreaManagerComponent::bShowDebug_ActivatedSpawnAreas);
+	SetComponentDebugValue(Variable, &USpawnAreaManagerComponent::bShowDebug_DeactivatedSpawnAreas);
+	SetComponentDebugValue(Variable, &USpawnAreaManagerComponent::bShowDebug_RecentSpawnAreas);
+	SetComponentDebugValue(Variable, &USpawnAreaManagerComponent::bShowDebug_RemovedFromExtremaChange);
+	SetComponentDebugValue(Variable, &USpawnAreaManagerComponent::bShowDebug_NonAdjacent);
+	SetComponentDebugValue(Variable, &USpawnAreaManagerComponent::ShowDebug_Vertices);
+	SetComponentDebugValue(Variable, &USpawnAreaManagerComponent::bShowDebug_NonAdjacent);
+	SetComponentDebugValue(Variable, &USpawnAreaManagerComponent::bPrintDebug_SpawnAreaStateInfo);
+	SetComponentDebugValue(Variable, &USpawnAreaManagerComponent::bPrintDebug_Grid);
 
-	SetComponentDebugBool(Variable, &UReinforcementLearningComponent::bPrintDebug_ChooseActionIndex);
-	SetComponentDebugBool(Variable, &UReinforcementLearningComponent::bPrintDebug_GetMaxIndex);
-	SetComponentDebugBool(Variable, &UReinforcementLearningComponent::bPrintDebug_QTableUpdate);
-	SetComponentDebugBool(Variable, &UReinforcementLearningComponent::bPrintDebug_QTableInit);
-	SetComponentDebugBool(Variable, &UReinforcementLearningComponent::bPrintDebug_ActiveTargetPairs);
+	SetComponentDebugValue(Variable, &UReinforcementLearningComponent::bPrintDebug_ChooseActionIndex);
+	SetComponentDebugValue(Variable, &UReinforcementLearningComponent::bPrintDebug_GetMaxIndex);
+	SetComponentDebugValue(Variable, &UReinforcementLearningComponent::bPrintDebug_QTableUpdate);
+	SetComponentDebugValue(Variable, &UReinforcementLearningComponent::bPrintDebug_QTableInit);
+	SetComponentDebugValue(Variable, &UReinforcementLearningComponent::bPrintDebug_ActiveTargetPairs);
 }
 
 void UBSCheatManager::ShowDebug_ReinforcementLearningWidget(IConsoleVariable* Variable)
@@ -461,7 +466,7 @@ void UBSCheatManager::ShowDebug_DirectionalBoxes(IConsoleVariable* Variable)
 
 void UBSCheatManager::ShowDebug_SpotLightFront(IConsoleVariable* Variable)
 {
-	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	const UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	if (GI->GetTimeOfDayManager())
 	{
 		GI->GetTimeOfDayManager()->SetSpotLightFrontEnabledState(Variable->GetBool());
@@ -470,7 +475,7 @@ void UBSCheatManager::ShowDebug_SpotLightFront(IConsoleVariable* Variable)
 
 void UBSCheatManager::SetTimeOfDay(IConsoleVariable* Variable)
 {
-	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	const UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	if (GI->GetTimeOfDayManager())
 	{
 		if (Variable->GetString().Equals("day", ESearchCase::IgnoreCase))
@@ -485,7 +490,7 @@ void UBSCheatManager::SetTimeOfDay(IConsoleVariable* Variable)
 }
 
 template<typename T, class ComponentClass>
-void UBSCheatManager::SetComponentDebugBool(IConsoleVariable* Variable, T ComponentClass::*DebugBool)
+void UBSCheatManager::SetComponentDebugValue(IConsoleVariable* Variable, T ComponentClass::*DebugVar)
 {
 	const ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	if (!GameMode) return;
@@ -496,7 +501,18 @@ void UBSCheatManager::SetComponentDebugBool(IConsoleVariable* Variable, T Compon
 	ComponentClass* Comp = TargetManager->GetComponentByClass<ComponentClass>();
 	if (!Comp) return;
 
-	Comp->*DebugBool = Variable->GetBool();
+	if constexpr (std::is_same_v<T, int32>)
+	{
+		Comp->*DebugVar = Variable->GetInt();
+	}
+	else if constexpr (std::is_same_v<T, bool>)
+	{
+		Comp->*DebugVar = Variable->GetBool();
+	}
+	else
+	{
+		static_assert(std::is_same_v<T, int32> || std::is_same_v<T, bool>, "Unsupported type for DebugVar");
+	}
 }
 
 #endif

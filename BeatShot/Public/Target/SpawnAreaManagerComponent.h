@@ -617,13 +617,13 @@ public:
 
 	/** Size of the debug point for occupied vertices and non-occupied vertices. */
 	UPROPERTY(EditAnywhere, Category="Debug")
-	float DebugVertexSize = 4.f;
+	float DebugVertexSize = 24.f;
 
 	UPROPERTY(EditAnywhere, Category="Debug")
 	float DebugBoxXOffset = 2.f;
 
 	UPROPERTY(EditAnywhere, Category="Debug")
-	int32 DebugSphereSegments = 10;
+	int32 DebugSphereSegments = 12;
 
 #if !UE_BUILD_SHIPPING
 	/** Clears all debug persistent lines/boxes and draws new ones based on debug bool variables. */
@@ -634,7 +634,7 @@ public:
 		bool bPersistent) const;
 
 	/** Draws debug points for the spawn areas' occupied vertices and non-occupied vertices as well as a debug sphere. */
-	void DrawDebug_Vertices(const TSet<USpawnArea*>& InSpawnAreas, const bool bGenerateNew) const;
+	void DrawDebug_Vertices(const TSet<USpawnArea*>& InSpawnAreas, const bool bGenerateNew, const bool bDrawSphere) const;
 
 	/** Prints the number of activated, recent, and managed targets. */
 	void PrintDebug_SpawnAreaStateInfo() const;
@@ -679,7 +679,7 @@ public:
 	bool bShowDebug_NonAdjacent;
 
 	/** Toggles showing debug points and a debug sphere for overlapping vertices of activated spawn areas. */
-	bool bShowDebug_Vertices;
+	int32 ShowDebug_Vertices;
 	
 	/** Toggles printing the number managed, activated, and recent Spawn Areas. */
 	bool bPrintDebug_SpawnAreaStateInfo;

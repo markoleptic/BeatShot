@@ -48,8 +48,6 @@ class BEATSHOT_API USpawnArea : public UObject
 {
 	GENERATED_BODY()
 
-	friend class USpawnAreaManagerComponent;
-
 	/** The unique index for this SpawnArea */
 	int32 Index;
 
@@ -67,6 +65,9 @@ class BEATSHOT_API USpawnArea : public UObject
 	
 	/** The total number of SpawnAreas that this SpawnArea is part of. */
 	static int32 Size;
+
+	/** The minimum distance allowed between the edges of targets. */
+	static float MinDistanceBetweenTargets;
 
 	/** Guid associated with a managed target */
 	FGuid Guid;
@@ -153,6 +154,18 @@ public:
 
 	/** Sets the total number of vertical SpawnAreas for all SpawnAreas. */
 	static void SetTotalNumVerticalSpawnAreas(const int32 InNum) { TotalNumVerticalSpawnAreas = InNum; }
+
+	/** Sets the minimum distance between targets for all SpawnAreas. */
+	static void SetMinDistanceBetweenTargets(const float InNum) { MinDistanceBetweenTargets = InNum; }
+
+	/** Returns a random offset between (0, 0, 0) and (0, Width, Height). */
+	static FVector GenerateRandomOffset();
+	
+	/** Returns the width of a Spawn Area. */
+	static int32 GetWidth() { return Width; }
+
+	/** Returns the height of a Spawn Area. */
+	static int32 GetHeight() { return Height; }
 	
 	/** Returns the index assigned on initialization */
 	int32 GetIndex() const { return Index; }
@@ -164,7 +177,7 @@ public:
 	FVector GetBottomLeftVertex() const { return Vertex_BottomLeft; }
 
 	/** Returns the middle location between the bottom left and top left */
-	FVector GetMiddleVertex() const;
+	FVector GetCenterPoint() const { return CenterPoint; };
 	
 	/** Returns whether or not the SpawnArea contains an activated target */
 	bool IsActivated() const { return bIsActivated; }
@@ -198,7 +211,7 @@ public:
 	
 	/** Returns the vertices that this SpawnArea did not occupy in space after tracing a sphere
 	 *  based on target scale and other factors. Only used for debug purposes */
-	TSet<FVector> GetUnoccupiedVertices(const float InMinDist, const FVector& InScale) const;
+	TSet<FVector> MakeUnoccupiedVertices(const FVector& InScale) const;
 	
 	/** Returns the type of grid index */
 	EGridIndexType GetIndexType() const { return GridIndexType; }
@@ -218,6 +231,9 @@ public:
 	
 	/** Returns the scale of the last target spawned in this SpawnArea */
 	FVector GetTargetScale() const { return TargetScale; }
+
+	/** Returns the scale of the target used for the last Occupied Vertices functional call. */
+	FVector GetLastOccupiedVerticesTargetScale() const { return LastOccupiedVerticesTargetScale; }
 	
 	/** Returns the Guid of the last target spawned in this SpawnArea */
 	FGuid GetGuid() const { return Guid; }
@@ -234,18 +250,14 @@ public:
 	/** Sets the TargetScale */
 	void SetTargetScale(const FVector& InScale);
 
-	/** Sets the value of ChosenPoint to the output of GenerateRandomPointInSpawnArea */
-	void SetRandomChosenPoint();
-
-private:
+	/** Sets the value of ChosenPoint, where the target should actually be spawned. */
+	void SetChosenPoint(const FVector& InLocation);
+	
 	/** Returns an array of indices that border the index when looking at the array like a 2D grid */
 	void SetAdjacentIndices(const EGridIndexType InGridIndexType, const int32 InIndex, const int32 InWidth);
 
 	/** Returns the corresponding index type depending on the InIndex, InSize, and InWidth */
 	static EGridIndexType FindIndexType(const int32 InIndex, const int32 InSize, const int32 InWidth);
-
-	/** Returns a random non-overlapping point within the SpawnArea */
-	FVector GenerateRandomPointInSpawnArea() const;
 
 	/** Flags this SpawnArea as corresponding to a target being managed by TargetManager. If false,
 	 *  clears Occupied Vertices */
@@ -262,7 +274,7 @@ private:
 
 	/** Finds and returns the vertices that overlap with SpawnArea by tracing a circle around the SpawnArea based on
 	 *  the target scale, minimum distance between targets, minimum overlap radius, and size of the SpawnArea */
-	TSet<FVector> MakeOccupiedVertices(const float InMinDist, const FVector& InScale);
+	TSet<FVector> MakeOccupiedVertices(const FVector& InScale);
 
 	/** Increments the total amount of spawns in this SpawnArea, including handling special case where it has not
 	 *  spawned there yet */
@@ -276,8 +288,7 @@ private:
 
 	/** Increments TotalTrackingDamage */
 	void IncrementTotalTrackingDamage();
-
-public:
+	
 	FORCEINLINE bool operator ==(const USpawnArea& Other) const
 	{
 		if (Index != INDEX_NONE && Index == Other.Index)

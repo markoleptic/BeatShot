@@ -55,6 +55,7 @@ ATargetManager::ATargetManager()
 void ATargetManager::BeginPlay()
 {
 	Super::BeginPlay();
+
 	TargetSpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	TargetSpawnInfo.Owner = this;
 	TargetSpawnInfo.CustomPreSpawnInitalization = [this] (AActor* SpawnedActor)
@@ -226,9 +227,9 @@ void ATargetManager::SetShouldSpawn(const bool bShouldSpawn)
 	{
 		if (GetBSConfig()->TargetConfig.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::HideTarget))
 		{
-			for (ATarget* Target : GetManagedTargets())
+			for (const auto TargetPair : ManagedTargets)
 			{
-				Target->SetActorHiddenInGame(true);
+				TargetPair.Value->SetActorHiddenInGame(true);
 			}
 		}
 	}
@@ -270,6 +271,11 @@ ATarget* ATargetManager::SpawnTarget(USpawnArea* InSpawnArea)
 	
 	const FTransform TForm(FRotator(0), InSpawnArea->GetChosenPoint(), InSpawnArea->GetTargetScale());
 	ATarget* Target = GetWorld()->SpawnActor<ATarget>(TargetToSpawn, TForm, TargetSpawnInfo);
+	
+	#if !UE_BUILD_SHIPPING
+	if (GIsAutomationTesting) Target->DispatchBeginPlay();
+	#endif
+	
 	Target->SetTargetDamageType(FindNextTargetDamageType());
 	Target->OnTargetDamageEvent.AddUObject(this, &ATargetManager::OnTargetDamageEvent);
 	AddToManagedTargets(Target, InSpawnArea);
@@ -586,7 +592,7 @@ int32 ATargetManager::HandleRuntimeSpawning()
 		const int32 MaxAvailable = FMath::Min(NumberToSpawn, MaxToActivate);
 		NumberToSpawn = GetNumberOfTargetsToActivate(MaxAvailable, SpawnAreaManager->GetNumActivated());
 	}
-
+	
 	int32 NumSpawned = 0;
 	for (USpawnArea* SpawnArea : FindNextSpawnAreasForSpawn(NumberToSpawn))
 	{
@@ -594,13 +600,18 @@ int32 ATargetManager::HandleRuntimeSpawning()
 		{
 			NumSpawned++;
 		}
+		else
+		{
+			UE_LOG(LogTargetManager, Warning, TEXT("Failed to spawn target."));
+		}
 	}
+
 	return NumSpawned;
 }
 
 int32 ATargetManager::HandleTargetActivation()
 {
-	if (GetManagedTargets().IsEmpty()) return 0;
+	if (ManagedTargets.IsEmpty()) return 0;
 
 	const auto& Cfg = GetBSConfig()->TargetConfig;
 
@@ -736,7 +747,7 @@ void ATargetManager::HandleActivateAlreadyActivated()
 int32 ATargetManager::GetNumberOfRuntimeTargetsToSpawn() const
 {
 	const auto& Cfg = GetBSConfig()->TargetConfig;
-	const int32 NumManaged = GetManagedTargets().Num();
+	const int32 NumManaged = ManagedTargets.Num();
 	
 	// Batch spawning waits until there are no more Activated and Deactivated target(s)
 	if (Cfg.bUseBatchSpawning)
@@ -1331,7 +1342,7 @@ void ATargetManager::UpdateTotalPossibleDamage()
 bool ATargetManager::TrackingTargetIsDamageable() const
 {
 	if (!GetBSConfig()) return false;
-	if (GetBSConfig()->TargetConfig.TargetDamageType == ETargetDamageType::Hit || GetManagedTargets().IsEmpty())
+	if (GetBSConfig()->TargetConfig.TargetDamageType == ETargetDamageType::Hit || ManagedTargets.IsEmpty())
 	{
 		return false;
 	}
@@ -1374,9 +1385,9 @@ void ATargetManager::UpdatePlayerSettings(const FPlayerSettings_Game& InPlayerSe
 	PlayerSettings = InPlayerSettings;
 	if (!ManagedTargets.IsEmpty())
 	{
-		for (ATarget* Target : GetManagedTargets())
+		for (const auto TargetPair : ManagedTargets)
 		{
-			Target->UpdatePlayerSettings(PlayerSettings);
+			TargetPair.Value->UpdatePlayerSettings(PlayerSettings);
 		}
 	}
 }

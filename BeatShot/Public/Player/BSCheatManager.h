@@ -40,9 +40,9 @@ public:
 	void ShowDebug_SpotLightFront(IConsoleVariable* Variable);
 	void SetTimeOfDay(IConsoleVariable* Variable);
 
-	/** Sets the ComponentClass's DebugBool value to the bool value of the console variable. */
+	/** Sets the ComponentClass's value type to the type matching the console variable. */
 	template<typename T, class ComponentClass>
-	void SetComponentDebugBool(IConsoleVariable* Variable, T ComponentClass::*DebugBool);
+	void SetComponentDebugValue(IConsoleVariable* Variable, T ComponentClass::*DebugVar);
 	
 	#endif
 	

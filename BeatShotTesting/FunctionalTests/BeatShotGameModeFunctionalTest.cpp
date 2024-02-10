@@ -2,7 +2,6 @@
 
 
 #include "BeatShotGameModeFunctionalTest.h"
-
 #include "Algo/RandomShuffle.h"
 #include "Target/TargetManager.h"
 
