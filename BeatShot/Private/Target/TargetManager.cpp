@@ -136,7 +136,7 @@ void ATargetManager::Init(const TSharedPtr<FBSConfig>& InConfig, const FPlayerSe
 		RLComponent->Init(Params);
 
 		#if !UE_BUILD_SHIPPING
-		if (RLComponent->bPrintDebug_QTableInit)
+		if (RLComponent->bPrintDebug_QTableInit && !GIsAutomationTesting)
 		{
 			// Print loaded QTable
 			FNumberFormattingOptions Options;
@@ -381,7 +381,12 @@ bool ATargetManager::ActivateTarget(ATarget* InTarget) const
 	// Don't continue if the target was already activated and succeeded the reactivation
 	if (bAlreadyActivated && bActivated)
 	{
-		UE_LOG(LogTargetManager, Display, TEXT("Reactivated Target"));
+		#if !UE_BUILD_SHIPPING
+		if (!GIsAutomationTesting)
+		{
+			UE_LOG(LogTargetManager, Display, TEXT("Reactivated Target"));
+		}
+		#endif
 		return true;
 	}
 	
@@ -602,7 +607,9 @@ int32 ATargetManager::HandleRuntimeSpawning()
 		}
 		else
 		{
+			#if !UE_BUILD_SHIPPING
 			UE_LOG(LogTargetManager, Warning, TEXT("Failed to spawn target."));
+			#endif
 		}
 	}
 
@@ -676,12 +683,16 @@ int32 ATargetManager::HandleTargetActivation()
 			}
 			else
 			{
+				#if !UE_BUILD_SHIPPING
 				UE_LOG(LogTargetManager, Warning, TEXT("Failed to activate target."));
+				#endif
 			}
 		}
 		else
 		{
+			#if !UE_BUILD_SHIPPING
 			UE_LOG(LogTargetManager, Warning, TEXT("Failed to find target guid for activation."));
+			#endif
 		}
 	}
 	return NumActivated;
@@ -846,7 +857,7 @@ TSet<USpawnArea*> ATargetManager::FindNextSpawnAreasForSpawn(const int32 NumToSp
 	const double EndTime = FPlatformTime::Seconds();
 	const double ElapsedTime = EndTime - StartTime;
 	
-	if (Out.IsEmpty())
+	if (Out.IsEmpty() && !GIsAutomationTesting)
 	{
 		UE_LOG(LogTargetManager, Display, TEXT("ValidSpawnableSpawnAreas is empty."));
 	}

@@ -69,6 +69,9 @@ class BEATSHOT_API USpawnArea : public UObject
 	/** The minimum distance allowed between the edges of targets. */
 	static float MinDistanceBetweenTargets;
 
+	/** The minimum and maximum values of the total spawn area. */
+	static struct FExtrema TotalSpawnAreaExtrema;
+
 	/** Guid associated with a managed target */
 	FGuid Guid;
 
@@ -105,9 +108,6 @@ class BEATSHOT_API USpawnArea : public UObject
 
 	/** The scale associated with the target if the SpawnArea is currently representing one */
 	FVector TargetScale;
-
-	/** The scale last used to generate occupied vertices. */
-	FVector LastOccupiedVerticesTargetScale;
 
 	/** The total number of target spawns in this SpawnArea */
 	int32 TotalSpawns;
@@ -158,6 +158,9 @@ public:
 	/** Sets the minimum distance between targets for all SpawnAreas. */
 	static void SetMinDistanceBetweenTargets(const float InNum) { MinDistanceBetweenTargets = InNum; }
 
+	/** Sets the total spawn area minimum and maximum values. */
+	static void SetTotalSpawnAreaExtrema(const FExtrema& InExtrema);
+
 	/** Returns a random offset between (0, 0, 0) and (0, Width, Height). */
 	static FVector GenerateRandomOffset();
 	
@@ -166,6 +169,9 @@ public:
 
 	/** Returns the height of a Spawn Area. */
 	static int32 GetHeight() { return Height; }
+
+	/** Calculates the radius that should be used to make occupied vertices. */
+	static float CalcTraceRadius(const FVector& InScale);
 	
 	/** Returns the index assigned on initialization */
 	int32 GetIndex() const { return Index; }
@@ -231,9 +237,6 @@ public:
 	
 	/** Returns the scale of the last target spawned in this SpawnArea */
 	FVector GetTargetScale() const { return TargetScale; }
-
-	/** Returns the scale of the target used for the last Occupied Vertices functional call. */
-	FVector GetLastOccupiedVerticesTargetScale() const { return LastOccupiedVerticesTargetScale; }
 	
 	/** Returns the Guid of the last target spawned in this SpawnArea */
 	FGuid GetGuid() const { return Guid; }
@@ -243,9 +246,6 @@ public:
 	
 	/** Resets the Guid of this SpawnArea */
 	void ResetGuid() { Guid.Invalidate(); }
-
-	/** Returns the minimum overlap radius */
-	static float GetMinOverlapRadius();
 
 	/** Sets the TargetScale */
 	void SetTargetScale(const FVector& InScale);
@@ -274,7 +274,7 @@ public:
 
 	/** Finds and returns the vertices that overlap with SpawnArea by tracing a circle around the SpawnArea based on
 	 *  the target scale, minimum distance between targets, minimum overlap radius, and size of the SpawnArea */
-	TSet<FVector> MakeOccupiedVertices(const FVector& InScale);
+	TSet<FVector> MakeOccupiedVertices(const FVector& InScale) const;
 
 	/** Increments the total amount of spawns in this SpawnArea, including handling special case where it has not
 	 *  spawned there yet */
@@ -288,6 +288,18 @@ public:
 
 	/** Increments TotalTrackingDamage */
 	void IncrementTotalTrackingDamage();
+
+	#if !UE_BUILD_SHIPPING
+	/** The scale last used to generate occupied vertices. */
+	FVector LastOccupiedVerticesTargetScale;
+
+	/** The Occupied vertices set if not shipping build. */
+	TSet<FVector> DebugOccupiedVertices;
+
+	/** Sets the value of DebugOccupiedVertices, LastOccupiedVerticesTargetScale,
+	 *  and returns the DebugOccupiedVertices. */
+	TSet<FVector> SetMakeDebugOccupiedVertices(const FVector& InScale);
+	#endif
 	
 	FORCEINLINE bool operator ==(const USpawnArea& Other) const
 	{
@@ -378,10 +390,10 @@ struct FAreaKey
 
 	bool operator==(const FAreaKey& Other) const
 	{
-		return FMath::IsNearlyEqual(Vertex_BottomLeft.Y, Other.Vertex_BottomLeft.Y, 0.1f) &&
-			FMath::IsNearlyEqual(Vertex_BottomLeft.Z, Other.Vertex_BottomLeft.Z, 0.1f) &&
-			FMath::IsNearlyEqual(Vertex_TopRight.Y, Other.Vertex_TopRight.Y, 0.1f) && FMath::IsNearlyEqual(
-				Vertex_TopRight.Z, Other.Vertex_TopRight.Z, 0.1f);
+		return FMath::IsNearlyEqual(Vertex_BottomLeft.Y, Other.Vertex_BottomLeft.Y, 0.01f) &&
+			FMath::IsNearlyEqual(Vertex_BottomLeft.Z, Other.Vertex_BottomLeft.Z, 0.01f) &&
+			FMath::IsNearlyEqual(Vertex_TopRight.Y, Other.Vertex_TopRight.Y, 0.01f) && FMath::IsNearlyEqual(
+				Vertex_TopRight.Z, Other.Vertex_TopRight.Z, 0.01f);
 	}
 
 	friend FORCEINLINE uint32 GetTypeHash(const FAreaKey& AreaKey)

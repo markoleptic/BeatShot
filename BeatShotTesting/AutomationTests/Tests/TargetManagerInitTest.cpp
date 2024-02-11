@@ -24,7 +24,7 @@ bool FTestInit::RunTest(const FString& Parameters)
 {
 	if (!bInitialized)
 	{
-		SetGameModeDataAssetPath(TargetManagerTestHelpers::DefaultGameModeDataAssetPath);
+		GameModeDataAssetPath = TargetManagerTestHelpers::DefaultGameModeDataAssetPath;
 		if (!Init())
 		{
 			return false;

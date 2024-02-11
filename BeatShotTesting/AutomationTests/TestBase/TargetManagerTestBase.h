@@ -23,19 +23,19 @@ class FTargetManagerTestBase : public FAutomationTestBase
 {
 public:
 	FTargetManagerTestBase(const FString& InName, const bool bInComplexTask) : FAutomationTestBase(InName,
-		bInComplexTask), GameModeDataAsset(nullptr), bInitialized(false),
+		bInComplexTask), TargetManager(nullptr), GameModeDataAsset(nullptr), bInitialized(false),
 		GameModeDataAssetPath(TargetManagerTestHelpers::DefaultGameModeDataAssetPath)
 	{}
 
 	virtual ~FTargetManagerTestBase() override
 	{
-		if (TargetManager.IsValid())
+		if (TargetManager)
 		{
-			if (AActor* Actor = Cast<AActor>(TargetManager.Get()))
+			if (AActor* Actor = Cast<AActor>(TargetManager))
 			{
 				Actor->RemoveFromRoot();
+				Actor->Destroy();
 			}
-			TargetManager.Reset();
 		}
 		if (BSConfig.IsValid())
 		{
@@ -64,9 +64,6 @@ protected:
 
 	/** Initializes the Target Manager. */
 	virtual bool InitGameModeDataAsset();
-
-	/** Sets the path to pull the GameModeDataAsset from. */
-	void SetGameModeDataAssetPath(const FString& InPath) { GameModeDataAssetPath = InPath; }
 	
 	/** Returns the SpawnAreaManager. */
 	TObjectPtr<USpawnAreaManagerComponent> GetSpawnAreaManager() const;
@@ -75,18 +72,18 @@ protected:
 	TMap<FGuid, ATarget*> GetManagedTargets() const;
 	
 	/** Pointer to the Target Manager. */
-	TSharedPtr<ATargetManager> TargetManager;
+	ATargetManager* TargetManager;
 
 	/** Shared pointer to the Game mode config. Should be initialized in actual tests. */
 	TSharedPtr<FBSConfig> BSConfig;
 
-	/** Pointer to Game Mode Data Asset containing read-only game mode config data. */
-	UBSGameModeDataAsset* GameModeDataAsset;
+	/** Pointer to Game Mode Data Asset containing read-only game mode config data.
+	 *  Mutable so that it can be set during GetTests. */
+	mutable UBSGameModeDataAsset* GameModeDataAsset;
 	
 	/** Whether or not Init has been called in the base class (FTargetManagerTestBase) */
 	bool bInitialized;
 
-private:
-	/** Path to pull the GameModeDataAsset from. */
-	FString GameModeDataAssetPath;
+	/** Path to pull the GameModeDataAsset from. Mutable so that it can be set during GetTests. */
+	mutable FString GameModeDataAssetPath;
 };

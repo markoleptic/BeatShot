@@ -22,6 +22,8 @@ bool FTargetManagerTestBase::InitTargetManager()
 
 bool FTargetManagerTestBase::InitGameModeDataAsset()
 {
+	if (GameModeDataAsset) return true;
+	
 	UObject* LoadedObject = StaticLoadObject(UBSGameModeDataAsset::StaticClass(), nullptr, *GameModeDataAssetPath);
 	if (!LoadedObject)
 	{

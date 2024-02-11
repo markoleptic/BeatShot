@@ -3,6 +3,7 @@
 
 #include "Target/SpawnArea.h"
 #include "GlobalConstants.h"
+#include "Target/SpawnAreaManagerComponent.h"
 
 using namespace Constants;
 
@@ -12,14 +13,14 @@ int32 USpawnArea::TotalNumHorizontalSpawnAreas = 0;
 int32 USpawnArea::TotalNumVerticalSpawnAreas = 0;
 int32 USpawnArea::Size = 0;
 float USpawnArea::MinDistanceBetweenTargets = 10.f;
+FExtrema USpawnArea::TotalSpawnAreaExtrema = FExtrema();
 
 USpawnArea::USpawnArea()
 {
-	Vertex_BottomLeft = FVector(-1);
-	CenterPoint = FVector(-1);
-	ChosenPoint = FVector(-1);
-	TargetScale = FVector(1);
-	LastOccupiedVerticesTargetScale = FVector(1.f);
+	Vertex_BottomLeft = FVector(-1.f);
+	CenterPoint = FVector(-1.f);
+	ChosenPoint = FVector(-1.f);
+	TargetScale = FVector(1.f);
 	TotalHits = 0;
 	TotalSpawns = INDEX_NONE;
 	TotalTrackingDamage = 0;
@@ -46,7 +47,6 @@ void USpawnArea::Init(const int32 InIndex, const FVector& InBottomLeftVertex)
 
 	ChosenPoint = Vertex_BottomLeft;
 	TargetScale = FVector(1.f);
-	LastOccupiedVerticesTargetScale = FVector(1.f);
 
 	TotalSpawns = INDEX_NONE;
 	TotalHits = 0;
@@ -188,10 +188,16 @@ EGridIndexType USpawnArea::FindIndexType(const int32 InIndex, const int32 InSize
 void USpawnArea::SetIsManaged(const bool bManaged)
 {
 	bIsManaged = bManaged;
-	if (!bIsManaged)
+	if (bIsManaged)
+	{
+		SetOccupiedVertices(MakeOccupiedVertices(TargetScale));
+	}
+	else
 	{
 		OccupiedVertices.Empty();
-		LastOccupiedVerticesTargetScale = FVector(1.f);
+		#if !UE_BUILD_SHIPPING
+		DebugOccupiedVertices.Empty();
+		#endif
 	}
 }
 
@@ -199,11 +205,6 @@ void USpawnArea::SetIsActivated(const bool bActivated, const bool bAllow)
 {
 	bIsActivated = bActivated;
 	bAllowActivationWhileActivated = bAllow;
-}
-
-float USpawnArea::GetMinOverlapRadius()
-{
-	return FMath::Max(Width, Height) * 0.5f;
 }
 
 void USpawnArea::SetTargetScale(const FVector& InScale)
@@ -234,49 +235,114 @@ void USpawnArea::SetOccupiedVertices(const TSet<FVector>& InVertices)
 	OccupiedVertices = InVertices;
 }
 
-TSet<FVector> USpawnArea::MakeOccupiedVertices(const FVector& InScale)
+TSet<FVector> USpawnArea::MakeOccupiedVertices(const FVector& InScale) const
 {
-	LastOccupiedVerticesTargetScale = InScale;
-	
 	TSet<FVector> OutInvalid;
 	
-	// Multiply by two so that any point outside the sphere will not be overlapping
-	float Radius = InScale.X * SphereTargetRadius * 2.0f + MinDistanceBetweenTargets * 0.5f;
-
-	// Radius can never be less than MinOverlapRadius
-	Radius = FMath::Max(Radius, GetMinOverlapRadius());
-
-	// Add max of height/width to account for random spawning within a SpawnArea
-	Radius += FMath::Max(Width, Height);
+	const float Radius = CalcTraceRadius(InScale);
 	
 	const FSphere Sphere = FSphere(Vertex_BottomLeft, Radius);
-	
-	const int32 IncrementsInYRadius = Radius > Width ? floor(Radius / Width) : 1;
-	const int32 IncrementsInZRadius = Radius > Height ? floor(Radius / Height) : 1;
 
-	const float MinY = Vertex_BottomLeft.Y - IncrementsInYRadius * Width;
-	const float MaxY = Vertex_TopRight.Y + IncrementsInYRadius * Width;
-	const float MinZ = Vertex_BottomLeft.Z - IncrementsInZRadius * Height;
-	const float MaxZ = Vertex_TopRight.Z + IncrementsInZRadius * Height;
+	const int32 IncY = floor(Radius / Width);
+	const int32 IncZ = floor(Radius / Height);
 	
-	for (float Z = MinZ; Z <= MaxZ; Z += Height)
+	const float MinY = FMath::Max(TotalSpawnAreaExtrema.Min.Y, Vertex_BottomLeft.Y - IncY * Width);
+	const float MaxY = FMath::Min(TotalSpawnAreaExtrema.Max.Y - Width, Vertex_BottomLeft.Y + IncY * Width);
+	const float MinZ = FMath::Max(TotalSpawnAreaExtrema.Min.Z, Vertex_BottomLeft.Z - IncZ * Height);
+	const float MaxZ = FMath::Min(TotalSpawnAreaExtrema.Max.Z - Height, Vertex_BottomLeft.Z + IncZ * Height);
+	
+	FVector Vertex(Vertex_BottomLeft.X, 0.f, 0.f);
+	for (Vertex.Z = MinZ; Vertex.Z <= MaxZ; Vertex.Z += Height)
 	{
-		for (float Y = MinY; Y <= MaxY; Y += Width)
+		for (Vertex.Y = MinY; Vertex.Y <= MaxY; Vertex.Y += Width)
 		{
-			if (FVector Vertex(Vertex_BottomLeft.X, Y, Z); Sphere.IsInside(Vertex))
+			if (Sphere.IsInside(Vertex))
 			{
 				OutInvalid.Add(Vertex);
 			}
 		}
 	}
+	
 	return OutInvalid;
+}
+
+TSet<FVector> USpawnArea::MakeUnoccupiedVertices(const FVector& InScale) const
+{
+	TSet<FVector> OutValid;
+	
+	const float Radius = CalcTraceRadius(InScale);
+	
+	const FSphere Sphere = FSphere(Vertex_BottomLeft, Radius);
+
+	const int32 IncY = floor(Radius / Width);
+	const int32 IncZ = floor(Radius / Height);
+	
+	const float MinY = FMath::Max(TotalSpawnAreaExtrema.Min.Y, Vertex_BottomLeft.Y - IncY * Width);
+	const float MaxY = FMath::Min(TotalSpawnAreaExtrema.Max.Y - Width, Vertex_BottomLeft.Y + IncY * Width);
+	const float MinZ = FMath::Max(TotalSpawnAreaExtrema.Min.Z, Vertex_BottomLeft.Z - IncZ * Height);
+	const float MaxZ = FMath::Min(TotalSpawnAreaExtrema.Max.Z - Height, Vertex_BottomLeft.Z + IncZ * Height);
+	
+	FVector Vertex(Vertex_BottomLeft.X, 0.f, 0.f);
+	for (Vertex.Z = MinZ; Vertex.Z <= MaxZ; Vertex.Z += Height)
+	{
+		for (Vertex.Y = MinY; Vertex.Y <= MaxY; Vertex.Y += Width)
+		{
+			if (!Sphere.IsInside(Vertex))
+			{
+				OutValid.Add(Vertex);
+			}
+		}
+	}
+	
+	return OutValid;
+}
+
+void USpawnArea::SetTotalSpawnAreaExtrema(const FExtrema& InExtrema)
+{
+	TotalSpawnAreaExtrema = InExtrema;
 }
 
 FVector USpawnArea::GenerateRandomOffset()
 {
+	#if !UE_BUILD_SHIPPING
+	if (GIsAutomationTesting)
+	{
+		const int32 RandomNum = FMath::RandRange(0, 3);
+		if (RandomNum == 0)
+		{
+			return FVector(0.f, 0.f, 0.f);
+		}
+		if (RandomNum == 1)
+		{
+			return FVector(0.f, Width - 1.f, 0.f);
+		}
+		if (RandomNum == 2)
+		{
+			return FVector(0.f, 0.f, Height - 1.f);
+		}
+		if (RandomNum == 3)
+		{
+			return FVector(0.f, Width - 1.f, Height - 1.f);
+		}
+	}
+	#endif
+	
 	const float Y = roundf(FMath::FRandRange(0.f, Width - 1.f));
 	const float Z = roundf(FMath::FRandRange(0.f, Height - 1.f));
 	return FVector(0.f, Y, Z);
+}
+
+float USpawnArea::CalcTraceRadius(const FVector& InScale)
+{
+	// Radius can never be less than half the max side dimension
+	const float MinRadius = FMath::Max(Width, Height) * 0.5f;
+
+	// Make Radius a multiple of the Spawn Area width or height
+	const float SnappedRadius = ceil(InScale.X * SphereTargetRadius / MinRadius) * MinRadius;
+
+	// Multiply by two so that any point outside the sphere will not be overlapping
+	// Square root of two is used to reach the diagonals from the bottom left vertex
+	return SnappedRadius * FMath::Sqrt(2.f) * 2.f;
 }
 
 bool USpawnArea::IsBorderingIndex(const int32 InIndex) const
@@ -295,41 +361,6 @@ TSet<int32> USpawnArea::GetAdjacentIndices(const TSet<EBorderingDirection>& Dire
 		}
 	}
 	return Out;
-}
-
-TSet<FVector> USpawnArea::MakeUnoccupiedVertices(const FVector& InScale) const
-{
-	TSet<FVector> OutValid;
-	
-	// Multiply by two so that any point outside the sphere will not be overlapping
-	float Radius = InScale.X * SphereTargetRadius * 2.0f + MinDistanceBetweenTargets * 0.5f;
-	
-	// Radius can never be less than MinOverlapRadius
-	Radius = FMath::Max(Radius, GetMinOverlapRadius());
-
-	// Add max of height/width to account for random spawning within a SpawnArea
-	Radius += FMath::Max(Width, Height);
-	
-	const FSphere Sphere = FSphere(Vertex_BottomLeft, Radius);
-	const int32 IncrementsInYRadius = Radius > Width ? floor(Radius / Width) : 1;
-	const int32 IncrementsInZRadius = Radius > Height ? floor(Radius / Height) : 1;
-
-	const float MinY = Vertex_BottomLeft.Y - IncrementsInYRadius * Width;
-	const float MaxY = Vertex_TopRight.Y + IncrementsInYRadius * Width;
-	const float MinZ = Vertex_BottomLeft.Z - IncrementsInZRadius * Height;
-	const float MaxZ = Vertex_TopRight.Z + IncrementsInZRadius * Height;
-	
-	for (float Z = MinZ; Z <= MaxZ; Z += Height)
-	{
-		for (float Y = MinY; Y <= MaxY; Y += Width)
-		{
-			if (FVector Vertex(Vertex_BottomLeft.X, Y, Z); !Sphere.IsInside(Vertex))
-			{
-				OutValid.Add(Vertex);
-			}
-		}
-	}
-	return OutValid;
 }
 
 void USpawnArea::IncrementTotalSpawns()
@@ -364,4 +395,11 @@ void USpawnArea::IncrementTotalTrackingDamagePossible()
 void USpawnArea::IncrementTotalTrackingDamage()
 {
 	TotalTrackingDamage++;
+}
+
+TSet<FVector> USpawnArea::SetMakeDebugOccupiedVertices(const FVector& InScale)
+{
+	DebugOccupiedVertices = MakeOccupiedVertices(InScale);
+	LastOccupiedVerticesTargetScale = InScale;
+	return DebugOccupiedVertices;
 }

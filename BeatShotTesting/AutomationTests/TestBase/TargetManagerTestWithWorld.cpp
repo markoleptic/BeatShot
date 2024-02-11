@@ -34,16 +34,35 @@ bool FTargetManagerTestWithWorld::InitTargetManager()
 	const UBlueprint* GeneratedBP = Cast<UBlueprint>(TargetManagerObj);
 	
 	const FActorSpawnParameters SpawnInfo = FActorSpawnParameters();
-	ATargetManager* Actor = World->SpawnActor<ATargetManager>(GeneratedBP->GeneratedClass,
+	TargetManager = World->SpawnActor<ATargetManager>(GeneratedBP->GeneratedClass,
 		DefaultTargetManagerLocation, FRotator::ZeroRotator, SpawnInfo);
-	Actor->AddToRoot();
-	Actor->DispatchBeginPlay();
-	TargetManager = MakeShareable(Actor);
-
-	if (!TargetManager.IsValid())
+	
+	if (!TargetManager)
 	{
 		AddError("Failed to spawn Target Manager");
 		return false;
 	}
+	
+	TargetManager->AddToRoot();
+	TargetManager->DispatchBeginPlay();
+	TargetManager->SpawnableSpawnAreasExecutionTimeDelegate.BindRaw(this,
+		&FTargetManagerTestWithWorld::OnSpawnableSpawnAreasExecutionTime);
+	
 	return true;
+}
+
+void FTargetManagerTestWithWorld::TickWorld(float Time)
+{
+	constexpr float Step = 0.1f;
+	while (Time > 0.f)
+	{
+		World->Tick(ELevelTick::LEVELTICK_All, FMath::Min(Time, Step));
+		Time -= Step;
+		GFrameCounter++;
+	}
+}
+
+void FTargetManagerTestWithWorld::OnSpawnableSpawnAreasExecutionTime(const double Time)
+{
+	TimeSpentInSpawnableSpawnAreas += Time;
 }

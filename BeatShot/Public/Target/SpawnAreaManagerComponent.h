@@ -440,12 +440,12 @@ public:
 	/* -- Finding Valid SpawnAreas for Spawn/Activation -- */
 	/* --------------------------------------------------- */
 
-	/** Returns an array of valid SpawnAreas filtered from the SpawnAreas array. Only considers SpawnAreas that
+	/** Returns a set of valid SpawnAreas filtered from the SpawnAreas array. Only considers SpawnAreas that
 	 *  are linked to a managed target since activatable requires being managed. Also considers the
 	 *  Target Activation Selection Policy */
 	TSet<USpawnArea*> GetActivatableSpawnAreas(const int32 NumToActivate) const;
 	
-	/** Returns an array of valid SpawnAreas filtered from the SpawnAreas array. Broadest search since SpawnAreas
+	/** Returns a set of valid SpawnAreas filtered from the SpawnAreas array. Broadest search since SpawnAreas
 	 *  do not have to be linked to a managed target to be considered. Also considers the Target Distribution Policy
 	 *  and Bounds Scaling Policy */
 	TSet<USpawnArea*> GetSpawnableSpawnAreas(const TArray<FVector>& Scales, const int32 NumToSpawn) const;

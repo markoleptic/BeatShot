@@ -13,7 +13,8 @@ class FTargetManagerTestWithWorld : public FTargetManagerTestBase
 	
 public:
 	FTargetManagerTestWithWorld(const FString& InName, const bool bInComplexTask):
-		Super(InName, bInComplexTask), World(nullptr), GameInstance(nullptr), InitialFrameCounter(0)
+		Super(InName, bInComplexTask), World(nullptr), GameInstance(nullptr), InitialFrameCounter(0),
+		TimeSpentInSpawnableSpawnAreas(0.0f)
 	{}
 	
 	virtual ~FTargetManagerTestWithWorld() override
@@ -32,9 +33,23 @@ public:
 	virtual bool InitTargetManager() override;
 	
 protected:
+	/** Ticks the World and increments GFrameCounter. */
+	void TickWorld(float Time);
+	
+	/** The World created in Init. */
 	UWorld* World;
+
+	/** Game Instance for the World. */
 	UGameInstance *GameInstance;
+
+	/** GFrameCounter prior to any increments. */
 	uint64 InitialFrameCounter;
+
+	/** Total time spent executing the GetSpawnableSpawnAreas function. */
+	double TimeSpentInSpawnableSpawnAreas;
+
+	/** Increments TimeSpentInSpawnableSpawnAreas. */
+	void OnSpawnableSpawnAreasExecutionTime(const double Time);
 };
 
 
