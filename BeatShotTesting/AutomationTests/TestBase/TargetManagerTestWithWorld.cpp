@@ -17,8 +17,15 @@ bool FTargetManagerTestWithWorld::Init()
 	World->InitializeActorsForPlay(FURL());
 	World->BeginPlay();
 	InitialFrameCounter = GFrameCounter;
-	
-	return Super::Init();
+
+	if (InitTargetManager())
+	{
+		bInitialized = true;
+		return true;
+	}
+
+	AddError("Failed Initialization");
+	return false;
 }
 
 bool FTargetManagerTestWithWorld::InitTargetManager()
@@ -49,6 +56,43 @@ bool FTargetManagerTestWithWorld::InitTargetManager()
 		&FTargetManagerTestWithWorld::OnSpawnableSpawnAreasExecutionTime);
 	
 	return true;
+}
+
+bool FTargetManagerTestWithWorld::InitGameModeDataAsset(const FString& InPath) const
+{
+	if (GameModeDataAsset) return true;
+	
+	UObject* LoadedObject = StaticLoadObject(UBSGameModeDataAsset::StaticClass(), nullptr, *InPath);
+	if (!LoadedObject)
+	{
+		return false;
+	}
+
+	GameModeDataAsset = Cast<UBSGameModeDataAsset>(LoadedObject);
+	if (!GameModeDataAsset)
+	{
+		return false;
+	}
+
+	return true;
+}
+
+TObjectPtr<USpawnAreaManagerComponent> FTargetManagerTestWithWorld::GetSpawnAreaManager() const
+{
+	if (TargetManager)
+	{
+		return TargetManager->SpawnAreaManager;
+	}
+	return TObjectPtr<USpawnAreaManagerComponent>(nullptr);
+}
+
+TMap<FGuid, ATarget*> FTargetManagerTestWithWorld::GetManagedTargets() const
+{
+	if (TargetManager)
+	{
+		return TargetManager->ManagedTargets;
+	}
+	return TMap<FGuid, ATarget*>();
 }
 
 void FTargetManagerTestWithWorld::TickWorld(float Time)

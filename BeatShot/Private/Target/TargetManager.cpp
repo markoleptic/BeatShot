@@ -315,7 +315,7 @@ void ATargetManager::AddToManagedTargets(ATarget* SpawnTarget, USpawnArea* Spawn
 
 bool ATargetManager::ActivateTarget(ATarget* InTarget) const
 {
-	if (!InTarget || !SpawnAreaManager->IsSpawnAreaValid(SpawnAreaManager->FindSpawnArea(InTarget->GetGuid())))
+	if (!InTarget || !SpawnAreaManager->IsSpawnAreaValid(SpawnAreaManager->GetSpawnArea(InTarget->GetGuid())))
 	{
 		return false;
 	}
@@ -392,7 +392,7 @@ bool ATargetManager::ActivateTarget(ATarget* InTarget) const
 	
 	if (RLComponent->GetReinforcementLearningMode() != EReinforcementLearningMode::None && Previous)
 	{
-		if (const USpawnArea* Current = SpawnAreaManager->FindSpawnArea(InTarget->GetGuid()))
+		if (const USpawnArea* Current = SpawnAreaManager->GetSpawnArea(InTarget->GetGuid()))
 		{
 			RLComponent->AddToActiveTargetPairs(Previous->GetIndex(), Current->GetIndex());
 		}
@@ -914,7 +914,7 @@ void ATargetManager::OnTargetDamageEvent(FTargetDamageEvent& Event)
 	// Update RLC if settings permit
 	if (RLComponent->GetReinforcementLearningMode() != EReinforcementLearningMode::None)
 	{
-		if (const USpawnArea* Found = SpawnAreaManager->FindSpawnArea(Event.Guid))
+		if (const USpawnArea* Found = SpawnAreaManager->GetSpawnArea(Event.Guid))
 		{
 			RLComponent->SetActiveTargetPairReward(Found->GetIndex(), !Event.bDamagedSelf);
 		}

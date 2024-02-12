@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BSGameModeDataAsset.h"
 #include "Misc/AutomationTest.h"
 
 namespace TargetManagerTestHelpers
@@ -23,28 +22,11 @@ class FTargetManagerTestBase : public FAutomationTestBase
 {
 public:
 	FTargetManagerTestBase(const FString& InName, const bool bInComplexTask) : FAutomationTestBase(InName,
-		bInComplexTask), TargetManager(nullptr), GameModeDataAsset(nullptr), bInitialized(false),
-		GameModeDataAssetPath(TargetManagerTestHelpers::DefaultGameModeDataAssetPath)
+		bInComplexTask)
 	{}
 
 	virtual ~FTargetManagerTestBase() override
-	{
-		if (TargetManager)
-		{
-			if (AActor* Actor = Cast<AActor>(TargetManager))
-			{
-				Actor->RemoveFromRoot();
-				Actor->Destroy();
-			}
-		}
-		if (BSConfig.IsValid())
-		{
-			BSConfig.Reset();
-		}
-		TargetManager = nullptr;
-		BSConfig = nullptr;
-		GameModeDataAsset = nullptr;
-	}
+	{}
 
 	virtual uint32 GetTestFlags() const override
 	{
@@ -57,33 +39,4 @@ public:
 	
 	/** Initializes stuff. */
 	virtual bool Init();
-	
-protected:
-	/** Initializes the Target Manager. */
-	virtual bool InitTargetManager();
-
-	/** Initializes the Target Manager. */
-	virtual bool InitGameModeDataAsset();
-	
-	/** Returns the SpawnAreaManager. */
-	TObjectPtr<USpawnAreaManagerComponent> GetSpawnAreaManager() const;
-
-	/** Returns the ManagedTargets map. */
-	TMap<FGuid, ATarget*> GetManagedTargets() const;
-	
-	/** Pointer to the Target Manager. */
-	ATargetManager* TargetManager;
-
-	/** Shared pointer to the Game mode config. Should be initialized in actual tests. */
-	TSharedPtr<FBSConfig> BSConfig;
-
-	/** Pointer to Game Mode Data Asset containing read-only game mode config data.
-	 *  Mutable so that it can be set during GetTests. */
-	mutable UBSGameModeDataAsset* GameModeDataAsset;
-	
-	/** Whether or not Init has been called in the base class (FTargetManagerTestBase) */
-	bool bInitialized;
-
-	/** Path to pull the GameModeDataAsset from. Mutable so that it can be set during GetTests. */
-	mutable FString GameModeDataAssetPath;
 };

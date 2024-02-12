@@ -12,11 +12,15 @@ IMPLEMENT_CUSTOM_COMPLEX_AUTOMATION_TEST(FTestInit, FTargetManagerTestWithWorld,
 
 void FTestInit::GetTests(TArray<FString>& OutBeautifiedNames, TArray<FString>& OutTestCommands) const
 {
-	for (const auto GameMode : TEnumRange<EBaseGameMode>())
+	if (InitGameModeDataAsset(TargetManagerTestHelpers::DefaultGameModeDataAssetPath))
 	{
-		FString Out = UEnum::GetDisplayValueAsText(GameMode).ToString();
-		OutBeautifiedNames.Add(Out);
-		OutTestCommands.Add(FString::FromInt(static_cast<int32>(GameMode)));
+		for (const auto& Mode : GameModeDataAsset->GetDefaultGameModesMap())
+		{
+			const FString GameModeString = UEnum::GetDisplayValueAsText(Mode.Key.BaseGameMode).ToString();
+			OutBeautifiedNames.Add(GameModeString);
+			OutTestCommands.Add(GameModeString);
+			TestMap.Add(GameModeString, Mode.Value);
+		}
 	}
 }
 
@@ -24,19 +28,22 @@ bool FTestInit::RunTest(const FString& Parameters)
 {
 	if (!bInitialized)
 	{
-		GameModeDataAssetPath = TargetManagerTestHelpers::DefaultGameModeDataAssetPath;
 		if (!Init())
 		{
 			return false;
 		}
 	}
 
-	const FBS_DefiningConfig DefHard(EGameModeType::Preset, static_cast<EBaseGameMode>(FCString::Atoi(*Parameters)), "",
-		EGameModeDifficulty::Hard);
+	const auto FoundConfig = TestMap.Find(Parameters);
+	if (!FoundConfig)
+	{
+		AddError(FString::Printf(TEXT("Failed to find Config for Parameters: %s"), *Parameters));
+		return false;
+	}
 
-	BSConfig = MakeShareable(new FBSConfig(GameModeDataAsset->GetDefaultGameModesMap().FindRef(DefHard)));
-	const FPlayerSettings_Game GameSettings;
-	TargetManager->Init(BSConfig, GameSettings);
+	BSConfig = MakeShareable(new FBSConfig(*FoundConfig));
+	TargetManager->Init(BSConfig, FPlayerSettings_Game());
+	TargetManager->Clear();
 	
 	return true;
 }
