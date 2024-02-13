@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SaveGamePlayerSettings.h"
 #include "SaveLoadInterface.h"
 #include "SubmenuWidgets/SettingsWidgets/BSSettingCategoryWidget.h"
 #include "SettingsMenuWidget_AudioAnalyzer.generated.h"

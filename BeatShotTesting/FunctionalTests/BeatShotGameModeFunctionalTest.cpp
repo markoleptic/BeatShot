@@ -3,6 +3,9 @@
 
 #include "BeatShotGameModeFunctionalTest.h"
 #include "Algo/RandomShuffle.h"
+#include "Target/SpawnArea.h"
+#include "Target/SpawnAreaManagerComponent.h"
+#include "Target/Target.h"
 #include "Target/TargetManager.h"
 
 ABeatShotGameModeFunctionalTest::ABeatShotGameModeFunctionalTest()

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SaveGamePlayerSettings.h"
 #include "SaveLoadInterface.h"
 #include "Delegates/DelegateCombinations.h"
 #include "SubmenuWidgets/SettingsWidgets/BSSettingCategoryWidget.h"

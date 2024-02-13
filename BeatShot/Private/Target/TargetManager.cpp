@@ -9,6 +9,7 @@
 #include "Kismet/DataTableFunctionLibrary.h"
 #include "Target/ReinforcementLearningComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Target/SpawnArea.h"
 #include "Target/SpawnAreaManagerComponent.h"
 
 FVector (&RandBoxPoint)(const FVector Center, const FVector Extents) = UKismetMathLibrary::RandomPointInBoundingBox;
@@ -37,7 +38,6 @@ ATargetManager::ATargetManager()
 
 	CurrentStreak = 0;
 	BSConfig = nullptr;
-	PlayerSettings = FPlayerSettings_Game();
 	ShouldSpawn = false;
 	LastTargetDamageType = ETargetDamageType::Tracking;
 	CurrentTargetScale = FVector(1.f);
@@ -99,13 +99,12 @@ void ATargetManager::Init(const TSharedPtr<FBSConfig>& InConfig, const FPlayerSe
 {
 	Clear();
 	BSConfig = InConfig;
-	PlayerSettings = InPlayerSettings;
 	
 	// Initialize target colors
-	GetBSConfig()->InitColors(PlayerSettings.bUseSeparateOutlineColor, PlayerSettings.InactiveTargetColor,
-		PlayerSettings.TargetOutlineColor, PlayerSettings.StartTargetColor, PlayerSettings.PeakTargetColor,
-		PlayerSettings.EndTargetColor, PlayerSettings.TakingTrackingDamageColor,
-		PlayerSettings.NotTakingTrackingDamageColor);
+	GetBSConfig()->InitColors(InPlayerSettings.bUseSeparateOutlineColor, InPlayerSettings.InactiveTargetColor,
+		InPlayerSettings.TargetOutlineColor, InPlayerSettings.StartTargetColor, InPlayerSettings.PeakTargetColor,
+		InPlayerSettings.EndTargetColor, InPlayerSettings.TakingTrackingDamageColor,
+		InPlayerSettings.NotTakingTrackingDamageColor);
 
 	// Set SpawnBox location & BoxExtent, StaticExtents, and StaticExtrema
 	SpawnBox->SetRelativeLocation(GenerateStaticLocation(GetBSConfig().Get()));
@@ -205,7 +204,6 @@ void ATargetManager::Clear()
 	}
 	CurrentStreak = 0;
 	BSConfig = nullptr;
-	PlayerSettings = FPlayerSettings_Game();
 	LastTargetDamageType = ETargetDamageType::Tracking;
 	CurrentTargetScale = FVector(1.f);
 	StaticExtrema = FExtrema();
@@ -1393,12 +1391,11 @@ float ATargetManager::GetCurveTableValue(const bool bIsSpawnArea, const int32 In
 
 void ATargetManager::UpdatePlayerSettings(const FPlayerSettings_Game& InPlayerSettings)
 {
-	PlayerSettings = InPlayerSettings;
 	if (!ManagedTargets.IsEmpty())
 	{
 		for (const auto TargetPair : ManagedTargets)
 		{
-			TargetPair.Value->UpdatePlayerSettings(PlayerSettings);
+			TargetPair.Value->UpdatePlayerSettings(InPlayerSettings);
 		}
 	}
 }

@@ -5,6 +5,7 @@
 
 #include "BSGameInstance.h"
 #include "Components/AudioComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "SubMenuWidgets/GameModesWidgets/GameModesWidget.h"
 #include "SubMenuWidgets/GameModesWidgets/CGMW_CreatorView.h"
 #include "Target/TargetManagerPreview.h"

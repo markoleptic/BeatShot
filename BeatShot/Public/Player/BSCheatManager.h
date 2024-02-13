@@ -7,7 +7,6 @@
 #include "BSCheatManager.generated.h"
 
 class UGameplayAbility;
-class USpawnAreaManagerComponent;
 
 /** Creates a UObject delegate binding a TAutoConsoleVariable to the given object and function. */
 #define BIND_BS_CVAR(Variable, Object, Function) \

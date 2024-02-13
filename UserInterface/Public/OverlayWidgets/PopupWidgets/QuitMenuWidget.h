@@ -3,11 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SaveLoadInterface.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/TextBlock.h"
 #include "QuitMenuWidget.generated.h"
 
+struct FGameModeTransitionState;
 DECLARE_DYNAMIC_DELEGATE(FOnExitQuitMenu);
 
 class UTextBlock;
@@ -51,7 +51,7 @@ public:
 	FOnExitQuitMenu OnExitQuitMenu;
 
 	/** Bound to DefaultGameInstance when constructed in DefaultPlayerController */
-	FOnGameModeStateChanged OnGameModeStateChanged;
+	TMulticastDelegate<void(const FGameModeTransitionState& TransitionState)> OnGameModeStateChanged;
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))

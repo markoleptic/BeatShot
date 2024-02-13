@@ -37,6 +37,8 @@ ENUM_RANGE_BY_FIRST_AND_LAST(UStreamlineDLSSGMode, UStreamlineDLSSGMode::Off, US
 
 ENUM_RANGE_BY_FIRST_AND_LAST(EWindowMode::Type, EWindowMode::Type::Fullscreen, EWindowMode::Type::WindowedFullscreen);
 
+using namespace Constants;
+
 void USettingsMenuWidget_VideoAndSound::NativeConstruct()
 {
 	Super::NativeConstruct();

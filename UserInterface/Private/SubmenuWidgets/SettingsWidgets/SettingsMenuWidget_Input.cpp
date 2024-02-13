@@ -2,14 +2,12 @@
 
 
 #include "SubMenuWidgets/SettingsWidgets/SettingsMenuWidget_Input.h"
-#include "WidgetComponents/InputMappingWidget.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
-#include "PlayerMappableKeySettings.h"
+#include "SaveGamePlayerSettings.h"
 #include "Components/EditableTextBox.h"
 #include "Components/InputKeySelector.h"
 #include "Components/ScrollBox.h"
-#include "UserSettings/EnhancedInputUserSettings.h"
 #include "WidgetComponents/Buttons/BSButton.h"
 #include "WidgetComponents/SavedTextWidget.h"
 #include "WidgetComponents/MenuOptionWidgets/EditableTextBoxOptionWidget.h"
@@ -24,7 +22,7 @@ void USettingsMenuWidget_Input::NativeConstruct()
 	MenuOption_CurrentSensitivity->EditableTextBox->SetJustification(ETextJustify::Type::Center);
 
 	MenuOption_NewSensitivity->SetValues(0, 100, 0.001);
-	MenuOption_NewSensitivityCsgo->SetValues(0, 100 * CsgoMultiplier, 0.001);
+	MenuOption_NewSensitivityCsgo->SetValues(0, 100 * Constants::CsgoMultiplier, 0.001);
 
 	MenuOption_NewSensitivity->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
 	MenuOption_NewSensitivityCsgo->OnSliderTextBoxValueChanged.
@@ -66,7 +64,7 @@ void USettingsMenuWidget_Input::InitializeInputSettings(const TMap<FName, FKeyMa
 
 	MenuOption_CurrentSensitivity->EditableTextBox->SetText(FText::AsNumber(Sensitivity));
 	MenuOption_NewSensitivity->SetValue(Sensitivity);
-	MenuOption_NewSensitivityCsgo->SetValue(Sensitivity * CsgoMultiplier);
+	MenuOption_NewSensitivityCsgo->SetValue(Sensitivity * Constants::CsgoMultiplier);
 
 	TMap<FName, FKeyMappingRow> Rows = InPlayerMappedRows;
 	if (InPlayerMappedRows.IsEmpty())
@@ -211,13 +209,13 @@ void USettingsMenuWidget_Input::OnSliderTextBoxValueChanged(USliderTextBoxOption
 {
 	if (Widget == MenuOption_NewSensitivity)
 	{
-		MenuOption_NewSensitivityCsgo->SetValue(Value * CsgoMultiplier);
+		MenuOption_NewSensitivityCsgo->SetValue(Value * Constants::CsgoMultiplier);
 		Sensitivity = Value;
 	}
 	else if (Widget == MenuOption_NewSensitivityCsgo)
 	{
-		MenuOption_NewSensitivity->SetValue(Value / CsgoMultiplier);
-		Sensitivity = Value / CsgoMultiplier;
+		MenuOption_NewSensitivity->SetValue(Value / Constants::CsgoMultiplier);
+		Sensitivity = Value / Constants::CsgoMultiplier;
 	}
 }
 

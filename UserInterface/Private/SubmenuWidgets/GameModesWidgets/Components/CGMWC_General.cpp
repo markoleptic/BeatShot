@@ -9,6 +9,7 @@
 #include "WidgetComponents/MenuOptionWidgets/SliderTextBoxCheckBoxOptionWidget.h"
 #include "WidgetComponents/MenuOptionWidgets/SliderTextBoxOptionWidget.h"
 
+using namespace Constants;
 
 void UCGMWC_General::NativeConstruct()
 {

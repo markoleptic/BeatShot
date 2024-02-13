@@ -13,8 +13,6 @@
 #include "UserSettings/EnhancedInputUserSettings.h"
 #include "SaveGamePlayerSettings.generated.h"
 
-using namespace Constants;
-
 /** Nvidia DLSS Enabled Mode */
 UENUM(BlueprintType)
 enum class EDLSSEnabledMode : uint8
@@ -125,15 +123,15 @@ struct FPlayerSettings_Game
 	FPlayerSettings_Game()
 	{
 		bShowStreakCombatText = true;
-		CombatTextFrequency = DefaultCombatTextFrequency;
-		StartTargetColor = DefaultStartTargetColor;
-		PeakTargetColor = DefaultPeakTargetColor;
-		EndTargetColor = DefaultEndTargetColor;
+		CombatTextFrequency = Constants::DefaultCombatTextFrequency;
+		StartTargetColor = Constants::DefaultStartTargetColor;
+		PeakTargetColor = Constants::DefaultPeakTargetColor;
+		EndTargetColor = Constants::DefaultEndTargetColor;
 		bUseSeparateOutlineColor = false;
-		TargetOutlineColor = DefaultTargetOutlineColor;
-		InactiveTargetColor = DefaultInactiveTargetColor;
-		TakingTrackingDamageColor = DefaultTakingTrackingDamageColor;
-		NotTakingTrackingDamageColor = DefaultNotTakingTrackingDamageColor;
+		TargetOutlineColor = Constants::DefaultTargetOutlineColor;
+		InactiveTargetColor = Constants::DefaultInactiveTargetColor;
+		TakingTrackingDamageColor = Constants::DefaultTakingTrackingDamageColor;
+		NotTakingTrackingDamageColor = Constants::DefaultNotTakingTrackingDamageColor;
 		bShouldRecoil = false;
 		bAutomaticFire = true;
 		bShowBulletDecals = true;
@@ -156,15 +154,15 @@ struct FPlayerSettings_Game
 	void ResetToDefault()
 	{
 		bShowStreakCombatText = true;
-		CombatTextFrequency = DefaultCombatTextFrequency;
-		StartTargetColor = DefaultStartTargetColor;
-		PeakTargetColor = DefaultPeakTargetColor;
-		EndTargetColor = DefaultEndTargetColor;
+		CombatTextFrequency = Constants::DefaultCombatTextFrequency;
+		StartTargetColor = Constants::DefaultStartTargetColor;
+		PeakTargetColor = Constants::DefaultPeakTargetColor;
+		EndTargetColor = Constants::DefaultEndTargetColor;
 		bUseSeparateOutlineColor = false;
-		TargetOutlineColor = DefaultTargetOutlineColor;
-		InactiveTargetColor = DefaultInactiveTargetColor;
-		TakingTrackingDamageColor = DefaultTakingTrackingDamageColor;
-		NotTakingTrackingDamageColor = DefaultNotTakingTrackingDamageColor;
+		TargetOutlineColor = Constants::DefaultTargetOutlineColor;
+		InactiveTargetColor = Constants::DefaultInactiveTargetColor;
+		TakingTrackingDamageColor = Constants::DefaultTakingTrackingDamageColor;
+		NotTakingTrackingDamageColor = Constants::DefaultNotTakingTrackingDamageColor;
 		bShouldRecoil = false;
 		bAutomaticFire = true;
 		bShowBulletDecals = true;
@@ -238,11 +236,11 @@ struct FPlayerSettings_VideoAndSound
 
 	FPlayerSettings_VideoAndSound()
 	{
-		GlobalVolume = DefaultGlobalVolume;
-		MenuVolume = DefaultMenuVolume;
-		MusicVolume = DefaultMusicVolume;
-		FrameRateLimitMenu = DefaultFrameRateLimitMenu;
-		FrameRateLimitGame = DefaultFrameRateLimitGame;
+		GlobalVolume = Constants::DefaultGlobalVolume;
+		MenuVolume = Constants::DefaultMenuVolume;
+		MusicVolume = Constants::DefaultMusicVolume;
+		FrameRateLimitMenu = Constants::DefaultFrameRateLimitMenu;
+		FrameRateLimitGame = Constants::DefaultFrameRateLimitGame;
 		bShowFPSCounter = false;
 		DLSSEnabledMode = EDLSSEnabledMode::On;
 		FrameGenerationEnabledMode = UStreamlineDLSSGMode::On;
@@ -257,15 +255,15 @@ struct FPlayerSettings_VideoAndSound
 
 	float GetPostProcessBiasFromBrightness() const
 	{
-		return FMath::GetMappedRangeValueClamped(FVector2D(MinValue_Brightness, MaxValue_Brightness),
-			FVector2D(MinValue_ExposureCompensation, MaxValue_ExposureCompensation), Brightness);
+		return FMath::GetMappedRangeValueClamped(FVector2D(Constants::MinValue_Brightness, Constants::MaxValue_Brightness),
+			FVector2D(Constants::MinValue_ExposureCompensation, Constants::MaxValue_ExposureCompensation), Brightness);
 	}
 
 	static float GetBrightnessFromPostProcessBias(const float InBias)
 	{
 		return FMath::GetMappedRangeValueClamped(
-			FVector2D(MinValue_ExposureCompensation, MaxValue_ExposureCompensation),
-			FVector2D(MinValue_Brightness, MaxValue_Brightness), InBias);
+			FVector2D(Constants::MinValue_ExposureCompensation, Constants::MaxValue_ExposureCompensation),
+			FVector2D(Constants::MinValue_Brightness, Constants::MaxValue_Brightness), InBias);
 	}
 };
 
@@ -299,7 +297,7 @@ struct FPlayerSettings_User
 
 	FPlayerSettings_User()
 	{
-		Sensitivity = DefaultSensitivity;
+		Sensitivity = Constants::DefaultSensitivity;
 		UserID = FString();
 		RefreshCookie = FString();
 		bNightModeUnlocked = false;
@@ -382,17 +380,17 @@ struct FPlayerSettings_CrossHair
 
 	FPlayerSettings_CrossHair()
 	{
-		LineWidth = DefaultLineWidth;
-		LineLength = DefaultLineLength;
-		InnerOffset = DefaultInnerOffset;
-		CrossHairColor = DefaultCrossHairColor;
+		LineWidth = Constants::DefaultLineWidth;
+		LineLength = Constants::DefaultLineLength;
+		InnerOffset = Constants::DefaultInnerOffset;
+		CrossHairColor = Constants::DefaultCrossHairColor;
 
-		OutlineColor = DefaultCrossHairOutlineColor;
-		OutlineSize = DefaultOutlineSize;
+		OutlineColor = Constants::DefaultCrossHairOutlineColor;
+		OutlineSize = Constants::DefaultOutlineSize;
 
 		bShowCrossHairDot = false;
-		CrossHairDotColor = DefaultCrossHairColor;
-		CrossHairDotSize = DefaultCrossHairDotSize;
+		CrossHairDotColor = Constants::DefaultCrossHairColor;
+		CrossHairDotSize = Constants::DefaultCrossHairDotSize;
 	}
 };
 
@@ -433,13 +431,13 @@ struct FPlayerSettings_AudioAnalyzer
 
 	FPlayerSettings_AudioAnalyzer()
 	{
-		BandLimits = DefaultBandLimits;
+		BandLimits = Constants::DefaultBandLimits;
 		BandLimitsThreshold = TArray<float>();
-		BandLimitsThreshold.Init(DefaultBandLimitThreshold, DefaultNumBandChannels);
-		NumBandChannels = DefaultNumBandChannels;
-		TimeWindow = DefaultTimeWindow;
-		HistorySize = DefaultHistorySize;
-		MaxNumBandChannels = DefaultMaxNumBandChannels;
+		BandLimitsThreshold.Init(Constants::DefaultBandLimitThreshold, Constants::DefaultNumBandChannels);
+		NumBandChannels = Constants::DefaultNumBandChannels;
+		TimeWindow = Constants::DefaultTimeWindow;
+		HistorySize = Constants::DefaultHistorySize;
+		MaxNumBandChannels = Constants::DefaultMaxNumBandChannels;
 		LastSelectedInputAudioDevice = "";
 		LastSelectedOutputAudioDevice = "";
 	}
@@ -447,13 +445,13 @@ struct FPlayerSettings_AudioAnalyzer
 	/** Resets all settings to default, but keeps audio device information */
 	void ResetToDefault()
 	{
-		BandLimits = DefaultBandLimits;
+		BandLimits = Constants::DefaultBandLimits;
 		BandLimitsThreshold = TArray<float>();
-		BandLimitsThreshold.Init(DefaultBandLimitThreshold, DefaultNumBandChannels);
-		NumBandChannels = DefaultNumBandChannels;
-		TimeWindow = DefaultTimeWindow;
-		HistorySize = DefaultHistorySize;
-		MaxNumBandChannels = DefaultMaxNumBandChannels;
+		BandLimitsThreshold.Init(Constants::DefaultBandLimitThreshold, Constants::DefaultNumBandChannels);
+		NumBandChannels = Constants::DefaultNumBandChannels;
+		TimeWindow = Constants::DefaultTimeWindow;
+		HistorySize = Constants::DefaultHistorySize;
+		MaxNumBandChannels = Constants::DefaultMaxNumBandChannels;
 	}
 };
 

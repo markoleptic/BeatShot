@@ -3,7 +3,6 @@
 
 #include "Target/SpawnArea.h"
 #include "GlobalConstants.h"
-#include "Target/SpawnAreaManagerComponent.h"
 
 using namespace Constants;
 

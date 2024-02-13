@@ -3,6 +3,7 @@
 
 #include "Equipment/BSKnife.h"
 #include "BSGameInstance.h"
+#include "SaveGamePlayerSettings.h"
 
 
 ABSKnife::ABSKnife()

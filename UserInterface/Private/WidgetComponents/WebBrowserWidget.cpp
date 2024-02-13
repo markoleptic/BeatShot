@@ -5,6 +5,8 @@
 #include "TimerManager.h"
 #include "WebBrowser.h"
 
+using namespace Constants;
+
 void UWebBrowserWidget::NativeConstruct()
 {
 	Super::NativeConstruct();

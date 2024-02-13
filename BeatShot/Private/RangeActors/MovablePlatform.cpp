@@ -110,15 +110,15 @@ void AMovablePlatform::InterpFloorElevation(const float DeltaSeconds)
 	switch (PlatformTransitionType)
 	{
 	case EPlatformTransitionType::MoveUpByInteract:
-		Location = UKismetMathLibrary::VInterpTo_Constant(Floor->GetComponentLocation(), MaxFloorHeight, DeltaSeconds,
+		Location = UKismetMathLibrary::VInterpTo_Constant(Floor->GetComponentLocation(), Constants::MaxFloorHeight, DeltaSeconds,
 			75);
 		break;
 	case EPlatformTransitionType::MoveDownByInteract:
-		Location = UKismetMathLibrary::VInterpTo_Constant(Floor->GetComponentLocation(), MinFloorHeight, DeltaSeconds,
+		Location = UKismetMathLibrary::VInterpTo_Constant(Floor->GetComponentLocation(), Constants::MinFloorHeight, DeltaSeconds,
 			75);
 		break;
 	case EPlatformTransitionType::MoveDownByStepOff:
-		Location = UKismetMathLibrary::VInterpTo_Constant(Floor->GetComponentLocation(), MinFloorHeight, DeltaSeconds,
+		Location = UKismetMathLibrary::VInterpTo_Constant(Floor->GetComponentLocation(), Constants::MinFloorHeight, DeltaSeconds,
 			75);
 		break;
 	case EPlatformTransitionType::None:

@@ -2,47 +2,24 @@
 
 #pragma once
 
-#include "BSGameModeDataAsset.h"
-#include "SaveGamePlayerScore.h"
-#include "SaveGamePlayerSettings.h"
-#include "Kismet/GameplayStatics.h"
 #include "SaveLoadInterface.generated.h"
 
+struct FCommonScoreInfo;
+struct FBS_DefiningConfig;
+struct FPlayerScore;
+enum class EBaseGameMode : uint8;
+enum class EGameModeDifficulty : uint8;
 class USaveGamePlayerSettings;
 class USaveGameCustomGameMode;
 class USaveGamePlayerScore;
 class UBSGameModeDataAsset;
-
-/** The transition state describing the start state and end state of a transition */
-UENUM(BlueprintType)
-enum class ETransitionState : uint8
-{
-	StartFromMainMenu UMETA(DisplayName="StartFromMainMenu"),
-	StartFromPostGameMenu UMETA(DisplayName="StartFromPostGameMenu"),
-	Restart UMETA(DisplayName="Restart"),
-	QuitToMainMenu UMETA(DisplayName="QuitToMainMenu"),
-	QuitToDesktop UMETA(DisplayName="QuitToDesktop"),
-	PlayAgain UMETA(DisplayName="PlayAgain"),
-	None UMETA(DisplayName="None")
-};
-
-ENUM_RANGE_BY_FIRST_AND_LAST(ETransitionState, ETransitionState::StartFromMainMenu, ETransitionState::None);
-
-/** Information about the transition state of the game */
-USTRUCT()
-struct FGameModeTransitionState
-{
-	GENERATED_BODY()
-
-	/** The game mode transition to perform */
-	ETransitionState TransitionState;
-
-	/** Whether or not to save current scores if the transition is Restart or Quit */
-	bool bSaveCurrentScores;
-
-	/** The game mode properties, only used if Start or Restart */
-	FBSConfig BSConfig;
-};
+struct FPlayerSettings;
+struct FPlayerSettings_Game;
+struct FPlayerSettings_User;
+struct FPlayerSettings_VideoAndSound;
+struct FPlayerSettings_AudioAnalyzer;
+struct FPlayerSettings_CrossHair;
+struct FBSConfig;
 
 /** Broadcast when game specific settings are changed and saved */
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnPlayerSettingsChanged_Game, const FPlayerSettings_Game& GameSettings);
@@ -62,8 +39,6 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FOnPlayerSettingsChanged_CrossHair, const FP
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnPlayerSettingsChanged_VideoAndSound,
 	const FPlayerSettings_VideoAndSound& VideoAndSoundSettings);
 
-/** Broadcast from GameModesWidget, SettingsMenuWidget, PauseMenuWidget, and PostGameMenuWidget any time the game should start, restart, or stop */
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnGameModeStateChanged, const FGameModeTransitionState& TransitionState);
 
 /** Interface to allow all other classes in this game to query, load, and save all settings */
 UINTERFACE()
@@ -81,7 +56,7 @@ private:
 	template <typename T>
 	/** Performs the loading from SaveGame slot and returns the USaveGamePlayerScore object */
 	static T* LoadFromSlot(const FString& InSlotName, const int32 InSlotIndex);
-
+	
 	/** Performs the loading from SaveGame slot and returns the USaveGamePlayerScore object */
 	static USaveGamePlayerScore* LoadFromSlot_SaveGamePlayerScore();
 
@@ -234,23 +209,3 @@ protected:
 	/** The delegate that is broadcast when this class saves VideoAndSound settings */
 	FOnPlayerSettingsChanged_VideoAndSound OnPlayerSettingsChangedDelegate_VideoAndSound;
 };
-
-template <typename T>
-T* ISaveLoadInterface::LoadFromSlot(const FString& InSlotName, const int32 InSlotIndex)
-{
-	if (UGameplayStatics::DoesSaveGameExist(InSlotName, InSlotIndex))
-	{
-		if (T* SaveGameObject = Cast<T>(UGameplayStatics::LoadGameFromSlot(InSlotName, InSlotIndex)))
-		{
-			return SaveGameObject;
-		}
-	}
-	else
-	{
-		if (T* SaveGameObject = Cast<T>(UGameplayStatics::CreateSaveGameObject(T::StaticClass())))
-		{
-			return SaveGameObject;
-		}
-	}
-	return nullptr;
-}

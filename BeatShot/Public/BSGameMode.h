@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "HttpRequestInterface.h"
+#include "SaveGamePlayerSettings.h"
 #include "SaveLoadInterface.h"
 #include "AbilitySystem/Globals/BSAbilitySet.h"
 #include "GameFramework/GameMode.h"

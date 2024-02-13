@@ -42,7 +42,7 @@ bool FTargetManagerTestWithWorld::InitTargetManager()
 	
 	const FActorSpawnParameters SpawnInfo = FActorSpawnParameters();
 	TargetManager = World->SpawnActor<ATargetManager>(GeneratedBP->GeneratedClass,
-		DefaultTargetManagerLocation, FRotator::ZeroRotator, SpawnInfo);
+		Constants::DefaultTargetManagerLocation, FRotator::ZeroRotator, SpawnInfo);
 	
 	if (!TargetManager)
 	{

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SaveGamePlayerSettings.h"
 #include "SaveLoadInterface.h"
 #include "GameFramework/GameModeBase.h"
 #include "MainMenuGameMode.generated.h"

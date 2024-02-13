@@ -3,21 +3,19 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Target/Target.h"
 #include "SaveLoadInterface.h"
+#include "TargetCommon.h"
 #include "GameFramework/Actor.h"
-#include "SpawnAreaManagerComponent.h"
-#include "Components/BoxComponent.h"
 #include "TargetManager.generated.h"
 
 class UCompositeCurveTable;
 class ATarget;
+class USpawnArea;
+class UBoxComponent;
 class UReinforcementLearningComponent;
-
-DECLARE_DELEGATE_OneParam(FOnBeatTrackDirectionChanged, const FVector& Vector);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnTargetActivated, const ETargetDamageType& DamageType);
-DECLARE_MULTICAST_DELEGATE_OneParam(FPostTargetDamageEvent, const FTargetDamageEvent& Event);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnTargetActivated_AimBot, ATarget* Target);
+class USpawnAreaManagerComponent;
+struct FAccuracyData;
+struct FPlayerSettings_Game;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTargetManager, Log, All);
 
@@ -288,9 +286,6 @@ protected:
 	
 	/** Initialized at start of game mode by DefaultGameMode */
 	TSharedPtr<FBSConfig> BSConfig;
-
-	/** Settings that get updated by DefaultGameMode if they change */
-	FPlayerSettings_Game PlayerSettings;
 
 	/** Whether or not the TargetManager is allowed to spawn a target at a given time */
 	bool ShouldSpawn;

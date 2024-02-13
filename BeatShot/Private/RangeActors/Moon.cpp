@@ -6,8 +6,6 @@
 #include "Components/SphereComponent.h"
 #include "Components/DirectionalLightComponent.h"
 
-using namespace Constants;
-
 AMoon::AMoon()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -16,22 +14,22 @@ AMoon::AMoon()
 	SphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
 	RootComponent = SphereComponent;
 	SphereComponent->SetMobility(EComponentMobility::Movable);
-	SphereComponent->SetSphereRadius(MoonOrbitRadius);
+	SphereComponent->SetSphereRadius(Constants::MoonOrbitRadius);
 
 	MoonMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MoonMesh"));
 	MoonMesh->SetupAttachment(SphereComponent);
-	MoonMesh->SetRelativeLocation(MoonMeshOffset);
-	MoonMesh->SetWorldScale3D(MoonMeshScale);
+	MoonMesh->SetRelativeLocation(Constants::MoonMeshOffset);
+	MoonMesh->SetWorldScale3D(Constants::MoonMeshScale);
 	MoonMesh->SetMobility(EComponentMobility::Movable);
 
 	MoonGlowMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MoonGlowMesh"));
 	MoonGlowMesh->SetupAttachment(MoonMesh);
-	MoonGlowMesh->SetWorldScale3D(MoonGlowMeshScale);
+	MoonGlowMesh->SetWorldScale3D(Constants::MoonGlowMeshScale);
 	MoonGlowMesh->SetMobility(EComponentMobility::Movable);
 
 	MoonLight = CreateDefaultSubobject<UDirectionalLightComponent>(TEXT("MoonLight"));
 	MoonLight->SetupAttachment(MoonMesh);
-	MoonLight->SetWorldScale3D(MoonLightScale);
+	MoonLight->SetWorldScale3D(Constants::MoonLightScale);
 	MoonLight->SetMobility(EComponentMobility::Movable);
 }
 

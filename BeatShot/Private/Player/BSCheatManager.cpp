@@ -4,6 +4,8 @@
 // ReSharper disable CppMemberFunctionMayBeConst
 // ReSharper disable CppParameterMayBeConstPtrOrRef
 #include "Player/BSCheatManager.h"
+
+
 #if !UE_BUILD_SHIPPING
 #include "AbilitySystemComponent.h"
 #include "BSGameInstance.h"
@@ -11,6 +13,9 @@
 #include "BSGameMode.h"
 #include "Player/BSPlayerController.h"
 #include "Target/TargetManager.h"
+#include "Components/BoxComponent.h"
+#include "Target/SpawnAreaManagerComponent.h"
+#include "Target/ReinforcementLearningComponent.h"
 #include "AbilitySystem/BSAbilitySystemComponent.h"
 #include "AbilitySystem/Abilities/BSGA_AimBot.h"
 #include "Kismet/GameplayStatics.h"

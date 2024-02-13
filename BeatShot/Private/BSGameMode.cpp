@@ -863,7 +863,7 @@ float ABSGameMode::FloatDivide(const float Num, const float Denom)
 float ABSGameMode::GetScoreFromTimeAlive(const float InTimeAlive) const
 {
 	// Perfect shot
-	if (GetAbsHitTimingError(InTimeAlive) < PerfectScoreTimeThreshold / 2.f)
+	if (GetAbsHitTimingError(InTimeAlive) < Constants::PerfectScoreTimeThreshold / 2.f)
 	{
 		return MaxScorePerTarget;
 	}
@@ -873,7 +873,7 @@ float ABSGameMode::GetScoreFromTimeAlive(const float InTimeAlive) const
 	if (InTimeAlive < BSConfig->TargetConfig.SpawnBeatDelay)
 	{
 		const float MinEarlyShot = 0.f;
-		const float MaxEarlyShot = BSConfig->TargetConfig.SpawnBeatDelay - PerfectScoreTimeThreshold / 2.f;
+		const float MaxEarlyShot = BSConfig->TargetConfig.SpawnBeatDelay - Constants::PerfectScoreTimeThreshold / 2.f;
 		const FVector2d InputRange = FVector2d(MinEarlyShot, MaxEarlyShot);
 		const float LerpValue = FMath::GetMappedRangeValueClamped(InputRange, FVector2D(0.f, 1.f), InTimeAlive);
 
@@ -883,7 +883,7 @@ float ABSGameMode::GetScoreFromTimeAlive(const float InTimeAlive) const
 	}
 
 	// Late shot
-	const float MinLateShot = BSConfig->TargetConfig.SpawnBeatDelay + PerfectScoreTimeThreshold / 2.f;
+	const float MinLateShot = BSConfig->TargetConfig.SpawnBeatDelay + Constants::PerfectScoreTimeThreshold / 2.f;
 	const float MaxLateShot = BSConfig->TargetConfig.TargetMaxLifeSpan;
 	const FVector2d InputRange = FVector2d(MinLateShot, MaxLateShot);
 	const float LerpValue = FMath::GetMappedRangeValueClamped(InputRange, FVector2D(0.f, 1.f), InTimeAlive);

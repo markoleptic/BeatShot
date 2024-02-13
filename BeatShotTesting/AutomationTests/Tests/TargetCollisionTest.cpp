@@ -1,8 +1,10 @@
 ﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #include "CoreMinimal.h"
+#include "SaveGamePlayerSettings.h"
 #include "../TestBase/TargetManagerTestWithWorld.h"
 #include "Target/TargetManager.h"
+#include "Target/Target.h"
 
 class FTargetCollisionTest : public FTargetManagerTestWithWorld
 {
@@ -129,7 +131,7 @@ TArray<FSphere> FTargetCollisionTest::GetSpheresFromTargets(const TMap<FGuid, AT
 	TArray<FSphere> Spheres;
 	for (auto [Guid, Target] : ManagedTargets)
 	{
-		Spheres.Emplace(FSphere(Target->GetActorLocation(), Target->GetTargetScale_Current().X * SphereTargetRadius));
+		Spheres.Emplace(FSphere(Target->GetActorLocation(), Target->GetTargetScale_Current().X * Constants::SphereTargetRadius));
 		Target->DamageSelf(true);
 		TickWorld(UE_KINDA_SMALL_NUMBER);
 	}

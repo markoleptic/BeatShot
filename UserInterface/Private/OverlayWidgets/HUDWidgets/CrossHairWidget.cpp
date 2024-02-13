@@ -2,6 +2,7 @@
 
 
 #include "OverlayWidgets/HUDWidgets/CrossHairWidget.h"
+#include "SaveGamePlayerSettings.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Components/Image.h"
 #include "Components/Overlay.h"

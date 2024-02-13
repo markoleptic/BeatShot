@@ -1,6 +1,7 @@
 ﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #include "CoreMinimal.h"
+#include "SaveGamePlayerSettings.h"
 #include "../TestBase/TargetManagerTestWithWorld.h"
 #include "Target/TargetManager.h"
 

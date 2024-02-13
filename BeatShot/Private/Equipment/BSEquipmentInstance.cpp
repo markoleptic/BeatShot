@@ -11,6 +11,7 @@
 #include "Equipment/BSGun.h"
 #include "GameFramework/Actor.h"
 #include "GameFramework/Pawn.h"
+#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 
 UBSEquipmentInstance::UBSEquipmentInstance()

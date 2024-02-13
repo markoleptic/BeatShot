@@ -32,7 +32,7 @@ void IHttpRequestInterface::RequestAccessToken(const FString RefreshToken,
 	TSharedPtr<FAccessTokenResponse, ESPMode::ThreadSafe> AccessTokenResponse)
 {
 	const FHttpRequestRef HttpRequest = FHttpModule::Get().CreateRequest();
-	HttpRequest->SetURL(Endpoint_Refresh);
+	HttpRequest->SetURL(Constants::Endpoint_Refresh);
 	HttpRequest->SetVerb("GET");
 	HttpRequest->SetTimeout(5.f);
 	HttpRequest->SetHeader("Cookie", RefreshToken);
@@ -82,7 +82,7 @@ void IHttpRequestInterface::LoginUser(const FLoginPayload LoginPayload,
 	FJsonSerializer::Serialize(JsonObject, JsonWriter);
 
 	const FHttpRequestRef HttpRequest = FHttpModule::Get().CreateRequest();
-	HttpRequest->SetURL(Endpoint_Login);
+	HttpRequest->SetURL(Constants::Endpoint_Login);
 	HttpRequest->SetVerb("POST");
 	HttpRequest->SetTimeout(5.f);
 	HttpRequest->SetHeader("Content-Type", "application/json");
@@ -148,7 +148,7 @@ void IHttpRequestInterface::PostPlayerScores(const TArray<FPlayerScore> ScoresTo
 	UE_LOG(LogTemp, Display, TEXT("FJsonScore: %s"), *ContentString);
 
 	const FHttpRequestRef HttpRequest = FHttpModule::Get().CreateRequest();
-	HttpRequest->SetURL(Segment_ApiProfile + UserID + "/savescores");
+	HttpRequest->SetURL(Constants::Segment_ApiProfile + UserID + "/savescores");
 	HttpRequest->SetVerb("POST");
 	HttpRequest->SetTimeout(5.f);
 	HttpRequest->SetHeader("Content-Type", "application/json");
@@ -196,7 +196,7 @@ void IHttpRequestInterface::PostFeedback(const FJsonFeedback InFeedback,
 	FJsonSerializer::Serialize(JsonObject, JsonWriter);
 
 	const FHttpRequestRef HttpRequest = FHttpModule::Get().CreateRequest();
-	HttpRequest->SetURL(Endpoint_SendFeedback);
+	HttpRequest->SetURL(Constants::Endpoint_SendFeedback);
 	HttpRequest->SetTimeout(5.f);
 	HttpRequest->SetVerb("POST");
 	HttpRequest->SetHeader("Content-Type", "application/json");
@@ -244,7 +244,7 @@ void IHttpRequestInterface::DeleteScores(const FString CustomGameModeName, const
 	FJsonSerializer::Serialize(JsonObject, JsonWriter);
 
 	const FHttpRequestRef HttpRequest = FHttpModule::Get().CreateRequest();
-	HttpRequest->SetURL(Segment_ApiProfile + UserID + "/deletescores");
+	HttpRequest->SetURL(Constants::Segment_ApiProfile + UserID + "/deletescores");
 	HttpRequest->SetTimeout(5.f);
 	HttpRequest->SetVerb("DELETE");
 	HttpRequest->SetHeader("Content-Type", "application/json");
@@ -294,7 +294,7 @@ void IHttpRequestInterface::AuthenticateSteamUser(const FString AuthTicket,
 	TSharedPtr<FSteamAuthTicketResponse, ESPMode::ThreadSafe> SteamAuthTicketResponse)
 {
 	const FHttpRequestRef HttpRequest = FHttpModule::Get().CreateRequest();
-	HttpRequest->SetURL(Endpoint_AuthenticateUserTicketNoRedirect + AuthTicket);
+	HttpRequest->SetURL(Constants::Endpoint_AuthenticateUserTicketNoRedirect + AuthTicket);
 	HttpRequest->SetTimeout(5.f);
 	HttpRequest->SetVerb("GET");
 	HttpRequest->OnProcessRequestComplete().BindLambda(

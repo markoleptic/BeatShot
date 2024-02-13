@@ -2,6 +2,8 @@
 
 
 #include "SubMenuWidgets/ScoreBrowserWidget.h"
+
+#include "SaveGamePlayerSettings.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "Components/Overlay.h"

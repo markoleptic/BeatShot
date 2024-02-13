@@ -4,7 +4,7 @@
 
 #include "SubMenuWidgets/GameModesWidgets/GameModesWidget.h"
 #include "CommonWidgetCarousel.h"
-#include "GlobalConstants.h"
+#include "SaveGamePlayerSettings.h"
 #include "Blueprint/WidgetTree.h"
 #include "Components/VerticalBox.h"
 #include "Components/Border.h"
@@ -20,7 +20,6 @@
 #include "SubMenuWidgets/GameModesWidgets/Components/CGMWC_Preview.h"
 #include "WidgetComponents/MenuOptionWidgets/DefaultGameModeOptionWidget.h"
 
-using namespace Constants;
 
 void UGameModesWidget::NativeConstruct()
 {

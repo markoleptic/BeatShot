@@ -3,6 +3,7 @@
 
 #include "OverlayWidgets/HUDWidgets/PlayerHUD.h"
 #include "SaveGamePlayerScore.h"
+#include "SaveGamePlayerSettings.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "Components/HorizontalBox.h"

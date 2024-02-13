@@ -2,6 +2,8 @@
 
 
 #include "OverlayWidgets/PopupWidgets/QuitMenuWidget.h"
+
+#include "BSGameModeDataAsset.h"
 #include "OverlayWidgets/LoadingScreenWidgets/ScreenFadeWidget.h"
 #include "WidgetComponents/Buttons/BSButton.h"
 

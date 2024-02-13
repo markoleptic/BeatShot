@@ -3,15 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AbilitySystemInterface.h"
-#include "BSGameModeDataAsset.h"
-#include "Components/TimelineComponent.h"
 #include "GameFramework/Actor.h"
-#include "SaveGamePlayerSettings.h"
+#include "Components/TimelineComponent.h"
+#include "AbilitySystemInterface.h"
 #include "AbilitySystem/BSAbilitySystemComponent.h"
 #include "AbilitySystem/Globals/BSAttributeSetBase.h"
+#include "BSGameModeDataAsset.h"
 #include "Target.generated.h"
 
+struct FPlayerSettings_Game;
 class UProjectileMovementComponent;
 class UBSHealthComponent;
 class UBSAbilitySystemComponent;

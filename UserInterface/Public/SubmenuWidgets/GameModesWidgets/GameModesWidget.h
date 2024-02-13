@@ -125,7 +125,7 @@ public:
 	bool bIsMainMenuChild;
 
 	/** Executes when the user is exiting the GameModesWidget, broadcast to GameInstance to handle transition */
-	FOnGameModeStateChanged OnGameModeStateChanged;
+	TMulticastDelegate<void(const FGameModeTransitionState& TransitionState)> OnGameModeStateChanged;
 	
 	/** Broadcast false when any non-defining config option is false. Broadcasts true only if all are true.
 	 *  Only Broadcasts if different than the previous */

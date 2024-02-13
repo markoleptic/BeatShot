@@ -282,7 +282,7 @@ float UCGMWC_Base::GetMinRequiredVerticalSpread() const
 float UCGMWC_Base::GetMaxTargetDiameter() const
 {
 	return FMath::Max(BSConfig->TargetConfig.MinSpawnedTargetScale, BSConfig->TargetConfig.MaxSpawnedTargetScale) *
-		SphereTargetDiameter;
+		Constants::SphereTargetDiameter;
 }
 
 int32 UCGMWC_Base::GetMaxAllowedNumHorizontalTargets() const
@@ -291,7 +291,7 @@ int32 UCGMWC_Base::GetMaxAllowedNumHorizontalTargets() const
 	// Total = (NumHorizontalGridTargets - 1) * (GridSpacing.X + MaxTargetDiameter);
 	// Total / (GridSpacing.X + MaxTargetDiameter) = NumHorizontalGridTargets - 1
 	// NumHorizontalGridTargets = Total / (GridSpacing.X + MaxTargetDiameter) + 1
-	return MaxValue_HorizontalSpread / (BSConfig->GridConfig.GridSpacing.X + GetMaxTargetDiameter()) + 1;
+	return Constants::MaxValue_HorizontalSpread / (BSConfig->GridConfig.GridSpacing.X + GetMaxTargetDiameter()) + 1;
 }
 
 int32 UCGMWC_Base::GetMaxAllowedNumVerticalTargets() const
@@ -300,7 +300,7 @@ int32 UCGMWC_Base::GetMaxAllowedNumVerticalTargets() const
 	// Total = (NumVerticalGridTargets - 1) * (GridSpacing.Y + MaxTargetDiameter);
 	// Total / (GridSpacing.Y + MaxTargetDiameter) = NumVerticalGridTargets - 1
 	// NumVerticalGridTargets = Total / (GridSpacing.Y * MaxTargetDiameter) + 1
-	return MaxValue_VerticalSpread / (BSConfig->GridConfig.GridSpacing.Y + GetMaxTargetDiameter()) + 1;
+	return Constants::MaxValue_VerticalSpread / (BSConfig->GridConfig.GridSpacing.Y + GetMaxTargetDiameter()) + 1;
 }
 
 float UCGMWC_Base::GetMaxAllowedHorizontalSpacing() const
@@ -309,7 +309,7 @@ float UCGMWC_Base::GetMaxAllowedHorizontalSpacing() const
 	// Total = (NumHorizontalGridTargets - 1) * (GridSpacing.X + MaxTargetDiameter);
 	// Total / (NumHorizontalGridTargets - 1) = GridSpacing.X + MaxTargetDiameter;
 	// Total / (NumHorizontalGridTargets - 1) - MaxTargetDiameter = GridSpacing.X;
-	return MaxValue_HorizontalSpread / (BSConfig->GridConfig.NumHorizontalGridTargets - 1) - GetMaxTargetDiameter();
+	return Constants::MaxValue_HorizontalSpread / (BSConfig->GridConfig.NumHorizontalGridTargets - 1) - GetMaxTargetDiameter();
 }
 
 float UCGMWC_Base::GetMaxAllowedVerticalSpacing() const
@@ -318,7 +318,7 @@ float UCGMWC_Base::GetMaxAllowedVerticalSpacing() const
 	// Total = (NumVerticalGridTargets - 1) * (GridSpacing.Y + MaxTargetDiameter);
 	// Total / (NumVerticalGridTargets - 1) = GridSpacing.Y + MaxTargetDiameter;
 	// Total / (NumVerticalGridTargets - 1) - MaxTargetDiameter = GridSpacing.Y;
-	return MaxValue_VerticalSpread / (BSConfig->GridConfig.NumVerticalGridTargets - 1) - GetMaxTargetDiameter();
+	return Constants::MaxValue_VerticalSpread / (BSConfig->GridConfig.NumVerticalGridTargets - 1) - GetMaxTargetDiameter();
 }
 
 float UCGMWC_Base::GetMaxAllowedTargetScale() const
@@ -329,10 +329,10 @@ float UCGMWC_Base::GetMaxAllowedTargetScale() const
 	// (Total - (GridSpacing.X * (NumHorizontalGridTargets - 1))) / ((NumHorizontalGridTargets - 1) * SphereTargetDiameter) = Scale;
 	// Scale = (Total - (GridSpacing.X * (NumHorizontalGridTargets - 1))) / ((NumHorizontalGridTargets - 1) * SphereTargetDiameter)
 
-	const float Horizontal = (MaxValue_HorizontalSpread - (BSConfig->GridConfig.GridSpacing.X * (BSConfig->GridConfig.
-		NumHorizontalGridTargets - 1))) / ((BSConfig->GridConfig.NumHorizontalGridTargets - 1) * SphereTargetDiameter);
+	const float Horizontal = (Constants::MaxValue_HorizontalSpread - (BSConfig->GridConfig.GridSpacing.X * (BSConfig->GridConfig.
+		NumHorizontalGridTargets - 1))) / ((BSConfig->GridConfig.NumHorizontalGridTargets - 1) * Constants::SphereTargetDiameter);
 
-	const float Vertical = (MaxValue_VerticalSpread - (BSConfig->GridConfig.GridSpacing.Y * (BSConfig->GridConfig.
-		NumVerticalGridTargets - 1))) / ((BSConfig->GridConfig.NumVerticalGridTargets - 1) * SphereTargetDiameter);
+	const float Vertical = (Constants::MaxValue_VerticalSpread - (BSConfig->GridConfig.GridSpacing.Y * (BSConfig->GridConfig.
+		NumVerticalGridTargets - 1))) / ((BSConfig->GridConfig.NumVerticalGridTargets - 1) * Constants::SphereTargetDiameter);
 	return FMath::Min(Horizontal, Vertical);
 }

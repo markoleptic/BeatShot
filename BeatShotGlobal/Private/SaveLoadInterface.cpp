@@ -7,6 +7,26 @@
 #include "SaveGamePlayerSettings.h"
 #include "Kismet/GameplayStatics.h"
 
+template <typename T>
+T* ISaveLoadInterface::LoadFromSlot(const FString& InSlotName, const int32 InSlotIndex)
+{
+	if (UGameplayStatics::DoesSaveGameExist(InSlotName, InSlotIndex))
+	{
+		if (T* SaveGameObject = Cast<T>(UGameplayStatics::LoadGameFromSlot(InSlotName, InSlotIndex)))
+		{
+			return SaveGameObject;
+		}
+	}
+	else
+	{
+		if (T* SaveGameObject = Cast<T>(UGameplayStatics::CreateSaveGameObject(T::StaticClass())))
+		{
+			return SaveGameObject;
+		}
+	}
+	return nullptr;
+}
+
 USaveGamePlayerScore* ISaveLoadInterface::LoadFromSlot_SaveGamePlayerScore()
 {
 	return LoadFromSlot<USaveGamePlayerScore>("ScoreSlot", 1);

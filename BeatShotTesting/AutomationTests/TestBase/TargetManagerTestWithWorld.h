@@ -42,10 +42,12 @@ public:
 			GameInstance->RemoveFromRoot();
 			GameInstance = nullptr;
 		}
-		
-		GFrameCounter = InitialFrameCounter;
-		GEngine->DestroyWorldContext(World);
-		World->DestroyWorld(false);
+		if (World)
+		{
+			GFrameCounter = InitialFrameCounter;
+			GEngine->DestroyWorldContext(World);
+			World->DestroyWorld(false);
+		}
 	}
 	virtual bool Init() override;
 	

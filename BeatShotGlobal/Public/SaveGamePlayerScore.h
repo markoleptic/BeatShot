@@ -512,13 +512,13 @@ struct FCommonScoreInfo
 	/** Generic constructor */
 	FCommonScoreInfo()
 	{
-		AccuracyData = FAccuracyData(DefaultNumberOfAccuracyDataRows, DefaultNumberOfAccuracyDataColumns);
+		AccuracyData = FAccuracyData(Constants::DefaultNumberOfAccuracyDataRows, Constants::DefaultNumberOfAccuracyDataColumns);
 		QTable = TArray<float>();
-		QTable.Init(0.f, DefaultQTableSize);
+		QTable.Init(0.f, Constants::DefaultQTableSize);
 		TrainingSamples = TArray<int32>();
-		TrainingSamples.Init(0.f, DefaultQTableSize);
-		NumQTableRows = DefaultNumberOfQTableRows;
-		NumQTableColumns = DefaultNumberOfQTableColumns;
+		TrainingSamples.Init(0.f, Constants::DefaultQTableSize);
+		NumQTableRows = Constants::DefaultNumberOfQTableRows;
+		NumQTableColumns = Constants::DefaultNumberOfQTableColumns;
 		TotalTrainingSamples = 0;
 	}
 
@@ -543,11 +543,11 @@ struct FCommonScoreInfo
 	void ResetQTable()
 	{
 		QTable = TArray<float>();
-		QTable.Init(0.f, DefaultQTableSize);
+		QTable.Init(0.f, Constants::DefaultQTableSize);
 		TrainingSamples = TArray<int32>();
-		TrainingSamples.Init(0.f, DefaultQTableSize);
-		NumQTableRows = DefaultNumberOfQTableRows;
-		NumQTableColumns = DefaultNumberOfQTableColumns;
+		TrainingSamples.Init(0.f, Constants::DefaultQTableSize);
+		NumQTableRows = Constants::DefaultNumberOfQTableRows;
+		NumQTableColumns = Constants::DefaultNumberOfQTableColumns;
 		TotalTrainingSamples = 0;
 	}
 

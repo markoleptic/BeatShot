@@ -8,7 +8,6 @@
 #include "Engine/DataAsset.h"
 #include "BSGameModeDataAsset.generated.h"
 
-using namespace Constants;
 
 /* --------------------- */
 /* ------- Enums ------- */
@@ -394,6 +393,21 @@ ENUM_RANGE_BY_FIRST_AND_LAST(EReinforcementLearningHyperParameterMode, EReinforc
 	EReinforcementLearningHyperParameterMode::Custom);
 
 
+/** The transition state describing the start state and end state of a transition */
+UENUM(BlueprintType)
+enum class ETransitionState : uint8
+{
+	StartFromMainMenu UMETA(DisplayName="StartFromMainMenu"),
+	StartFromPostGameMenu UMETA(DisplayName="StartFromPostGameMenu"),
+	Restart UMETA(DisplayName="Restart"),
+	QuitToMainMenu UMETA(DisplayName="QuitToMainMenu"),
+	QuitToDesktop UMETA(DisplayName="QuitToDesktop"),
+	PlayAgain UMETA(DisplayName="PlayAgain"),
+	None UMETA(DisplayName="None")
+};
+
+ENUM_RANGE_BY_FIRST_AND_LAST(ETransitionState, ETransitionState::StartFromMainMenu, ETransitionState::None);
+
 /* --------------------- */
 /* ------ Structs ------ */
 /* --------------------- */
@@ -507,9 +521,9 @@ struct FBS_AIConfig
 	FBS_AIConfig()
 	{
 		bEnableReinforcementLearning = false;
-		Alpha = DefaultAlpha;
-		Epsilon = DefaultEpsilon;
-		Gamma = DefaultGamma;
+		Alpha = Constants::DefaultAlpha;
+		Epsilon = Constants::DefaultEpsilon;
+		Gamma = Constants::DefaultGamma;
 		ReinforcementLearningMode = EReinforcementLearningMode::None;
 		HyperParameterMode = EReinforcementLearningHyperParameterMode::Auto;
 	}
@@ -567,10 +581,10 @@ struct FBS_GridConfig
 
 	FBS_GridConfig()
 	{
-		NumHorizontalGridTargets = NumHorizontalBeatGridTargets_Normal;
-		NumVerticalGridTargets = NumVerticalBeatGridTargets_Normal;
-		NumGridTargetsVisibleAtOnce = NumTargetsAtOnceBeatGrid_Normal;
-		GridSpacing = BeatGridSpacing_Normal;
+		NumHorizontalGridTargets = Constants::NumHorizontalBeatGridTargets_Normal;
+		NumVerticalGridTargets = Constants::NumVerticalBeatGridTargets_Normal;
+		NumGridTargetsVisibleAtOnce = Constants::NumTargetsAtOnceBeatGrid_Normal;
+		GridSpacing = Constants::BeatGridSpacing_Normal;
 	}
 
 	FORCEINLINE bool operator==(const FBS_GridConfig& Other) const
@@ -644,7 +658,7 @@ struct FBS_AudioConfig
 		SongPath = "";
 		SongTitle = "";
 		SongLength = 0.f;
-		PlayerDelay = DefaultPlayerDelay;
+		PlayerDelay = Constants::DefaultPlayerDelay;
 	}
 };
 
@@ -1030,27 +1044,27 @@ struct FBS_TargetConfig
 		TargetDeactivationResponses = TArray<ETargetDeactivationResponse>();
 		TargetDestructionConditions = TArray<ETargetDestructionCondition>();
 
-		ConsecutiveChargeScaleMultiplier = DefaultChargeScaleMultiplier;
-		LifetimeTargetScaleMultiplier = DefaultChargeScaleMultiplier;
+		ConsecutiveChargeScaleMultiplier = Constants::DefaultChargeScaleMultiplier;
+		LifetimeTargetScaleMultiplier = Constants::DefaultChargeScaleMultiplier;
 		DeactivationHealthLostThreshold = 100.f;
-		ExpirationHealthPenalty = BaseTargetHealth;
-		FloorDistance = DistanceFromFloor;
-		MinDistanceBetweenTargets = DefaultMinDistanceBetweenTargets;
-		MaxHealth = BaseTargetHealth;
-		MinSpawnedTargetScale = DefaultMinTargetScale;
-		MaxSpawnedTargetScale = DefaultMaxTargetScale;
+		ExpirationHealthPenalty = Constants::BaseTargetHealth;
+		FloorDistance = Constants::DistanceFromFloor;
+		MinDistanceBetweenTargets = Constants::DefaultMinDistanceBetweenTargets;
+		MaxHealth = Constants::BaseTargetHealth;
+		MinSpawnedTargetScale = Constants::DefaultMinTargetScale;
+		MaxSpawnedTargetScale = Constants::DefaultMaxTargetScale;
 		MinSpawnedTargetSpeed = 0.f;
 		MaxSpawnedTargetSpeed = 0.f;
 		MinActivatedTargetSpeed = 0.f;
 		MaxActivatedTargetSpeed = 0.f;
 		MinDeactivatedTargetSpeed = 0.f;
 		MaxDeactivatedTargetSpeed = 0.f;
-		SpawnBeatDelay = DefaultSpawnBeatDelay;
+		SpawnBeatDelay = Constants::DefaultSpawnBeatDelay;
 		RecentTargetTimeLength = 0.f;
-		TargetMaxLifeSpan = DefaultTargetMaxLifeSpan;
-		TargetSpawnCD = DefaultTargetSpawnCD;
+		TargetMaxLifeSpan = Constants::DefaultTargetMaxLifeSpan;
+		TargetSpawnCD = Constants::DefaultTargetSpawnCD;
 
-		BoxBounds = DefaultSpawnBoxBounds;
+		BoxBounds = Constants::DefaultSpawnBoxBounds;
 
 		BasePlayerHitDamage = 100.f;
 		BasePlayerTrackingDamage = 1.f;
@@ -1491,6 +1505,7 @@ struct FBSConfig
 	}
 };
 
+
 UCLASS(Blueprintable, BlueprintType)
 class BEATSHOTGLOBAL_API UBSGameModeDataAsset : public UDataAsset
 {
@@ -1536,4 +1551,18 @@ public:
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(ForceInlineRow))
 	TMap<FBS_DefiningConfig, FBSConfig> DefaultGameModes;
+};
+
+
+/** Information about the transition state of the game */
+struct FGameModeTransitionState
+{
+	/** The game mode transition to perform */
+	ETransitionState TransitionState;
+
+	/** Whether or not to save current scores if the transition is Restart or Quit */
+	bool bSaveCurrentScores;
+
+	/** The game mode properties, only used if Start or Restart */
+	FBSConfig BSConfig;
 };

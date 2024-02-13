@@ -5,6 +5,7 @@
 
 #include "BSGameInstance.h"
 #include "EnhancedInputSubsystems.h"
+#include "SaveGamePlayerSettings.h"
 #include "AbilitySystem/BSAbilitySystemComponent.h"
 #include "AbilitySystem/Globals/BSAttributeSetBase.h"
 #include "BeatShot/BSGameplayTags.h"
@@ -18,6 +19,7 @@
 #include "Character/BSRecoilComponent.h"
 #include "Input/BSInputComponent.h"
 #include "Inventory/BSInventoryManagerComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Player/BSPlayerController.h"
 #include "Player/BSPlayerState.h"
 
@@ -609,8 +611,8 @@ void ABSCharacterBase::Input_Move(const FInputActionValue& Value)
 
 void ABSCharacterBase::Input_Look(const FInputActionValue& Value)
 {
-	AddControllerPitchInput(Value[1] / SensitivityMultiplier * Sensitivity);
-	AddControllerYawInput(Value[0] / SensitivityMultiplier * Sensitivity);
+	AddControllerPitchInput(Value[1] / Constants::SensitivityMultiplier * Sensitivity);
+	AddControllerYawInput(Value[0] / Constants::SensitivityMultiplier * Sensitivity);
 }
 
 void ABSCharacterBase::Input_Crouch(const FInputActionValue& Value)

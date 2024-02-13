@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "SaveLoadInterface.h"
 #include "SubmenuWidgets/SettingsWidgets/BSSettingCategoryWidget.h"
+#include "WidgetComponents/InputMappingWidget.h"
 #include "SettingsMenuWidget_Input.generated.h"
 
 class UInputMappingContext;
@@ -89,7 +90,7 @@ protected:
 	float Sensitivity;
 	
 	TMap<FName, FKeyMappingRow> InitialPlayerMappingRows;
-
+	UPROPERTY()
 	TMap<FName, UInputMappingWidget*> InputMappingWidgetMap;
 
 	bool bIsSelectingKey = false;

@@ -9,12 +9,12 @@ void UCGMWC_Movement::NativeConstruct()
 {
 	Super::NativeConstruct();
 	
-	MenuOption_SpawnedTargetVelocity->SetValues(MinValue_TargetSpeed, MaxValue_TargetSpeed,
-		SnapSize_TargetSpeed);
-	MenuOption_ActivatedTargetVelocity->SetValues(MinValue_TargetSpeed, MaxValue_TargetSpeed,
-		SnapSize_TargetSpeed);
-	MenuOption_DeactivatedTargetVelocity->SetValues(MinValue_TargetSpeed, MaxValue_TargetSpeed,
-		SnapSize_TargetSpeed);
+	MenuOption_SpawnedTargetVelocity->SetValues(Constants::MinValue_TargetSpeed, Constants::MaxValue_TargetSpeed,
+		Constants::SnapSize_TargetSpeed);
+	MenuOption_ActivatedTargetVelocity->SetValues(Constants::MinValue_TargetSpeed, Constants::MaxValue_TargetSpeed,
+		Constants::SnapSize_TargetSpeed);
+	MenuOption_DeactivatedTargetVelocity->SetValues(Constants::MinValue_TargetSpeed, Constants::MaxValue_TargetSpeed,
+		Constants::SnapSize_TargetSpeed);
 
 	MenuOption_SpawnedTargetVelocity->OnMinMaxMenuOptionChanged.AddUObject(this,
 		&ThisClass::OnMinMaxMenuOptionChanged);

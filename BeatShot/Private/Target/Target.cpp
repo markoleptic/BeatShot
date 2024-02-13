@@ -6,6 +6,7 @@
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
+#include "SaveGamePlayerSettings.h"
 #include "BeatShot/BSGameplayTags.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Materials/MaterialInterface.h"
@@ -72,8 +73,8 @@ ATarget::ATarget()
 	if (!RootComponent)
 	{
 		CapsuleComponent = CreateDefaultSubobject<UCapsuleComponent>("Capsule Component");
-		CapsuleComponent->SetCapsuleRadius(SphereTargetRadius);
-		CapsuleComponent->SetCapsuleHalfHeight(SphereTargetRadius);
+		CapsuleComponent->SetCapsuleRadius(Constants::SphereTargetRadius);
+		CapsuleComponent->SetCapsuleHalfHeight(Constants::SphereTargetRadius);
 		RootComponent = CapsuleComponent;
 	}
 
@@ -567,7 +568,7 @@ void ATarget::InterpPeakToEnd(const float Alpha)
 
 void ATarget::InterpShrinkQuickAndGrowSlow(const float Alpha)
 {
-	SetTargetScale(FVector(UKismetMathLibrary::Lerp(MinShrinkTargetScale, GetTargetScale_Activation().X, Alpha)));
+	SetTargetScale(FVector(UKismetMathLibrary::Lerp(Constants::MinShrinkTargetScale, GetTargetScale_Activation().X, Alpha)));
 	const FLinearColor Color = UKismetMathLibrary::LinearColorLerp(ColorWhenDamageTaken, Config.InactiveTargetColor,
 		ShrinkQuickAndGrowSlowTimeline.GetPlaybackPosition());
 	SetTargetColor(Color);
@@ -642,7 +643,7 @@ void ATarget::SetTargetSpeed(const float NewMovingTargetSpeed) const
 void ATarget::SetTargetScale(const FVector& NewScale) const
 {
 	// Cap target scale at MaxValue_TargetScale
-	CapsuleComponent->SetRelativeScale3D(NewScale.X < MaxValue_TargetScale ? NewScale : FVector(MaxValue_TargetScale));
+	CapsuleComponent->SetRelativeScale3D(NewScale.X < Constants::MaxValue_TargetScale ? NewScale : FVector(Constants::MaxValue_TargetScale));
 }
 
 void ATarget::SetTargetDamageType(const ETargetDamageType& InType)
