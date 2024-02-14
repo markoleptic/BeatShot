@@ -112,11 +112,11 @@ void ABeatShotGameModeFunctionalTest::OnAudioAnalyzerBeat()
 {
 	TargetManager->OnAudioAnalyzerBeat();
 
-	AssertEqual_Bool(
-	TargetManager->SpawnAreaManager->GetActivatedSpawnAreas().Num() <= TargetManager->SpawnAreaManager->
-		GetManagedSpawnAreas().Num(), true, "Activated Less than Managed");
+	const int32 NumActivated = TargetManager->SpawnAreaManager->GetNumActivated();
+	const int32 NumManaged = TargetManager->SpawnAreaManager->GetNumManaged();
+	AssertEqual_Bool(NumActivated <= NumManaged, true, "Activated <= Managed");
 	
-	GetWorldTimerManager().SetTimerForNextTick(FTimerDelegate::CreateWeakLambda(this, [this]
+	GetWorldTimerManager().SetTimerForNextTick(FTimerDelegate::CreateWeakLambda(this, [&]
 	{
 		DestroyTargets();
 	}));
@@ -124,18 +124,19 @@ void ABeatShotGameModeFunctionalTest::OnAudioAnalyzerBeat()
 
 void ABeatShotGameModeFunctionalTest::StartGameMode()
 {
-	FText GameModeText;
 	if (GameModesToTest[CurrentIndex].DefiningConfig.GameModeType == EGameModeType::Preset)
 	{
-		GameModeText = UEnum::GetDisplayValueAsText(GameModesToTest[CurrentIndex].DefiningConfig.BaseGameMode);
+		const FText DiffText = UEnum::GetDisplayValueAsText(GameModesToTest[CurrentIndex].DefiningConfig.Difficulty);
+		const FText Preset = UEnum::GetDisplayValueAsText(GameModesToTest[CurrentIndex].DefiningConfig.BaseGameMode);
+		StartStep(Preset.ToString() + "." + DiffText.ToString());
 	}
 	else
 	{
-		GameModeText = FText::FromString(GameModesToTest[CurrentIndex].DefiningConfig.CustomGameModeName);
+		const FText Custom = FText::FromString(GameModesToTest[CurrentIndex].DefiningConfig.CustomGameModeName);
+		StartStep(Custom.ToString());
 	}
-	const FText DifficultyText = UEnum::GetDisplayValueAsText(GameModesToTest[CurrentIndex].DefiningConfig.Difficulty);
-	StartStep(GameModeText.ToString() + "." + DifficultyText.ToString());
-	*GameModeConfig = GameModesToTest[CurrentIndex];
+	
+	GameModeConfig = MakeShareable(new FBSConfig(GameModesToTest[CurrentIndex]));
 	TargetManager->Init(GameModeConfig, PlayerSettings_Game);
 	TargetManager->SetShouldSpawn(true);
 	GetWorldTimerManager().SetTimer(GameModeTimer, this, &ThisClass::StopGameMode, GameModeDuration, false);
@@ -149,7 +150,8 @@ void ABeatShotGameModeFunctionalTest::StopGameMode()
 	if (!TargetManager) FinishTest(EFunctionalTestResult::Failed, TEXT("Null Target Manager"));
 
 	GatherData();
-	
+
+	GameModeConfig.Reset();
 	TargetManager->Clear();
 	FinishStep();
 	CurrentIndex++;

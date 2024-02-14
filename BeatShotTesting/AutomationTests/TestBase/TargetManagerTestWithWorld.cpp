@@ -108,5 +108,5 @@ void FTargetManagerTestWithWorld::TickWorld(float Time)
 
 void FTargetManagerTestWithWorld::OnSpawnableSpawnAreasExecutionTime(const double Time)
 {
-	TimeSpentInSpawnableSpawnAreas += Time;
+	SpawnableSpawnAreasTime += Time;
 }

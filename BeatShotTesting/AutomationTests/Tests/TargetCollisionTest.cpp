@@ -3,8 +3,11 @@
 #include "CoreMinimal.h"
 #include "SaveGamePlayerSettings.h"
 #include "../TestBase/TargetManagerTestWithWorld.h"
+#include "Target/SpawnAreaManagerComponent.h"
 #include "Target/TargetManager.h"
 #include "Target/Target.h"
+
+using namespace Constants;
 
 class FTargetCollisionTest : public FTargetManagerTestWithWorld
 {
@@ -54,12 +57,10 @@ protected:
 	virtual bool RunTest(const FString& Parameters) override;
 	virtual FString GetBeautifiedTestName() const override { return "TargetManager.TargetCollision"; }
 	void TestIntersection(const FSphere& SphereOne, const FSphere& SphereTwo);
-	void AddTestResultInfo();
-	TArray<FSphere> GetSpheresFromTargets(const TMap<FGuid, ATarget*>& ManagedTargets);
 	void ResetTestVariables();
 	
 	int32 TotalTargetsSpawned = 0;
-	int32 TotalIntersections = 0;
+	int32 TotalCollisions = 0;
 	double MinDistance = 5000.f;
 	const int32 NumIterations = 500;
 };
@@ -92,7 +93,7 @@ bool FTargetCollisionTest::RunTest(const FString& Parameters)
 		}
 	}
 	
-	const auto FoundConfig = TestMap.Find(Parameters);
+	const FBSConfig* FoundConfig = TestMap.Find(Parameters);
 	if (!FoundConfig)
 	{
 		AddError(FString::Printf(TEXT("Failed to find Config for Parameters: %s"), *Parameters));
@@ -106,9 +107,15 @@ bool FTargetCollisionTest::RunTest(const FString& Parameters)
 	for (int Iter = 0; Iter < NumIterations; Iter++)
 	{
 		TargetManager->OnAudioAnalyzerBeat();
-		const auto&& ManagedTargets = GetManagedTargets();
-		TotalTargetsSpawned += ManagedTargets.Num();
-		const auto&& Spheres = GetSpheresFromTargets(ManagedTargets);
+		TArray<FSphere> Spheres;
+
+		for (auto [Guid, Target] : GetManagedTargets())
+		{
+			Spheres.Emplace(FSphere(Target->GetActorLocation(), Target->GetRadius()));
+			Target->DamageSelf(true);
+			TickWorld(UE_KINDA_SMALL_NUMBER);
+		}
+		
 		for (int i = 0; i < Spheres.Num(); i++)
 		{
 			for (int j = i + 1; j < Spheres.Num(); j++)
@@ -116,26 +123,20 @@ bool FTargetCollisionTest::RunTest(const FString& Parameters)
 				TestIntersection(Spheres[i], Spheres[j]);
 			}
 		}
+		
+		TotalTargetsSpawned += Spheres.Num();
 		TestTrue("All targets destroyed at iteration end", GetManagedTargets().IsEmpty());
 	}
+
+	AddInfo(FString::Printf(TEXT("Total targets spawned: %d"), TotalTargetsSpawned));
+	AddInfo(FString::Printf(TEXT("Total collisions: %d"), TotalCollisions));
+	AddInfo(FString::Printf(TEXT("Min Distance between two spheres: %.4lf"), MinDistance));
+	AddInfo(FString::Printf(TEXT("Total time spent executing GetSpawnableSpawnAreas: %.4lf"),
+		SpawnableSpawnAreasTime));
 	
-	TargetManager->Clear();
-	AddTestResultInfo();
 	ResetTestVariables();
 	
 	return true;
-}
-
-TArray<FSphere> FTargetCollisionTest::GetSpheresFromTargets(const TMap<FGuid, ATarget*>& ManagedTargets)
-{
-	TArray<FSphere> Spheres;
-	for (auto [Guid, Target] : ManagedTargets)
-	{
-		Spheres.Emplace(FSphere(Target->GetActorLocation(), Target->GetTargetScale_Current().X * Constants::SphereTargetRadius));
-		Target->DamageSelf(true);
-		TickWorld(UE_KINDA_SMALL_NUMBER);
-	}
-	return Spheres;
 }
 
 void FTargetCollisionTest::TestIntersection(const FSphere& SphereOne, const FSphere& SphereTwo)
@@ -143,7 +144,7 @@ void FTargetCollisionTest::TestIntersection(const FSphere& SphereOne, const FSph
 	const double CenterDist = FVector::Dist(SphereOne.Center, SphereTwo.Center);
 	const double RadiusSum = SphereOne.W + SphereTwo.W;
 	const bool bIntersects = CenterDist <= RadiusSum;
-	if (bIntersects) TotalIntersections++;
+	if (bIntersects) TotalCollisions++;
 
 	const double Dist = CenterDist - RadiusSum;
 	MinDistance = FMath::Min(MinDistance, Dist);
@@ -154,18 +155,11 @@ void FTargetCollisionTest::TestIntersection(const FSphere& SphereOne, const FSph
 	TestFalse(What, bIntersects);
 }
 
-void FTargetCollisionTest::AddTestResultInfo()
-{
-	AddInfo(FString::Printf(TEXT("Min Distance between two spheres: %.4lf"), MinDistance));
-	AddInfo(FString::Printf(TEXT("Total time spent executing TimeSpentInSpawnableSpawnAreas: %.4lf"),
-		TimeSpentInSpawnableSpawnAreas));
-	AddInfo(FString::Printf(TEXT("Total targets spawned: %d"), TotalTargetsSpawned));
-	AddInfo(FString::Printf(TEXT("Total intersections: %d"), TotalIntersections));
-}
-
 void FTargetCollisionTest::ResetTestVariables()
 {
+	TargetManager->Clear();
+	BSConfig.Reset();
 	TotalTargetsSpawned = 0;
-	TotalIntersections = 0;
+	TotalCollisions = 0;
 	MinDistance = 5000.f;
 }

@@ -15,7 +15,7 @@ class FTargetManagerTestWithWorld : public FTargetManagerTestBase
 public:
 	FTargetManagerTestWithWorld(const FString& InName, const bool bInComplexTask):
 		Super(InName, bInComplexTask), World(nullptr), GameInstance(nullptr), InitialFrameCounter(0),
-	TimeSpentInSpawnableSpawnAreas(0.0f), TargetManager(nullptr), bInitialized(false), GameModeDataAsset(nullptr)
+	SpawnableSpawnAreasTime(0.0f), TargetManager(nullptr), bInitialized(false), GameModeDataAsset(nullptr)
 	{}
 	
 	virtual ~FTargetManagerTestWithWorld() override
@@ -65,7 +65,7 @@ protected:
 	uint64 InitialFrameCounter;
 
 	/** Total time spent executing the GetSpawnableSpawnAreas function. */
-	double TimeSpentInSpawnableSpawnAreas;
+	double SpawnableSpawnAreasTime;
 
 	/** Increments TimeSpentInSpawnableSpawnAreas. */
 	void OnSpawnableSpawnAreasExecutionTime(const double Time);

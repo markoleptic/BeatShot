@@ -345,6 +345,9 @@ public:
 	/** Returns the generated Guid for this target */
 	FGuid GetGuid() const { return Guid; }
 
+	/** Returns the radius of the target */
+	float GetRadius() const { return GetActorScale().X * Constants::SphereTargetRadius; }
+
 	/** Returns whether or not the target has been activated before */
 	bool HasBeenActivatedBefore() const;
 

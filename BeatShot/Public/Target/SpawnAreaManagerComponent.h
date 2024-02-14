@@ -79,6 +79,7 @@ struct FFactor
 	}
 };
 
+/** A rectangle with a unique start and end index found within FindLargestRectangle. */
 struct FSubRectangle
 {
 	/** Number of columns in the total spawn area */
@@ -98,11 +99,17 @@ struct FSubRectangle
 
 	/** Area of the sub rectangle */
 	int32 Area;
-	
-	FIndexPair Row, Col;
-	
+
+	/** (StartRowIndex, EndRowIndex) */
+	FIndexPair Row;
+
+	/** (StartColIndex, EndColIndex) */
+	FIndexPair Col;
+
+	/** Indices that are included within the Index of this rectangle */
 	TSet<int32> AdjacentIndices;
 
+	/** Indices that have been validated as being potential start index candidates */
 	TArray<FIndexPair> StartIndexCandidates;
 	
 	FSubRectangle() = default;
@@ -111,19 +118,20 @@ struct FSubRectangle
 	{
 	}
 
+	/** Updates the width, StartEndIndex, Dimensions, Area, Row, and Col. */
 	void UpdateDimensions(const int32 InNewWidth)
 	{
 		Dimensions.first = InNewWidth;
 		StartEndIndex.first = Index - NumCols * (Dimensions.second - 1);
 		StartEndIndex.second = Index + (Dimensions.first - 1);
 		Area = Dimensions.first * Dimensions.second;
-		Row = std::make_pair(StartEndIndex.first / NumCols, StartEndIndex.second / NumCols);
-		Col = std::make_pair(StartEndIndex.first % NumCols, StartEndIndex.second % NumCols);
+		Row = FIndexPair(StartEndIndex.first / NumCols, StartEndIndex.second / NumCols);
+		Col = FIndexPair(StartEndIndex.first % NumCols, StartEndIndex.second % NumCols);
 	}
 
 	FString ToString() const
 	{
-		return FString::Printf(TEXT("[%d, %d] Size: %dx%d"), StartEndIndex.first, StartEndIndex.second,
+		return FString::Printf(TEXT("Index: [%d, %d] Size: %dx%d"), StartEndIndex.first, StartEndIndex.second,
 			Dimensions.first, Dimensions.second);
 	}
 	
@@ -134,7 +142,11 @@ struct FSubRectangle
 	
 	FORCEINLINE bool operator<(const FSubRectangle& Other) const
 	{
-		return Area < Other.Area;
+		if (StartEndIndex.second == Other.StartEndIndex.second)
+		{
+			return StartEndIndex.first < Other.StartEndIndex.first;
+		}
+		return StartEndIndex.second < Other.StartEndIndex.second;
 	}
 	
 	friend FORCEINLINE uint32 GetTypeHash(const FSubRectangle& Other)
@@ -168,40 +180,20 @@ struct FFSubRectangleKeyFuncs : BaseKeyFuncs<FSubRectangle, FIndexPair, false>
 /** Contains info about a candidate for a GridBlock largest rectangle. */
 struct FRectCandidate
 {
-	/** (StartIndex, EndIndex) */
-	FIndexPair Index;
-
+	/** The factor for this candidate */
+	FFactor Factor;
+	
 	/** (ChosenStartRowIndex, ChosenEndRowIndex) */
 	FIndexPair ChosenRow;
 
 	/** (ChosenStartColIndex, ChosenEndColIndex) */
 	FIndexPair ChosenCol;
-
-	/** (StartRowIndex, EndRowIndex) */
-	FIndexPair Row;
-
-	/** (StartColIndex, EndColIndex) */
-	FIndexPair Col;
-
-	/** (Width, Height) */
-	FRectDims Dimensions;
-
-	/** Width * Height */
-	int32 Area;
-
-	/** The factor for this candidate */
-	FFactor Factor;
-
+	
 	/** Sub rectangles within this rectangle candidate */
 	TSet<FSubRectangle, FFSubRectangleKeyFuncs> SubRectangles;
 
-	/** Indices that are included within the Index of this rectangle */
-	TSet<int32> AdjacentIndices;
-
-	TArray<FSubRectangle> SortedSubRectangles;
-
-	/** Indices that have been validated as being potential start index candidates */
-	TArray<FIndexPair> StartIndexCandidates;
+	/** Chosen sub rectangle */
+	FSubRectangle ChosenSubRectangle;
 
 	/** The number of rows in the largest rectangle found */
 	int32 NumRowsAvailable;
@@ -217,9 +209,8 @@ struct FRectCandidate
 
 	FRectCandidate() = default;
 
-	explicit FRectCandidate(const FFactor& InFactor) : Index(-1, -1),
-		Dimensions(-1, -1), Area(-1), Factor(InFactor), NumRowsAvailable(-1), NumColsAvailable(-1), ActualBlockSize(-1),
-		ChosenBlockSize(-1)
+	explicit FRectCandidate(const FFactor& InFactor) : Factor(InFactor), ChosenRow(-1, -1), ChosenCol(-1, -1),
+		ChosenSubRectangle(), NumRowsAvailable(-1), NumColsAvailable(-1), ActualBlockSize(-1), ChosenBlockSize(-1)
 	{
 	}
 
@@ -228,43 +219,24 @@ struct FRectCandidate
 	/** Updates the candidate with new dimensions and indices. */
 	void UpdateSubRectangles(const FSubRectangle& SubRectangle)
 	{
-		if (FSubRectangle* Found = SubRectangles.Find(SubRectangle.StartEndIndex))
-		{
-			// Only update the start index and dimensions
-			if (SubRectangle.StartEndIndex.first > Found->StartEndIndex.first)
-			{
-				Found->StartEndIndex.first = SubRectangle.StartEndIndex.first;
-				Found->Area = Found->Dimensions.first * Found->Dimensions.second;
-			}
-		}
-		else
-		{
-			SubRectangles.Add(SubRectangle);
-		}
+		SubRectangles.Add(SubRectangle);
 	}
 
-	/** Updates Row, Col, NumRowsAvailable, and NumColsAvailable provided that the Index indices have been found.
-	 *  Sets the ActualBlockSize, and initializes the ChosenRow, ChosenCol to Row, Col. */
-	void SortAndUpdateSubRectangles();
+	/** Merges similar sub rectangles. */
+	void MergeSubRectangles();
 	
+	/** Sets the value of ChosenSubRectangle. Updates NumRowsAvailable, NumColsAvailable, ActualBlockSize, 
+	 *  and initializes the ChosenRow, ChosenCol to SubRectangle.Row, SubRectangle.Col. */
 	void SetChosenSubRectangle(const FSubRectangle& SubRectangle, const int32 InBlockSize)
 	{
-		Index = SubRectangle.StartEndIndex;
-		Row = std::make_pair(Index.first / FSubRectangle::NumCols, Index.second / FSubRectangle::NumCols);
-		Col = std::make_pair(Index.first % FSubRectangle::NumCols, Index.second % FSubRectangle::NumCols);
-
-		Dimensions = SubRectangle.Dimensions;
-		NumRowsAvailable = Row.second - Row.first + 1;
-		NumColsAvailable = Col.second - Col.first + 1;
-
-		Area = SubRectangle.Area;
-		ActualBlockSize = FMath::Min(InBlockSize, Area);
-
-		ChosenRow = Row;
-		ChosenCol = Col;
+		ChosenSubRectangle = SubRectangle;
 		
-		AdjacentIndices = SubRectangle.AdjacentIndices;
-		StartIndexCandidates = SubRectangle.StartIndexCandidates;
+		NumRowsAvailable = SubRectangle.Row.second - SubRectangle.Row.first + 1;
+		NumColsAvailable = SubRectangle.Col.second - SubRectangle.Col.first + 1;
+		ActualBlockSize = FMath::Min(InBlockSize, SubRectangle.Area);
+
+		ChosenRow = SubRectangle.Row;
+		ChosenCol = SubRectangle.Col;
 	}
 	
 	/** Returns true if the first factor is less than number of rows available and the second factor is less than the
@@ -291,28 +263,23 @@ struct FRectCandidate
 		return FirstFactorComboFits() && SecondFactorComboFits();
 	}
 
+	/** Returns true if the ChosenSubRectangle is valid. */
+	bool HasChosenSubRectangle() const
+	{
+		return ChosenSubRectangle.Area > 0 &&
+			ChosenSubRectangle.StartEndIndex.second - ChosenSubRectangle.StartEndIndex.first > 0;
+	}
+
 	/** Returns a human-readable string of the rectangle. */
 	FString ToString() const
 	{
-		return FString::Printf(TEXT("W: %d H: %d [%d, %d] F1: %d F2: %d"),
-			Dimensions.first, Dimensions.second, Index.first, Index.second, Factor.Factor1, Factor.Factor2);
+		return FString::Printf(TEXT("Candidate [%d, %d]"), Factor.Factor1,Factor.Factor2);
 	}
 	
-	/** The least greatest will have the minimum distance between factors and the greatest area. */
 	FORCEINLINE bool operator<(const FRectCandidate& Other) const
 	{
-		if (Factor.Distance == Other.Factor.Distance)
-		{
-			if (Area == Other.Area)
-			{
-				// Then by Factors
-				return Factor < Other.Factor;
-			}
-			// Sort by area if Distance is equal
-			return Area > Other.Area;
-		}
-		// Sort by distance between factors as highest filter
-		return Factor.Distance < Other.Factor.Distance;
+		// Sort by factor
+		return Factor < Other.Factor;
 	}
 
 	FORCEINLINE bool operator==(const FRectCandidate& Other) const
@@ -354,6 +321,7 @@ class BEATSHOT_API USpawnAreaManagerComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
+	friend class FTargetCollisionTest;
 public:
 	USpawnAreaManagerComponent();
 
@@ -421,6 +389,11 @@ public:
 	 * 	@return number of deactivated Spawn Areas
 	 */
 	int32 GetNumDeactivated() const { return GetDeactivatedSpawnAreas().Num(); }
+
+	/** Get the number of elements in the CachedManaged set.
+	 * 	@return number of managed Spawn Areas
+	 */
+	int32 GetNumManaged() const { return CachedManaged.Num(); }
 
 protected:
 	/** Sets the value of MostRecentSpawnArea.
@@ -669,19 +642,28 @@ protected:
 	 */
 	int32 RemoveNonAdjacentIndices(TSet<USpawnArea*>& ValidSpawnAreas, const USpawnArea* Current) const;
 
+	/** Update the value of MostRecentGridBlocks.
+	 *
+	 * 	@param ValidSpawnAreas a set of valid Spawn Areas to possible insert into MostRecentGridBlocks
+	 *  @param NumToSpawn the number of Spawn Areas that that were attempted to be spawned
+	 */
+	void UpdateMostRecentGridBlocks(const TSet<USpawnArea*>& ValidSpawnAreas, const int32 NumToSpawn) const;
+
 	/* ------------- */
 	/* -- Utility -- */
 	/* ------------- */
 
-	/** Returns a set of SpawnAreas adjacent to the inSpawnAreas according to Directions.
+	/** Returns a set of OutType (Only USpawnArea* and int32 specialized) adjacent to the InSpawnAreas
+	 *  according to Directions. 
 	 *
 	 * 	@param InSpawnAreas a set of Spawn Areas to find adjacent Spawn Areas from
 	 *  @param Directions the directions allowed to choose from
-	 *  @return a set of adjacent SpawnAreas
+	 *  @return a set of type OutType adjacent to InSpawnAreas
 	 */
-	TSet<USpawnArea*> GetAdjacentSpawnAreas(TSet<USpawnArea*>& InSpawnAreas,
+	template<typename OutType>
+	TSet<OutType> GetAdjacentSpawnAreas(const TSet<USpawnArea*>& InSpawnAreas,
 		const TSet<EBorderingDirection>& Directions) const;
-
+	
 	/** Creates an array with size equal to the number of Spawn Areas, where each index represents whether or not the
 	 *  SpawnArea should be consider valid.
 	 *
@@ -697,6 +679,13 @@ protected:
 	 *  @return a set of Spawn Areas corresponding to the indices
 	 */
 	TSet<USpawnArea*> ConvertIndicesToSpawnAreas(const TSet<int32>& InIndices) const;
+	
+	/** Converts a set of Spawn Areas pointers into a set of Spawn Area indices.
+	 * 
+	 * 	@param InSpawnAreas a set of valid Spawn Areas to get indices from
+	 *  @return a set of Spawn Area indices corresponding to the Spawn Areas
+	 */
+	static TSet<int32> ConvertSpawnAreasToIndices(const TSet<USpawnArea*>& InSpawnAreas);
 
 	/** Finds the maximum rectangle of valid indices in the matrix. Returns a struct containing the area, start index,
 	 *  and end index that correspond to SpawnAreas.
@@ -726,7 +715,7 @@ protected:
 	 *  @param Factors an array of factors to filter the rectangles from
 	 *  @param SubRectangle the rectangle info at the top of the stack
 	 */
-	static void UpdateLargestRectangles(FRectangleSet& Rectangles, const TArray<FFactor>& Factors,
+	static void UpdateSubRectangles(FRectangleSet& Rectangles, const TArray<FFactor>& Factors,
 		const FSubRectangle& SubRectangle);
 	
 	/** Converts the rectangle set into a sorted array. If bordering, it returns the first rectangle where StartIndex
@@ -739,31 +728,35 @@ protected:
 	 */
 	static FRectCandidate ChooseRectangleCandidate(const FRectangleSet& Rectangles, const bool bBordering, const int32 BlockSize);
 
-	/** Returns a set of indices that are adjacent to the input grid block. If the block had 4 SpawnAreas, a maximum
-	 *  of 12 indices may be returned. Filters output based on direction.
-	 *
-	 *  @param GridBlock A set of SpawnAreas representing a grid block
-	 *  @param Directions The directions from the GridBlock to consider
-	 *  @param InSize The size of the total Spawn Area 
-	 */
-	static TSet<int32> GetIndicesAdjacentToRectangle(const TSet<USpawnArea*>& GridBlock,
-		const TSet<EBorderingDirection>& Directions, const FIntVector3& InSize);
-
 	/** Chooses the orientation of the rectangle based on the factors.
 	 * 
 	 *  @param Rect the rectangle to choose the orientation for
 	 *  @param Factor the factor to pull the rectangle dimensions from
 	 *  @return a pair of start, end indices
 	 */
-	static std::pair<int32, int32> ChooseRectangleOrientation(const FRectCandidate& Rect, const FFactor& Factor);
+	static FIndexPair ChooseRectangleOrientation(const FRectCandidate& Rect, const FFactor& Factor);
+
+	/** Chooses the position of the rectangle inside the larger rectangle that was chosen.
+	 * 
+	 *  @param ChosenRectangle the rectangle to choose the position for
+	 *  @param Orientation the IndexPair return from ChooseRectangleOrientation
+	 *  @param bBordering whether or not to prefer bordering indices
+	 *  @return A pair of bool values where the first indicates if i corresponds to rows and the second indicates
+	 *  if incrementing or decrementing
+	 */
+	static std::pair<bool, bool> ChooseRectanglePosition(FRectCandidate& ChosenRectangle, const FIndexPair& Orientation,
+		const bool bBordering);
 
 	/** Returns a set of factors with the minimum distance between Factor1 and Factor2. */
 	static TSet<FFactor> GetPreferredRectangleDimensions(const int32 BlockSize, const int32 NumRows,
 		const int32 NumCols);
 
-	/** Updates the rectangle candidates' AdjacentIndices and StartIndexCandidates. */
-	static void UpdateRectangleCandidateAdjacentIndices(FRectangleSet& Rectangles, const TSet<int32>& Adjacent,
-		const int32 Y);
+	/** Updates the rectangle candidates' AdjacentIndices and StartIndexCandidates.
+	 *
+	 *  @param Rectangles the rectangles to update
+	 *  @param Adjacent a set of adjacent indices to to update the rectangles with
+	 */
+	static void UpdateRectangleCandidateAdjacentIndices(FRectangleSet& Rectangles, const TSet<int32>& Adjacent);
 
 	/** Find all unique factors for a number.
 	 *
@@ -790,18 +783,6 @@ protected:
 	 *  @return a set of factors that best fit the given constraints
 	 */
 	static TSet<FFactor> FindBestFittingFactors(const int32 Number, const int32 Constraint1, const int32 Constraint2);
-
-	/** Returns a sorted array of factors from a set of factors.
-	 * 
-	 *  @param Factors a set of factors to sort
-	 *  @return an array of factors sorted by minimum distance
-	 */
-	static TArray<FFactor> SortFactorsByMinimumDistance(const TSet<FFactor>& Factors);
-
-	/** Returns an array of (Row, Column) pairs where each is a member of the Bordering set and falls within the
-	 *  min and max indices of the rectangle. */
-	static TArray<std::pair<int32, int32>> GetAdjacentGridBlockIndices(const TSet<USpawnArea*>& Bordering,
-		const FRectCandidate& Rect, const int32 NumCols);
 
 	/** Returns whether or not a number is prime.
 	 *
@@ -912,7 +893,7 @@ public:
 
 	/** Prints debug info about rectangles found. */
 	static void PrintDebug_GridLargestRect(const FRectangleSet& Rectangles, const FRectCandidate& Chosen,
-		const int32 NumCols, const int32 MaxAllowedStartRowIndex, const int32 MaxAllowedStartColIndex);
+		const int32 NumCols, const FIndexPair& Orientation);
 
 	/** Prints a formatted matrix (upside down from how indexes appear in SpawnAreas so that it matches in game). */
 	static void PrintDebug_Matrix(const TArray<int32>& Matrix, const int32 NumRows, const int32 NumCols);
@@ -1021,9 +1002,8 @@ private:
 	UPROPERTY()
 	TSet<USpawnArea*> CachedRecent;
 
-	/** A set of the most recently spawned grid block of SpawnAreas */
-	UPROPERTY()
-	mutable TSet<USpawnArea*> MostRecentGridBlock;
+	/** An array of the most recently spawned grid block sets */
+	mutable TArray<TSet<USpawnArea*>> RecentGridBlocks;
 
 	/** The most recently activated SpawnArea */
 	UPROPERTY()
@@ -1039,3 +1019,23 @@ private:
 	/** Delegate used to request a SpawnArea selection from the RLC */
 	FRequestRLCSpawnArea RequestRLCSpawnArea;
 };
+
+/** Returns a set of Spawn Area indices adjacent to the InSpawnAreas according to Directions.
+ *
+ * 	@param InSpawnAreas a set of Spawn Areas to find adjacent Spawn Areas from
+ *  @param Directions the directions allowed to choose from
+ *  @return a set of adjacent Spawn Area indices
+ */
+template <>
+TSet<int32> USpawnAreaManagerComponent::GetAdjacentSpawnAreas<int32>(const TSet<USpawnArea*>& InSpawnAreas,
+	const TSet<EBorderingDirection>& Directions) const;
+
+/** Returns a set of Spawn Areas adjacent to the InSpawnAreas according to Directions.
+ *
+ * 	@param InSpawnAreas a set of Spawn Areas to find adjacent Spawn Areas from
+ *  @param Directions the directions allowed to choose from
+ *  @return a set of adjacent SpawnAreas
+ */
+template <>
+TSet<USpawnArea*> USpawnAreaManagerComponent::GetAdjacentSpawnAreas<USpawnArea*>(const TSet<USpawnArea*>& InSpawnAreas,
+	const TSet<EBorderingDirection>& Directions) const;

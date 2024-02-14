@@ -61,11 +61,13 @@ protected:
 	TObjectPtr<UBSGameModeDataAsset> GameModeDataAsset;
 	
 	/** Default Game Modes to test. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameModes|Default", meta = (EditCondition = "GameModeDataAsset != nullptr"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameModes|Default",
+		meta = (EditCondition = "GameModeDataAsset != nullptr"))
 	TSet<EBaseGameMode> DefaultGameModesToTest;
 
 	/** Default Game Mode Difficulties to test. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameModes|Default", meta = (EditCondition = "GameModeDataAsset != nullptr"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameModes|Default",
+		meta = (EditCondition = "GameModeDataAsset != nullptr"))
 	TSet<EGameModeDifficulty> DefaultGameModeDifficultiesToTest;
 	
 	/** Custom Game modes to test that have been exported as a string from within the game. */
@@ -75,6 +77,10 @@ protected:
 	/** Blueprint class to use for the TargetManager. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Configuration")
 	TSubclassOf<ATargetManager> TargetManagerClass;
+
+	/** Game settings for the spawned targets. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Configuration")
+	FPlayerSettings_Game PlayerSettings_Game;
 	
 	/** The length of time to test each individual game mode and difficulty. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Configuration")
@@ -109,9 +115,6 @@ protected:
 	/** The spawned target manager. */
 	UPROPERTY()
 	TObjectPtr<ATargetManager> TargetManager;
-	
-	/** Game settings for the spawned targets; never changes. */
-	FPlayerSettings_Game PlayerSettings_Game;
 
 	/** Timer that spans the game mode duration. */
 	FTimerHandle GameModeTimer;
