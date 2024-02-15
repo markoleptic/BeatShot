@@ -352,17 +352,22 @@ namespace Constants
 	inline constexpr float MaxValue_MinTargetDistance = 600.f;
 	inline constexpr float SnapSize_MinTargetDistance = 5.f;
 
-	inline constexpr float MinValue_HorizontalSpread = 200.f;
+	inline constexpr float MinValue_HorizontalSpread = 100.f;
 	inline constexpr float MaxValue_HorizontalSpread = 3200.f;
 	inline constexpr float SnapSize_HorizontalSpread = 100.f;
-
-	inline constexpr float MinValue_VerticalSpread = 200.f;
+	
+	inline constexpr float MinValue_VerticalSpread = 100.f;
 	inline constexpr float MaxValue_VerticalSpread = 1000.f;
 	inline constexpr float SnapSize_VerticalSpread = 100.f;
+	inline constexpr float HeadshotHeight_VerticalSpread = 50.f;
 
 	inline constexpr float MinValue_ForwardSpread = 0.f;
 	inline constexpr float MaxValue_ForwardSpread = 2000.f;
-	inline constexpr float SnapSize_ForwardSpread = 100.f;
+	inline constexpr float SnapSize_ForwardSpread = 50.f;
+	
+	inline const FVector MinValue_DynamicSpread(0.f, 100.f, 100.f);
+	inline const FVector MaxValue_DynamicSpread(2000.f, 3200.f, 1000.f);
+	inline const FVector SnapSize_DynamicSpread(50.f, 100.f, 100.f);
 
 	inline constexpr float MinValue_TargetScale = 0.25f;
 	inline constexpr float MaxValue_TargetScale = 2.f;
@@ -477,10 +482,6 @@ namespace Constants
 	inline constexpr float MinValue_DynamicDecrementAmount = 1.f;
 	inline constexpr float MaxValue_DynamicDecrementAmount = 150.f;
 	inline constexpr float SnapSize_DynamicDecrementAmount = 1.f;
-
-	inline const FVector MinValue_DynamicSpread(0.f, 200.f, 200.f);
-	inline const FVector MaxValue_DynamicSpread(2000.f, 3200.f, 1000.f);
-	inline const FVector SnapSize_DynamicSpread(100.f, 100.f, 100.f);
 
 	#pragma endregion
 

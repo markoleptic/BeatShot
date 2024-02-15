@@ -461,7 +461,7 @@ bool ATarget::ActivateTarget(const float Lifespan)
 	if (IsActivated() && !Config.bAllowActivationWhileActivated) return false;
 
 	// Don't update activation target scale for re-activations
-	if (!IsActivated()) TargetScale_Activation = GetTargetScale_Current();
+	if (!IsActivated()) TargetScale_Activation = GetActorScale();
 
 	// Only set an expiration timer if Lifespan > 0
 	if (Lifespan > 0.f)
@@ -488,7 +488,7 @@ bool ATarget::ActivateTarget(const float Lifespan)
 void ATarget::DeactivateTarget()
 {
 	StopAllTimelines();
-	TargetScale_Deactivation = GetTargetScale_Current();
+	TargetScale_Deactivation = GetActorScale();
 	CurrentDeactivationHealthThreshold -= Config.DeactivationHealthLostThreshold;
 	bIsCurrentlyActivated = false;
 }
@@ -748,11 +748,6 @@ FVector ATarget::GetTargetScale_Activation() const
 		return TargetScale_Activation;
 	}
 	return GetTargetScale_Spawn();
-}
-
-FVector ATarget::GetTargetScale_Current() const
-{
-	return GetActorScale();
 }
 
 FVector ATarget::GetTargetScale_Deactivation() const

@@ -2,6 +2,8 @@
 
 
 #include "WidgetComponents/GameModePreviewWidgets/TargetWidget.h"
+
+#include "GlobalConstants.h"
 #include "Components/Image.h"
 #include "Components/OverlaySlot.h"
 
@@ -19,7 +21,8 @@ void UTargetWidget::SetTargetScale(const FVector& NewScale) const
 {
 	if (TargetImage)
 	{
-		TargetImage->SetDesiredSizeOverride(FVector2d(100.f * NewScale.X, 100.f * NewScale.Y));
+		TargetImage->SetDesiredSizeOverride(FVector2d(Constants::SphereTargetDiameter * NewScale.X,
+			Constants::SphereTargetDiameter * NewScale.Y));
 	}
 }
 

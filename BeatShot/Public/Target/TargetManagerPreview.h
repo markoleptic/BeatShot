@@ -23,9 +23,6 @@ public:
 	void SetSimulatePlayerDestroyingTargets(const bool bInSimulatePlayerDestroyingTargets,
 		const float InDestroyChance = 1.f);
 
-	/** Broadcast when a target is spawned so that a TargetWidget can also be spawned */
-	FCreateTargetWidget CreateTargetWidget;
-
 	/** Whether or not to tell spawned targets to artificially destroy themselves early, simulating a player destroying it */
 	bool bSimulatePlayerDestroyingTargets = false;
 

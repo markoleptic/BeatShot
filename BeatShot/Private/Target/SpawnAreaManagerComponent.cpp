@@ -74,9 +74,8 @@ USpawnAreaManagerComponent::USpawnAreaManagerComponent()
 	#endif
 
 	BSConfig = nullptr;
-	Size = FIntVector3();
-	SpawnAreaInc = FIntVector3();
-	SpawnAreaScale = FVector();
+	TotalSpawnAreaSize = FIntVector3();
+	SpawnAreaDimensions = FIntVector3();
 	Origin = FVector();
 	StaticExtents = FVector();
 	StaticExtrema = FExtrema();
@@ -111,7 +110,7 @@ void USpawnAreaManagerComponent::Init(const TSharedPtr<FBSConfig>& InConfig, con
 	StaticExtents = InStaticExtents;
 	StaticExtrema = InStaticExtrema;
 
-	SetAppropriateSpawnMemoryValues(SpawnAreaInc, SpawnAreaScale, BSConfig.Get(), StaticExtents);
+	SetSpawnAreaDimensions();
 	InitializeSpawnAreas();
 
 	OriginSpawnArea = GetSpawnArea(Origin);
@@ -119,68 +118,43 @@ void USpawnAreaManagerComponent::Init(const TSharedPtr<FBSConfig>& InConfig, con
 	#if !UE_BUILD_SHIPPING
 	if (!GIsAutomationTesting)
 	{
-		UE_LOG(LogTargetManager, Display, TEXT("Origin: %s "), *Origin.ToCompactString());
-		UE_LOG(LogTargetManager, Display, TEXT("StaticExtents: %s "), *StaticExtents.ToCompactString());
-		UE_LOG(LogTargetManager, Display, TEXT("StaticExtrema Min: %s Max: %s"), *StaticExtrema.Min.ToCompactString(),
-			*StaticExtrema.Max.ToCompactString());
-		UE_LOG(LogTargetManager, Display, TEXT("SpawnMemoryScaleY: %.4f SpawnMemoryScaleZ: %.4f"), SpawnAreaScale.Y,
-			SpawnAreaScale.Z);
-		UE_LOG(LogTargetManager, Display, TEXT("SpawnAreaIncY: %d SpawnAreaIncZ: %d"), SpawnAreaInc.Y, SpawnAreaInc.Z);
-		UE_LOG(LogTargetManager, Display, TEXT("SpawnCounterSize: %d Allocated Size: %llu"), SpawnAreas.Num(),
+		UE_LOG(LogTargetManager, Display, TEXT("Origin: %s "), *Origin.ToString());
+		UE_LOG(LogTargetManager, Display, TEXT("Extents: %s "), *StaticExtents.ToString());
+		UE_LOG(LogTargetManager, Display, TEXT("Extrema Min: %s Max: %s"), *StaticExtrema.Min.ToString(),
+			*StaticExtrema.Max.ToString());
+		UE_LOG(LogTargetManager, Display, TEXT("SpawnAreaInc: Y: %d Z: %d"), SpawnAreaDimensions.Y, SpawnAreaDimensions.Z);
+		UE_LOG(LogTargetManager, Display, TEXT("Num Spawn Areas: %d Allocated Size: %llu"), SpawnAreas.Num(),
 			SpawnAreas.GetAllocatedSize());
 	}
 	#endif
 }
 
-void USpawnAreaManagerComponent::SetAppropriateSpawnMemoryValues(FIntVector3& OutSpawnAreaInc, FVector& OutSpawnAreaScale,
-	const FBSConfig* InCfg, const FVector& InStaticExtents)
+void USpawnAreaManagerComponent::SetSpawnAreaDimensions()
 {
-	const int32 HalfWidth = InStaticExtents.Y;
-	const int32 HalfHeight = InStaticExtents.Z;
-	bool bWidthScaleSelected = false;
-	bool bHeightScaleSelected = false;
-
-	switch (InCfg->TargetConfig.TargetDistributionPolicy)
+	const int32 HalfWidth = StaticExtents.Y;
+	const int32 HalfHeight = StaticExtents.Z;
+	
+	switch (BSConfig->TargetConfig.TargetDistributionPolicy)
 	{
 	case ETargetDistributionPolicy::HeadshotHeightOnly:
 		{
-			OutSpawnAreaScale.Z = 1.f;
-			OutSpawnAreaInc.Z = 1;
-			for (const int32 Scale : PreferredSpawnAreaIncScales)
-			{
-				if (!bWidthScaleSelected)
-				{
-					if (HalfWidth % Scale == 0)
-					{
-						OutSpawnAreaInc.Y = Scale;
-						OutSpawnAreaScale.Y = 1.f / Scale;
-						bWidthScaleSelected = true;
-					}
-				}
-				if (bWidthScaleSelected)
-				{
-					break;
-				}
-			}
-			if (!bWidthScaleSelected)
-			{
-				UE_LOG(LogTargetManager, Warning, TEXT("Couldn't Find Width for StaticExtents: Y:%f Z:%f"),
-					InStaticExtents.Y, InStaticExtents.Z);
-			}
+			SpawnAreaDimensions.Y = Constants::HeadshotHeight_VerticalSpread;
+			SpawnAreaDimensions.Z = Constants::HeadshotHeight_VerticalSpread;
 		}
 		break;
 	case ETargetDistributionPolicy::None:
 	case ETargetDistributionPolicy::EdgeOnly:
 	case ETargetDistributionPolicy::FullRange:
 		{
-			for (const int32 Scale : PreferredSpawnAreaIncScales)
+			bool bWidthScaleSelected = false;
+			bool bHeightScaleSelected = false;
+			for (const int32 Scale : PreferredSpawnAreaDimensions)
 			{
 				if (!bWidthScaleSelected)
 				{
 					if (HalfWidth % Scale == 0)
 					{
-						OutSpawnAreaInc.Y = Scale;
-						OutSpawnAreaScale.Y = 1.f / Scale;
+						SpawnAreaDimensions.Y = Scale;
 						bWidthScaleSelected = true;
 					}
 				}
@@ -188,8 +162,7 @@ void USpawnAreaManagerComponent::SetAppropriateSpawnMemoryValues(FIntVector3& Ou
 				{
 					if (HalfHeight % Scale == 0)
 					{
-						OutSpawnAreaInc.Z = Scale;
-						OutSpawnAreaScale.Z = 1.f / Scale;
+						SpawnAreaDimensions.Z = Scale;
 						bHeightScaleSelected = true;
 					}
 				}
@@ -201,17 +174,15 @@ void USpawnAreaManagerComponent::SetAppropriateSpawnMemoryValues(FIntVector3& Ou
 			if (!bWidthScaleSelected || !bHeightScaleSelected)
 			{
 				UE_LOG(LogTargetManager, Warning, TEXT("Couldn't Find Height/Width for StaticExtents: Y:%f Z:%f"),
-					InStaticExtents.Y, InStaticExtents.Z);
+					StaticExtents.Y, StaticExtents.Z);
 			}
 		}
 		break;
 	case ETargetDistributionPolicy::Grid:
 		{
-			const float MaxTargetSize = InCfg->TargetConfig.MaxSpawnedTargetScale * Constants::SphereTargetDiameter;
-			OutSpawnAreaInc.Y = InCfg->GridConfig.GridSpacing.X + MaxTargetSize;
-			OutSpawnAreaInc.Z = InCfg->GridConfig.GridSpacing.Y + MaxTargetSize;
-			OutSpawnAreaScale.Y = 1.f / OutSpawnAreaInc.Y;
-			OutSpawnAreaScale.Z = 1.f / OutSpawnAreaInc.Z;
+			const float MaxTargetSize = BSConfig->TargetConfig.MaxSpawnedTargetScale * Constants::SphereTargetDiameter;
+			SpawnAreaDimensions.Y = BSConfig->GridConfig.GridSpacing.X + MaxTargetSize;
+			SpawnAreaDimensions.Z = BSConfig->GridConfig.GridSpacing.Y + MaxTargetSize;
 		}
 		break;
 	}
@@ -234,14 +205,14 @@ void USpawnAreaManagerComponent::InitializeSpawnAreas()
 	const float TotalWidth = FMath::Abs(MaxY - MinY);
 	const float TotalHeight = FMath::Abs(MaxZ - MinZ);
 	
-	Size.Y = FMath::CeilToInt32(TotalWidth / SpawnAreaInc.Y);
-	Size.Z = FMath::CeilToInt32(TotalHeight / SpawnAreaInc.Z);
-	const int32 TotalSize = Size.Y * Size.Z;
+	TotalSpawnAreaSize.Y = FMath::CeilToInt32(TotalWidth / SpawnAreaDimensions.Y);
+	TotalSpawnAreaSize.Z = FMath::CeilToInt32(TotalHeight / SpawnAreaDimensions.Z);
+	const int32 TotalSize = TotalSpawnAreaSize.Y * TotalSpawnAreaSize.Z;
 
-	USpawnArea::SetWidth(SpawnAreaInc.Y);
-	USpawnArea::SetHeight(SpawnAreaInc.Z);
-	USpawnArea::SetTotalNumHorizontalSpawnAreas(Size.Y);
-	USpawnArea::SetTotalNumVerticalSpawnAreas(Size.Z);
+	USpawnArea::SetWidth(SpawnAreaDimensions.Y);
+	USpawnArea::SetHeight(SpawnAreaDimensions.Z);
+	USpawnArea::SetTotalNumHorizontalSpawnAreas(TotalSpawnAreaSize.Y);
+	USpawnArea::SetTotalNumVerticalSpawnAreas(TotalSpawnAreaSize.Z);
 	USpawnArea::SetSize(TotalSize);
 	USpawnArea::SetMinDistanceBetweenTargets(TargetConfig().MinDistanceBetweenTargets);
 	USpawnArea::SetTotalSpawnAreaExtrema(StaticExtrema);
@@ -249,16 +220,16 @@ void USpawnAreaManagerComponent::InitializeSpawnAreas()
 	SpawnAreas.Reserve(TotalSize);
 	AreaKeyMap.Reserve(TotalSize);
 
-	for (float Z = MinZ; Z < MaxZ; Z += SpawnAreaInc.Z)
+	for (float Z = MinZ; Z < MaxZ; Z += SpawnAreaDimensions.Z)
 	{
 		SizeY = 0;
-		for (float Y = MinY; Y < MaxY; Y += SpawnAreaInc.Y)
+		for (float Y = MinY; Y < MaxY; Y += SpawnAreaDimensions.Y)
 		{
 			const FVector Loc(Origin.X, Y, Z);
 			const FSetElementId ID = SpawnAreas.Emplace(NewObject<USpawnArea>());
 			
 			SpawnAreas[ID]->Init(Index, Loc);
-			AreaKeyMap.Add(FAreaKey(Loc, SpawnAreaInc), SpawnAreas[ID]);
+			AreaKeyMap.Add(FAreaKey(Loc, SpawnAreaDimensions), SpawnAreas[ID]);
 
 			Index++;
 			SizeY++;
@@ -266,8 +237,8 @@ void USpawnAreaManagerComponent::InitializeSpawnAreas()
 		SizeZ++;
 	}
 
-	ensure(Size.Y == SizeY);
-	ensure(Size.Z == SizeZ);
+	ensure(TotalSpawnAreaSize.Y == SizeY);
+	ensure(TotalSpawnAreaSize.Z == SizeZ);
 
 	CachedExtrema = SpawnAreas;
 }
@@ -277,9 +248,8 @@ void USpawnAreaManagerComponent::Clear()
 	GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
 	BSConfig.Reset();
 
-	Size = FIntVector3();
-	SpawnAreaInc = FIntVector3();
-	SpawnAreaScale = FVector();
+	TotalSpawnAreaSize = FIntVector3();
+	SpawnAreaDimensions = FIntVector3();
 	Origin = FVector();
 	StaticExtents = FVector();
 	StaticExtrema = FExtrema();
@@ -435,15 +405,15 @@ void USpawnAreaManagerComponent::OnExtremaChanged(const FExtrema& Extrema)
 		return;
 	case ETargetDistributionPolicy::EdgeOnly:
 		{
-			const float MaxY = Extrema.Max.Y - SpawnAreaInc.Y;
-			const float MaxZ = Extrema.Max.Z - SpawnAreaInc.Z;
+			const float MaxY = Extrema.Max.Y - SpawnAreaDimensions.Y;
+			const float MaxZ = Extrema.Max.Z - SpawnAreaDimensions.Z;
 
 			const float MinY = Extrema.Min.Y;
 			const float MinZ = Extrema.Min.Z;
 
 			TSet<USpawnArea*> Temp;
 
-			for (float Y = MinY; Y <= MaxY; Y += SpawnAreaInc.Y)
+			for (float Y = MinY; Y <= MaxY; Y += SpawnAreaDimensions.Y)
 			{
 				if (USpawnArea* SpawnArea_MinZ = GetSpawnArea(FVector(0, Y, MinZ)))
 				{
@@ -455,7 +425,7 @@ void USpawnAreaManagerComponent::OnExtremaChanged(const FExtrema& Extrema)
 				}
 			}
 
-			for (float Z = MinZ; Z <= MaxZ; Z += SpawnAreaInc.Z)
+			for (float Z = MinZ; Z <= MaxZ; Z += SpawnAreaDimensions.Z)
 			{
 				if (USpawnArea* SpawnArea_MinY = GetSpawnArea(FVector(0, MinY, Z)))
 				{
@@ -508,13 +478,13 @@ USpawnArea* USpawnAreaManagerComponent::GetSpawnArea(const FVector& InLocation) 
 	const FVector RelativeLocation = InLocation - Origin;
 
 	// Snap to lowest SpawnAreaInc (49.9 -> 0 if SpawnAreaInc value is 50)
-	int32 GridY = Origin.Y + SpawnAreaInc.Y * FMath::FloorToInt(RelativeLocation.Y / SpawnAreaInc.Y);
-	int32 GridZ = Origin.Z + SpawnAreaInc.Z * FMath::FloorToInt(RelativeLocation.Z / SpawnAreaInc.Z);
+	int32 GridY = Origin.Y + SpawnAreaDimensions.Y * FMath::FloorToInt(RelativeLocation.Y / SpawnAreaDimensions.Y);
+	int32 GridZ = Origin.Z + SpawnAreaDimensions.Z * FMath::FloorToInt(RelativeLocation.Z / SpawnAreaDimensions.Z);
 
-	GridY = FMath::Clamp(GridY, StaticExtrema.Min.Y, StaticExtrema.Max.Y - SpawnAreaInc.Y);
-	GridZ = FMath::Clamp(GridZ, StaticExtrema.Min.Z, StaticExtrema.Max.Z - SpawnAreaInc.Z);
+	GridY = FMath::Clamp(GridY, StaticExtrema.Min.Y, StaticExtrema.Max.Y - SpawnAreaDimensions.Y);
+	GridZ = FMath::Clamp(GridZ, StaticExtrema.Min.Z, StaticExtrema.Max.Z - SpawnAreaDimensions.Z);
 
-	const auto Found = AreaKeyMap.Find(FAreaKey(FVector(0, GridY, GridZ), SpawnAreaInc));
+	const auto Found = AreaKeyMap.Find(FAreaKey(FVector(0, GridY, GridZ), SpawnAreaDimensions));
 	return Found ? *Found : nullptr;
 }
 
@@ -947,12 +917,13 @@ TSet<USpawnArea*> USpawnAreaManagerComponent::GetSpawnableSpawnAreas(const TArra
 
 		if (USpawnArea* Chosen = ChooseSpawnableSpawnArea(PreviousSpawnArea, ValidSpawnAreasCopy, ChosenSpawnAreas))
 		{
-			// Set random sub point if not origin
-			if (Chosen->GetIndex() != GetOriginSpawnArea()->GetIndex())
+			if (TargetConfig().TargetDistributionPolicy != ETargetDistributionPolicy::HeadshotHeightOnly)
 			{
-				Chosen->SetChosenPoint(USpawnArea::GenerateRandomOffset());
+				if (GetOriginSpawnArea() && Chosen->GetIndex() != GetOriginSpawnArea()->GetIndex())
+				{
+					Chosen->SetChosenPoint(USpawnArea::GenerateRandomOffset());
+				}
 			}
-
 			// Set the scale for the target to be spawned
 			Chosen->SetTargetScale(Scales[i]);
 		
@@ -1109,7 +1080,7 @@ void USpawnAreaManagerComponent::FindAdjacentGridUsingDFS(TSet<USpawnArea*>& Val
 		TSet<USpawnArea*> Adjacent;
 		for (const TSet<USpawnArea*>& GridBlock : RecentGridBlocks)
 		{
-			const TSet<USpawnArea*>&& NewAdjacent = GetAdjacentSpawnAreas<USpawnArea*>(GridBlock, IndexTypes::All);
+			const TSet<USpawnArea*>&& NewAdjacent = GetAdjacentSpawnAreas<USpawnArea*>(GridBlock, DirectionTypes::All);
 			const TSet<USpawnArea*>&& Common = Adjacent.Intersect(NewAdjacent);
 			Adjacent = Adjacent.Union(NewAdjacent).Difference(Common);
 		}
@@ -1183,7 +1154,8 @@ void USpawnAreaManagerComponent::FindGridBlockUsingLargestRectangle(TSet<USpawnA
 	SortedRectangleFactors.Sort();
 
 	// Get all rectangle candidates
-	FRectangleSet&& Rectangles = FindLargestValidRectangles(IndexValidity, SortedRectangleFactors, Size.Z, Size.Y);
+	FRectangleSet&& Rectangles = FindLargestValidRectangles(IndexValidity, SortedRectangleFactors,
+		TotalSpawnAreaSize.Z, TotalSpawnAreaSize.Y);
 	
 	// If bordering, find the adjacent indices from recent Spawn Areas, and add them to rectangles they intersect with
 	if (bBordering)
@@ -1191,7 +1163,7 @@ void USpawnAreaManagerComponent::FindGridBlockUsingLargestRectangle(TSet<USpawnA
 		TSet<int32> Adjacent;
 		for (const TSet<USpawnArea*>& GridBlock : RecentGridBlocks)
 		{
-			const TSet<int32>&& NewAdjacent = GetAdjacentSpawnAreas<int32>(GridBlock, IndexTypes::All);
+			const TSet<int32>&& NewAdjacent = GetAdjacentSpawnAreas<int32>(GridBlock, DirectionTypes::All);
 			const TSet<int32>&& Common = Adjacent.Intersect(NewAdjacent);
 			Adjacent = Adjacent.Union(NewAdjacent).Difference(Common);
 		}
@@ -1224,8 +1196,8 @@ void USpawnAreaManagerComponent::FindGridBlockUsingLargestRectangle(TSet<USpawnA
 	#if !UE_BUILD_SHIPPING
 	if (bPrintDebug_Grid)
 	{
-		PrintDebug_Matrix(IndexValidity, Size.Z, Size.Y);
-		PrintDebug_GridLargestRect(Rectangles, ChosenRectangle, Size.Y, Orientation);
+		PrintDebug_Matrix(IndexValidity, TotalSpawnAreaSize.Z, TotalSpawnAreaSize.Y);
+		PrintDebug_GridLargestRect(Rectangles, ChosenRectangle, TotalSpawnAreaSize.Y, Orientation);
 	}
 	#endif
 	
@@ -1251,7 +1223,7 @@ void USpawnAreaManagerComponent::FindGridBlockUsingLargestRectangle(TSet<USpawnA
 			{
 				break;
 			}
-			const int32 Index = bIAsRow ? i * Size.Y + j : j * Size.Y + i;
+			const int32 Index = bIAsRow ? i * TotalSpawnAreaSize.Y + j : j * TotalSpawnAreaSize.Y + i;
 			if (USpawnArea* SpawnArea = GetSpawnArea(Index))
 			{
 				ValidSpawnAreas.Add(SpawnArea);
@@ -1268,7 +1240,7 @@ void USpawnAreaManagerComponent::FindGridBlockUsingLargestRectangle(TSet<USpawnA
 	// Choose a remainder index if ActualBlockSize is prime and a smaller grid is chosen
 	if (ValidSpawnAreas.Num() < ChosenRectangle.ActualBlockSize)
 	{
-		const TSet<int32>&& RemainderSet = GetAdjacentSpawnAreas<int32>(ValidSpawnAreas, IndexTypes::GridBlock);
+		const TSet<int32>&& RemainderSet = GetAdjacentSpawnAreas<int32>(ValidSpawnAreas, DirectionTypes::GridBlock);
 		if (!RemainderSet.IsEmpty())
 		{
 			if (USpawnArea* SpawnArea = GetSpawnArea(RemainderSet.Array()[FMath::RandRange(0, RemainderSet.Num() - 1)]))
@@ -1401,14 +1373,14 @@ void USpawnAreaManagerComponent::UpdateMostRecentGridBlocks(const TSet<USpawnAre
 
 template<typename OutType>
 TSet<OutType> USpawnAreaManagerComponent::GetAdjacentSpawnAreas(const TSet<USpawnArea*>& InSpawnAreas,
-	const TSet<EBorderingDirection>& Directions) const
+	const TSet<EAdjacentDirection>& Directions) const
 {
 	return TSet<OutType>();
 }
 
 template <>
 TSet<int32> USpawnAreaManagerComponent::GetAdjacentSpawnAreas<int32>(const TSet<USpawnArea*>& InSpawnAreas,
-	const TSet<EBorderingDirection>& Directions) const
+	const TSet<EAdjacentDirection>& Directions) const
 {
 	TSet<int32> Out;
 	
@@ -1429,7 +1401,7 @@ TSet<int32> USpawnAreaManagerComponent::GetAdjacentSpawnAreas<int32>(const TSet<
 
 template<>
 TSet<USpawnArea*> USpawnAreaManagerComponent::GetAdjacentSpawnAreas<USpawnArea*>(const TSet<USpawnArea*>& InSpawnAreas,
-	const TSet<EBorderingDirection>& Directions) const
+	const TSet<EAdjacentDirection>& Directions) const
 {
 	TSet<USpawnArea*> Out;
 	
@@ -1458,32 +1430,6 @@ TArray<int32> USpawnAreaManagerComponent::CreateIndexValidityArray(const TSet<US
 		IndexValidity[SpawnArea->GetIndex()] = 1;
 	}
 	return IndexValidity;
-}
-
-TSet<USpawnArea*> USpawnAreaManagerComponent::ConvertIndicesToSpawnAreas(const TSet<int32>& InIndices) const
-{
-	TSet<USpawnArea*> Out;
-	for (const int32 Index : InIndices)
-	{
-		if (USpawnArea* SpawnArea = GetSpawnArea(Index))
-		{
-			Out.Add(SpawnArea);
-		}
-	}
-	return Out;
-}
-
-TSet<int32> USpawnAreaManagerComponent::ConvertSpawnAreasToIndices(const TSet<USpawnArea*>& InSpawnAreas)
-{
-	TSet<int32> Out;
-	for (const USpawnArea* SpawnArea : InSpawnAreas)
-	{
-		if (SpawnArea)
-		{
-			Out.Add(SpawnArea->GetIndex());
-		}
-	}
-	return Out;
 }
 
 FRectangleSet USpawnAreaManagerComponent::FindLargestValidRectangles(const TArray<int32>& IndexValidity,
@@ -1901,12 +1847,12 @@ FAccuracyData USpawnAreaManagerComponent::GetLocationAccuracy()
 		#endif
 	}
 
-	FAccuracyData OutData = GetAveragedAccuracyData(TotalSpawns, TotalHits, Size.Z, Size.Y);
+	FAccuracyData OutData = GetAveragedAccuracyData(TotalSpawns, TotalHits, TotalSpawnAreaSize.Z, TotalSpawnAreaSize.Y);
 
-	OutData.SpawnAreaSize = FVector(Size.X, Size.Y, Size.Z);
+	OutData.SpawnAreaSize = FVector(TotalSpawnAreaSize.X, TotalSpawnAreaSize.Y, TotalSpawnAreaSize.Z);
 	OutData.CalculateAccuracy();
 
-	if (Size.Y < 5 || Size.Z < 5)
+	if (TotalSpawnAreaSize.Y < 5 || TotalSpawnAreaSize.Z < 5)
 	{
 		OutData.ModifyForSmallerInput();
 	}

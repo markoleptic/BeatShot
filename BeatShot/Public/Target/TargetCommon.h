@@ -17,7 +17,7 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FOnTargetActivated_AimBot, ATarget* Target);
 
 /** Enum representing the bordering directions for a SpawnArea */
 UENUM(BlueprintType)
-enum class EBorderingDirection : uint8
+enum class EAdjacentDirection : uint8
 {
 	None UMETA(DisplayName="None"),
 	Left UMETA(DisplayName="Left"),
@@ -30,44 +30,47 @@ enum class EBorderingDirection : uint8
 	DownRight UMETA(DisplayName="DownRight"),
 };
 
-ENUM_RANGE_BY_FIRST_AND_LAST(EBorderingDirection, EBorderingDirection::Left, EBorderingDirection::DownRight);
+ENUM_RANGE_BY_FIRST_AND_LAST(EAdjacentDirection, EAdjacentDirection::Left, EAdjacentDirection::DownRight);
 
 /** Enum representing the types of Grid Indices */
 UENUM(BlueprintType)
 enum class EGridIndexType : uint8
 {
 	None UMETA(DisplayName="None"),
-	Corner_TopLeft UMETA(DisplayName="Corner_TopLeft"),
-	Corner_TopRight UMETA(DisplayName="Corner_TopRight"),
-	Corner_BottomRight UMETA(DisplayName="Corner_BottomRight"),
-	Corner_BottomLeft UMETA(DisplayName="Corner_BottomLeft"),
-	Border_Top UMETA(DisplayName="Border_Top"),
-	Border_Right UMETA(DisplayName="Border_Right"),
-	Border_Bottom UMETA(DisplayName="Border_Bottom"),
-	Border_Left UMETA(DisplayName="Border_Left"),
+	TopLeftCorner UMETA(DisplayName="TopLeftCorner"),
+	TopRightCorner UMETA(DisplayName="TopRightCorner"),
+	BottomRightCorner UMETA(DisplayName="BottomRightCorner"),
+	BottomLeftCorner UMETA(DisplayName="BottomLeftCorner"),
+	Top UMETA(DisplayName="Top"),
+	Right UMETA(DisplayName="Right"),
+	Bottom UMETA(DisplayName="Bottom"),
+	Left UMETA(DisplayName="Left"),
 	Middle UMETA(DisplayName="Middle"),
+	SingleRowLeft UMETA(DisplayName="SingleRowLeft"),
+	SingleRowRight UMETA(DisplayName="SingleRowRight"),
+	SingleRowMiddle UMETA(DisplayName="SingleRowMiddle"),
 };
 
-ENUM_RANGE_BY_FIRST_AND_LAST(EGridIndexType, EGridIndexType::Corner_TopLeft, EGridIndexType::Middle);
+ENUM_RANGE_BY_FIRST_AND_LAST(EGridIndexType, EGridIndexType::TopLeftCorner, EGridIndexType::SingleRowMiddle);
 
-namespace IndexTypes
+namespace DirectionTypes
 {
 	/** Cardinal direction Index types that are valid to use when searching for GridBlocks */
 	inline const TSet GridBlock = {
-		EBorderingDirection::Left, EBorderingDirection::Right, EBorderingDirection::Up, EBorderingDirection::Down
+		EAdjacentDirection::Left, EAdjacentDirection::Right, EAdjacentDirection::Up, EAdjacentDirection::Down
 	};
 
 	/** Up-Down only index types */
-	inline const TSet Vertical = {EBorderingDirection::Up, EBorderingDirection::Down};
+	inline const TSet Vertical = {EAdjacentDirection::Up, EAdjacentDirection::Down};
 
 	/** Left-right only index types */
-	inline const TSet Horizontal = {EBorderingDirection::Left, EBorderingDirection::Right};
+	inline const TSet Horizontal = {EAdjacentDirection::Left, EAdjacentDirection::Right};
 
 	/** All index types */
 	inline const TSet All = {
-		EBorderingDirection::UpLeft, EBorderingDirection::UpRight, EBorderingDirection::DownLeft,
-		EBorderingDirection::DownRight, EBorderingDirection::Left, EBorderingDirection::Right, EBorderingDirection::Up,
-		EBorderingDirection::Down
+		EAdjacentDirection::UpLeft, EAdjacentDirection::UpRight, EAdjacentDirection::DownLeft,
+		EAdjacentDirection::DownRight, EAdjacentDirection::Left, EAdjacentDirection::Right, EAdjacentDirection::Up,
+		EAdjacentDirection::Down
 	};
 }
 

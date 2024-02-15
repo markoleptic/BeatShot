@@ -9,34 +9,48 @@
 #include "WidgetComponents/GameModePreviewWidgets/TargetWidget.h"
 #include "CGMWC_Preview.generated.h"
 
-DECLARE_DELEGATE_RetVal(UTargetWidget*, FCreateTargetWidget);
-
 UCLASS()
 class USERINTERFACE_API UCGMWC_Preview : public UCGMWC_Base
 {
 	GENERATED_BODY()
 
 public:
-	void SetBoxBounds_Current(const FVector2d& InBounds, const float VerticalOffset);
+	/** Sets the bounds and position of the BoxBounds_Current widget. */
+	void SetBoxBounds_Current(const FVector2d& InBounds, const float VerticalOffset) const;
 
-	void SetBoxBounds_Max(const FVector2d& InBounds, const float VerticalOffset);
+	/** Sets the bounds and position of the BoxBounds_Max widget. */
+	void SetBoxBounds_Max(const FVector2d& InBounds, const float VerticalOffset) const;
 
-	void SetBoxBounds_Min(const FVector2d& InBounds, const float VerticalOffset);
+	/** Sets the bounds and position of the BoxBounds_Min widget. */
+	void SetBoxBounds_Min(const FVector2d& InBounds, const float VerticalOffset) const;
 
-	void SetBoxBoundsVisibility_Max(const ESlateVisibility& InVisibility);
+	/** Sets the visibility of the BoxBounds_Max. */
+	void SetBoxBoundsVisibility_Max(const ESlateVisibility& InVisibility) const;
 
-	void SetBoxBoundsVisibility_Min(const ESlateVisibility& InVisibility);
+	/** Sets the visibility of the BoxBounds_Min. */
+	void SetBoxBoundsVisibility_Min(const ESlateVisibility& InVisibility) const;
 
-	void SetStaticBoundsHeight(const float InHeight);
+	/** Sets the height override of the StaticBounds SizeBox. */
+	void SetStaticBoundsHeight(const float InHeight) const;
 
-	void SetFloorDistanceHeight(const float InHeight);
+	/** Sets the height override of the FloorDistance SizeBox. */
+	void SetFloorDistanceHeight(const float InHeight) const;
 
-	void SetText_FloorDistance(const FText& InText);
+	/** Sets the text of TextBlock_FloorDistance. */
+	void SetText_FloorDistance(const FText& InText) const;
 
-	void SetOverlayPadding(const FMargin InMargin);
+	/** Sets the Overlay and BottomOverlay's left and right padding,
+	 * and sets the InMargin.Top to TopSpacer's Y value. */
+	void SetOverlayPadding(const FMargin InMargin) const;
 
-	UFUNCTION()
+	/** Returns the TopSpacer Y value. */
+	float GetSpacerOffset() const;
+	
+	/** Returns a UTargetWidget that was created and added to the Overlay. */
 	UTargetWidget* ConstructTargetWidget();
+	
+	/** Shows or hides the BoxBounds Current, Min, Max and TextBlock_GameModePreviewAvailability */
+	void ToggleGameModePreview(const bool bEnable) const;
 
 	UPROPERTY(BlueprintReadOnly, meta=(BindWidget))
 	UBoxBoundsWidget* BoxBounds_Current;
@@ -54,15 +68,20 @@ public:
 	USizeBox* FloorDistance;
 
 	UPROPERTY(BlueprintReadOnly, meta=(BindWidget))
-	UTextBlock* TextBlock_FloorDistance;
+	UVerticalBox* Box_StaticBoundsAndIndicators;
 
-	/** Shows or hides the BoxBounds Current, Min, Max and TextBlock_GameModePreviewAvailability */
-	void ToggleGameModePreview(const bool bEnable);
+	UPROPERTY(BlueprintReadOnly, meta=(BindWidget))
+	USpacer* TopSpacer;
+	
+	UPROPERTY(BlueprintReadOnly, meta=(BindWidget))
+	UTextBlock* TextBlock_FloorDistance;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_RefreshPreview;
+	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_Create;
+	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_Start;
 

@@ -16,6 +16,7 @@ class UReinforcementLearningComponent;
 class USpawnAreaManagerComponent;
 struct FAccuracyData;
 struct FPlayerSettings_Game;
+struct FBS_TargetConfig;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTargetManager, Log, All);
 
@@ -23,7 +24,7 @@ static constexpr int32 DefaultNumTargetsToActivate = 100;
 static constexpr int32 DefaultMinToActivate_MinClamp = 1;
 static constexpr int32 MaxToActivate_MinClamp = 1;
 
-/** Class responsible for spawning and managing targets for all game modes */
+/** Class responsible for spawning and managing targets for all game modes. */
 UCLASS()
 class BEATSHOT_API ATargetManager : public AActor, public ISaveLoadInterface
 {
@@ -111,7 +112,7 @@ public:
 
 protected:
 	/** Initializes the Composite Curve Tables */
-	void Init_Tables();
+	void Init_Tables() const;
 
 public:
 	/** Called from BSGameMode */
@@ -156,14 +157,14 @@ protected:
 
 	/** Activate target(s)/SpawnArea(s) if there are any ManagedTargets that are not activated. Handles permanent
 	 *  and temporary targets */
-	int32 HandleTargetActivation();
+	int32 HandleTargetActivation() const;
 
 	/** Handles permanently activated targets so they can still receive activation responses, called in
 	 *  HandleTargetActivation */
 	void HandlePermanentlyActiveTargetActivation() const;
 
 	/** Activates already activated targets if the game mode specifies */
-	void HandleActivateAlreadyActivated();
+	void HandleActivateAlreadyActivated() const;
 	
 	/** Returns the number of targets that are allowed to be spawned at once, at runtime */
 	int32 GetNumberOfRuntimeTargetsToSpawn() const;
@@ -268,6 +269,11 @@ protected:
 	/** Evaluates the specified curve at InTime */
 	float GetCurveTableValue(const bool bIsSpawnArea, const int32 InTime) const;
 
+	/** Returns the maximum target radius for a game mode. */
+	static float GetMaxTargetRadius(const FBS_TargetConfig& InTargetCfg);
+
+	/** Returns the maximum target diameter for a game mode. */
+	static float GetMaxTargetDiameter(const FBS_TargetConfig& InTargetCfg);
 public:
 	
 	/** Function called from BSGameMode any time a player changes settings.

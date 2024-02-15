@@ -32,7 +32,7 @@ USpawnArea::USpawnArea()
 	TimeSetRecent = DBL_MAX;
 	GridIndexType = EGridIndexType::None;
 	OccupiedVertices = TSet<FVector>();
-	AdjacentIndexMap = TMap<EBorderingDirection, int32>();
+	AdjacentIndexMap = TMap<EAdjacentDirection, int32>();
 	Guid = FGuid();
 }
 
@@ -55,12 +55,14 @@ void USpawnArea::Init(const int32 InIndex, const FVector& InBottomLeftVertex)
 	bIsRecent = false;
 	TimeSetRecent = DBL_MAX;
 	GridIndexType = FindIndexType(InIndex, Size, TotalNumHorizontalSpawnAreas);
-	SetAdjacentIndices(GridIndexType, Index, TotalNumHorizontalSpawnAreas);
+	AdjacentIndexMap = CreateAdjacentIndices(GridIndexType, Index, TotalNumHorizontalSpawnAreas);
 	OccupiedVertices = TSet<FVector>();
 }
 
-void USpawnArea::SetAdjacentIndices(const EGridIndexType InGridIndexType, const int32 InIndex, const int32 InWidth)
+TMap<EAdjacentDirection, int32> USpawnArea::CreateAdjacentIndices(const EGridIndexType InGridIndexType, const int32 InIndex, const int32 InWidth)
 {
+	TMap<EAdjacentDirection, int32> Temp;
+	
 	const int32 UpLeft = InIndex + InWidth - 1;
 	const int32 Up = InIndex + InWidth;
 	const int32 UpRight = InIndex + InWidth + 1;
@@ -74,69 +76,84 @@ void USpawnArea::SetAdjacentIndices(const EGridIndexType InGridIndexType, const 
 	{
 	case EGridIndexType::None:
 		break;
-	case EGridIndexType::Corner_TopLeft:
-		AdjacentIndexMap.Add(EBorderingDirection::Right, Right);
-		AdjacentIndexMap.Add(EBorderingDirection::Down, Down);
-		AdjacentIndexMap.Add(EBorderingDirection::DownRight, DownRight);
+	case EGridIndexType::TopLeftCorner:
+		Temp.Add(EAdjacentDirection::Right, Right);
+		Temp.Add(EAdjacentDirection::Down, Down);
+		Temp.Add(EAdjacentDirection::DownRight, DownRight);
 		break;
-	case EGridIndexType::Corner_TopRight:
-		AdjacentIndexMap.Add(EBorderingDirection::Left, Left);
-		AdjacentIndexMap.Add(EBorderingDirection::Down, Down);
-		AdjacentIndexMap.Add(EBorderingDirection::DownLeft, DownLeft);
+	case EGridIndexType::TopRightCorner:
+		Temp.Add(EAdjacentDirection::Left, Left);
+		Temp.Add(EAdjacentDirection::Down, Down);
+		Temp.Add(EAdjacentDirection::DownLeft, DownLeft);
 		break;
-	case EGridIndexType::Corner_BottomRight:
-		AdjacentIndexMap.Add(EBorderingDirection::Left, Left);
-		AdjacentIndexMap.Add(EBorderingDirection::Up, Up);
-		AdjacentIndexMap.Add(EBorderingDirection::UpLeft, UpLeft);
+	case EGridIndexType::BottomRightCorner:
+		Temp.Add(EAdjacentDirection::Left, Left);
+		Temp.Add(EAdjacentDirection::Up, Up);
+		Temp.Add(EAdjacentDirection::UpLeft, UpLeft);
 		break;
-	case EGridIndexType::Corner_BottomLeft:
-		AdjacentIndexMap.Add(EBorderingDirection::Right, Right);
-		AdjacentIndexMap.Add(EBorderingDirection::Up, Up);
-		AdjacentIndexMap.Add(EBorderingDirection::UpRight, UpRight);
+	case EGridIndexType::BottomLeftCorner:
+		Temp.Add(EAdjacentDirection::Right, Right);
+		Temp.Add(EAdjacentDirection::Up, Up);
+		Temp.Add(EAdjacentDirection::UpRight, UpRight);
 		break;
-	case EGridIndexType::Border_Top:
-		AdjacentIndexMap.Add(EBorderingDirection::Left, Left);
-		AdjacentIndexMap.Add(EBorderingDirection::Right, Right);
-		AdjacentIndexMap.Add(EBorderingDirection::DownRight, DownRight);
-		AdjacentIndexMap.Add(EBorderingDirection::Down, Down);
-		AdjacentIndexMap.Add(EBorderingDirection::DownLeft, DownLeft);
+	case EGridIndexType::Top:
+		Temp.Add(EAdjacentDirection::Left, Left);
+		Temp.Add(EAdjacentDirection::Right, Right);
+		Temp.Add(EAdjacentDirection::DownRight, DownRight);
+		Temp.Add(EAdjacentDirection::Down, Down);
+		Temp.Add(EAdjacentDirection::DownLeft, DownLeft);
 		break;
-	case EGridIndexType::Border_Right:
-		AdjacentIndexMap.Add(EBorderingDirection::UpLeft, UpLeft);
-		AdjacentIndexMap.Add(EBorderingDirection::Up, Up);
-		AdjacentIndexMap.Add(EBorderingDirection::Left, Left);
-		AdjacentIndexMap.Add(EBorderingDirection::Down, Down);
-		AdjacentIndexMap.Add(EBorderingDirection::DownLeft, DownLeft);
+	case EGridIndexType::Right:
+		Temp.Add(EAdjacentDirection::UpLeft, UpLeft);
+		Temp.Add(EAdjacentDirection::Up, Up);
+		Temp.Add(EAdjacentDirection::Left, Left);
+		Temp.Add(EAdjacentDirection::Down, Down);
+		Temp.Add(EAdjacentDirection::DownLeft, DownLeft);
 		break;
-	case EGridIndexType::Border_Bottom:
-		AdjacentIndexMap.Add(EBorderingDirection::UpLeft, UpLeft);
-		AdjacentIndexMap.Add(EBorderingDirection::Up, Up);
-		AdjacentIndexMap.Add(EBorderingDirection::UpRight, UpRight);
-		AdjacentIndexMap.Add(EBorderingDirection::Right, Right);
-		AdjacentIndexMap.Add(EBorderingDirection::Left, Left);
+	case EGridIndexType::Bottom:
+		Temp.Add(EAdjacentDirection::UpLeft, UpLeft);
+		Temp.Add(EAdjacentDirection::Up, Up);
+		Temp.Add(EAdjacentDirection::UpRight, UpRight);
+		Temp.Add(EAdjacentDirection::Right, Right);
+		Temp.Add(EAdjacentDirection::Left, Left);
 		break;
-	case EGridIndexType::Border_Left:
-		AdjacentIndexMap.Add(EBorderingDirection::Up, Up);
-		AdjacentIndexMap.Add(EBorderingDirection::UpRight, UpRight);
-		AdjacentIndexMap.Add(EBorderingDirection::Right, Right);
-		AdjacentIndexMap.Add(EBorderingDirection::DownRight, DownRight);
-		AdjacentIndexMap.Add(EBorderingDirection::Down, Down);
+	case EGridIndexType::Left:
+		Temp.Add(EAdjacentDirection::Up, Up);
+		Temp.Add(EAdjacentDirection::UpRight, UpRight);
+		Temp.Add(EAdjacentDirection::Right, Right);
+		Temp.Add(EAdjacentDirection::DownRight, DownRight);
+		Temp.Add(EAdjacentDirection::Down, Down);
 		break;
 	case EGridIndexType::Middle:
-		AdjacentIndexMap.Add(EBorderingDirection::UpLeft, UpLeft);
-		AdjacentIndexMap.Add(EBorderingDirection::Up, Up);
-		AdjacentIndexMap.Add(EBorderingDirection::UpRight, UpRight);
-		AdjacentIndexMap.Add(EBorderingDirection::Right, Right);
-		AdjacentIndexMap.Add(EBorderingDirection::DownRight, DownRight);
-		AdjacentIndexMap.Add(EBorderingDirection::Down, Down);
-		AdjacentIndexMap.Add(EBorderingDirection::DownLeft, DownLeft);
-		AdjacentIndexMap.Add(EBorderingDirection::Left, Left);
+		Temp.Add(EAdjacentDirection::UpLeft, UpLeft);
+		Temp.Add(EAdjacentDirection::Up, Up);
+		Temp.Add(EAdjacentDirection::UpRight, UpRight);
+		Temp.Add(EAdjacentDirection::Right, Right);
+		Temp.Add(EAdjacentDirection::DownRight, DownRight);
+		Temp.Add(EAdjacentDirection::Down, Down);
+		Temp.Add(EAdjacentDirection::DownLeft, DownLeft);
+		Temp.Add(EAdjacentDirection::Left, Left);
+		break;
+	case EGridIndexType::SingleRowLeft:
+		Temp.Add(EAdjacentDirection::Right, Right);
+		break;
+	case EGridIndexType::SingleRowRight:
+		Temp.Add(EAdjacentDirection::Left, Left);
+		break;
+	case EGridIndexType::SingleRowMiddle:
+		{
+			if (Left >= 0)
+			{
+				Temp.Add(EAdjacentDirection::Left, Left);
+			}
+			if (Right < InWidth)
+			{
+				Temp.Add(EAdjacentDirection::Right, Right);
+			}
+		}
 		break;
 	}
-
-	TArray<int32> Temp;
-	AdjacentIndexMap.GenerateValueArray(Temp);
-	AdjacentIndices = TSet(MoveTemp(Temp));
+	return Temp;
 }
 
 EGridIndexType USpawnArea::FindIndexType(const int32 InIndex, const int32 InSize, const int32 InWidth)
@@ -144,43 +161,53 @@ EGridIndexType USpawnArea::FindIndexType(const int32 InIndex, const int32 InSize
 	const int32 MaxIndex = InSize - 1;
 	const int32 BottomRowFirstIndex = InWidth - 1;
 	const int32 TopRowFirstIndex = InSize - InWidth;
+
+	// Only one row (TotalNumHorizontalSpawnAreas == Size)
+	if (InSize == InWidth)
+	{
+		if (InIndex == 0)
+		{
+			return EGridIndexType::SingleRowLeft;
+		}
+		if (InIndex == MaxIndex)
+		{
+			return EGridIndexType::SingleRowRight;
+		}
+		return EGridIndexType::SingleRowMiddle;
+	}
 	if (InIndex == 0)
 	{
-		return EGridIndexType::Corner_BottomLeft;
+		return EGridIndexType::BottomLeftCorner;
 	}
 	if (InIndex == BottomRowFirstIndex)
 	{
-		return EGridIndexType::Corner_BottomRight;
+		return EGridIndexType::BottomRightCorner;
 	}
 	if (InIndex == MaxIndex)
 	{
-		return EGridIndexType::Corner_TopRight;
+		return EGridIndexType::TopRightCorner;
 	}
 	if (InIndex == TopRowFirstIndex)
 	{
-		return EGridIndexType::Corner_TopLeft;
+		return EGridIndexType::TopLeftCorner;
 	}
-
-	// top
 	if (InIndex > 0 && InIndex < BottomRowFirstIndex)
 	{
-		return EGridIndexType::Border_Bottom;
+		return EGridIndexType::Bottom;
 	}
-	// right
 	if ((InIndex + 1) % InWidth == 0 && InIndex < MaxIndex)
 	{
-		return EGridIndexType::Border_Right;
+		return EGridIndexType::Right;
 	}
-	// bottom
 	if (InIndex > TopRowFirstIndex && InIndex < MaxIndex)
 	{
-		return EGridIndexType::Border_Top;
+		return EGridIndexType::Top;
 	}
-	// left	
 	if (InIndex % InWidth == 0 && InIndex < TopRowFirstIndex)
 	{
-		return EGridIndexType::Border_Left;
+		return EGridIndexType::Left;
 	}
+	
 	return EGridIndexType::Middle;
 }
 
@@ -234,9 +261,9 @@ void USpawnArea::SetOccupiedVertices(const TSet<FVector>& InVertices)
 	OccupiedVertices = InVertices;
 }
 
-TSet<FVector> USpawnArea::MakeOccupiedVertices(const FVector& InScale) const
+TSet<FVector> USpawnArea::MakeVerticesBase(const FVector& InScale, const bool bOccupied) const
 {
-	TSet<FVector> OutInvalid;
+	TSet<FVector> Out;
 	
 	const float Radius = CalcTraceRadius(InScale);
 	
@@ -251,49 +278,46 @@ TSet<FVector> USpawnArea::MakeOccupiedVertices(const FVector& InScale) const
 	const float MaxZ = FMath::Min(TotalSpawnAreaExtrema.Max.Z - Height, Vertex_BottomLeft.Z + IncZ * Height);
 	
 	FVector Vertex(Vertex_BottomLeft.X, 0.f, 0.f);
-	for (Vertex.Z = MinZ; Vertex.Z <= MaxZ; Vertex.Z += Height)
+
+	if (bOccupied)
 	{
-		for (Vertex.Y = MinY; Vertex.Y <= MaxY; Vertex.Y += Width)
+		for (Vertex.Z = MinZ; Vertex.Z <= MaxZ; Vertex.Z += Height)
 		{
-			if (Sphere.IsInside(Vertex))
+			for (Vertex.Y = MinY; Vertex.Y <= MaxY; Vertex.Y += Width)
 			{
-				OutInvalid.Add(Vertex);
+				if (Sphere.IsInside(Vertex) && bOccupied)
+				{
+					Out.Add(Vertex);
+				}
+			}
+		}
+	}
+	else
+	{
+		for (Vertex.Z = MinZ; Vertex.Z <= MaxZ; Vertex.Z += Height)
+		{
+			for (Vertex.Y = MinY; Vertex.Y <= MaxY; Vertex.Y += Width)
+			{
+				if (!Sphere.IsInside(Vertex))
+				{
+					Out.Add(Vertex);
+				}
 			}
 		}
 	}
 	
-	return OutInvalid;
+	return Out;
+}
+
+
+TSet<FVector> USpawnArea::MakeOccupiedVertices(const FVector& InScale) const
+{
+	return MakeVerticesBase(InScale, true);
 }
 
 TSet<FVector> USpawnArea::MakeUnoccupiedVertices(const FVector& InScale) const
 {
-	TSet<FVector> OutValid;
-	
-	const float Radius = CalcTraceRadius(InScale);
-	
-	const FSphere Sphere = FSphere(Vertex_BottomLeft, Radius);
-
-	const int32 IncY = floor(Radius / Width);
-	const int32 IncZ = floor(Radius / Height);
-	
-	const float MinY = FMath::Max(TotalSpawnAreaExtrema.Min.Y, Vertex_BottomLeft.Y - IncY * Width);
-	const float MaxY = FMath::Min(TotalSpawnAreaExtrema.Max.Y - Width, Vertex_BottomLeft.Y + IncY * Width);
-	const float MinZ = FMath::Max(TotalSpawnAreaExtrema.Min.Z, Vertex_BottomLeft.Z - IncZ * Height);
-	const float MaxZ = FMath::Min(TotalSpawnAreaExtrema.Max.Z - Height, Vertex_BottomLeft.Z + IncZ * Height);
-	
-	FVector Vertex(Vertex_BottomLeft.X, 0.f, 0.f);
-	for (Vertex.Z = MinZ; Vertex.Z <= MaxZ; Vertex.Z += Height)
-	{
-		for (Vertex.Y = MinY; Vertex.Y <= MaxY; Vertex.Y += Width)
-		{
-			if (!Sphere.IsInside(Vertex))
-			{
-				OutValid.Add(Vertex);
-			}
-		}
-	}
-	
-	return OutValid;
+	return MakeVerticesBase(InScale, false);
 }
 
 void USpawnArea::SetTotalSpawnAreaExtrema(const FExtrema& InExtrema)
@@ -349,10 +373,10 @@ bool USpawnArea::IsBorderingIndex(const int32 InIndex) const
 	return AdjacentIndices.Contains(InIndex);
 }
 
-TSet<int32> USpawnArea::GetAdjacentIndices(const TSet<EBorderingDirection>& Directions) const
+TSet<int32> USpawnArea::GetAdjacentIndices(const TSet<EAdjacentDirection>& Directions) const
 {
 	TSet<int32> Out;
-	for (const EBorderingDirection Direction : Directions)
+	for (const EAdjacentDirection Direction : Directions)
 	{
 		if (AdjacentIndexMap.Contains(Direction))
 		{

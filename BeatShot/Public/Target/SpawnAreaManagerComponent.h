@@ -316,6 +316,7 @@ struct FLargestRectangleKeyFuncs : BaseKeyFuncs<FRectCandidate, FFactor, false>
 typedef TSet<FSubRectangle, FFSubRectangleKeyFuncs> FSubRectangleSet;
 typedef TSet<FRectCandidate, FLargestRectangleKeyFuncs> FRectangleSet;
 
+/** Class responsible for creating and managing Spawn Area objects. */
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class BEATSHOT_API USpawnAreaManagerComponent : public UActorComponent
 {
@@ -340,15 +341,15 @@ public:
 	/** Resets all variables */
 	void Clear();
 
-	/** Get the value of SpawnAreaInc.
+	/** Get the value of SpawnAreaDimensions.
 	 * 	@return (0, Height, Width) of all SpawnAreas
 	 */
-	FIntVector3 GetSpawnAreaInc() const { return SpawnAreaInc; }
+	FIntVector3 GetSpawnAreaInc() const { return SpawnAreaDimensions; }
 
 	/** Get the value of Size.
 	 * 	@return (0, NumHorizontal, NumVertical) total spawn areas
 	 */
-	FIntVector3 GetSpawnAreaSize() const { return Size; }
+	FIntVector3 GetSpawnAreaSize() const { return TotalSpawnAreaSize; }
 
 	/** Get a reference to the RequestRLCSpawnArea delegate.
 	 *  @return FRequestRLCSpawnArea delegate used to request spawn areas from the reinforcement learning component
@@ -401,17 +402,12 @@ protected:
 	 */
 	void SetMostRecentSpawnArea(USpawnArea* SpawnArea) { MostRecentSpawnArea = SpawnArea; }
 
-	/** Sets InSpawnAreaInc, InSpawnAreaScale
-	 * 
-	 * 	@param OutSpawnAreaInc the SpawnAreaInc to set
-	 * 	@param OutSpawnAreaScale the SpawnAreaScale to set
-	 * 	@param InCfg the game mode config
-	 * 	@param InStaticExtents the static extents of the total spawn area
-	 */
-	void SetAppropriateSpawnMemoryValues(FIntVector3& OutSpawnAreaInc, FVector& OutSpawnAreaScale,
-		const FBSConfig* InCfg, const FVector& InStaticExtents);
+	/** Sets the value of SpawnAreaDimensions based on the Target Distribution Policy
+	 *  and PreferredSpawnAreaDimensions. */
+	void SetSpawnAreaDimensions();
 
-	/** Initializes the SpawnCounter array */
+	/** Initializes all static variables for Spawn Areas, Sets the TotalSpawnAreaSize, creates all Spawn Area objects,
+	 *  and adds them to the SpawnAreas set and AreaKeyMap. Initializes CachedExtrema with all Spawn Areas. */
 	void InitializeSpawnAreas();
 
 	/** Use the target spawning policy to decide to consider Managed SpawnAreas as invalid choices for activation.
@@ -662,7 +658,7 @@ protected:
 	 */
 	template<typename OutType>
 	TSet<OutType> GetAdjacentSpawnAreas(const TSet<USpawnArea*>& InSpawnAreas,
-		const TSet<EBorderingDirection>& Directions) const;
+		const TSet<EAdjacentDirection>& Directions) const;
 	
 	/** Creates an array with size equal to the number of Spawn Areas, where each index represents whether or not the
 	 *  SpawnArea should be consider valid.
@@ -672,20 +668,6 @@ protected:
 	 *  @return an array where each index represents whether or not the SpawnArea should be consider valid
 	 */
 	static TArray<int32> CreateIndexValidityArray(const TSet<USpawnArea*>& ValidSpawnAreas, const int32 NumSpawnAreas);
-
-	/** Converts a set of Spawn Area indices into a set of Spawn Area pointers.
-	 * 
-	 * 	@param InIndices a set of valid Spawn Areas to get indices from
-	 *  @return a set of Spawn Areas corresponding to the indices
-	 */
-	TSet<USpawnArea*> ConvertIndicesToSpawnAreas(const TSet<int32>& InIndices) const;
-	
-	/** Converts a set of Spawn Areas pointers into a set of Spawn Area indices.
-	 * 
-	 * 	@param InSpawnAreas a set of valid Spawn Areas to get indices from
-	 *  @return a set of Spawn Area indices corresponding to the Spawn Areas
-	 */
-	static TSet<int32> ConvertSpawnAreasToIndices(const TSet<USpawnArea*>& InSpawnAreas);
 
 	/** Finds the maximum rectangle of valid indices in the matrix. Returns a struct containing the area, start index,
 	 *  and end index that correspond to SpawnAreas.
@@ -808,9 +790,9 @@ public:
 	 *  GetAveragedAccuracyData. Calls UpdateAccuracy once the values are copied over, and returns the struct */
 	FAccuracyData GetLocationAccuracy();
 
-	/** Preferred SpawnMemory increments */
+	/** Preferred dimensions for a Spawn Area */
 	UPROPERTY(EditAnywhere, Category="SpawnArea")
-	TArray<int32> PreferredSpawnAreaIncScales = {50, 45, 40, 30, 25, 20, 15, 10, 5};
+	TArray<int32> PreferredSpawnAreaDimensions = {50, 45, 40, 30, 25, 20, 15, 10, 5};
 
 	/* ----------- */
 	/* -- Debug -- */
@@ -950,14 +932,11 @@ private:
 	/** BSConfig->TargetConfig */
 	FBS_TargetConfig& TargetConfig() const { return BSConfig->TargetConfig; };
 
-	/** The total amount of (-, horizontal, vertical) SpawnAreas in SpawnAreas */
-	FIntVector3 Size;
+	/** The total amount of (-, horizontal, vertical) Spawn Areas */
+	FIntVector3 TotalSpawnAreaSize;
 
-	/** Incremental (horizontal, vertical) step values used to iterate through SpawnAreas locations */
-	FIntVector3 SpawnAreaInc;
-
-	/** Scale the representation of the spawn area down by this factor */
-	FVector SpawnAreaScale;
+	/** (-, width, height) of individual Spawn Areas */
+	FIntVector3 SpawnAreaDimensions;
 
 	/** BoxBounds origin */
 	FVector Origin;
@@ -1028,7 +1007,7 @@ private:
  */
 template <>
 TSet<int32> USpawnAreaManagerComponent::GetAdjacentSpawnAreas<int32>(const TSet<USpawnArea*>& InSpawnAreas,
-	const TSet<EBorderingDirection>& Directions) const;
+	const TSet<EAdjacentDirection>& Directions) const;
 
 /** Returns a set of Spawn Areas adjacent to the InSpawnAreas according to Directions.
  *
@@ -1038,4 +1017,4 @@ TSet<int32> USpawnAreaManagerComponent::GetAdjacentSpawnAreas<int32>(const TSet<
  */
 template <>
 TSet<USpawnArea*> USpawnAreaManagerComponent::GetAdjacentSpawnAreas<USpawnArea*>(const TSet<USpawnArea*>& InSpawnAreas,
-	const TSet<EBorderingDirection>& Directions) const;
+	const TSet<EAdjacentDirection>& Directions) const;

@@ -37,8 +37,6 @@ void AMainMenuGameMode::SetupTargetManager(UGameModesWidget* GameModesWidget)
 		FRotator::ZeroRotator);
 	TargetManager->InitBoxBoundsWidget(GameModesWidget->CustomGameModesWidget_CreatorView->Widget_Preview);
 	TargetManager->Init(BSConfig, PlayerSettings_Game);
-	TargetManager->CreateTargetWidget.BindUObject(GameModesWidget->CustomGameModesWidget_CreatorView->Widget_Preview,
-		&UCGMWC_Preview::ConstructTargetWidget);
 
 	GameModesWidget->RequestSimulateTargetManagerStateChange.AddUObject(this,
 		&ThisClass::OnRequestSimulationStateChange);

@@ -25,8 +25,8 @@ public:
 	virtual void Destroyed() override;
 
 	/** Sets the values of TargetWidget and its position in the viewport */
-	void InitTargetWidget(const TObjectPtr<UTargetWidget> InTargetWidget, const FVector& InBoxBoundsOrigin,
-		const FVector& InStartLocation, const float BoundsHeight);
+	void InitTargetWidget(const TObjectPtr<UTargetWidget> InTargetWidget, const FVector& InStartLocation,
+		const float BoundsHeight);
 
 	/** Sets the values of bSimulatePlayerDestroying and DestroyChance */
 	void SetSimulatePlayerDestroying(const bool bInSimulatePlayerDestroying, const float InDestroyChance);
@@ -59,9 +59,7 @@ protected:
 
 	/** Reference to the target widget in CustomGameModesWidget_Preview */
 	TObjectPtr<UTargetWidget> TargetWidget;
-
-	FVector BoxBoundsOrigin;
-
+	
 	float BoxBoundsHeight = 1000.f;
 
 public:
@@ -72,7 +70,7 @@ public:
 	virtual void SetTargetScale(const FVector& NewScale) const override;
 
 	/** Change the position of the target widget in the viewport */
-	void SetTargetWidgetLocation(const FVector& NewLocation) const;
+	void SetTargetWidgetLocation(const FVector& NewLocation, const float BoundsHeight) const;
 
 	/** Change the opacity of the target widget in the viewport */
 	void SetTargetWidgetOpacity(const float NewOpacity) const;

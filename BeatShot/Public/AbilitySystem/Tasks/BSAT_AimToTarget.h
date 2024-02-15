@@ -69,6 +69,9 @@ private:
 	TObjectPtr<AController> Controller;
 
 	UPROPERTY()
+	class UCameraComponent* Camera;
+
+	UPROPERTY()
 	TObjectPtr<UCurveFloat> RotationCurve;
 
 	UPROPERTY()

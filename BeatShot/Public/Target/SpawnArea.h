@@ -88,7 +88,7 @@ class BEATSHOT_API USpawnArea : public UObject
 	int32 TotalTrackingDamage;
 
 	/** The indices of the SpawnAreas adjacent to this SpawnArea, including their direction from this SpawnArea */
-	TMap<EBorderingDirection, int32> AdjacentIndexMap;
+	TMap<EAdjacentDirection, int32> AdjacentIndexMap;
 
 	/** The indices of the SpawnAreas adjacent to this SpawnArea */
 	TSet<int32> AdjacentIndices;
@@ -170,16 +170,23 @@ public:
 	double GetTimeSetRecent() const { return TimeSetRecent; }
 	
 	/** Returns a const reference to the map that maps the direction from this SpawnArea to adjacent SpawnArea indices */
-	const TMap<EBorderingDirection, int32>& GetAdjacentIndexMap() const { return AdjacentIndexMap; }
+	const TMap<EAdjacentDirection, int32>& GetAdjacentIndexMap() const { return AdjacentIndexMap; }
 
 	/** Returns a const reference to the set of SpawnArea indices adjacent to this SpawnArea */
 	const TSet<int32>& GetAdjacentIndices() const { return AdjacentIndices; }
 
 	/** Returns a set of SpawnArea indices adjacent to this SpawnArea that match the provided directions */
-	TSet<int32> GetAdjacentIndices(const TSet<EBorderingDirection>& Directions) const;
+	TSet<int32> GetAdjacentIndices(const TSet<EAdjacentDirection>& Directions) const;
 	
 	/** Returns the vertices that this SpawnArea occupies in space based on target scale and other factors */
 	const TSet<FVector>& GetOccupiedVertices() const { return OccupiedVertices; }
+	
+	/** Adds vectors that are inside the sphere if bOccupied is true, otherwise adds vectors outside the sphere */
+	TSet<FVector> MakeVerticesBase(const FVector& InScale, const bool bOccupied) const;
+	
+	/** Finds and returns the vertices that overlap with SpawnArea by tracing a circle around the SpawnArea based on
+	 *  the target scale, minimum distance between targets, minimum overlap radius, and size of the SpawnArea */
+	TSet<FVector> MakeOccupiedVertices(const FVector& InScale) const;
 	
 	/** Returns the vertices that this SpawnArea did not occupy in space after tracing a sphere
 	 *  based on target scale and other factors. Only used for debug purposes */
@@ -220,7 +227,7 @@ public:
 	void SetChosenPoint(const FVector& InLocation);
 	
 	/** Returns an array of indices that border the index when looking at the array like a 2D grid */
-	void SetAdjacentIndices(const EGridIndexType InGridIndexType, const int32 InIndex, const int32 InWidth);
+	static TMap<EAdjacentDirection, int32> CreateAdjacentIndices(const EGridIndexType InGridIndexType, const int32 InIndex, const int32 InWidth);
 
 	/** Returns the corresponding index type depending on the InIndex, InSize, and InWidth */
 	static EGridIndexType FindIndexType(const int32 InIndex, const int32 InSize, const int32 InWidth);
@@ -237,10 +244,6 @@ public:
 
 	/** Sets the value of OccupiedVertices */
 	void SetOccupiedVertices(const TSet<FVector>& InVertices);
-
-	/** Finds and returns the vertices that overlap with SpawnArea by tracing a circle around the SpawnArea based on
-	 *  the target scale, minimum distance between targets, minimum overlap radius, and size of the SpawnArea */
-	TSet<FVector> MakeOccupiedVertices(const FVector& InScale) const;
 
 	/** Increments the total amount of spawns in this SpawnArea, including handling special case where it has not
 	 *  spawned there yet */

@@ -31,14 +31,13 @@ ATarget* ATargetManagerPreview::SpawnTarget(USpawnArea* InSpawnArea)
 	{
 		if (ATargetPreview* TargetPreview = Cast<ATargetPreview>(Target))
 		{
-			if (CreateTargetWidget.IsBound())
+			if (UTargetWidget* TargetWidget =  GameModePreviewWidget->ConstructTargetWidget())
 			{
-				if (UTargetWidget* TargetWidget = CreateTargetWidget.Execute())
-				{
-					const float Height = StaticExtents.Z + (GetBSConfig()->TargetConfig.FloorDistance - ClampedOverflowAmount) * 0.5f;
-					TargetPreview->InitTargetWidget(TargetWidget, GetSpawnBoxOrigin(), TargetPreview->GetActorLocation(), Height);
-					TargetPreview->SetSimulatePlayerDestroying(bSimulatePlayerDestroyingTargets, DestroyChance);
-				}
+				const float Height = StaticExtents.Z
+					+ (GetBSConfig()->TargetConfig.FloorDistance - ClampedOverflowAmount) * 0.5f
+					+ GameModePreviewWidget->GetSpacerOffset() * 0.5f;
+				TargetPreview->InitTargetWidget(TargetWidget, TargetPreview->GetActorLocation(), Height);
+				TargetPreview->SetSimulatePlayerDestroying(bSimulatePlayerDestroyingTargets, DestroyChance);
 			}
 		}
 	}
@@ -75,17 +74,19 @@ void ATargetManagerPreview::UpdateSpawnVolume(const float Factor) const
 	
 	GameModePreviewWidget->SetFloorDistanceHeight(FMath::Clamp(GetBSConfig()->TargetConfig.FloorDistance, 110.f,
 		MaxAllowedFloorDistance));
+	
+	const float MaxTargetRadius = GetMaxTargetRadius(GetBSConfig()->TargetConfig);
+	GameModePreviewWidget->SetOverlayPadding(FMargin(MaxTargetRadius, MaxTargetRadius, MaxTargetRadius, 0.f));
 
 	const FVector Origin = GetSpawnBoxOrigin();
-	const FVector SBExtents = GetSpawnBoxExtents();
-
+	const FVector Extents = GetSpawnBoxExtents();
+	
 	// Set the Current box bounds widget size and position
-	const float CurrentY = SBExtents.Y * 2.f;
-	const float CurrentZ = SBExtents.Z * 2.f;
-	float Height = Origin.Z - SBExtents.Z + ClampedOverflowAmount;
+	const float CurrentY = Extents.Y * 2.f;
+	const float CurrentZ = Extents.Z * 2.f;
+	float Height = Origin.Z - Extents.Z + ClampedOverflowAmount;
+	
 	GameModePreviewWidget->SetBoxBounds_Current(FVector2d(CurrentY, CurrentZ), Height);
-	const float MaxTargetRadius = GetBSConfig()->TargetConfig.MaxSpawnedTargetScale * Constants::SphereTargetRadius;
-	GameModePreviewWidget->SetOverlayPadding(FMargin(MaxTargetRadius, MaxTargetRadius, MaxTargetRadius, 0.f));
 
 	if (GetBSConfig()->TargetConfig.BoundsScalingPolicy == EBoundsScalingPolicy::Dynamic)
 	{
@@ -93,13 +94,17 @@ void ATargetManagerPreview::UpdateSpawnVolume(const float Factor) const
 		const FIntVector3 Inc = SpawnAreaManager->GetSpawnAreaInc();
 		
 		// Set the Min/Start box bounds widget size and position
-		const float StartZ = FMath::GridSnap(StartExtents.Z, Inc.Z) * 2.f;
+		const float StartZ = GetBSConfig()->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::HeadshotHeightOnly
+			? Constants::HeadshotHeight_VerticalSpread
+			: FMath::GridSnap(StartExtents.Z, Inc.Z) * 2.f;
 		const float StartY = FMath::GridSnap(StartExtents.Y, Inc.Y) * 2.f;
 		Height = Origin.Z - (StartZ / 2.f) + ClampedOverflowAmount;
 		GameModePreviewWidget->SetBoxBounds_Min(FVector2d(StartY, StartZ), Height);
 
 		// Set the Max/End box bounds widget size and position
-		const float EndZ = FMath::GridSnap(StaticExtents.Z, Inc.Z) * 2.f;
+		const float EndZ = GetBSConfig()->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::HeadshotHeightOnly
+			? Constants::HeadshotHeight_VerticalSpread
+			: FMath::GridSnap(StaticExtents.Z, Inc.Z) * 2.f;
 		const float EndY = FMath::GridSnap(StaticExtents.Y, Inc.Y) * 2.f;
 		Height = Origin.Z - (EndZ / 2.f) + ClampedOverflowAmount;
 		GameModePreviewWidget->SetBoxBounds_Max(FVector2d(EndY, EndZ), Height);

@@ -372,9 +372,6 @@ public:
 	/** Returns the scale of the target when it was last activated, or the spawn scale if it has not been activated */
 	FVector GetTargetScale_Activation() const;
 
-	/** Returns the current scale of the target */
-	FVector GetTargetScale_Current() const;
-
 	/** Returns the scale of the target when it was last deactivated, falling back to activation or spawn scale if not deactivated yet */
 	FVector GetTargetScale_Deactivation() const;
 

@@ -19,7 +19,7 @@ void ATargetPreview::Tick(float DeltaSeconds)
 	{
 		if (ProjectileMovementComponent->Velocity.Length() > 0.f)
 		{
-			SetTargetWidgetLocation(GetActorLocation());
+			SetTargetWidgetLocation(GetActorLocation(), BoxBoundsHeight);
 		}
 	}
 }
@@ -38,13 +38,12 @@ void ATargetPreview::Destroyed()
 	Super::Destroyed();
 }
 
-void ATargetPreview::InitTargetWidget(const TObjectPtr<UTargetWidget> InTargetWidget, const FVector& InBoxBoundsOrigin,
-	const FVector& InStartLocation, const float BoundsHeight)
+void ATargetPreview::InitTargetWidget(const TObjectPtr<UTargetWidget> InTargetWidget, const FVector& InStartLocation,
+	const float BoundsHeight)
 {
 	TargetWidget = InTargetWidget;
 	BoxBoundsHeight = BoundsHeight;
-	BoxBoundsOrigin = InBoxBoundsOrigin;
-	SetTargetWidgetLocation(InStartLocation);
+	SetTargetWidgetLocation(InStartLocation, BoundsHeight);
 	TargetWidget->SetTargetScale(CapsuleComponent->GetRelativeScale3D());
 	TargetWidget->SetTargetColor(Config.OnSpawnColor);
 }
@@ -127,12 +126,12 @@ void ATargetPreview::SetTargetScale(const FVector& NewScale) const
 	}
 }
 
-void ATargetPreview::SetTargetWidgetLocation(const FVector& NewLocation) const
+void ATargetPreview::SetTargetWidgetLocation(const FVector& NewLocation, const float BoundsHeight) const
 {
 	if (TargetWidget)
 	{
 		const float X = NewLocation.Y;
-		const float Y = NewLocation.Z - BoxBoundsHeight;
+		const float Y = NewLocation.Z - BoundsHeight;
 		TargetWidget->SetTargetPosition(FVector2d(X, Y));
 	}
 }

@@ -3,9 +3,11 @@
 #include "AbilitySystem/Tasks/BSAT_AimToTarget.h"
 #include "Target/Target.h"
 #include "AbilitySystem/BSAbilitySystemComponent.h"
+#include "Camera/CameraComponent.h"
+#include "Character/BSCharacterBase.h"
 #include "Kismet/KismetMathLibrary.h"
 
-UBSAT_AimToTarget::UBSAT_AimToTarget()
+UBSAT_AimToTarget::UBSAT_AimToTarget(): Camera(nullptr)
 {
 	bTickingTask = true;
 }
@@ -16,6 +18,7 @@ UBSAT_AimToTarget* UBSAT_AimToTarget::AimToTarget(UBSGameplayAbility* OwningAbil
 	UBSAT_AimToTarget* MyObj = NewAbilityTask<UBSAT_AimToTarget>(OwningAbility, TaskInstanceName);
 
 	MyObj->Controller = OwningAbility->GetControllerFromActorInfo();
+	MyObj->Camera = OwningAbility->GetBSCharacterFromActorInfo()->GetCamera();
 	MyObj->Target = TargetToDestroy;
 	MyObj->RotationCurve = RotationCurve;
 
@@ -83,9 +86,8 @@ void UBSAT_AimToTarget::OnAbilityCancelled()
 
 void UBSAT_AimToTarget::OnTimelineTick(const float Alpha) const
 {
-	FVector Loc;
-	FRotator Rot;
-	Controller->GetActorEyesViewPoint(Loc, Rot);
+	const FVector Loc = Camera->GetComponentLocation();
+	const FRotator Rot = Controller->GetControlRotation();
 	Controller->SetControlRotation(UKismetMathLibrary::RLerp(Rot,
 		UKismetMathLibrary::FindLookAtRotation(Loc, Target->GetActorLocation()), Alpha, true));
 }

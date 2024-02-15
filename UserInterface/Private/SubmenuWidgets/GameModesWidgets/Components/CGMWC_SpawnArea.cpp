@@ -171,9 +171,10 @@ void UCGMWC_SpawnArea::UpdateOptionsFromConfig()
 	UpdateValueIfDifferent(ComboBoxOption_DynamicBoundsScalingPolicy,
 		GetStringArrayFromEnumArray_FromTagMap(BSConfig->DynamicSpawnAreaScaling.DynamicBoundsScalingPolicy));
 
-	UpdateDependentOptions_TargetDistributionPolicy(BSConfig->TargetConfig.TargetDistributionPolicy);
+	// Order is important here !!!
 	UpdateDependentOptions_TargetDamageType(BSConfig->TargetConfig.TargetDamageType);
 	UpdateDependentOptions_BoundsScalingPolicy(BSConfig->TargetConfig.BoundsScalingPolicy);
+	UpdateDependentOptions_TargetDistributionPolicy(BSConfig->TargetConfig.TargetDistributionPolicy);
 
 	UpdateBrushColors();
 }
@@ -233,6 +234,10 @@ void UCGMWC_SpawnArea::UpdateDependentOptions_TargetDistributionPolicy(
 		SliderTextBoxOption_HorizontalSpacing->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		SliderTextBoxOption_VerticalSpacing->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
+		// From HeadshotHeightOnly
+		SliderTextBoxOption_VerticalSpread->SetValues(MinValue_VerticalSpread, MaxValue_VerticalSpread,
+			SnapSize_VerticalSpread);
+		
 		BSConfig->TargetConfig.BoxBounds.Y = MaxValue_HorizontalSpread;
 		BSConfig->TargetConfig.BoxBounds.Z = MaxValue_VerticalSpread;
 		BSConfig->TargetConfig.BoundsScalingPolicy = EBoundsScalingPolicy::Static;
@@ -247,6 +252,23 @@ void UCGMWC_SpawnArea::UpdateDependentOptions_TargetDistributionPolicy(
 		SliderTextBoxOption_VerticalSpread->SetSliderAndTextBoxEnabledStates(false);
 		ComboBoxOption_BoundsScalingPolicy->ComboBox->SetIsEnabled(false);
 	}
+	else if (InTargetDistributionPolicy == ETargetDistributionPolicy::HeadshotHeightOnly)
+	{
+		SliderTextBoxOption_MinDistanceBetweenTargets->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		SliderTextBoxOption_NumHorizontalGridTargets->SetVisibility(ESlateVisibility::Collapsed);
+		SliderTextBoxOption_NumVerticalGridTargets->SetVisibility(ESlateVisibility::Collapsed);
+		SliderTextBoxOption_HorizontalSpacing->SetVisibility(ESlateVisibility::Collapsed);
+		SliderTextBoxOption_VerticalSpacing->SetVisibility(ESlateVisibility::Collapsed);
+		
+		BSConfig->TargetConfig.BoxBounds.Z = HeadshotHeight_VerticalSpread;
+		SliderTextBoxOption_VerticalSpread->SetValues(HeadshotHeight_VerticalSpread, HeadshotHeight_VerticalSpread,
+			HeadshotHeight_VerticalSpread);
+		UpdateValueIfDifferent(SliderTextBoxOption_VerticalSpread, BSConfig->TargetConfig.BoxBounds.Z);
+		
+		SliderTextBoxOption_HorizontalSpread->SetSliderAndTextBoxEnabledStates(true);
+		SliderTextBoxOption_VerticalSpread->SetSliderAndTextBoxEnabledStates(false);
+		ComboBoxOption_BoundsScalingPolicy->ComboBox->SetIsEnabled(true);
+	}
 	else
 	{
 		SliderTextBoxOption_MinDistanceBetweenTargets->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
@@ -254,6 +276,12 @@ void UCGMWC_SpawnArea::UpdateDependentOptions_TargetDistributionPolicy(
 		SliderTextBoxOption_NumVerticalGridTargets->SetVisibility(ESlateVisibility::Collapsed);
 		SliderTextBoxOption_HorizontalSpacing->SetVisibility(ESlateVisibility::Collapsed);
 		SliderTextBoxOption_VerticalSpacing->SetVisibility(ESlateVisibility::Collapsed);
+
+		// From HeadshotHeightOnly
+		SliderTextBoxOption_VerticalSpread->SetValues(MinValue_VerticalSpread, MaxValue_VerticalSpread,
+			SnapSize_VerticalSpread);
+		BSConfig->TargetConfig.BoxBounds.Z = FMath::Max(BSConfig->TargetConfig.BoxBounds.Z, MinValue_VerticalSpread);
+		UpdateValueIfDifferent(SliderTextBoxOption_VerticalSpread, BSConfig->TargetConfig.BoxBounds.Z);
 
 		SliderTextBoxOption_HorizontalSpread->SetSliderAndTextBoxEnabledStates(true);
 		SliderTextBoxOption_VerticalSpread->SetSliderAndTextBoxEnabledStates(true);
@@ -283,6 +311,25 @@ void UCGMWC_SpawnArea::UpdateDependentOptions_BoundsScalingPolicy(
 		SliderTextBoxOption_EndThreshold->SetVisibility(ESlateVisibility::Collapsed);
 		SliderTextBoxOption_DecrementAmount->SetVisibility(ESlateVisibility::Collapsed);
 		ComboBoxOption_DynamicBoundsScalingPolicy->SetVisibility(ESlateVisibility::Collapsed);
+	}
+
+	if (BSConfig->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::HeadshotHeightOnly)
+	{
+		BSConfig->DynamicSpawnAreaScaling.StartBounds.Z = HeadshotHeight_VerticalSpread;
+		SliderTextBoxOption_MinVerticalSpread->SetValues(HeadshotHeight_VerticalSpread,
+			HeadshotHeight_VerticalSpread, HeadshotHeight_VerticalSpread);
+		UpdateValueIfDifferent(SliderTextBoxOption_MinVerticalSpread,
+			BSConfig->DynamicSpawnAreaScaling.StartBounds.Z);
+		SliderTextBoxOption_MinVerticalSpread->SetSliderAndTextBoxEnabledStates(false);
+	}
+	else
+	{
+		SliderTextBoxOption_MinVerticalSpread->SetValues(MinValue_VerticalSpread, MaxValue_VerticalSpread,
+			SnapSize_VerticalSpread);
+		BSConfig->DynamicSpawnAreaScaling.StartBounds.Z = FMath::Max(MinValue_VerticalSpread,
+			BSConfig->DynamicSpawnAreaScaling.StartBounds.Z);
+		UpdateValueIfDifferent(SliderTextBoxOption_MinVerticalSpread, BSConfig->TargetConfig.BoxBounds.Z);
+		SliderTextBoxOption_MinVerticalSpread->SetSliderAndTextBoxEnabledStates(true);
 	}
 }
 
