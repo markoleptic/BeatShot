@@ -3,6 +3,7 @@
 
 #include "RangeActors/WallMenu.h"
 #include "BSGameInstance.h"
+#include "SaveGamePlayerSettings.h"
 #include "Text3DComponent.h"
 #include "AbilitySystem/BSAbilitySystemComponent.h"
 #include "BeatShot/BSGameplayTags.h"

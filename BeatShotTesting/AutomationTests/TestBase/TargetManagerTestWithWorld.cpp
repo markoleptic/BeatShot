@@ -2,66 +2,91 @@
 
 #include "TargetManagerTestWithWorld.h"
 #include "Target/TargetManager.h"
+#include "PackageTools.h"
+
+using namespace TargetManagerTestHelpers;
 
 bool FTargetManagerTestWithWorld::Init()
 {
 	World = UWorld::CreateWorld(EWorldType::Game, false);
-	GameInstance = NewObject<UGameInstance>();
-	GameInstance->AddToRoot();
-	World->SetGameInstance(GameInstance);
-	
-	FWorldContext &WorldContext = GEngine->CreateNewWorldContext(EWorldType::Game);
+	UPackage* Package = World->GetPackage();
+	Package->SetFlags(RF_Transient | RF_Public);
+	Package->AddToRoot();
+
+	FWorldContext& WorldContext = GEngine->CreateNewWorldContext(EWorldType::Game);
 	WorldContext.SetCurrentWorld(World);
 	
-	GameInstance->Init();
+	InitialFrameCounter = GFrameCounter;
 	World->InitializeActorsForPlay(FURL());
 	World->BeginPlay();
-	InitialFrameCounter = GFrameCounter;
+	
+	return InitTargetManager();
+}
 
-	if (InitTargetManager())
+void FTargetManagerTestWithWorld::CleanUpWorld()
+{
+	if (TargetManager)
 	{
-		bInitialized = true;
-		return true;
+		if (AActor* Actor = Cast<AActor>(TargetManager))
+		{
+			Actor->RemoveFromRoot();
+			Actor->Destroy();
+		}
 	}
-
-	AddError("Failed Initialization");
-	return false;
+	if (BSConfig.IsValid())
+	{
+		BSConfig.Reset();
+	}
+	TargetManager = nullptr;
+	BSConfig = nullptr;
+	GameModeDataAsset = nullptr;
+	
+	if (World)
+	{
+		UPackage* Package = World->GetPackage();
+		GEngine->DestroyWorldContext(World);
+		World->DestroyWorld(false);
+		World->MarkAsGarbage();
+		GFrameCounter = InitialFrameCounter;
+		CollectGarbage(GARBAGE_COLLECTION_KEEPFLAGS);
+		if (Package)
+		{
+			Package->RemoveFromRoot();
+			TArray<UPackage*> PackagesToUnload;
+			PackagesToUnload.Add(Package);
+			UPackageTools::UnloadPackages(PackagesToUnload);
+		}
+	}
 }
 
 bool FTargetManagerTestWithWorld::InitTargetManager()
 {
-	UObject* TargetManagerObj = StaticLoadObject(UObject::StaticClass(), nullptr,
-		TargetManagerTestHelpers::TargetManagerAssetPath);
-	if (!TargetManagerObj)
+	UObject* LoadedObject = StaticLoadObject(UObject::StaticClass(), nullptr, TargetManagerAssetPath);
+	if (!LoadedObject)
 	{
 		AddError("Failed to load Target Manager");
 		return false;
 	}
-		
-	const UBlueprint* GeneratedBP = Cast<UBlueprint>(TargetManagerObj);
-	
-	const FActorSpawnParameters SpawnInfo = FActorSpawnParameters();
-	TargetManager = World->SpawnActor<ATargetManager>(GeneratedBP->GeneratedClass,
-		Constants::DefaultTargetManagerLocation, FRotator::ZeroRotator, SpawnInfo);
-	
+	const UBlueprint* BlueprintClass = Cast<UBlueprint>(LoadedObject);
+	const TSubclassOf<UObject> GeneratedClass = BlueprintClass->GeneratedClass;
+	TargetManager = World->SpawnActor<ATargetManager>(GeneratedClass, TargetManagerTransform, FActorSpawnParameters());
 	if (!TargetManager)
 	{
 		AddError("Failed to spawn Target Manager");
 		return false;
 	}
-	
+
 	TargetManager->AddToRoot();
 	TargetManager->DispatchBeginPlay();
-	TargetManager->SpawnableSpawnAreasExecutionTimeDelegate.BindRaw(this,
-		&FTargetManagerTestWithWorld::OnSpawnableSpawnAreasExecutionTime);
-	
+	TargetManager->ExecutionTimeDelegate.BindRaw(this, &FTargetManagerTestWithWorld::UpdateExecutionTime);
+
 	return true;
 }
 
 bool FTargetManagerTestWithWorld::InitGameModeDataAsset(const FString& InPath) const
 {
 	if (GameModeDataAsset) return true;
-	
+
 	UObject* LoadedObject = StaticLoadObject(UBSGameModeDataAsset::StaticClass(), nullptr, *InPath);
 	if (!LoadedObject)
 	{
@@ -106,7 +131,7 @@ void FTargetManagerTestWithWorld::TickWorld(float Time)
 	}
 }
 
-void FTargetManagerTestWithWorld::OnSpawnableSpawnAreasExecutionTime(const double Time)
+void FTargetManagerTestWithWorld::UpdateExecutionTime(const double Time)
 {
-	SpawnableSpawnAreasTime += Time;
+	TargetSpawnParamsExecutionTime += Time;
 }

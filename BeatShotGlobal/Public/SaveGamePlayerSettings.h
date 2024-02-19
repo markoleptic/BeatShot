@@ -514,14 +514,14 @@ class BEATSHOTGLOBAL_API USaveGamePlayerSettings : public USaveGame
 public:
 	/** Returns a copy of PlayerSettings */
 	FPlayerSettings GetPlayerSettings() const;
-
+	
 	/** Saves Game specific settings, preserving all other settings */
 	void SavePlayerSettings(const FPlayerSettings_Game& InGameSettings);
 
-	/** Saves Audio Analyzer specific settings, preserving all other settings */
+	/** Saves Audio Analyzer specific settings, preserving all other settings */ 
 	void SavePlayerSettings(const FPlayerSettings_AudioAnalyzer& InAudioAnalyzerSettings);
 
-	/** Saves User specific settings, preserving all other settings */
+	/** Saves User specific settings, preserving all other settings */ 
 	void SavePlayerSettings(const FPlayerSettings_User& InUserSettings);
 
 	/** Saves CrossHair specific settings, preserving all other settings */
@@ -529,7 +529,7 @@ public:
 
 	/** Saves VideoAndSound settings, preserving all other settings */
 	void SavePlayerSettings(const FPlayerSettings_VideoAndSound& InVideoAndSoundSettings);
-
+	
 private:
 	UPROPERTY()
 	FPlayerSettings PlayerSettings;

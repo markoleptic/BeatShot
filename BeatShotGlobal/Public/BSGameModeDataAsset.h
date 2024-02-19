@@ -1548,6 +1548,10 @@ public:
 		return DefaultGameModes;
 	}
 
+	const TMap<FBS_DefiningConfig, FBSConfig>& GetGameModes() const
+	{
+		return DefaultGameModes;
+	}
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(ForceInlineRow))
 	TMap<FBS_DefiningConfig, FBSConfig> DefaultGameModes;

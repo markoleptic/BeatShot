@@ -10,6 +10,7 @@
 #include "MoviePlayer.h"
 #include "Blueprint/UserWidget.h"
 #include "GameFramework/GameUserSettings.h"
+#include "SaveGamePlayerSettings.h"
 #include "OverlayWidgets/LoadingScreenWidgets/SLoadingScreenWidget.h"
 
 void UBSGameInstance::Init()

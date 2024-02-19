@@ -20,9 +20,10 @@ UReinforcementLearningComponent::UReinforcementLearningComponent()
 	Gamma = 0;
 	Epsilon = 0;
 	TotalTrainingSamples = 0;
-	M = DefaultNumberOfQTableRows;
-	N = DefaultNumberOfQTableColumns;;
+	M = Constants::DefaultNumberOfQTableRows;
+	N = Constants::DefaultNumberOfQTableColumns;;
 
+	#if !UE_BUILD_SHIPPING
 	bPrintDebug_ActiveTargetPairs = false;
 	bPrintDebug_QTableInit = false;
 	bPrintDebug_QTableUpdate = false;
@@ -38,6 +39,7 @@ UReinforcementLearningComponent::UReinforcementLearningComponent()
 	FloatFormatting.MaximumFractionalDigits = 2;
 	FloatFormatting.MaximumIntegralDigits = 1;
 	FloatFormatting.MinimumIntegralDigits = 1;
+	#endif
 }
 
 void UReinforcementLearningComponent::BeginPlay()
@@ -60,10 +62,6 @@ void UReinforcementLearningComponent::Init(const FRLAgentParams& AgentParams)
 	TotalTrainingSamples = AgentParams.ScoreInfo.TotalTrainingSamples;
 
 	QTableToSpawnAreaIndexMap = MapMatrixTo5X5(AgentParams.SpawnAreaSize.Z, AgentParams.SpawnAreaSize.Y);
-	
-	#if !UE_BUILD_SHIPPING
-
-	#endif
 	
 	// Each row in QTable has size equal to ScaledSize, and so does each column
 	QTable = nc::zeros<float>(nc::Shape(M, N));
@@ -106,11 +104,9 @@ void UReinforcementLearningComponent::Init(const FRLAgentParams& AgentParams)
 	#if !UE_BUILD_SHIPPING
 	if (bPrintDebug_QTableInit)
 	{
-		if (bPrintDebug_QTableInit)
-		{
-			UE_LOG(LogTargetManager, Display, TEXT("Unique Indices across entire mapping: %d Input Size: %d"), QTableToSpawnAreaIndexMap.Num(),
-			AgentParams.SpawnAreaSize.Z * AgentParams.SpawnAreaSize.Y);
-		}
+		UE_LOG(LogTargetManager, Display, TEXT("Unique Indices across entire mapping: %d Input Size: %d"),
+			QTableToSpawnAreaIndexMap.Num(),
+		AgentParams.SpawnAreaSize.Z * AgentParams.SpawnAreaSize.Y);
 		UE_LOG(LogTargetManager, Display, TEXT("In QTable Size: %d  Actual QTable Size: %d"),
 			AgentParams.ScoreInfo.QTable.Num(), QTable.size());
 		UE_LOG(LogTargetManager, Display, TEXT("SpawnAreasRows: %d SpawnAreasColumns: %d"),
@@ -135,8 +131,8 @@ void UReinforcementLearningComponent::Clear()
 	Gamma = 0;
 	Epsilon = 0;
 	TotalTrainingSamples = 0;
-	M = DefaultNumberOfQTableRows;
-	N = DefaultNumberOfQTableColumns;;
+	M = Constants::DefaultNumberOfQTableRows;
+	N = Constants::DefaultNumberOfQTableColumns;;
 }
 
 // Main QTable functions
@@ -314,9 +310,8 @@ void UReinforcementLearningComponent::UpdateQTable(FQTableUpdateParams& UpdatePa
 			UpdateParams.TargetPair.First, UpdateParams.TargetPair.Second, UpdateParams.StateIndex,
 			UpdateParams.ActionIndex, OldValue, NewValue);
 	}
-	#endif
-
 	UpdateQTableWidget();
+	#endif
 }
 
 // Getters and utility functions
@@ -436,6 +431,7 @@ FTargetPair* UReinforcementLearningComponent::FindTargetPairByCurrentIndex(const
 }
 
 // Debug functions
+#if !UE_BUILD_SHIPPING
 
 void UReinforcementLearningComponent::UpdateQTableWidget() const
 {
@@ -581,3 +577,5 @@ void UReinforcementLearningComponent::PrintGetMaxIndex(const int32 PreviousIndex
 	UE_LOG(LogTargetManager, Display, TEXT("Max Value for Row Index %d: %s, Max Indices: %s"), PreviousIndex,
 		*FString("  " + FText::AsNumber(MaxValue, &FloatFormatting).ToString() + " "), *String);
 }
+
+#endif

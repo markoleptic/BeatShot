@@ -323,6 +323,7 @@ class BEATSHOT_API USpawnAreaManagerComponent : public UActorComponent
 	GENERATED_BODY()
 
 	friend class FTargetCollisionTest;
+	friend class ABeatShotGameModeFunctionalTest;
 public:
 	USpawnAreaManagerComponent();
 
@@ -334,8 +335,9 @@ public:
 	 *  @param InOrigin Origin of the total spawn area
 	 *  @param InStaticExtents Static extents of the total spawn area
 	 *  @param InStaticExtrema Static extrema of the total spawn area
+	 *  @return the size of
 	 */
-	void Init(const TSharedPtr<FBSConfig>& InConfig, const FVector& InOrigin, const FVector& InStaticExtents,
+	FIntVector3 Init(const TSharedPtr<FBSConfig>& InConfig, const FVector& InOrigin, const FVector& InStaticExtents,
 		const FExtrema& InStaticExtrema);
 
 	/** Resets all variables */
@@ -344,7 +346,7 @@ public:
 	/** Get the value of SpawnAreaDimensions.
 	 * 	@return (0, Height, Width) of all SpawnAreas
 	 */
-	FIntVector3 GetSpawnAreaInc() const { return SpawnAreaDimensions; }
+	FIntVector3 GetSpawnAreaDimensions() const { return SpawnAreaDimensions; }
 
 	/** Get the value of Size.
 	 * 	@return (0, NumHorizontal, NumVertical) total spawn areas
@@ -356,11 +358,6 @@ public:
 	 */
 	FRequestRLCSpawnArea& GetSpawnAreaRequestDelegate() { return RequestRLCSpawnArea; }
 
-	/** Sets the value of bShouldAskRLCForSpawnAreas.
-	 *  @param bShould whether or not to request a SpawnArea selection from the RLC
-	 */
-	void SetShouldAskRLCForSpawnAreas(const bool bShould) { bShouldAskRLCForSpawnAreas = bShould; }
-
 	/** Finds a SpawnArea with the matching location and increments TotalTrackingDamagePossible.
 	 * 	@param InLocation target location to find the SpawnArea by
 	 */
@@ -370,11 +367,6 @@ public:
 	 * 	@param DamageEvent the target damage event structure originating from a target actor receiving damage
 	 */
 	void HandleTargetDamageEvent(const FTargetDamageEvent& DamageEvent);
-
-	/** Calls FlagSpawnAreaAsRecent, and sets a timer for when the recent flag should be removed.
-	 * 	@param SpawnArea the Spawn Area to handle recent target removal for
-	 */
-	void HandleRecentTargetRemoval(USpawnArea* SpawnArea);
 
 	/** Called when the BoxBounds of the TargetManager are changed to update CachedExtrema or CachedEdgeOnly sets.
 	 * 	@param Extrema the current extrema of the total spawn area
@@ -395,6 +387,20 @@ public:
 	 * 	@return number of managed Spawn Areas
 	 */
 	int32 GetNumManaged() const { return CachedManaged.Num(); }
+
+	/** Gathers all total hits and total spawns for the game mode session and converts them into a 5X5 matrix using
+	 *  GetAveragedAccuracyData. Calls UpdateAccuracy once the values are copied over, and returns the struct */
+	FAccuracyData GetLocationAccuracy();
+	
+	/** Get the most recent Spawn Area's index.
+	 *  @return the index of the most recent Spawn Area, or -1 if there isn't one
+	 */
+	int32 GetMostRecentSpawnAreaIndex() const;
+
+	/** Get a Spawn Area's index based on TargetGuid.
+	 *  @return the index of the found Spawn Area, or -1 if invalid
+	 */
+	int32 GetSpawnAreaIndex(const FGuid& TargetGuid) const;
 
 protected:
 	/** Sets the value of MostRecentSpawnArea.
@@ -418,8 +424,7 @@ protected:
 	/* ------------------------------- */
 	/* -- SpawnArea finders/getters -- */
 	/* ------------------------------- */
-
-public:
+	
 	/** Finds a SpawnArea using its index as an FSetElementId.
 	 *  @return Spawn Area found by its index
 	 */
@@ -454,12 +459,6 @@ public:
 	 * 	@return the oldest SpawnArea flagged as deactivated and managed
 	 */
 	USpawnArea* GetOldestDeactivatedSpawnArea() const;
-
-	/** Find out if a SpawnArea is valid based on a Spawn Area pointer.
-	 *	@param InSpawnArea the Spawn Area pointer to check
-	 * 	@return whether or not the SpawnArea is contained in SpawnAreas
-	 */
-	bool IsSpawnAreaValid(const USpawnArea* InSpawnArea) const;
 
 	/** Find out if a SpawnArea is valid based on an index value.
 	 *
@@ -512,13 +511,14 @@ public:
 	/* -- SpawnArea flagging -- */
 	/* ------------------------ */
 
+public:
 	/** Adds to Managed and Deactivated cache, adds to GuidMap, and flags the SpawnArea as being actively managed by
 	 *  TargetManager. Calls SetOccupiedVertices.
 	 *  
-	 *  @param SpawnArea the Spawn Area to flag as managed
+	 *  @param SpawnAreaIndex the index of the Spawn Area to flag as managed
 	 *  @param TargetGuid the TargetGuid to set on the Spawn Area
 	 */
-	void FlagSpawnAreaAsManaged(USpawnArea* SpawnArea, const FGuid TargetGuid);
+	void FlagSpawnAreaAsManaged(const int32 SpawnAreaIndex, const FGuid TargetGuid);
 
 	/** Adds to Activated cache, removes from Deactivate cache, and flags the SpawnArea as activated and removes the
 	 *  recent flag if present.
@@ -529,7 +529,8 @@ public:
 	void FlagSpawnAreaAsActivated(const FGuid TargetGuid, const FVector& TargetScale);
 
 protected:
-	/** Adds to Recent cache and flags the SpawnArea as recent.
+	/** Adds to Recent cache and flags the SpawnArea as recent. Handles recent flag removal by setting a timer,
+	 *  refreshing recent flags, or immediately removing the recent flag.
 	 *  @param SpawnArea the Spawn Area to set as recent
 	 */
 	void FlagSpawnAreaAsRecent(USpawnArea* SpawnArea);
@@ -551,32 +552,34 @@ protected:
 	 */
 	void RemoveRecentFlagFromSpawnArea(USpawnArea* SpawnArea);
 
-public:
 	/** Removes the oldest SpawnArea recent flags if the max number of recent targets has been exceeded */
 	void RefreshRecentFlags();
-
+	
 	/* --------------------------------------------------- */
 	/* -- Finding Valid SpawnAreas for Spawn/Activation -- */
 	/* --------------------------------------------------- */
 
-	/** Returns a set of valid SpawnAreas filtered from the SpawnAreas array. Only considers SpawnAreas that
+public:
+	/** Returns a set of valid Spawn Area Guids filtered from the SpawnAreas array. Only considers SpawnAreas that
 	 *  are linked to a managed target since activatable requires being managed. Also considers the
 	 *  Target Activation Selection Policy.
 	 *  
 	 *  @param NumToActivate the maximum number of activatable Spawn Areas to return
+	 *  @return a set of target Guids
 	 */
-	TSet<USpawnArea*> GetActivatableSpawnAreas(const int32 NumToActivate) const;
+	TSet<FGuid> GetActivatableTargets(const int32 NumToActivate) const;
 
-	/** Returns a set of valid SpawnAreas filtered from all Spawn Areas. Broadest search since Spawn Areas
+	/** Returns a set of target spawn parameters filtered from all Spawn Areas. Broadest search since Spawn Areas
 	 *  do not have to be linked to a managed target to be considered. Also considers the Target Distribution Policy
 	 *  and Bounds Scaling Policy.
 	 *  
 	 *  @param Scales an array of target scales to use to help find and filter Spawn Areas. Also sets the found
 	 *  Spawn Areas target scales
 	 *  @param NumToSpawn the maximum number of spawnable Spawn Areas to return
+	 *  @return A set of target spawn parameters
 	 */
-	TSet<USpawnArea*> GetSpawnableSpawnAreas(const TArray<FVector>& Scales, const int32 NumToSpawn) const;
-
+	TSet<FTargetSpawnParams> GetTargetSpawnParams(const TArray<FVector>& Scales, const int32 NumToSpawn) const;
+	
 protected:
 	/** Uses a priority list to return a SpawnArea to activate. Always verifies that the candidate has a valid Guid,
 	 *  meaning that it corresponds to a valid target. Priority is origin (setting permitting), reinforcement learning
@@ -708,7 +711,8 @@ protected:
 	 *  @param BlockSize Number of targets to spawn
 	 *  @return the chosen rectangle candidate
 	 */
-	static FRectCandidate ChooseRectangleCandidate(const FRectangleSet& Rectangles, const bool bBordering, const int32 BlockSize);
+	static FRectCandidate ChooseRectangleCandidate(const FRectangleSet& Rectangles, const bool bBordering,
+		const int32 BlockSize);
 
 	/** Chooses the orientation of the rectangle based on the factors.
 	 * 
@@ -784,12 +788,7 @@ protected:
 
 	/** General SpawnAreas filter function that takes in a filter function to apply. */
 	static TArray<int32> FilterIndices(TArray<USpawnArea*>& ValidSpawnAreas, bool (USpawnArea::*FilterFunc)() const);
-
-public:
-	/** Gathers all total hits and total spawns for the game mode session and converts them into a 5X5 matrix using
-	 *  GetAveragedAccuracyData. Calls UpdateAccuracy once the values are copied over, and returns the struct */
-	FAccuracyData GetLocationAccuracy();
-
+	
 	/** Preferred dimensions for a Spawn Area */
 	UPROPERTY(EditAnywhere, Category="SpawnArea")
 	TArray<int32> PreferredSpawnAreaDimensions = {50, 45, 40, 30, 25, 20, 15, 10, 5};
@@ -853,9 +852,7 @@ public:
 	int32 DebugSphereSegments = 12;
 
 	#if !UE_BUILD_SHIPPING
-	/** Clears all debug persistent lines/boxes and draws new ones based on debug bool variables. */
-	void RefreshDebugBoxes() const;
-
+	
 	/** Draws debug boxes using SpawnAreas. */
 	void DrawDebug_Boxes(const TSet<USpawnArea*>& InSpawnAreas, const FColor& Color, const int32 Thickness,
 		bool bPersistent) const;
@@ -879,6 +876,10 @@ public:
 
 	/** Prints a formatted matrix (upside down from how indexes appear in SpawnAreas so that it matches in game). */
 	static void PrintDebug_Matrix(const TArray<int32>& Matrix, const int32 NumRows, const int32 NumCols);
+	
+public:
+	/** Clears all debug persistent lines/boxes and draws new ones based on debug bool variables. */
+	void RefreshDebugBoxes() const;
 
 	/** Toggles showing debug boxes for all SpawnAreas. */
 	bool bShowDebug_AllSpawnAreas;
@@ -923,8 +924,6 @@ public:
 	#endif
 
 private:
-	/** Whether or not to broadcast the RequestRLCSpawnArea delegate when finding SpawnAreas */
-	bool bShouldAskRLCForSpawnAreas;
 
 	/** Pointer to TargetManager's BSConfig */
 	TSharedPtr<FBSConfig> BSConfig;

@@ -91,7 +91,6 @@ USpawnAreaManagerComponent::USpawnAreaManagerComponent()
 	
 	MostRecentSpawnArea = nullptr;
 	OriginSpawnArea = nullptr;
-	bShouldAskRLCForSpawnAreas = false;
 }
 
 void USpawnAreaManagerComponent::DestroyComponent(bool bPromoteChildren)
@@ -100,7 +99,7 @@ void USpawnAreaManagerComponent::DestroyComponent(bool bPromoteChildren)
 	Super::DestroyComponent(bPromoteChildren);
 }
 
-void USpawnAreaManagerComponent::Init(const TSharedPtr<FBSConfig>& InConfig, const FVector& InOrigin,
+FIntVector3 USpawnAreaManagerComponent::Init(const TSharedPtr<FBSConfig>& InConfig, const FVector& InOrigin,
 	const FVector& InStaticExtents, const FExtrema& InStaticExtrema)
 {
 	Clear();
@@ -127,6 +126,8 @@ void USpawnAreaManagerComponent::Init(const TSharedPtr<FBSConfig>& InConfig, con
 			SpawnAreas.GetAllocatedSize());
 	}
 	#endif
+
+	return SpawnAreaDimensions;
 }
 
 void USpawnAreaManagerComponent::SetSpawnAreaDimensions()
@@ -267,7 +268,6 @@ void USpawnAreaManagerComponent::Clear()
 	OriginSpawnArea = nullptr;
 	
 	RequestRLCSpawnArea.Unbind();
-	bShouldAskRLCForSpawnAreas = false;
 
 	#if !UE_BUILD_SHIPPING
 	FlushPersistentDebugLines(GetWorld());
@@ -277,6 +277,19 @@ void USpawnAreaManagerComponent::Clear()
 bool USpawnAreaManagerComponent::ShouldConsiderManagedAsInvalid() const
 {
 	return TargetConfig().TargetSpawningPolicy == ETargetSpawningPolicy::RuntimeOnly;
+}
+
+int32 USpawnAreaManagerComponent::GetMostRecentSpawnAreaIndex() const
+{
+	if (!MostRecentSpawnArea) return -1;
+	return MostRecentSpawnArea->GetIndex();
+}
+
+int32 USpawnAreaManagerComponent::GetSpawnAreaIndex(const FGuid& TargetGuid) const
+{
+	const USpawnArea* SpawnArea = GetSpawnArea(TargetGuid);
+	if (!SpawnArea) return -1;
+	return SpawnArea->GetIndex();
 }
 
 void USpawnAreaManagerComponent::UpdateTotalTrackingDamagePossible(const FVector& InLocation) const
@@ -292,7 +305,9 @@ void USpawnAreaManagerComponent::HandleTargetDamageEvent(const FTargetDamageEven
 	USpawnArea* SpawnArea = GetSpawnArea(DamageEvent.Guid);
 	if (!SpawnArea)
 	{
+		#if !UE_BUILD_SHIPPING
 		UE_LOG(LogTargetManager, Warning, TEXT("Could not find SpawnArea from DamageEvent Guid."));
+		#endif
 		return;
 	}
 
@@ -304,8 +319,10 @@ void USpawnAreaManagerComponent::HandleTargetDamageEvent(const FTargetDamageEven
 			USpawnArea* SpawnAreaByLoc = GetSpawnArea(DamageEvent.Transform.GetLocation());
 			if (!SpawnAreaByLoc)
 			{
+				#if !UE_BUILD_SHIPPING
 				UE_LOG(LogTargetManager, Warning, TEXT("Could not find SpawnArea from Transform: %s."),
 					*DamageEvent.Transform.GetLocation().ToString());
+				#endif
 				return;
 			}
 
@@ -339,8 +356,12 @@ void USpawnAreaManagerComponent::HandleTargetDamageEvent(const FTargetDamageEven
 		}
 		break;
 	case ETargetDamageType::None:
-	case ETargetDamageType::Combined: UE_LOG(LogTargetManager, Warning,
-			TEXT("DamageEvent with DamageType None or Combined."));
+	case ETargetDamageType::Combined:
+		{
+			#if !UE_BUILD_SHIPPING
+			UE_LOG(LogTargetManager, Warning, TEXT("DamageEvent with DamageType None or Combined."));
+			#endif
+		}
 		break;
 	}
 
@@ -348,51 +369,12 @@ void USpawnAreaManagerComponent::HandleTargetDamageEvent(const FTargetDamageEven
 	if (DamageEvent.bWillDeactivate || DamageEvent.bWillDestroy)
 	{
 		RemoveActivatedFlagFromSpawnArea(SpawnArea);
-		HandleRecentTargetRemoval(SpawnArea);
+		FlagSpawnAreaAsRecent(SpawnArea);
 	}
 
 	if (DamageEvent.bWillDestroy)
 	{
 		RemoveManagedFlagFromSpawnArea(DamageEvent.Guid);
-	}
-
-	#if !UE_BUILD_SHIPPING
-	//RefreshDebugBoxes();
-	#endif
-}
-
-void USpawnAreaManagerComponent::HandleRecentTargetRemoval(USpawnArea* SpawnArea)
-{
-	FlagSpawnAreaAsRecent(SpawnArea);
-	FTimerHandle TimerHandle;
-
-	/* Handle removing recent flag from SpawnArea */
-	switch (TargetConfig().RecentTargetMemoryPolicy)
-	{
-	case ERecentTargetMemoryPolicy::None:
-		RemoveRecentFlagFromSpawnArea(SpawnArea);
-		break;
-	case ERecentTargetMemoryPolicy::CustomTimeBased:
-		{
-			RemoveFromRecentDelegate.BindUObject(this, &ThisClass::RemoveRecentFlagFromSpawnArea, SpawnArea);
-			const float Time = TargetConfig().RecentTargetTimeLength;
-			GetWorld()->GetTimerManager().SetTimer(TimerHandle, RemoveFromRecentDelegate, Time, false);
-		}
-		break;
-	case ERecentTargetMemoryPolicy::NumTargetsBased:
-		{
-			RefreshRecentFlags();
-		}
-		break;
-	case ERecentTargetMemoryPolicy::UseTargetSpawnCD:
-		{
-			RemoveFromRecentDelegate.BindUObject(this, &ThisClass::RemoveRecentFlagFromSpawnArea, SpawnArea);
-			const float Time = TargetConfig().TargetSpawnCD;
-			GetWorld()->GetTimerManager().SetTimer(TimerHandle, RemoveFromRecentDelegate, Time, false);
-		}
-		break;
-	default:
-		break;
 	}
 }
 
@@ -539,15 +521,6 @@ USpawnArea* USpawnAreaManagerComponent::GetOldestDeactivatedSpawnArea() const
 	return MostRecent;
 }
 
-bool USpawnAreaManagerComponent::IsSpawnAreaValid(const USpawnArea* InSpawnArea) const
-{
-	if (SpawnAreas.Contains(InSpawnArea))
-	{
-		return true;
-	}
-	return false;
-}
-
 bool USpawnAreaManagerComponent::IsSpawnAreaValid(const int32 InIndex) const
 {
 	return InIndex >= 0 && InIndex < SpawnAreas.Num();
@@ -597,8 +570,9 @@ TSet<USpawnArea*> USpawnAreaManagerComponent::GetUnflaggedSpawnAreas() const
 /* -- SpawnArea flagging -- */
 /* ------------------------ */
 
-void USpawnAreaManagerComponent::FlagSpawnAreaAsManaged(USpawnArea* SpawnArea, const FGuid TargetGuid)
+void USpawnAreaManagerComponent::FlagSpawnAreaAsManaged(const int32 SpawnAreaIndex, const FGuid TargetGuid)
 {
+	USpawnArea* SpawnArea = GetSpawnArea(SpawnAreaIndex);
 	if (!SpawnArea) return;
 
 	if (SpawnArea->IsManaged())
@@ -663,6 +637,37 @@ void USpawnAreaManagerComponent::FlagSpawnAreaAsRecent(USpawnArea* SpawnArea)
 	CachedRecent.Add(SpawnArea);
 
 	SpawnArea->SetIsRecent(true);
+	
+	FTimerHandle TimerHandle;
+
+	/** Handle removing recent flag from SpawnArea */
+	switch (TargetConfig().RecentTargetMemoryPolicy)
+	{
+	case ERecentTargetMemoryPolicy::None:
+		RemoveRecentFlagFromSpawnArea(SpawnArea);
+		break;
+	case ERecentTargetMemoryPolicy::CustomTimeBased:
+		{
+			RemoveFromRecentDelegate.BindUObject(this, &ThisClass::RemoveRecentFlagFromSpawnArea, SpawnArea);
+			const float Time = TargetConfig().RecentTargetTimeLength;
+			GetWorld()->GetTimerManager().SetTimer(TimerHandle, RemoveFromRecentDelegate, Time, false);
+		}
+		break;
+	case ERecentTargetMemoryPolicy::NumTargetsBased:
+		{
+			RefreshRecentFlags();
+		}
+		break;
+	case ERecentTargetMemoryPolicy::UseTargetSpawnCD:
+		{
+			RemoveFromRecentDelegate.BindUObject(this, &ThisClass::RemoveRecentFlagFromSpawnArea, SpawnArea);
+			const float Time = TargetConfig().TargetSpawnCD;
+			GetWorld()->GetTimerManager().SetTimer(TimerHandle, RemoveFromRecentDelegate, Time, false);
+		}
+		break;
+	default:
+		break;
+	}
 }
 
 void USpawnAreaManagerComponent::RemoveManagedFlagFromSpawnArea(const FGuid TargetGuid)
@@ -752,7 +757,7 @@ void USpawnAreaManagerComponent::RefreshRecentFlags()
 /* -- Finding Valid SpawnAreas for Spawn/Activation -- */
 /* --------------------------------------------------- */
 
-TSet<USpawnArea*> USpawnAreaManagerComponent::GetActivatableSpawnAreas(const int32 NumToActivate) const
+TSet<FGuid> USpawnAreaManagerComponent::GetActivatableTargets(const int32 NumToActivate) const
 {
 	// Assumes that we cannot activate an already activated target
 
@@ -764,6 +769,11 @@ TSet<USpawnArea*> USpawnAreaManagerComponent::GetActivatableSpawnAreas(const int
 	if (ValidSpawnAreas.IsEmpty())
 	{
 		ValidSpawnAreas = GetDeactivatedSpawnAreas();
+
+		if (ValidSpawnAreas.IsEmpty() && TargetConfig().bAllowActivationWhileActivated)
+		{
+			ValidSpawnAreas = GetActivatedSpawnAreas();
+		}
 	}
 
 	// ReSharper disable once CppLocalVariableMayBeConst
@@ -806,13 +816,21 @@ TSet<USpawnArea*> USpawnAreaManagerComponent::GetActivatableSpawnAreas(const int
 			PreviousSpawnArea = Chosen;
 		}
 	}
-
-	return ChosenSpawnAreas;
+	
+	TSet<FGuid> Out;
+	for (const USpawnArea* SpawnArea : ChosenSpawnAreas)
+	{
+		Out.Add(SpawnArea->GetGuid());
+	}
+	
+	return Out;
 }
 
-TSet<USpawnArea*> USpawnAreaManagerComponent::GetSpawnableSpawnAreas(const TArray<FVector>& Scales,
+TSet<FTargetSpawnParams> USpawnAreaManagerComponent::GetTargetSpawnParams(const TArray<FVector>& Scales,
 	const int32 NumToSpawn) const
 {
+	TSet<USpawnArea*> ValidSpawnAreas;
+	
 	/* ------------------------------------ */
 	/* -- Grid-Based Target Distribution -- */
 	/* ------------------------------------ */
@@ -820,7 +838,7 @@ TSet<USpawnArea*> USpawnAreaManagerComponent::GetSpawnableSpawnAreas(const TArra
 	if (TargetConfig().TargetDistributionPolicy == ETargetDistributionPolicy::Grid)
 	{
 		// Get all SpawnAreas that are managed, deactivated, and not recent
-		TSet<USpawnArea*> ValidSpawnAreas = GetUnflaggedSpawnAreas();
+		ValidSpawnAreas = GetUnflaggedSpawnAreas();
 	
 		#if !UE_BUILD_SHIPPING
 		if (bShowDebug_SpawnableSpawnAreas && !GIsAutomationTesting)
@@ -830,7 +848,7 @@ TSet<USpawnArea*> USpawnAreaManagerComponent::GetSpawnableSpawnAreas(const TArra
 		#endif
 
 		// Don't make every function have to check this
-		if (ValidSpawnAreas.IsEmpty()) return TSet<USpawnArea*>();
+		if (ValidSpawnAreas.IsEmpty()) return TSet<FTargetSpawnParams>();
 
 		switch (TargetConfig().RuntimeTargetSpawningLocationSelectionMode)
 		{
@@ -879,66 +897,73 @@ TSet<USpawnArea*> USpawnAreaManagerComponent::GetSpawnableSpawnAreas(const TArra
 			SpawnArea->SetTargetScale(Scales[i++]);
 			if (i >= Scales.Num()) break;
 		}
-
-		return ValidSpawnAreas;
 	}
-
 	/* ------------------------------------ */
 	/* -- All Other Target Distributions -- */
 	/* ------------------------------------ */
-	
-	// Start with all SpawnAreas within the current box bounds, RemoveOverlappingSpawnAreas will take care of rest
-	TSet<USpawnArea*> ValidSpawnAreas = CachedExtrema;
-
-	// ReSharper disable once CppLocalVariableMayBeConst
-	USpawnArea* PreviousSpawnArea = GetMostRecentSpawnArea();
-
-	TSet<USpawnArea*> ChosenSpawnAreas;
-
-	// Main loop for choosing spawn areas
-	for (int i = 0; i < NumToSpawn; i++)
+	else
 	{
-		TSet<USpawnArea*> ValidSpawnAreasCopy = ValidSpawnAreas;
-	
-		// Remove any overlap caused by any managed/activated SpawnAreas or any already chosen SpawnAreas.
-		// This has to be done at every iteration because overlapping vertices need to be regenerated if
-		// the current scale is larger than the Spawn Area's scale being compared (hence causing overlap).
-		RemoveOverlappingSpawnAreas(ValidSpawnAreasCopy, ChosenSpawnAreas, Scales[i]);
+		// Start with all SpawnAreas within the current box bounds, RemoveOverlappingSpawnAreas will take care of rest
+		ValidSpawnAreas = CachedExtrema;
 
-		// If multiple are spawning with different scales, one further along might be able to fit
-		if (ValidSpawnAreasCopy.IsEmpty()) continue;
-	
-		#if !UE_BUILD_SHIPPING
-		if (bShowDebug_SpawnableSpawnAreas && i == 0 && !GIsAutomationTesting)
-		{
-			DebugCached_SpawnableValidSpawnAreas = ValidSpawnAreas;
-		}
-		#endif
+		// ReSharper disable once CppLocalVariableMayBeConst
+		USpawnArea* PreviousSpawnArea = GetMostRecentSpawnArea();
 
-		if (USpawnArea* Chosen = ChooseSpawnableSpawnArea(PreviousSpawnArea, ValidSpawnAreasCopy, ChosenSpawnAreas))
+		TSet<USpawnArea*> ChosenSpawnAreas;
+
+		// Main loop for choosing spawn areas
+		for (int i = 0; i < NumToSpawn; i++)
 		{
-			if (TargetConfig().TargetDistributionPolicy != ETargetDistributionPolicy::HeadshotHeightOnly)
+			TSet<USpawnArea*> ValidSpawnAreasCopy = ValidSpawnAreas;
+	
+			// Remove any overlap caused by any managed/activated SpawnAreas or any already chosen SpawnAreas.
+			// This has to be done at every iteration because overlapping vertices need to be regenerated if
+			// the current scale is larger than the Spawn Area's scale being compared (hence causing overlap).
+			RemoveOverlappingSpawnAreas(ValidSpawnAreasCopy, ChosenSpawnAreas, Scales[i]);
+
+			// If multiple are spawning with different scales, one further along might be able to fit
+			if (ValidSpawnAreasCopy.IsEmpty()) continue;
+	
+			#if !UE_BUILD_SHIPPING
+			if (bShowDebug_SpawnableSpawnAreas && i == 0 && !GIsAutomationTesting)
 			{
-				if (GetOriginSpawnArea() && Chosen->GetIndex() != GetOriginSpawnArea()->GetIndex())
-				{
-					Chosen->SetChosenPoint(USpawnArea::GenerateRandomOffset());
-				}
+				DebugCached_SpawnableValidSpawnAreas = ValidSpawnAreas;
 			}
-			// Set the scale for the target to be spawned
-			Chosen->SetTargetScale(Scales[i]);
+			#endif
+
+			if (USpawnArea* Chosen = ChooseSpawnableSpawnArea(PreviousSpawnArea, ValidSpawnAreasCopy, ChosenSpawnAreas))
+			{
+				if (TargetConfig().TargetDistributionPolicy != ETargetDistributionPolicy::HeadshotHeightOnly)
+				{
+					if (GetOriginSpawnArea() && Chosen->GetIndex() != GetOriginSpawnArea()->GetIndex())
+					{
+						Chosen->SetChosenPoint(USpawnArea::GenerateRandomOffset());
+					}
+				}
+				// Set the scale for the target to be spawned
+				Chosen->SetTargetScale(Scales[i]);
 		
-			// Add to the return array
-			ChosenSpawnAreas.Add(Chosen);
+				// Add to the return array
+				ChosenSpawnAreas.Add(Chosen);
 
-			// Remove from options available
-			ValidSpawnAreas.Remove(Chosen);
+				// Remove from options available
+				ValidSpawnAreas.Remove(Chosen);
 
-			// Set as the previous SpawnArea since it will be spawned before any chosen later
-			PreviousSpawnArea = Chosen;
+				// Set as the previous SpawnArea since it will be spawned before any chosen later
+				PreviousSpawnArea = Chosen;
+			}
 		}
+		
+		ValidSpawnAreas = MoveTemp(ChosenSpawnAreas);
+	}
+	
+	TSet<FTargetSpawnParams> Out;
+	for (const USpawnArea* SpawnArea : ValidSpawnAreas)
+	{
+		Out.Emplace(FTargetSpawnParams(SpawnArea->GetChosenPoint(), SpawnArea->GetTargetScale(), SpawnArea->GetIndex()));
 	}
 
-	return ChosenSpawnAreas;
+	return Out;
 }
 
 USpawnArea* USpawnAreaManagerComponent::ChooseActivatableSpawnArea(const USpawnArea* PreviousSpawnArea,
@@ -970,7 +995,7 @@ USpawnArea* USpawnAreaManagerComponent::ChooseActivatableSpawnArea(const USpawnA
 	}
 
 	// 3rd priority: Let RLC choose the SpawnArea if settings permit
-	if (bShouldAskRLCForSpawnAreas && RequestRLCSpawnArea.IsBound())
+	if (RequestRLCSpawnArea.IsBound())
 	{
 		const int32 PreviousIndex = !PreviousSpawnArea ? -1 : PreviousSpawnArea->GetIndex();
 
@@ -1031,7 +1056,7 @@ USpawnArea* USpawnAreaManagerComponent::ChooseSpawnableSpawnArea(const USpawnAre
 	}
 
 	// 3rd priority: Let RLC choose the SpawnArea if settings permit
-	if (bShouldAskRLCForSpawnAreas && RequestRLCSpawnArea.IsBound())
+	if (RequestRLCSpawnArea.IsBound())
 	{
 		const int32 PreviousIndex = PreviousSpawnArea ? PreviousSpawnArea->GetIndex() : -1;
 
@@ -2022,7 +2047,7 @@ void USpawnAreaManagerComponent::DrawDebug_Boxes(const TSet<USpawnArea*>& InSpaw
 	const int32 Thickness, const bool bPersistent) const
 {
 	const float Time = bPersistent ? -1.f : TargetConfig().TargetSpawnCD;
-	const FVector HalfInc = { 0.f, GetSpawnAreaInc().Y * 0.5f, GetSpawnAreaInc().Z * 0.5f };
+	const FVector HalfInc = { 0.f, GetSpawnAreaDimensions().Y * 0.5f, GetSpawnAreaDimensions().Z * 0.5f };
 	const FVector Offset = { DebugBoxXOffset, 0.f, 0.f };
 	const UWorld* World = GetWorld();
 	for (const USpawnArea* SpawnArea : InSpawnAreas)

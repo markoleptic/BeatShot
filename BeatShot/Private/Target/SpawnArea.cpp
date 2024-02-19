@@ -56,6 +56,10 @@ void USpawnArea::Init(const int32 InIndex, const FVector& InBottomLeftVertex)
 	TimeSetRecent = DBL_MAX;
 	GridIndexType = FindIndexType(InIndex, Size, TotalNumHorizontalSpawnAreas);
 	AdjacentIndexMap = CreateAdjacentIndices(GridIndexType, Index, TotalNumHorizontalSpawnAreas);
+	for (const auto& Elem : AdjacentIndexMap)
+	{
+		AdjacentIndices.Add(Elem.Value);
+	}
 	OccupiedVertices = TSet<FVector>();
 }
 

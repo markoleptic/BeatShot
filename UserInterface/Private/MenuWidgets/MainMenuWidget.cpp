@@ -11,6 +11,7 @@
 #include "SubMenuWidgets/ScoreBrowserWidget.h"
 #include "Styles/MenuStyle.h"
 #include "BSWidgetInterface.h"
+#include "SaveGamePlayerSettings.h"
 #include "SubmenuWidgets/GameModesWidgets/GameModesWidget.h"
 #include "WidgetComponents/Buttons/MenuButton.h"
 

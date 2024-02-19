@@ -32,8 +32,8 @@ public:
 protected:
 	/** Generic spawn function that all game modes use to spawn a target. Initializes the target, binds to its delegates,
 	 *  sets the InSpawnArea's Guid, and adds the target to ManagedTargets. */
-	virtual ATarget* SpawnTarget(USpawnArea* InSpawnArea) override;
-
+	virtual ATarget* SpawnTarget(const FTargetSpawnParams& Params) override;
+	
 	/** Updates the SpawnVolume and all directional boxes to match the current SpawnBox. */
 	virtual void UpdateSpawnVolume(const float Factor) const override;
 

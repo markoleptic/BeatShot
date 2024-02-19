@@ -1,7 +1,6 @@
 ﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #pragma once
-
 #include "SaveLoadInterface.generated.h"
 
 struct FCommonScoreInfo;
@@ -56,24 +55,14 @@ private:
 	template <typename T>
 	/** Performs the loading from SaveGame slot and returns the USaveGamePlayerScore object */
 	static T* LoadFromSlot(const FString& InSlotName, const int32 InSlotIndex);
-	
-	/** Performs the loading from SaveGame slot and returns the USaveGamePlayerScore object */
-	static USaveGamePlayerScore* LoadFromSlot_SaveGamePlayerScore();
 
-	/** Performs the loading from SaveGame slot and returns the USaveGameCustomGameMode object */
-	static USaveGameCustomGameMode* LoadFromSlot_SaveGameCustomGameMode();
+	template <typename T>
+	/** Base template for LoadFromSlot with no parameters */
+	static T* LoadFromSlot();
 
-	/** Performs the loading from SaveGame slot and returns the USaveGamePlayerSettings object */
-	static USaveGamePlayerSettings* LoadFromSlot_SaveGamePlayerSettings();
-
+	template <typename T>
 	/** Performs the saving to SaveGame slot and returns true if successful */
-	static bool SaveToSlot(USaveGamePlayerScore* SaveGamePlayerScore);
-
-	/** Performs the saving to SaveGame slot and returns true if successful */
-	static bool SaveToSlot(USaveGameCustomGameMode* SaveGameCustomGameMode);
-
-	/** Performs the saving to SaveGame slot and returns true if successful */
-	static bool SaveToSlot(USaveGamePlayerSettings* SaveGamePlayerSettings);
+	static bool SaveToSlot(T* SaveGameClass);
 
 public:
 	/** Returns the GameModeDataAsset that contains all default/preset game modes. Expected to be overriden */
@@ -82,20 +71,16 @@ public:
 	/** Loads all player settings from slot */
 	static FPlayerSettings LoadPlayerSettings();
 
-	/** Saves Game specific settings, preserving all other settings */
-	virtual void SavePlayerSettings(const FPlayerSettings_Game& InGameSettings);
-
-	/** Saves Audio Analyzer specific settings, preserving all other settings */
-	virtual void SavePlayerSettings(const FPlayerSettings_AudioAnalyzer& InAudioAnalyzerSettings);
-
-	/** Saves User specific settings, preserving all other settings */
-	virtual void SavePlayerSettings(const FPlayerSettings_User& InUserSettings);
-
-	/** Saves CrossHair specific settings, preserving all other settings */
-	virtual void SavePlayerSettings(const FPlayerSettings_CrossHair& InCrossHairSettings);
-
-	/** Saves VideoAndSound settings, preserving all other settings */
-	virtual void SavePlayerSettings(const FPlayerSettings_VideoAndSound& InVideoAndSoundSettings);
+	/** Saves specific sub-setting struct, preserving all other settings */
+	void SavePlayerSettings(const FPlayerSettings_User& InSettingsStruct);
+	/** Saves specific sub-setting struct, preserving all other settings */
+	void SavePlayerSettings(const FPlayerSettings_VideoAndSound& InSettingsStruct);
+	/** Saves specific sub-setting struct, preserving all other settings */
+	void SavePlayerSettings(const FPlayerSettings_CrossHair& InSettingsStruct);
+	/** Saves specific sub-setting struct, preserving all other settings */
+	void SavePlayerSettings(const FPlayerSettings_Game& InSettingsStruct);
+	/** Saves specific sub-setting struct, preserving all other settings */
+	void SavePlayerSettings(const FPlayerSettings_AudioAnalyzer& InSettingsStruct);
 
 	/** Returns all Custom Game Modes */
 	static TArray<FBSConfig> LoadCustomGameModes();
@@ -197,7 +182,7 @@ protected:
 	// These delegates are executed when their respective settings categories are changed, allowing other classes to receive updates
 	// Example:
 	// GameInstance->AddDelegateToOnPlayerSettingsChanged(OnPlayerSettingsChangedDelegate_Game);
-
+	
 	/** The delegate that is broadcast when this class saves Game settings */
 	FOnPlayerSettingsChanged_Game OnPlayerSettingsChangedDelegate_Game;
 	/** The delegate that is broadcast when this class saves AudioAnalyzer settings */
@@ -209,3 +194,27 @@ protected:
 	/** The delegate that is broadcast when this class saves VideoAndSound settings */
 	FOnPlayerSettingsChanged_VideoAndSound OnPlayerSettingsChangedDelegate_VideoAndSound;
 };
+	
+/** Performs the loading from SaveGame slot and returns the USaveGamePlayerScore object */
+template <>
+USaveGamePlayerScore* ISaveLoadInterface::LoadFromSlot();
+
+/** Performs the loading from SaveGame slot and returns the USaveGameCustomGameMode object */
+template <>
+USaveGameCustomGameMode* ISaveLoadInterface::LoadFromSlot();
+
+/** Performs the loading from SaveGame slot and returns the USaveGamePlayerSettings object */
+template <>
+USaveGamePlayerSettings* ISaveLoadInterface::LoadFromSlot();
+
+/** Performs the saving to SaveGame slot and returns true if successful */
+template<>
+bool ISaveLoadInterface::SaveToSlot(USaveGamePlayerScore* SaveGamePlayerScore);
+	
+/** Performs the saving to SaveGame slot and returns true if successful */
+template<>
+bool ISaveLoadInterface::SaveToSlot(USaveGameCustomGameMode* SaveGameCustomGameMode);
+
+/** Performs the saving to SaveGame slot and returns true if successful */
+template<>
+bool ISaveLoadInterface::SaveToSlot(USaveGamePlayerSettings* SaveGamePlayerSettings);

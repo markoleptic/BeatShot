@@ -1,5 +1,7 @@
 ﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
+// ReSharper disable CppNonExplicitConvertingConstructor
+// ReSharper disable CppClassCanBeFinal
 #include "CoreMinimal.h"
 #include "SaveGamePlayerSettings.h"
 #include "../TestBase/TargetManagerTestWithWorld.h"
@@ -47,7 +49,7 @@ public:
 			EAutomationTestFlags::HighPriorityAndAbove | EAutomationTestFlags::EngineFilter) & ~(
 			EAutomationTestFlags::SmokeFilter));
 	}
-	virtual bool IsStressTest() const { return true; }
+	virtual bool IsStressTest() const override { return true; }
 	virtual uint32 GetRequiredDeviceNum() const override { return 1; }
 	virtual FString GetTestSourceFileName() const override { return "TargetCollisionTest.cpp"; }
 	virtual int32 GetTestSourceFileLine() const override { return 7; }
@@ -63,6 +65,7 @@ protected:
 	int32 TotalCollisions = 0;
 	double MinDistance = 5000.f;
 	const int32 NumIterations = 500;
+	const FString CollisionTestDataAssetPath = "/Game/Blueprints/GameModes/DA_CollisionTest.DA_CollisionTest";
 };
 
 namespace
@@ -72,9 +75,9 @@ namespace
 
 void FTargetCollisionTest::GetTests(TArray<FString>& OutBeautifiedNames, TArray<FString>& OutTestCommands) const
 {
-	if (InitGameModeDataAsset("/Game/Blueprints/GameModes/DA_CollisionTest.DA_CollisionTest"))
+	if (InitGameModeDataAsset(CollisionTestDataAssetPath))
 	{
-		for (const auto& Mode : GameModeDataAsset->GetDefaultGameModesMap())
+		for (const auto& Mode : GameModeDataAsset->GetGameModes())
 		{
 			OutBeautifiedNames.Add(Mode.Key.CustomGameModeName);
 			OutTestCommands.Add(Mode.Key.CustomGameModeName);
@@ -85,22 +88,16 @@ void FTargetCollisionTest::GetTests(TArray<FString>& OutBeautifiedNames, TArray<
 
 bool FTargetCollisionTest::RunTest(const FString& Parameters)
 {
-	if (!bInitialized)
-	{
-		if (!Init())
-		{
-			return false;
-		}
-	}
+	if (!Init()) return false;
 	
-	const FBSConfig* FoundConfig = TestMap.Find(Parameters);
+	FBSConfig* FoundConfig = TestMap.Find(Parameters);
 	if (!FoundConfig)
 	{
 		AddError(FString::Printf(TEXT("Failed to find Config for Parameters: %s"), *Parameters));
 		return false;
 	}
 	
-	BSConfig = MakeShareable(new FBSConfig(*FoundConfig));
+	BSConfig = MakeShared<FBSConfig>(*FoundConfig);
 	TargetManager->Init(BSConfig, FPlayerSettings_Game());
 	TargetManager->SetShouldSpawn(true);
 	
@@ -108,14 +105,12 @@ bool FTargetCollisionTest::RunTest(const FString& Parameters)
 	{
 		TargetManager->OnAudioAnalyzerBeat();
 		TArray<FSphere> Spheres;
-
 		for (auto [Guid, Target] : GetManagedTargets())
 		{
 			Spheres.Emplace(FSphere(Target->GetActorLocation(), Target->GetRadius()));
 			Target->DamageSelf(true);
 			TickWorld(UE_KINDA_SMALL_NUMBER);
 		}
-		
 		for (int i = 0; i < Spheres.Num(); i++)
 		{
 			for (int j = i + 1; j < Spheres.Num(); j++)
@@ -123,7 +118,6 @@ bool FTargetCollisionTest::RunTest(const FString& Parameters)
 				TestIntersection(Spheres[i], Spheres[j]);
 			}
 		}
-		
 		TotalTargetsSpawned += Spheres.Num();
 		TestTrue("All targets destroyed at iteration end", GetManagedTargets().IsEmpty());
 	}
@@ -131,10 +125,11 @@ bool FTargetCollisionTest::RunTest(const FString& Parameters)
 	AddInfo(FString::Printf(TEXT("Total targets spawned: %d"), TotalTargetsSpawned));
 	AddInfo(FString::Printf(TEXT("Total collisions: %d"), TotalCollisions));
 	AddInfo(FString::Printf(TEXT("Min Distance between two spheres: %.4lf"), MinDistance));
-	AddInfo(FString::Printf(TEXT("Total time spent executing GetSpawnableSpawnAreas: %.4lf"),
-		SpawnableSpawnAreasTime));
+	AddInfo(FString::Printf(TEXT("Total time spent executing GetTargetSpawnParams: %.4lf"),
+		TargetSpawnParamsExecutionTime));
 	
 	ResetTestVariables();
+	CleanUpWorld();
 	
 	return true;
 }

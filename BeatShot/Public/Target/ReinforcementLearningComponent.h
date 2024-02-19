@@ -12,7 +12,8 @@
 class UCompositeCurveTable;
 
 
-/** A struct representing two consecutively activated targets, used to keep track of the reward associated between two points */
+/** A struct representing two consecutively activated targets, used to keep track of the reward associated
+ *  between two points */
 USTRUCT()
 struct FTargetPair
 {
@@ -29,18 +30,13 @@ private:
 	float Reward;
 
 public:
-	FTargetPair()
+	FTargetPair(): First(-1), Second(-1), Reward(0.f)
 	{
-		First = INDEX_NONE;
-		Second = INDEX_NONE;
-		Reward = 0.f;
 	}
 
-	FTargetPair(const int32 PreviousPointIndex, const int32 CurrentPointIndex)
+	FTargetPair(const int32 PreviousPointIndex, const int32 CurrentPointIndex) :
+		First(PreviousPointIndex), Second(CurrentPointIndex), Reward(0.f)
 	{
-		First = PreviousPointIndex;
-		Second = CurrentPointIndex;
-		Reward = 0.f;
 	}
 
 	FORCEINLINE bool operator ==(const FTargetPair& Other) const
@@ -79,22 +75,14 @@ struct FQTableUpdateParams
 	/** The QTable column index for the index of maximum reward, starting from State_Index_2 */
 	int32 ActionIndex_2;
 
-	FQTableUpdateParams()
+	FQTableUpdateParams() : TargetPair(FTargetPair()), StateIndex(-1), ActionIndex(-1),
+		StateIndex_2(-1), ActionIndex_2(-1)
 	{
-		TargetPair = FTargetPair();
-		StateIndex = -1;
-		ActionIndex = -1;
-		StateIndex_2 = -1;
-		ActionIndex_2 = -1;
 	}
 
-	FQTableUpdateParams(const FTargetPair& InTargetPair)
+	explicit FQTableUpdateParams(const FTargetPair& InTargetPair) : TargetPair(InTargetPair), StateIndex(-1),
+		ActionIndex(-1), StateIndex_2(-1), ActionIndex_2(-1)
 	{
-		TargetPair = InTargetPair;
-		StateIndex = -1;
-		ActionIndex = -1;
-		StateIndex_2 = -1;
-		ActionIndex_2 = -1;
 	}
 };
 
@@ -107,16 +95,14 @@ struct FSpawnAreaQTableIndexPair
 	int32 QTableIndex;
 	int32 SpawnAreaIndex;
 
-	FSpawnAreaQTableIndexPair()
+	FSpawnAreaQTableIndexPair() : QTableIndex(INDEX_NONE), SpawnAreaIndex(INDEX_NONE)
 	{
-		SpawnAreaIndex = INDEX_NONE;
-		QTableIndex = INDEX_NONE;
 	}
-
-	FSpawnAreaQTableIndexPair(const int32 InSpawnAreaIndex, const int32 InQTableIndex)
+	
+	FSpawnAreaQTableIndexPair(const int32 InSpawnAreaIndex, const int32 InQTableIndex) :
+		QTableIndex(InQTableIndex),
+		SpawnAreaIndex(InSpawnAreaIndex)
 	{
-		SpawnAreaIndex = InSpawnAreaIndex;
-		QTableIndex = InQTableIndex;
 	}
 
 	FORCEINLINE bool operator ==(const FSpawnAreaQTableIndexPair& Other) const
@@ -146,18 +132,14 @@ struct FRLAgentParams
 	FCommonScoreInfo ScoreInfo;
 	FIntVector3 SpawnAreaSize;
 
-	FRLAgentParams()
+	FRLAgentParams() : AIConfig(FBS_AIConfig()), ScoreInfo(FCommonScoreInfo()), SpawnAreaSize(FIntVector3())
 	{
-		AIConfig = FBS_AIConfig();
-		ScoreInfo = FCommonScoreInfo();
-		SpawnAreaSize = FIntVector3();
 	}
 
-	FRLAgentParams(const FBS_AIConfig& InAIConfig, const FCommonScoreInfo& InScoreInfo, const FIntVector3& InSpawnAreaSize)
+	FRLAgentParams(const FBS_AIConfig& InAIConfig, const FCommonScoreInfo& InScoreInfo,
+		const FIntVector3& InSpawnAreaSize) : AIConfig(InAIConfig), ScoreInfo(InScoreInfo),
+		SpawnAreaSize(InSpawnAreaSize)
 	{
-		AIConfig = InAIConfig;
-		ScoreInfo = InScoreInfo;
-		SpawnAreaSize = InSpawnAreaSize;
 	}
 };
 
@@ -220,7 +202,7 @@ public:
 	int64 GetTotalTrainingSamples() const { return TotalTrainingSamples; }
 
 	/** The mode that the RLC is operating in */
-	EReinforcementLearningMode GetReinforcementLearningMode() const { return ReinforcementLearningMode; }
+	EReinforcementLearningMode GetRLMode() const { return ReinforcementLearningMode; }
 
 	/** Returns a copy of the QTable */
 	nc::NdArray<float> GetQTable() const { return QTable; }
@@ -256,41 +238,6 @@ private:
 	/** Returns the first TargetPair with the matching CurrentIndex */
 	FTargetPair* FindTargetPairByCurrentIndex(const int32 InCurrentIndex);
 
-public:
-	/** Broadcasts OnQTableUpdate delegate */
-	void UpdateQTableWidget() const;
-
-	/** Prints the Q-Table to Unreal console */
-	void PrintRewards() const;
-
-	/** Prints the MaxIndices and MaxValues corresponding to the choices the component currently has */
-	void PrintMaxAverageIndices() const;
-
-	void PrintGetMaxIndex(const int32 PreviousIndex, const float MaxValue, const nc::NdArray<float>& PreviousRow,
-		const nc::NdArray<unsigned>& ReverseSortedIndices) const;
-
-	/** Delegate that broadcasts when the QTable is updated. Used to broadcast to widgets */
-	FOnQTableUpdate OnQTableUpdate;
-
-	/** Whether to broadcast the average or max QTable when broadcasting OnQTableUpdate */
-	bool bBroadcastAverageOnQTableUpdate;
-
-	/** Whether or not to print QTable initialization to log */
-	bool bPrintDebug_QTableInit;
-
-	/** Whether or not to print QTable updates to log */
-	bool bPrintDebug_QTableUpdate;
-
-	/** Whether or not to print Active Target Pair updates to log */
-	bool bPrintDebug_ActiveTargetPairs;
-
-	/** Whether or not to print finding the max index to log */
-	bool bPrintDebug_GetMaxIndex;
-
-	/** Whether or not to print finding the next and/or best action index to log */
-	bool bPrintDebug_ChooseActionIndex;
-
-private:
 	/** The mode that the RLC is operating in */
 	EReinforcementLearningMode ReinforcementLearningMode;
 
@@ -340,4 +287,42 @@ private:
 
 	/** The number of samples collected starting from when the component was activated */
 	int64 TotalTrainingSamples;
+
+	#if !UE_BUILD_SHIPPING
+	
+public:
+	/** Broadcasts OnQTableUpdate delegate */
+	void UpdateQTableWidget() const;
+
+	/** Prints the Q-Table to Unreal console */
+	void PrintRewards() const;
+
+	/** Prints the MaxIndices and MaxValues corresponding to the choices the component currently has */
+	void PrintMaxAverageIndices() const;
+
+	void PrintGetMaxIndex(const int32 PreviousIndex, const float MaxValue, const nc::NdArray<float>& PreviousRow,
+		const nc::NdArray<unsigned>& ReverseSortedIndices) const;
+	
+	/** Delegate that broadcasts when the QTable is updated. Used to broadcast to widgets */
+	FOnQTableUpdate OnQTableUpdate;
+
+	/** Whether to broadcast the average or max QTable when broadcasting OnQTableUpdate */
+	bool bBroadcastAverageOnQTableUpdate;
+
+	/** Whether or not to print QTable initialization to log */
+	bool bPrintDebug_QTableInit;
+
+	/** Whether or not to print QTable updates to log */
+	bool bPrintDebug_QTableUpdate;
+
+	/** Whether or not to print Active Target Pair updates to log */
+	bool bPrintDebug_ActiveTargetPairs;
+
+	/** Whether or not to print finding the max index to log */
+	bool bPrintDebug_GetMaxIndex;
+
+	/** Whether or not to print finding the next and/or best action index to log */
+	bool bPrintDebug_ChooseActionIndex;
+	
+	#endif
 };

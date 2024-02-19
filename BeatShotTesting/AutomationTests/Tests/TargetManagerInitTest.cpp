@@ -27,13 +27,7 @@ void FTestInit::GetTests(TArray<FString>& OutBeautifiedNames, TArray<FString>& O
 
 bool FTestInit::RunTest(const FString& Parameters)
 {
-	if (!bInitialized)
-	{
-		if (!Init())
-		{
-			return false;
-		}
-	}
+	if (!Init()) return false;
 
 	const auto FoundConfig = TestMap.Find(Parameters);
 	if (!FoundConfig)
@@ -42,9 +36,13 @@ bool FTestInit::RunTest(const FString& Parameters)
 		return false;
 	}
 
-	BSConfig = MakeShareable(new FBSConfig(*FoundConfig));
+	BSConfig = MakeShared<FBSConfig>(*FoundConfig);
 	TargetManager->Init(BSConfig, FPlayerSettings_Game());
+	AddInfo(FString::Printf(TEXT("Shared Reference Count after Init: %d"), BSConfig.GetSharedReferenceCount()));
 	TargetManager->Clear();
+	AddInfo(FString::Printf(TEXT("Shared Reference Count after Clear: %d"), BSConfig.GetSharedReferenceCount()));
+
+	CleanUpWorld();
 	
 	return true;
 }

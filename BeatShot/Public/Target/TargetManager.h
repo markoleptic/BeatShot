@@ -10,7 +10,6 @@
 
 class UCompositeCurveTable;
 class ATarget;
-class USpawnArea;
 class UBoxComponent;
 class UReinforcementLearningComponent;
 class USpawnAreaManagerComponent;
@@ -23,6 +22,7 @@ DECLARE_LOG_CATEGORY_EXTERN(LogTargetManager, Log, All);
 static constexpr int32 DefaultNumTargetsToActivate = 100;
 static constexpr int32 DefaultMinToActivate_MinClamp = 1;
 static constexpr int32 MaxToActivate_MinClamp = 1;
+
 
 /** Class responsible for spawning and managing targets for all game modes. */
 UCLASS()
@@ -130,10 +130,10 @@ public:
 protected:
 	/** Generic spawn function that all game modes use to spawn a target. Initializes the target, binds to its
 	 *  delegates, sets the InSpawnArea's Guid, and adds the target to ManagedTargets */
-	virtual ATarget* SpawnTarget(USpawnArea* InSpawnArea);
+	virtual ATarget* SpawnTarget(const FTargetSpawnParams& Params);
 
 	/** Adds a Target to the ManagedTargets array, and updates the associated SpawnArea IsManaged flag */
-	void AddToManagedTargets(ATarget* SpawnTarget, USpawnArea* SpawnArea);
+	void AddToManagedTargets(ATarget* SpawnTarget, const int32 SpawnAreaIndex);
 
 	/** Returns whether or not the target was activated. Executes any Target Activation Responses
 	 *  and calls ActivateTarget on InTarget */
@@ -149,25 +149,18 @@ protected:
 	/** Returns true if the target should be destroyed based on TargetDestructionConditions */
 	bool ShouldDestroyTarget(const bool bExpired, const bool bOutOfHealth) const;
 
-	/** Tries to spawn a target if there are less targets in ManagedTargets than MaxNumTargetsAtOnce */
-	int32 HandleRuntimeSpawning();
-
 	/** Spawns targets at the beginning of a game mode based on the TargetDistributionPolicy */
-	void HandleUpfrontSpawning();
-
-	/** Activate target(s)/SpawnArea(s) if there are any ManagedTargets that are not activated. Handles permanent
-	 *  and temporary targets */
+	int32 HandleUpfrontSpawning();
+	
+	/** Tries to spawn target(s) if there are less targets in ManagedTargets than the game mode allows at one time.
+	 *  Can be limited by number of targets to activate if the game mode doesn't allow spawning without activation. */
+	int32 HandleRuntimeSpawning();
+	
+	/** Activate target(s) if there are any ManagedTargets that are not activated and the game modes settings permit. */
 	int32 HandleTargetActivation() const;
-
-	/** Handles permanently activated targets so they can still receive activation responses, called in
-	 *  HandleTargetActivation */
-	void HandlePermanentlyActiveTargetActivation() const;
-
-	/** Activates already activated targets if the game mode specifies */
-	void HandleActivateAlreadyActivated() const;
 	
 	/** Returns the number of targets that are allowed to be spawned at once, at runtime */
-	int32 GetNumberOfRuntimeTargetsToSpawn() const;
+	int32 GetNumberOfTargetsToSpawn() const;
 
 	/** Returns the number of targets that are allowed to be activated at once. Will only return values >= 0 */
 	int32 GetNumberOfTargetsToActivate(const int32 MaxAvailable, const int32 NumActivated) const;
@@ -175,8 +168,8 @@ protected:
 	/** Returns the scale for next target */
 	FVector FindNextSpawnedTargetScale() const;
 
-	/** Finds suitable SpawnArea(s) to spawn NumToSpawn targets given the mode */
-	TSet<USpawnArea*> FindNextSpawnAreasForSpawn(const int32 NumToSpawn) const;
+	/** Calls GetTargetSpawnParams on the SpawnAreaManager. Updates spawn volume. */
+	TSet<FTargetSpawnParams> GetTargetSpawnParams(const int32 NumToSpawn) const;
 
 	/** Finds the correct damage type for the next target spawn */
 	ETargetDamageType FindNextTargetDamageType();
@@ -260,12 +253,6 @@ protected:
 	/** Returns true if a target exists that is vulnerable to tracking damage */
 	bool TrackingTargetIsDamageable() const;
 
-	/** Returns BSConfig shared pointer */
-	TSharedPtr<FBSConfig> GetBSConfig() const { return BSConfig; }
-
-	/** Returns a copy of ManagedTargets */
-	TArray<ATarget*> GetManagedTargets() const;
-
 	/** Evaluates the specified curve at InTime */
 	float GetCurveTableValue(const bool bIsSpawnArea, const int32 InTime) const;
 
@@ -274,6 +261,9 @@ protected:
 
 	/** Returns the maximum target diameter for a game mode. */
 	static float GetMaxTargetDiameter(const FBS_TargetConfig& InTargetCfg);
+
+	/** Destroys all targets in the ManagedTargets map. */
+	void DestroyTargets();
 public:
 	
 	/** Function called from BSGameMode any time a player changes settings.
@@ -312,6 +302,9 @@ protected:
 	/** Consecutively destroyed targets */
 	int32 CurrentStreak;
 
+	/** Dimensions of each and every Spawn Area */
+	FIntVector3 SpawnAreaDimensions;
+
 	/** The time to use when looking up values from CCT_TargetScale. Incremented by for each consecutive target hit,
 	 *  decremented by setting value */
 	int32 DynamicLookUpValue_TargetScale;
@@ -339,6 +332,6 @@ protected:
 
 	#if !UE_BUILD_SHIPPING
 	/** Delegate used to record execution time taken for SpawnAreaManager's GetSpawnableSpawnAreas function. */
-	TDelegate<void(const double)> SpawnableSpawnAreasExecutionTimeDelegate;
+	TDelegate<void(const double)> ExecutionTimeDelegate;
 	#endif
 };

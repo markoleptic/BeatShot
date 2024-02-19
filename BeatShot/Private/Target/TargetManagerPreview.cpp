@@ -24,9 +24,9 @@ void ATargetManagerPreview::SetSimulatePlayerDestroyingTargets(const bool bInSim
 	DestroyChance = InDestroyChance;
 }
 
-ATarget* ATargetManagerPreview::SpawnTarget(USpawnArea* InSpawnArea)
+ATarget* ATargetManagerPreview::SpawnTarget(const FTargetSpawnParams& Params)
 {
-	ATarget* Target = Super::SpawnTarget(InSpawnArea);
+	ATarget* Target = Super::SpawnTarget(Params);
 	if (Target)
 	{
 		if (ATargetPreview* TargetPreview = Cast<ATargetPreview>(Target))
@@ -34,7 +34,7 @@ ATarget* ATargetManagerPreview::SpawnTarget(USpawnArea* InSpawnArea)
 			if (UTargetWidget* TargetWidget =  GameModePreviewWidget->ConstructTargetWidget())
 			{
 				const float Height = StaticExtents.Z
-					+ (GetBSConfig()->TargetConfig.FloorDistance - ClampedOverflowAmount) * 0.5f
+					+ (BSConfig->TargetConfig.FloorDistance - ClampedOverflowAmount) * 0.5f
 					+ GameModePreviewWidget->GetSpacerOffset() * 0.5f;
 				TargetPreview->InitTargetWidget(TargetWidget, TargetPreview->GetActorLocation(), Height);
 				TargetPreview->SetSimulatePlayerDestroying(bSimulatePlayerDestroyingTargets, DestroyChance);
@@ -48,14 +48,14 @@ void ATargetManagerPreview::UpdateSpawnVolume(const float Factor) const
 {
 	Super::UpdateSpawnVolume(Factor);
 
-	if (!GetBSConfig() || !GameModePreviewWidget)
+	if (!BSConfig || !GameModePreviewWidget)
 	{
 		return;
 	}
 	
-	if (GetBSConfig()->TargetConfig.FloorDistance > MaxAllowedFloorDistance)
+	if (BSConfig->TargetConfig.FloorDistance > MaxAllowedFloorDistance)
 	{
-		ClampedOverflowAmount = MaxAllowedFloorDistance - GetBSConfig()->TargetConfig.FloorDistance;
+		ClampedOverflowAmount = MaxAllowedFloorDistance - BSConfig->TargetConfig.FloorDistance;
 		if (!bIsExceedingMaxFloorDistance)
 		{
 			GameModePreviewWidget->SetText_FloorDistance(FloorDistanceExceededText);
@@ -72,10 +72,10 @@ void ATargetManagerPreview::UpdateSpawnVolume(const float Factor) const
 		bIsExceedingMaxFloorDistance = false;
 	}
 	
-	GameModePreviewWidget->SetFloorDistanceHeight(FMath::Clamp(GetBSConfig()->TargetConfig.FloorDistance, 110.f,
+	GameModePreviewWidget->SetFloorDistanceHeight(FMath::Clamp(BSConfig->TargetConfig.FloorDistance, 110.f,
 		MaxAllowedFloorDistance));
 	
-	const float MaxTargetRadius = GetMaxTargetRadius(GetBSConfig()->TargetConfig);
+	const float MaxTargetRadius = GetMaxTargetRadius(BSConfig->TargetConfig);
 	GameModePreviewWidget->SetOverlayPadding(FMargin(MaxTargetRadius, MaxTargetRadius, MaxTargetRadius, 0.f));
 
 	const FVector Origin = GetSpawnBoxOrigin();
@@ -88,13 +88,13 @@ void ATargetManagerPreview::UpdateSpawnVolume(const float Factor) const
 	
 	GameModePreviewWidget->SetBoxBounds_Current(FVector2d(CurrentY, CurrentZ), Height);
 
-	if (GetBSConfig()->TargetConfig.BoundsScalingPolicy == EBoundsScalingPolicy::Dynamic)
+	if (BSConfig->TargetConfig.BoundsScalingPolicy == EBoundsScalingPolicy::Dynamic)
 	{
-		const FVector StartExtents = GetBSConfig()->DynamicSpawnAreaScaling.GetStartExtents();
-		const FIntVector3 Inc = SpawnAreaManager->GetSpawnAreaInc();
+		const FVector StartExtents = BSConfig->DynamicSpawnAreaScaling.GetStartExtents();
+		const FIntVector3 Inc = SpawnAreaManager->GetSpawnAreaDimensions();
 		
 		// Set the Min/Start box bounds widget size and position
-		const float StartZ = GetBSConfig()->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::HeadshotHeightOnly
+		const float StartZ = BSConfig->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::HeadshotHeightOnly
 			? Constants::HeadshotHeight_VerticalSpread
 			: FMath::GridSnap(StartExtents.Z, Inc.Z) * 2.f;
 		const float StartY = FMath::GridSnap(StartExtents.Y, Inc.Y) * 2.f;
@@ -102,7 +102,7 @@ void ATargetManagerPreview::UpdateSpawnVolume(const float Factor) const
 		GameModePreviewWidget->SetBoxBounds_Min(FVector2d(StartY, StartZ), Height);
 
 		// Set the Max/End box bounds widget size and position
-		const float EndZ = GetBSConfig()->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::HeadshotHeightOnly
+		const float EndZ = BSConfig->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::HeadshotHeightOnly
 			? Constants::HeadshotHeight_VerticalSpread
 			: FMath::GridSnap(StaticExtents.Z, Inc.Z) * 2.f;
 		const float EndY = FMath::GridSnap(StaticExtents.Y, Inc.Y) * 2.f;

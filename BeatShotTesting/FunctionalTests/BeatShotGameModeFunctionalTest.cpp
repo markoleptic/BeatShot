@@ -35,7 +35,7 @@ void ABeatShotGameModeFunctionalTest::PrepareTest()
 	TargetManager = GetWorld()->SpawnActor<ATargetManager>(TargetManagerClass);
 	if (bRecordGetSpawnableSpawnAreasExecutionTime)
 	{
-		TargetManager->SpawnableSpawnAreasExecutionTimeDelegate.BindUObject(this,
+		TargetManager->ExecutionTimeDelegate.BindUObject(this,
 			&ThisClass::OnSpawnableSpawnAreasExecution);
 	}
 }

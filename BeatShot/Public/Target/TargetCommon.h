@@ -132,3 +132,33 @@ struct FAreaKey
 		return Hash;
 	}
 };
+
+/** Parameters used to spawn ATarget actors. Needs SpawnAreaIndex so that Target Manager can tell the Spawn Area
+ *  Manager the correct Spawn Area to associate with the Target's Guid. */
+struct FTargetSpawnParams
+{
+	FVector Location;
+	FVector Scale;
+	int32 SpawnAreaIndex;
+
+	FTargetSpawnParams() = default;
+
+	FTargetSpawnParams(const FVector& InLoc, const FVector& InScale, const int32 InIndex) :
+		Location(InLoc), Scale(InScale), SpawnAreaIndex(InIndex)
+	{}
+
+	FTransform Transform() const
+	{
+		return FTransform(FRotator(0.f), Location, Scale);
+	}
+
+	bool operator==(const FTargetSpawnParams& Other) const
+	{
+		return SpawnAreaIndex == Other.SpawnAreaIndex;
+	}
+
+	friend FORCEINLINE uint32 GetTypeHash(const FTargetSpawnParams& Params)
+	{
+		return GetTypeHash(Params.SpawnAreaIndex);
+	}
+};

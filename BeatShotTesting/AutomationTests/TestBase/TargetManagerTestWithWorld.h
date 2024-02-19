@@ -14,42 +14,17 @@ class FTargetManagerTestWithWorld : public FTargetManagerTestBase
 	
 public:
 	FTargetManagerTestWithWorld(const FString& InName, const bool bInComplexTask):
-		Super(InName, bInComplexTask), World(nullptr), GameInstance(nullptr), InitialFrameCounter(0),
-	SpawnableSpawnAreasTime(0.0f), TargetManager(nullptr), bInitialized(false), GameModeDataAsset(nullptr)
+		Super(InName, bInComplexTask), World(nullptr), InitialFrameCounter(0),
+	TargetSpawnParamsExecutionTime(0.0f), TargetManager(nullptr), GameModeDataAsset(nullptr)
 	{}
 	
 	virtual ~FTargetManagerTestWithWorld() override
 	{
-		if (TargetManager)
-		{
-			if (AActor* Actor = Cast<AActor>(TargetManager))
-			{
-				Actor->RemoveFromRoot();
-				Actor->Destroy();
-			}
-		}
-		if (BSConfig.IsValid())
-		{
-			BSConfig.Reset();
-		}
-		TargetManager = nullptr;
-		BSConfig = nullptr;
-		GameModeDataAsset = nullptr;
-		
-		if (GameInstance)
-		{
-			GameInstance->Shutdown();
-			GameInstance->RemoveFromRoot();
-			GameInstance = nullptr;
-		}
-		if (World)
-		{
-			GFrameCounter = InitialFrameCounter;
-			GEngine->DestroyWorldContext(World);
-			World->DestroyWorld(false);
-		}
+		CleanUpWorld();
 	}
 	virtual bool Init() override;
+
+	void CleanUpWorld();
 	
 protected:
 	/** Ticks the World and increments GFrameCounter. */
@@ -58,17 +33,14 @@ protected:
 	/** The World created in Init. */
 	UWorld* World;
 
-	/** Game Instance for the World. */
-	UGameInstance *GameInstance;
-
 	/** GFrameCounter prior to any increments. */
 	uint64 InitialFrameCounter;
 
 	/** Total time spent executing the GetSpawnableSpawnAreas function. */
-	double SpawnableSpawnAreasTime;
+	double TargetSpawnParamsExecutionTime;
 
 	/** Increments TimeSpentInSpawnableSpawnAreas. */
-	void OnSpawnableSpawnAreasExecutionTime(const double Time);
+	void UpdateExecutionTime(const double Time);
 	
 	/** Initializes the Target Manager. */
 	virtual bool InitTargetManager();
@@ -87,13 +59,13 @@ protected:
 
 	/** Shared pointer to the Game mode config. Should be initialized in actual tests. */
 	TSharedPtr<FBSConfig> BSConfig;
-	
-	/** Whether or not Init has been called in the base class (FTargetManagerTestBase) */
-	bool bInitialized;
 
 	/** Pointer to Game Mode Data Asset containing read-only game mode config data.
 	 *  Mutable so that it can be set during GetTests. */
 	mutable UBSGameModeDataAsset* GameModeDataAsset;
+
+	const FTransform TargetManagerTransform = FTransform(FRotator(),
+		Constants::DefaultTargetManagerLocation, FVector(1.f));
 
 	/** Map to pull game mode configs from during tests. */
 	mutable TMap<FString, FBSConfig> TestMap;
