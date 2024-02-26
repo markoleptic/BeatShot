@@ -146,9 +146,17 @@ public:
 	UFUNCTION(BlueprintCallable, Category="ComboBox")
 	void AddOption(const FString& Option);
 
+	/** Adds a new option to the combo box at the specified index */
+	UFUNCTION(BlueprintCallable, Category="ComboBox")
+	void InsertOptionAt(const FString& Option, const int32 Index);
+
 	/** Removes existing option from the combo box */
 	UFUNCTION(BlueprintCallable, Category="ComboBox")
 	bool RemoveOption(const FString& Option);
+
+	/** Removes existing option from the combo box */
+	UFUNCTION(BlueprintCallable, Category="ComboBox")
+	bool HasOption(const FString& Option);
 
 	/** Returns the index corresponding to the Option, or -1 if not found */
 	UFUNCTION(BlueprintPure, Category="ComboBox")

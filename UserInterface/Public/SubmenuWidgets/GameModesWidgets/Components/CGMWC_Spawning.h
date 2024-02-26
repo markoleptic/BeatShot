@@ -21,8 +21,7 @@ protected:
 	virtual void UpdateOptionsFromConfig() override;
 	void SetupWarningTooltipCallbacks();
 
-	void UpdateDependentOptions_TargetSpawningPolicy(const ETargetSpawningPolicy& InTargetSpawningPolicy,
-		const bool bUseBatchSpawning, const bool bAllowSpawnWithoutActivation);
+	void UpdateDependentOptions_TargetSpawningPolicy(const ETargetSpawningPolicy& InTargetSpawningPolicy);
 	
 	UFUNCTION()
 	void OnCheckStateChanged_AllowSpawnWithoutActivation(const bool bChecked);

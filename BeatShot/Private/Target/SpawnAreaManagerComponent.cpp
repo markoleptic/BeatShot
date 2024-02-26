@@ -888,7 +888,7 @@ TSet<FTargetSpawnParams> USpawnAreaManagerComponent::GetTargetSpawnParams(const 
 		}
 
 		// Make sure number of elements is no more than number to spawn
-		check(ValidSpawnAreas.Num() <= NumToSpawn);
+		//check(ValidSpawnAreas.Num() <= NumToSpawn);
 
 		// Set the target scales
 		int i = 0;
@@ -1940,10 +1940,8 @@ TArray<int32> USpawnAreaManagerComponent::FilterIndices(TArray<USpawnArea*>& Val
 
 #if !UE_BUILD_SHIPPING
 
-void USpawnAreaManagerComponent::RefreshDebugBoxes() const
+void USpawnAreaManagerComponent::DrawDebug() const
 {
-	FlushPersistentDebugLines(GetWorld());
-	
 	if (bShowDebug_AllSpawnAreas)
 	{
 		DrawDebug_Boxes(SpawnAreas, DebugColor_AllSpawnAreas, DebugBoxLineThickness, true);

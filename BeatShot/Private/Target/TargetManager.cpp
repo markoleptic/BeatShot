@@ -52,8 +52,9 @@ ATargetManager::ATargetManager()
 	DynamicLookUpValue_SpawnAreaScale = 0;
 	ManagedTargets = TMap<FGuid, ATarget*>();
 	TotalPossibleDamage = 0.f;
-	bLastSpawnedTargetDirectionChangeHorizontal = false;
-	bLastActivatedTargetDirectionChangeHorizontal = false;
+	bLastSpawnedTargetDirectionHorizontal = false;
+	bLastActivatedTargetDirectionHorizontal = false;
+	bShowDebug_AnyMovingTargetDirectionMode = false;
 }
 
 void ATargetManager::BeginPlay()
@@ -199,8 +200,8 @@ void ATargetManager::Clear()
 	DynamicLookUpValue_TargetScale = 0;
 	DynamicLookUpValue_SpawnAreaScale = 0;
 	TotalPossibleDamage = 0.f;
-	bLastSpawnedTargetDirectionChangeHorizontal = false;
-	bLastActivatedTargetDirectionChangeHorizontal = false;
+	bLastSpawnedTargetDirectionHorizontal = false;
+	bLastActivatedTargetDirectionHorizontal = false;
 	
 	RLComponent->Clear();
 	SpawnAreaManager->Clear();
@@ -246,7 +247,7 @@ void ATargetManager::OnAudioAnalyzerBeat()
 	HandleTargetActivation();
 	
 	#if !UE_BUILD_SHIPPING
-	SpawnAreaManager->RefreshDebugBoxes();
+	DrawDebug();
 	#endif
 }
 
@@ -485,10 +486,6 @@ bool ATargetManager::ShouldDeactivateTarget(const bool bExpired, const float Cur
 	const bool ThresholdPassed = CurrentHealth <= DeactivationThreshold;
 	const TArray<ETargetDeactivationCondition>& Conditions = BSConfig->TargetConfig.TargetDeactivationConditions;
 	
-	if (Conditions.Contains(ETargetDeactivationCondition::Persistent))
-	{
-		return false;
-	}
 	if (bExpired && Conditions.Contains(ETargetDeactivationCondition::OnExpiration))
 	{
 		return true;
@@ -511,11 +508,7 @@ bool ATargetManager::ShouldDeactivateTarget(const bool bExpired, const float Cur
 bool ATargetManager::ShouldDestroyTarget(const bool bExpired, const bool bOutOfHealth) const
 {
 	const TArray<ETargetDestructionCondition>& Conditions = BSConfig->TargetConfig.TargetDestructionConditions;
-
-	if (Conditions.Contains(ETargetDestructionCondition::Persistent))
-	{
-		return false;
-	}
+	
 	if (BSConfig->TargetConfig.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::Destroy))
 	{
 		return true;
@@ -1007,15 +1000,15 @@ FExtrema ATargetManager::GenerateStaticExtrema(const FBSConfig* InCfg, const FVe
 	return FExtrema(FVector(MinX, MinY, MinZ), FVector(MaxX, MaxY, MaxZ));
 }
 
-FVector ATargetManager::GenerateSpawnVolumeLocation(const FVector& InOrigin, const FVector& InDynamicStartExtents,
-	const FVector& InStaticExtents, const float Factor)
+FVector ATargetManager::GenerateSpawnVolumeLocation(const FBSConfig* InCfg, const FVector& InOrigin, const FVector& InSpawnVolumeExtents)
 {
 	// Y and Z will be the same as SpawnBox
 	FVector Out = InOrigin;
-	
-	const float LerpX = UKismetMathLibrary::Lerp(InDynamicStartExtents.X, InStaticExtents.X, Factor);
-	Out.X = Out.X - LerpX;
 
+	// Align the back of the SpawnVolume to just behind the SpawnBox (MaxRadius + DirBoxPadding away from it)
+	const float MaxRadius = GetMaxTargetRadius(InCfg->TargetConfig);
+	Out.X -= InSpawnVolumeExtents.X - MaxRadius - DirBoxPadding;
+	
 	return Out;
 }
 
@@ -1032,7 +1025,7 @@ FVector ATargetManager::GenerateSpawnVolumeExtents(const FBSConfig* InCfg, const
 	Out.X = LerpX + MaxRadius + DirBoxPadding;
 	Out.Y += MaxRadius + 2.f;
 	Out.Z += MaxRadius + 2.f;
-
+	
 	return Out;
 }
 
@@ -1123,7 +1116,7 @@ void ATargetManager::UpdateSpawnBoxExtents(const float Factor) const
 	// Z snapping is slightly different since special case for HeadshotHeightOnly
 	const int32 SnapZ = Cfg.TargetDistributionPolicy == ETargetDistributionPolicy::HeadshotHeightOnly
 	    ? HeadshotHeight_VerticalSpread * 0.5f
-	    : FMath::Max(FMath::FloorToInt(LerpZ / SpawnAreaDimensions.Z) * SpawnAreaDimensions.Z, MinValue_VerticalSpread);
+	    : FMath::FloorToInt(LerpZ / SpawnAreaDimensions.Z) * SpawnAreaDimensions.Z;
 
 	// Don't snap at all if Grid
 	const FVector NewExtents = Cfg.TargetDistributionPolicy == ETargetDistributionPolicy::Grid
@@ -1139,8 +1132,8 @@ void ATargetManager::UpdateSpawnBoxExtents(const float Factor) const
 void ATargetManager::UpdateSpawnVolume(const float Factor) const
 {
 	const FVector Origin = GetSpawnBoxOrigin();
-	const FVector VolumeLocation = GenerateSpawnVolumeLocation(Origin, GetSpawnBoxExtents(), StaticExtents, Factor);
 	const FVector VolumeExtents = GenerateSpawnVolumeExtents(BSConfig.Get(), GetSpawnBoxExtents(), StaticExtents, Factor);
+	const FVector VolumeLocation = GenerateSpawnVolumeLocation(BSConfig.Get(), Origin, VolumeExtents);
 
 	SpawnVolume->SetRelativeLocation(VolumeLocation);
 	SpawnVolume->SetBoxExtent(VolumeExtents);
@@ -1171,13 +1164,13 @@ void ATargetManager::ChangeTargetDirection(ATarget* InTarget, const uint8 InSpaw
 
 	if (InSpawnActivationDeactivation == 0)
 	{
-		bLastDirectionChangeHorizontal = bLastSpawnedTargetDirectionChangeHorizontal;
-		bLastSpawnedTargetDirectionChangeHorizontal = !bLastDirectionChangeHorizontal;
+		bLastDirectionChangeHorizontal = bLastSpawnedTargetDirectionHorizontal;
+		bLastSpawnedTargetDirectionHorizontal = !bLastDirectionChangeHorizontal;
 	}
 	else if (InSpawnActivationDeactivation == 1)
 	{
-		bLastDirectionChangeHorizontal = bLastActivatedTargetDirectionChangeHorizontal;
-		bLastActivatedTargetDirectionChangeHorizontal = !bLastDirectionChangeHorizontal;
+		bLastDirectionChangeHorizontal = bLastActivatedTargetDirectionHorizontal;
+		bLastActivatedTargetDirectionHorizontal = !bLastDirectionChangeHorizontal;
 	}
 	else
 	{
@@ -1185,7 +1178,8 @@ void ATargetManager::ChangeTargetDirection(ATarget* InTarget, const uint8 InSpaw
 		InTarget->SetLastDirectionChangeHorizontal(!bLastDirectionChangeHorizontal);
 	}
 
-	InTarget->SetTargetDirection(GetNewTargetDirection(InTarget->GetActorLocation(), bLastDirectionChangeHorizontal));
+	const FVector Direction = GetNewTargetDirection(InTarget->GetActorLocation(), bLastDirectionChangeHorizontal);
+	InTarget->SetTargetDirection(Direction);
 }
 
 FVector ATargetManager::GetNewTargetDirection(const FVector& LocationBeforeChange,
@@ -1220,27 +1214,27 @@ FVector ATargetManager::GetNewTargetDirection(const FVector& LocationBeforeChang
 			// 1/4 of the total Spawn Volume
 			const FVector Extent = FVector(SBExtents.X * 0.5f, SBExtents.Y * 0.5f, SBExtents.Z * 0.5f);
 			const FVector Offset = FVector(0, Extent.Y, Extent.Z);
+			TArray<FVector> PossibleLocations;
 
-			const FVector BotLeft = RandBoxPoint(Origin + FVector(0, -1, -1) * Offset, Extent);
-			const FVector BotRight = RandBoxPoint(Origin + FVector(0, 1, -1) * Offset, Extent);
-			const FVector TopLeft = RandBoxPoint(Origin + FVector(0, -1, 1) * Offset, Extent);
-			const FVector TopRight = RandBoxPoint(Origin + FVector(0, 1, 1) * Offset, Extent);
-			DrawDebugBox(GetWorld(), Origin + FVector(0, -1, -1) * Offset, Extent, FColor::Green, false, 1.f);
-			DrawDebugBox(GetWorld(), Origin + FVector(0, 1, -1) * Offset, Extent, FColor::Green, false, 1.f);
-			DrawDebugBox(GetWorld(), Origin + FVector(0, -1, 1) * Offset, Extent, FColor::Green, false, 1.f);
-			DrawDebugBox(GetWorld(), Origin + FVector(0, 1, 1) * Offset, Extent, FColor::Green, false, 1.f);
-			TArray PossibleLocations = {BotLeft, BotRight, TopLeft, TopRight};
+			#if !UE_BUILD_SHIPPING
+			LastAnyTargetDirectionModeSectors.Sectors.Empty();
+			#endif
+			
+			for (const FVector& Direction : GetAnyDirectionMultipliers(LocationBeforeChange, Origin))
+			{
+				PossibleLocations.Add(RandBoxPoint(Origin + Direction * Offset, Extent));
+				#if !UE_BUILD_SHIPPING
+				LastAnyTargetDirectionModeSectors.Sectors.Add({Origin + Direction * Offset, Extent});
+				#endif
+			}
 
-			if (LocationBeforeChange.Y < 0)
-			{
-				PossibleLocations.Remove(LocationBeforeChange.Z < Origin.Z ? BotLeft : TopLeft);
-			}
-			else
-			{
-				PossibleLocations.Remove(LocationBeforeChange.Z < Origin.Z ? BotRight : TopRight);
-			}
-			const FVector NewLocation = PossibleLocations[UKismetMathLibrary::RandomIntegerInRange(0, 2)];
-			DrawDebugPoint(GetWorld(), NewLocation, 4.f, FColor::Red, false, 2.f);
+			const FVector NewLocation = PossibleLocations[FMath::RandRange(0, PossibleLocations.Num() - 1)];
+			
+			#if !UE_BUILD_SHIPPING
+			LastAnyTargetDirectionModeSectors.LineStart = LocationBeforeChange;
+			LastAnyTargetDirectionModeSectors.LineEnd = NewLocation;
+			#endif
+			
 			return UKismetMathLibrary::GetDirectionUnitVector(LocationBeforeChange, NewLocation);
 		}
 	case EMovingTargetDirectionMode::ForwardOnly:
@@ -1251,6 +1245,34 @@ FVector ATargetManager::GetNewTargetDirection(const FVector& LocationBeforeChang
 		break;
 	}
 	return FVector::ZeroVector;
+}
+
+TArray<FVector> ATargetManager::GetAnyDirectionMultipliers(const FVector& LocationBeforeChange, const FVector& Origin)
+{
+	TArray<FVector> Multipliers = AnyDirectionModeMultipliers;
+	if (LocationBeforeChange.Y < 0)
+	{
+		if (LocationBeforeChange.Z < Origin.Z)
+		{
+			Multipliers.Remove(FVector(0, -1, -1));
+		}
+		else
+		{
+			Multipliers.Remove(FVector(0, -1, 1));
+		}
+	}
+	else
+	{
+		if (LocationBeforeChange.Z < Origin.Z)
+		{
+			Multipliers.Remove(FVector(0, 1, -1));
+		}
+		else
+		{
+			Multipliers.Remove(FVector(0, 1, 1));
+		}
+	}
+	return Multipliers;
 }
 
 void ATargetManager::UpdateTotalPossibleDamage()
@@ -1289,8 +1311,8 @@ float ATargetManager::GetCurveTableValue(const bool bIsSpawnArea, const int32 In
 	float OutXY = -1.f;
 	TEnumAsByte<EEvaluateCurveTableResult::Type> OutResult;
 
-	FName Name = bIsCubicInterpolation ? FName("Cubic_ThresholdMet") : FName("Linear_ThresholdMet");
-	Name = bThresholdMet ? Name : FName("Linear_PreThreshold");
+	FName Name = bIsCubicInterpolation ? CurveTableRowName_Cubic_ThresholdMet : CurveTableRowName_Linear_ThresholdMet;
+	Name = bThresholdMet ? Name : CurveTableRowName_Linear_PreThreshold;
 	UDataTableFunctionLibrary::EvaluateCurveTableRow(Table, Name, InTime, OutResult, OutXY, "");
 
 	return OutXY;
@@ -1351,4 +1373,19 @@ void ATargetManager::UpdateCommonScoreInfoQTable(FCommonScoreInfo& InCommonScore
 			RLComponent->GetNumQTableColumns(), RLComponent->GetTArray_FromNdArray_TrainingSamples(),
 			RLComponent->GetTotalTrainingSamples());
 	}
+}
+
+void ATargetManager::DrawDebug()
+{
+	FlushPersistentDebugLines(GetWorld());
+	if (bShowDebug_AnyMovingTargetDirectionMode)
+	{
+		for (const FAnyMovingTargetDirectionModeSector& Sector : LastAnyTargetDirectionModeSectors.Sectors)
+		{
+			DrawDebugBox(GetWorld(), Sector.Center, Sector.Extents, FColor::Green, true, -1, 0, 6);
+		}
+		DrawDebugLine(GetWorld(), LastAnyTargetDirectionModeSectors.LineStart,
+			LastAnyTargetDirectionModeSectors.LineEnd, FColor::Red, true, -1, 0, 6.f);
+	}
+	SpawnAreaManager->DrawDebug();
 }

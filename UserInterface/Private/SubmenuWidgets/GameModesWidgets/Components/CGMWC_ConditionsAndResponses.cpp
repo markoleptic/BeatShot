@@ -98,7 +98,6 @@ void UCGMWC_ConditionsAndResponses::UpdateOptionsFromConfig()
 
 	UpdateDependentOptions_TargetSpawnResponses(BSConfig->TargetConfig.TargetSpawnResponses);
 	UpdateDependentOptions_TargetActivationResponses(BSConfig->TargetConfig.TargetActivationResponses);
-	UpdateDependentOptions_TargetDeactivationConditions(BSConfig->TargetConfig.TargetDeactivationConditions);
 	UpdateDependentOptions_TargetDeactivationResponses(BSConfig->TargetConfig.TargetDeactivationResponses);
 
 	UpdateBrushColors();
@@ -144,25 +143,6 @@ void UCGMWC_ConditionsAndResponses::SetupWarningTooltipCallbacks()
 	});
 }
 
-void UCGMWC_ConditionsAndResponses::UpdateDependentOptions_TargetDeactivationConditions(
-	const TArray<ETargetDeactivationCondition>& Conditions)
-{
-	// Persistent Deactivation Condition
-	if (Conditions.Contains(ETargetDeactivationCondition::Persistent))
-	{
-		if (!BSConfig->TargetConfig.TargetDeactivationResponses.IsEmpty())
-		{
-			BSConfig->TargetConfig.TargetDeactivationResponses.Empty();
-		}
-		UpdateValueIfDifferent(ComboBoxOption_TargetDeactivationResponses, TArray<FString>());
-		ComboBoxOption_TargetDeactivationResponses->ComboBox->SetIsEnabled(false);
-	}
-	// No Persistent Deactivation Condition
-	else
-	{
-		ComboBoxOption_TargetDeactivationResponses->ComboBox->SetIsEnabled(true);
-	}
-}
 
 void UCGMWC_ConditionsAndResponses::UpdateDependentOptions_TargetDeactivationResponses(
 	const TArray<ETargetDeactivationResponse>& Responses)
@@ -215,8 +195,7 @@ void UCGMWC_ConditionsAndResponses::OnSelectionChanged_TargetDeactivationConditi
 	else
 		BSConfig->TargetConfig.TargetDeactivationConditions = GetEnumArrayFromStringArray_FromTagMap<
 			ETargetDeactivationCondition>(Selected);
-
-	UpdateDependentOptions_TargetDeactivationConditions(BSConfig->TargetConfig.TargetDeactivationConditions);
+	
 	UpdateBrushColors();
 	UpdateAllOptionsValid();
 }

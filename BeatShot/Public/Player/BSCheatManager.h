@@ -37,6 +37,7 @@ public:
 	void ShowDebug_DirectionalBoxes(IConsoleVariable* Variable);
 	void ShowDebug_ReinforcementLearningWidget(IConsoleVariable* Variable);
 	void ShowDebug_SpotLightFront(IConsoleVariable* Variable);
+	void ShowDebug_MovingTargetDirectionModeAny(IConsoleVariable* Variable);
 	void SetTimeOfDay(IConsoleVariable* Variable);
 
 	/** Sets the ComponentClass's value type to the type matching the console variable. */

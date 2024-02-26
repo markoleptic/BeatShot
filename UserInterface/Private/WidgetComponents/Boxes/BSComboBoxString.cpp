@@ -318,6 +318,12 @@ void UBSComboBoxString::AddOption(const FString& Option)
 	RefreshOptions();
 }
 
+void UBSComboBoxString::InsertOptionAt(const FString& Option, const int32 Index)
+{
+	Options.Insert(MakeShareable(new FString(Option)), Index);
+	RefreshOptions();
+}
+
 bool UBSComboBoxString::RemoveOption(const FString& Option)
 {
 	const int32 OptionIndex = GetIndexOfOption(Option);
@@ -332,6 +338,11 @@ bool UBSComboBoxString::RemoveOption(const FString& Option)
 		return true;
 	}
 	return false;
+}
+
+bool UBSComboBoxString::HasOption(const FString& Option)
+{
+	return GetIndexOfOption(Option) != -1;
 }
 
 int32 UBSComboBoxString::GetIndexOfOption(const FString& Option) const

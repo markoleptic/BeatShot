@@ -2,8 +2,11 @@
 
 
 #include "SubMenuWidgets/GameModesWidgets/Components/CGMWC_SpawnArea.h"
+
+#include "Components/CheckBox.h"
 #include "WidgetComponents/Boxes/BSComboBoxString.h"
 #include "WidgetComponents/MenuOptionWidgets/ComboBoxOptionWidget.h"
+#include "WidgetComponents/MenuOptionWidgets/ConstantMinMaxMenuOptionWidget.h"
 #include "WidgetComponents/MenuOptionWidgets/SliderTextBoxOptionWidget.h"
 
 using namespace Constants;
@@ -21,22 +24,12 @@ void UCGMWC_SpawnArea::NativeConstruct()
 		SnapSize_HorizontalGridSpacing);
 	SliderTextBoxOption_VerticalSpacing->SetValues(MinValue_VerticalGridSpacing, MaxValue_VerticalGridSpacing,
 		SnapSize_VerticalGridSpacing);
-	SliderTextBoxOption_HorizontalSpread->SetValues(MinValue_HorizontalSpread, MaxValue_HorizontalSpread,
+	MenuOption_HorizontalSpread->SetValues(MinValue_HorizontalSpread, MaxValue_HorizontalSpread,
 		SnapSize_HorizontalSpread);
-	SliderTextBoxOption_VerticalSpread->SetValues(MinValue_VerticalSpread, MaxValue_VerticalSpread,
-		SnapSize_VerticalSpread);
-	SliderTextBoxOption_ForwardSpread->
-		SetValues(MinValue_ForwardSpread, MaxValue_ForwardSpread, SnapSize_ForwardSpread);
+	MenuOption_VerticalSpread->SetValues(MinValue_VerticalSpread, MaxValue_VerticalSpread, SnapSize_VerticalSpread);
+	MenuOption_ForwardSpread->SetValues(MinValue_ForwardSpread, MaxValue_ForwardSpread, SnapSize_ForwardSpread);
 	SliderTextBoxOption_FloorDistance->
 		SetValues(MinValue_FloorDistance, MaxValue_FloorDistance, SnapSize_FloorDistance);
-	SliderTextBoxOption_MinDistanceBetweenTargets->SetValues(MinValue_MinTargetDistance, MaxValue_MinTargetDistance,
-		SnapSize_MinTargetDistance);
-	SliderTextBoxOption_MinHorizontalSpread->SetValues(MinValue_DynamicSpread.Y, MaxValue_DynamicSpread.Y,
-		SnapSize_DynamicSpread.Y);
-	SliderTextBoxOption_MinVerticalSpread->SetValues(MinValue_DynamicSpread.Z, MaxValue_DynamicSpread.Z,
-		SnapSize_DynamicSpread.Z);
-	SliderTextBoxOption_MinForwardSpread->SetValues(MinValue_DynamicSpread.X, MaxValue_DynamicSpread.X,
-		SnapSize_DynamicSpread.X);
 
 	SliderTextBoxOption_StartThreshold->SetValues(MinValue_DynamicStartThreshold, MaxValue_DynamicStartThreshold,
 		SnapSize_DynamicStartThreshold);
@@ -53,21 +46,16 @@ void UCGMWC_SpawnArea::NativeConstruct()
 		&ThisClass::OnSliderTextBoxValueChanged);
 	SliderTextBoxOption_VerticalSpacing->OnSliderTextBoxValueChanged.AddUObject(this,
 		&ThisClass::OnSliderTextBoxValueChanged);
-	SliderTextBoxOption_HorizontalSpread->OnSliderTextBoxValueChanged.AddUObject(this,
-		&ThisClass::OnSliderTextBoxValueChanged);
-	SliderTextBoxOption_VerticalSpread->OnSliderTextBoxValueChanged.AddUObject(this,
-		&ThisClass::OnSliderTextBoxValueChanged);
-	SliderTextBoxOption_ForwardSpread->OnSliderTextBoxValueChanged.AddUObject(this,
-		&ThisClass::OnSliderTextBoxValueChanged);
+
+	MenuOption_HorizontalSpread->OnMinMaxMenuOptionChanged.AddUObject(this, &ThisClass::OnMinMaxValueChanged);
+	MenuOption_VerticalSpread->OnMinMaxMenuOptionChanged.AddUObject(this, &ThisClass::OnMinMaxValueChanged);
+	MenuOption_ForwardSpread->OnMinMaxMenuOptionChanged.AddUObject(this, &ThisClass::OnMinMaxValueChanged);
+
+	MenuOption_HorizontalSpread->SetUseMinAsConstant(false);
+	MenuOption_VerticalSpread->SetUseMinAsConstant(false);
+	MenuOption_ForwardSpread->SetUseMinAsConstant(false);
+
 	SliderTextBoxOption_FloorDistance->OnSliderTextBoxValueChanged.AddUObject(this,
-		&ThisClass::OnSliderTextBoxValueChanged);
-	SliderTextBoxOption_MinDistanceBetweenTargets->OnSliderTextBoxValueChanged.AddUObject(this,
-		&ThisClass::OnSliderTextBoxValueChanged);
-	SliderTextBoxOption_MinHorizontalSpread->OnSliderTextBoxValueChanged.AddUObject(this,
-		&ThisClass::OnSliderTextBoxValueChanged);
-	SliderTextBoxOption_MinVerticalSpread->OnSliderTextBoxValueChanged.AddUObject(this,
-		&ThisClass::OnSliderTextBoxValueChanged);
-	SliderTextBoxOption_MinForwardSpread->OnSliderTextBoxValueChanged.AddUObject(this,
 		&ThisClass::OnSliderTextBoxValueChanged);
 	SliderTextBoxOption_StartThreshold->OnSliderTextBoxValueChanged.AddUObject(this,
 		&ThisClass::OnSliderTextBoxValueChanged);
@@ -76,33 +64,14 @@ void UCGMWC_SpawnArea::NativeConstruct()
 	SliderTextBoxOption_DecrementAmount->OnSliderTextBoxValueChanged.AddUObject(this,
 		&ThisClass::OnSliderTextBoxValueChanged);
 
-	ComboBoxOption_BoundsScalingPolicy->ComboBox->OnSelectionChanged.AddUniqueDynamic(this,
-		&ThisClass::OnSelectionChanged_BoundsScalingPolicy);
 	ComboBoxOption_TargetDistributionPolicy->ComboBox->OnSelectionChanged.AddUniqueDynamic(this,
 		&ThisClass::OnSelectionChanged_TargetDistributionPolicy);
-	ComboBoxOption_DynamicBoundsScalingPolicy->ComboBox->OnSelectionChanged.AddUniqueDynamic(this,
-		&ThisClass::OnSelectionChanged_TargetDistributionPolicy);
-
-	ComboBoxOption_BoundsScalingPolicy->GetComboBoxEntryTooltipStringTableKey.BindUObject(this,
-		&ThisClass::GetComboBoxEntryTooltipStringTableKey_BoundsScalingPolicy);
 	ComboBoxOption_TargetDistributionPolicy->GetComboBoxEntryTooltipStringTableKey.BindUObject(this,
 		&ThisClass::GetComboBoxEntryTooltipStringTableKey_TargetDistributionPolicy);
-	ComboBoxOption_DynamicBoundsScalingPolicy->GetComboBoxEntryTooltipStringTableKey.BindUObject(this,
-		&ThisClass::GetComboBoxEntryTooltipStringTableKey_DynamicBoundsScalingPolicy);
 
-	ComboBoxOption_BoundsScalingPolicy->ComboBox->ClearOptions();
 	ComboBoxOption_TargetDistributionPolicy->ComboBox->ClearOptions();
-	ComboBoxOption_DynamicBoundsScalingPolicy->ComboBox->ClearOptions();
 
 	TArray<FString> Options;
-
-	for (const EBoundsScalingPolicy& Method : TEnumRange<EBoundsScalingPolicy>())
-	{
-		Options.Add(GetStringFromEnum_FromTagMap(Method));
-	}
-	ComboBoxOption_BoundsScalingPolicy->SortAddOptionsAndSetEnumType<EBoundsScalingPolicy>(Options);
-	Options.Empty();
-
 	for (const ETargetDistributionPolicy& Method : TEnumRange<ETargetDistributionPolicy>())
 	{
 		Options.Add(GetStringFromEnum_FromTagMap(Method));
@@ -110,27 +79,14 @@ void UCGMWC_SpawnArea::NativeConstruct()
 	ComboBoxOption_TargetDistributionPolicy->SortAddOptionsAndSetEnumType<ETargetDistributionPolicy>(Options);
 	Options.Empty();
 
-	for (const EDynamicBoundsScalingPolicy& Method : TEnumRange<EDynamicBoundsScalingPolicy>())
-	{
-		Options.Add(GetStringFromEnum_FromTagMap(Method));
-	}
-	ComboBoxOption_DynamicBoundsScalingPolicy->SortAddOptionsAndSetEnumType<EDynamicBoundsScalingPolicy>(Options);
-	Options.Empty();
-
 	SliderTextBoxOption_NumHorizontalGridTargets->SetVisibility(ESlateVisibility::Collapsed);
 	SliderTextBoxOption_NumVerticalGridTargets->SetVisibility(ESlateVisibility::Collapsed);
 	SliderTextBoxOption_HorizontalSpacing->SetVisibility(ESlateVisibility::Collapsed);
 	SliderTextBoxOption_VerticalSpacing->SetVisibility(ESlateVisibility::Collapsed);
 
-	SliderTextBoxOption_MinHorizontalSpread->SetVisibility(ESlateVisibility::Collapsed);
-	SliderTextBoxOption_MinVerticalSpread->SetVisibility(ESlateVisibility::Collapsed);
-	SliderTextBoxOption_MinForwardSpread->SetVisibility(ESlateVisibility::Collapsed);
-
 	SliderTextBoxOption_StartThreshold->SetVisibility(ESlateVisibility::Collapsed);
 	SliderTextBoxOption_EndThreshold->SetVisibility(ESlateVisibility::Collapsed);
 	SliderTextBoxOption_DecrementAmount->SetVisibility(ESlateVisibility::Collapsed);
-
-	ComboBoxOption_DynamicBoundsScalingPolicy->SetVisibility(ESlateVisibility::Collapsed);
 
 	SetupWarningTooltipCallbacks();
 	UpdateBrushColors();
@@ -143,8 +99,6 @@ void UCGMWC_SpawnArea::UpdateAllOptionsValid()
 
 void UCGMWC_SpawnArea::UpdateOptionsFromConfig()
 {
-	UpdateValueIfDifferent(ComboBoxOption_BoundsScalingPolicy,
-		GetStringFromEnum_FromTagMap(BSConfig->TargetConfig.BoundsScalingPolicy));
 	UpdateValueIfDifferent(ComboBoxOption_TargetDistributionPolicy,
 		GetStringFromEnum_FromTagMap(BSConfig->TargetConfig.TargetDistributionPolicy));
 
@@ -152,29 +106,15 @@ void UCGMWC_SpawnArea::UpdateOptionsFromConfig()
 	UpdateValueIfDifferent(SliderTextBoxOption_NumVerticalGridTargets, BSConfig->GridConfig.NumVerticalGridTargets);
 	UpdateValueIfDifferent(SliderTextBoxOption_HorizontalSpacing, BSConfig->GridConfig.GridSpacing.X);
 	UpdateValueIfDifferent(SliderTextBoxOption_VerticalSpacing, BSConfig->GridConfig.GridSpacing.Y);
-
-	UpdateValueIfDifferent(SliderTextBoxOption_ForwardSpread, BSConfig->TargetConfig.BoxBounds.X);
-	UpdateValueIfDifferent(SliderTextBoxOption_HorizontalSpread, BSConfig->TargetConfig.BoxBounds.Y);
-	UpdateValueIfDifferent(SliderTextBoxOption_VerticalSpread, BSConfig->TargetConfig.BoxBounds.Z);
+	
 	UpdateValueIfDifferent(SliderTextBoxOption_FloorDistance, BSConfig->TargetConfig.FloorDistance);
-	UpdateValueIfDifferent(SliderTextBoxOption_MinDistanceBetweenTargets,
-		BSConfig->TargetConfig.MinDistanceBetweenTargets);
-
-	UpdateValueIfDifferent(SliderTextBoxOption_MinHorizontalSpread, BSConfig->DynamicSpawnAreaScaling.StartBounds.Y);
-	UpdateValueIfDifferent(SliderTextBoxOption_MinVerticalSpread, BSConfig->DynamicSpawnAreaScaling.StartBounds.Z);
-	UpdateValueIfDifferent(SliderTextBoxOption_MinForwardSpread, BSConfig->DynamicSpawnAreaScaling.StartBounds.X);
-
 	UpdateValueIfDifferent(SliderTextBoxOption_StartThreshold, BSConfig->DynamicSpawnAreaScaling.StartThreshold);
 	UpdateValueIfDifferent(SliderTextBoxOption_EndThreshold, BSConfig->DynamicSpawnAreaScaling.EndThreshold);
 	UpdateValueIfDifferent(SliderTextBoxOption_DecrementAmount, BSConfig->DynamicSpawnAreaScaling.DecrementAmount);
-
-	UpdateValueIfDifferent(ComboBoxOption_DynamicBoundsScalingPolicy,
-		GetStringArrayFromEnumArray_FromTagMap(BSConfig->DynamicSpawnAreaScaling.DynamicBoundsScalingPolicy));
-
-	// Order is important here !!!
-	UpdateDependentOptions_TargetDamageType(BSConfig->TargetConfig.TargetDamageType);
-	UpdateDependentOptions_BoundsScalingPolicy(BSConfig->TargetConfig.BoundsScalingPolicy);
-	UpdateDependentOptions_TargetDistributionPolicy(BSConfig->TargetConfig.TargetDistributionPolicy);
+	
+	UpdateSpread();
+	UpdateDependentOptions_TargetDistributionPolicy();
+	UpdateDependentOption_BoundsScalingPolicy();
 
 	UpdateBrushColors();
 }
@@ -185,27 +125,31 @@ void UCGMWC_SpawnArea::SetupWarningTooltipCallbacks()
 		FTooltipData("Invalid_Grid_NumHorizontalTargets", ETooltipImageType::Warning),
 		"Invalid_Grid_NumHorizontalTargets_Fallback", MinValue_NumHorizontalGridTargets).BindLambda([this]()
 	{
-		return FDynamicTooltipState(BSConfig->GridConfig.NumHorizontalGridTargets, GetMaxAllowedNumHorizontalTargets(), !SliderTextBoxOption_NumHorizontalGridTargets->IsVisible());
+		return FDynamicTooltipState(BSConfig->GridConfig.NumHorizontalGridTargets, GetMaxAllowedNumHorizontalTargets(),
+			!SliderTextBoxOption_NumHorizontalGridTargets->IsVisible());
 	});
 	SliderTextBoxOption_NumVerticalGridTargets->AddDynamicWarningTooltipData(
 		FTooltipData("Invalid_Grid_NumVerticalTargets", ETooltipImageType::Warning),
 		"Invalid_Grid_NumVerticalTargets_Fallback", MinValue_NumVerticalGridTargets).BindLambda([this]()
 	{
-		return FDynamicTooltipState(BSConfig->GridConfig.NumVerticalGridTargets, GetMaxAllowedNumVerticalTargets(), !SliderTextBoxOption_NumVerticalGridTargets->IsVisible());
+		return FDynamicTooltipState(BSConfig->GridConfig.NumVerticalGridTargets, GetMaxAllowedNumVerticalTargets(),
+			!SliderTextBoxOption_NumVerticalGridTargets->IsVisible());
 	});
 
 	SliderTextBoxOption_HorizontalSpacing->AddDynamicWarningTooltipData(
 		FTooltipData("Invalid_Grid_HorizontalSpacing", ETooltipImageType::Warning),
 		"Invalid_Grid_HorizontalSpacing_Fallback", MinValue_HorizontalGridSpacing).BindLambda([this]()
 	{
-		return FDynamicTooltipState(BSConfig->GridConfig.GridSpacing.X, GetMaxAllowedHorizontalSpacing(), !SliderTextBoxOption_HorizontalSpacing->IsVisible());
+		return FDynamicTooltipState(BSConfig->GridConfig.GridSpacing.X, GetMaxAllowedHorizontalSpacing(),
+			!SliderTextBoxOption_HorizontalSpacing->IsVisible());
 	});
 
 	SliderTextBoxOption_VerticalSpacing->AddDynamicWarningTooltipData(
 		FTooltipData("Invalid_Grid_VerticalSpacing", ETooltipImageType::Warning),
 		"Invalid_Grid_VerticalSpacing_Fallback", MinValue_VerticalGridSpacing).BindLambda([this]()
 	{
-		return FDynamicTooltipState(BSConfig->GridConfig.GridSpacing.Y, GetMaxAllowedVerticalSpacing(), !SliderTextBoxOption_VerticalSpacing->IsVisible());
+		return FDynamicTooltipState(BSConfig->GridConfig.GridSpacing.Y, GetMaxAllowedVerticalSpacing(),
+			!SliderTextBoxOption_VerticalSpacing->IsVisible());
 	});
 
 	ComboBoxOption_TargetDistributionPolicy->AddWarningTooltipData(FTooltipData("Invalid_HeadshotHeightOnly_AI",
@@ -215,141 +159,80 @@ void UCGMWC_SpawnArea::SetupWarningTooltipCallbacks()
 			BSConfig->AIConfig.bEnableReinforcementLearning;
 	});
 
-	SliderTextBoxOption_ForwardSpread->AddWarningTooltipData(
-		FTooltipData("Caution_ZeroForwardDistance_MTDM_ForwardOnly_2", ETooltipImageType::Caution)).BindLambda([this]()
+	MenuOption_ForwardSpread->AddWarningTooltipData(FTooltipData("Caution_ZeroForwardDistance_MTDM_ForwardOnly_2",
+		ETooltipImageType::Caution)).BindLambda([this]()
 	{
 		return BSConfig->TargetConfig.BoxBounds.X <= 0.f && BSConfig->TargetConfig.MovingTargetDirectionMode ==
 			EMovingTargetDirectionMode::ForwardOnly;
 	});
 }
 
-void UCGMWC_SpawnArea::UpdateDependentOptions_TargetDistributionPolicy(
-	const ETargetDistributionPolicy& InTargetDistributionPolicy)
+void UCGMWC_SpawnArea::UpdateDependentOptions_TargetDistributionPolicy()
 {
-	if (InTargetDistributionPolicy == ETargetDistributionPolicy::Grid)
+	if (BSConfig->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::Grid)
 	{
-		SliderTextBoxOption_MinDistanceBetweenTargets->SetVisibility(ESlateVisibility::Collapsed);
 		SliderTextBoxOption_NumHorizontalGridTargets->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		SliderTextBoxOption_NumVerticalGridTargets->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		SliderTextBoxOption_HorizontalSpacing->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		SliderTextBoxOption_VerticalSpacing->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-		// From HeadshotHeightOnly
-		SliderTextBoxOption_VerticalSpread->SetValues(MinValue_VerticalSpread, MaxValue_VerticalSpread,
-			SnapSize_VerticalSpread);
-		
-		BSConfig->TargetConfig.BoxBounds.Y = MaxValue_HorizontalSpread;
-		BSConfig->TargetConfig.BoxBounds.Z = MaxValue_VerticalSpread;
-		BSConfig->TargetConfig.BoundsScalingPolicy = EBoundsScalingPolicy::Static;
-		
-		UpdateValueIfDifferent(SliderTextBoxOption_HorizontalSpread, BSConfig->TargetConfig.BoxBounds.Y);
-		UpdateValueIfDifferent(SliderTextBoxOption_VerticalSpread, BSConfig->TargetConfig.BoxBounds.Z);
-		UpdateValueIfDifferent(SliderTextBoxOption_FloorDistance, BSConfig->TargetConfig.FloorDistance);
-		UpdateValueIfDifferent(ComboBoxOption_BoundsScalingPolicy,
-			GetStringFromEnum_FromTagMap(BSConfig->TargetConfig.BoundsScalingPolicy));
-
-		SliderTextBoxOption_HorizontalSpread->SetSliderAndTextBoxEnabledStates(false);
-		SliderTextBoxOption_VerticalSpread->SetSliderAndTextBoxEnabledStates(false);
-		ComboBoxOption_BoundsScalingPolicy->ComboBox->SetIsEnabled(false);
-	}
-	else if (InTargetDistributionPolicy == ETargetDistributionPolicy::HeadshotHeightOnly)
-	{
-		SliderTextBoxOption_MinDistanceBetweenTargets->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		SliderTextBoxOption_NumHorizontalGridTargets->SetVisibility(ESlateVisibility::Collapsed);
-		SliderTextBoxOption_NumVerticalGridTargets->SetVisibility(ESlateVisibility::Collapsed);
-		SliderTextBoxOption_HorizontalSpacing->SetVisibility(ESlateVisibility::Collapsed);
-		SliderTextBoxOption_VerticalSpacing->SetVisibility(ESlateVisibility::Collapsed);
-		
-		BSConfig->TargetConfig.BoxBounds.Z = HeadshotHeight_VerticalSpread;
-		SliderTextBoxOption_VerticalSpread->SetValues(HeadshotHeight_VerticalSpread, HeadshotHeight_VerticalSpread,
-			HeadshotHeight_VerticalSpread);
-		UpdateValueIfDifferent(SliderTextBoxOption_VerticalSpread, BSConfig->TargetConfig.BoxBounds.Z);
-		
-		SliderTextBoxOption_HorizontalSpread->SetSliderAndTextBoxEnabledStates(true);
-		SliderTextBoxOption_VerticalSpread->SetSliderAndTextBoxEnabledStates(false);
-		ComboBoxOption_BoundsScalingPolicy->ComboBox->SetIsEnabled(true);
 	}
 	else
 	{
-		SliderTextBoxOption_MinDistanceBetweenTargets->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		SliderTextBoxOption_NumHorizontalGridTargets->SetVisibility(ESlateVisibility::Collapsed);
 		SliderTextBoxOption_NumVerticalGridTargets->SetVisibility(ESlateVisibility::Collapsed);
 		SliderTextBoxOption_HorizontalSpacing->SetVisibility(ESlateVisibility::Collapsed);
 		SliderTextBoxOption_VerticalSpacing->SetVisibility(ESlateVisibility::Collapsed);
-
-		// From HeadshotHeightOnly
-		SliderTextBoxOption_VerticalSpread->SetValues(MinValue_VerticalSpread, MaxValue_VerticalSpread,
-			SnapSize_VerticalSpread);
-		BSConfig->TargetConfig.BoxBounds.Z = FMath::Max(BSConfig->TargetConfig.BoxBounds.Z, MinValue_VerticalSpread);
-		UpdateValueIfDifferent(SliderTextBoxOption_VerticalSpread, BSConfig->TargetConfig.BoxBounds.Z);
-
-		SliderTextBoxOption_HorizontalSpread->SetSliderAndTextBoxEnabledStates(true);
-		SliderTextBoxOption_VerticalSpread->SetSliderAndTextBoxEnabledStates(true);
-		ComboBoxOption_BoundsScalingPolicy->ComboBox->SetIsEnabled(true);
 	}
 }
 
-void UCGMWC_SpawnArea::UpdateDependentOptions_BoundsScalingPolicy(
-	const EBoundsScalingPolicy& InBoundsScalingPolicy)
+void UCGMWC_SpawnArea::UpdateSpread()
 {
-	if (InBoundsScalingPolicy == EBoundsScalingPolicy::Dynamic)
+	const bool bTracking = BSConfig->TargetConfig.TargetDamageType == ETargetDamageType::Tracking;
+	const bool bHeadShotHeightOnly = BSConfig->TargetConfig.TargetDistributionPolicy ==
+		ETargetDistributionPolicy::HeadshotHeightOnly;
+	const bool bGrid = BSConfig->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::Grid;
+
+	UpdateSpreadWidgetState(MenuOption_ForwardSpread, bTracking, bHeadShotHeightOnly, bGrid);
+	UpdateSpreadWidgetState(MenuOption_HorizontalSpread, bTracking, bHeadShotHeightOnly, bGrid);
+	UpdateSpreadWidgetState(MenuOption_VerticalSpread, bTracking, bHeadShotHeightOnly, bGrid);
+
+	const bool bForwardSame = BSConfig->DynamicSpawnAreaScaling.StartBounds.X == BSConfig->TargetConfig.BoxBounds.X;
+	const bool bHorizontalSame = BSConfig->DynamicSpawnAreaScaling.StartBounds.Y == BSConfig->TargetConfig.BoxBounds.Y;
+	const bool bVerticalSame = BSConfig->DynamicSpawnAreaScaling.StartBounds.Z == BSConfig->TargetConfig.BoxBounds.Z;
+
+	UpdateValuesIfDifferent(MenuOption_ForwardSpread, bTracking || bForwardSame,
+		BSConfig->DynamicSpawnAreaScaling.StartBounds.X, BSConfig->TargetConfig.BoxBounds.X);
+	UpdateValuesIfDifferent(MenuOption_HorizontalSpread, bTracking || bGrid || bHorizontalSame,
+		BSConfig->DynamicSpawnAreaScaling.StartBounds.Y, BSConfig->TargetConfig.BoxBounds.Y);
+	UpdateValuesIfDifferent(MenuOption_VerticalSpread, bTracking || bGrid || bHeadShotHeightOnly || bVerticalSame,
+		BSConfig->DynamicSpawnAreaScaling.StartBounds.Z, BSConfig->TargetConfig.BoxBounds.Z);
+}
+
+void UCGMWC_SpawnArea::UpdateDependentOption_BoundsScalingPolicy()
+{
+	const bool bAnyNonConstantSpread = !MenuOption_ForwardSpread->IsInConstantMode()
+		|| !MenuOption_HorizontalSpread->IsInConstantMode()
+		|| !MenuOption_VerticalSpread->IsInConstantMode();
+	const bool bGrid = BSConfig->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::Grid;
+	const bool bTracking = BSConfig->TargetConfig.TargetDamageType == ETargetDamageType::Tracking;
+	
+	if (bAnyNonConstantSpread && !bGrid && !bTracking)
 	{
-		SliderTextBoxOption_MinHorizontalSpread->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		SliderTextBoxOption_MinVerticalSpread->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		SliderTextBoxOption_MinForwardSpread->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		SliderTextBoxOption_StartThreshold->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		SliderTextBoxOption_EndThreshold->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		SliderTextBoxOption_DecrementAmount->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		ComboBoxOption_DynamicBoundsScalingPolicy->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		BSConfig->TargetConfig.BoundsScalingPolicy = EBoundsScalingPolicy::Dynamic;
 	}
 	else
 	{
-		SliderTextBoxOption_MinHorizontalSpread->SetVisibility(ESlateVisibility::Collapsed);
-		SliderTextBoxOption_MinVerticalSpread->SetVisibility(ESlateVisibility::Collapsed);
-		SliderTextBoxOption_MinForwardSpread->SetVisibility(ESlateVisibility::Collapsed);
 		SliderTextBoxOption_StartThreshold->SetVisibility(ESlateVisibility::Collapsed);
 		SliderTextBoxOption_EndThreshold->SetVisibility(ESlateVisibility::Collapsed);
 		SliderTextBoxOption_DecrementAmount->SetVisibility(ESlateVisibility::Collapsed);
-		ComboBoxOption_DynamicBoundsScalingPolicy->SetVisibility(ESlateVisibility::Collapsed);
-	}
-
-	if (BSConfig->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::HeadshotHeightOnly)
-	{
-		BSConfig->DynamicSpawnAreaScaling.StartBounds.Z = HeadshotHeight_VerticalSpread;
-		SliderTextBoxOption_MinVerticalSpread->SetValues(HeadshotHeight_VerticalSpread,
-			HeadshotHeight_VerticalSpread, HeadshotHeight_VerticalSpread);
-		UpdateValueIfDifferent(SliderTextBoxOption_MinVerticalSpread,
-			BSConfig->DynamicSpawnAreaScaling.StartBounds.Z);
-		SliderTextBoxOption_MinVerticalSpread->SetSliderAndTextBoxEnabledStates(false);
-	}
-	else
-	{
-		SliderTextBoxOption_MinVerticalSpread->SetValues(MinValue_VerticalSpread, MaxValue_VerticalSpread,
-			SnapSize_VerticalSpread);
-		BSConfig->DynamicSpawnAreaScaling.StartBounds.Z = FMath::Max(MinValue_VerticalSpread,
-			BSConfig->DynamicSpawnAreaScaling.StartBounds.Z);
-		UpdateValueIfDifferent(SliderTextBoxOption_MinVerticalSpread, BSConfig->TargetConfig.BoxBounds.Z);
-		SliderTextBoxOption_MinVerticalSpread->SetSliderAndTextBoxEnabledStates(true);
-	}
-}
-
-void UCGMWC_SpawnArea::UpdateDependentOptions_TargetDamageType(const ETargetDamageType& InDamageType)
-{
-	if (InDamageType == ETargetDamageType::Tracking)
-	{
 		BSConfig->TargetConfig.BoundsScalingPolicy = EBoundsScalingPolicy::Static;
-		UpdateValueIfDifferent(ComboBoxOption_BoundsScalingPolicy,
-		GetStringFromEnum_FromTagMap(BSConfig->TargetConfig.BoundsScalingPolicy));
-		ComboBoxOption_BoundsScalingPolicy->ComboBox->SetIsEnabled(false);
-	}
-	else
-	{
-		ComboBoxOption_BoundsScalingPolicy->ComboBox->SetIsEnabled(true);
 	}
 }
 
-void UCGMWC_SpawnArea::OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget,
-	const float Value)
+void UCGMWC_SpawnArea::OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget, const float Value)
 {
 	if (Widget == SliderTextBoxOption_NumHorizontalGridTargets)
 	{
@@ -367,38 +250,10 @@ void UCGMWC_SpawnArea::OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* W
 	{
 		BSConfig->GridConfig.GridSpacing.Y = Value;
 	}
-	else if (Widget == SliderTextBoxOption_ForwardSpread)
-	{
-		BSConfig->TargetConfig.BoxBounds.X = Value;
-	}
-	else if (Widget == SliderTextBoxOption_HorizontalSpread)
-	{
-		BSConfig->TargetConfig.BoxBounds.Y = Value;
-	}
-	else if (Widget == SliderTextBoxOption_VerticalSpread)
-	{
-		BSConfig->TargetConfig.BoxBounds.Z = Value;
-	}
 	else if (Widget == SliderTextBoxOption_FloorDistance)
 	{
 		BSConfig->TargetConfig.FloorDistance = Value;
 		RequestGameModePreviewUpdate.Broadcast();
-	}
-	else if (Widget == SliderTextBoxOption_MinDistanceBetweenTargets)
-	{
-		BSConfig->TargetConfig.MinDistanceBetweenTargets = Value;
-	}
-	else if (Widget == SliderTextBoxOption_MinHorizontalSpread)
-	{
-		BSConfig->DynamicSpawnAreaScaling.StartBounds.Y = Value;
-	}
-	else if (Widget == SliderTextBoxOption_MinVerticalSpread)
-	{
-		BSConfig->DynamicSpawnAreaScaling.StartBounds.Z = Value;
-	}
-	else if (Widget == SliderTextBoxOption_MinForwardSpread)
-	{
-		BSConfig->DynamicSpawnAreaScaling.StartBounds.X = Value;
 	}
 	else if (Widget == SliderTextBoxOption_StartThreshold)
 	{
@@ -416,56 +271,128 @@ void UCGMWC_SpawnArea::OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* W
 	UpdateAllOptionsValid();
 }
 
-void UCGMWC_SpawnArea::OnSelectionChanged_BoundsScalingPolicy(const TArray<FString>& Selected,
-	const ESelectInfo::Type SelectionType)
+void UCGMWC_SpawnArea::OnMinMaxValueChanged(UConstantMinMaxMenuOptionWidget* Widget, const bool bChecked,
+	const float Min, const float Max)
 {
-	if (SelectionType == ESelectInfo::Type::Direct || Selected.Num() != 1) return;
-	
-	BSConfig->TargetConfig.BoundsScalingPolicy = GetEnumFromString_FromTagMap<EBoundsScalingPolicy>(Selected[0]);
-	UpdateDependentOptions_BoundsScalingPolicy(BSConfig->TargetConfig.BoundsScalingPolicy);
-	UpdateBrushColors();
+	if (Widget == MenuOption_ForwardSpread)
+	{
+		BSConfig->DynamicSpawnAreaScaling.StartBounds.X = Min;
+		BSConfig->TargetConfig.BoxBounds.X = Max;
+	}
+	else if (Widget == MenuOption_HorizontalSpread)
+	{
+		BSConfig->DynamicSpawnAreaScaling.StartBounds.Y = Min;
+		BSConfig->TargetConfig.BoxBounds.Y = Max;
+	}
+	else if (Widget == MenuOption_VerticalSpread)
+	{
+		BSConfig->DynamicSpawnAreaScaling.StartBounds.Z = Min;
+		BSConfig->TargetConfig.BoxBounds.Z = Max;
+	}
+
+	UpdateDependentOption_BoundsScalingPolicy();
 	UpdateAllOptionsValid();
+}
+
+void UCGMWC_SpawnArea::UpdateSpreadWidgetState(UConstantMinMaxMenuOptionWidget* Widget, const bool bTracking,
+	const bool bHeadShotHeightOnly, const bool bGrid)
+{
+	FSpreadWidgetState State(EMenuOptionEnabledState::Enabled);
+	
+	if (Widget == MenuOption_ForwardSpread)
+	{
+		if (bTracking)
+		{
+			State.SubWidgetEnabledState = EMenuOptionEnabledState::DependentMissing;
+			State.SubWidgetTooltipKey = "DM_ForwardSpread_Tracking";
+		}
+	}
+	else if (Widget == MenuOption_VerticalSpread)
+	{
+		if (bGrid)
+		{
+			if (FMath::IsNearlyEqual(MenuOption_VerticalSpread->GetSnapSize(), HeadshotHeight_VerticalSpread))
+			{
+				MenuOption_VerticalSpread->SetValues(MinValue_VerticalSpread, MaxValue_VerticalSpread,
+					SnapSize_VerticalSpread);
+			}
+			BSConfig->TargetConfig.BoxBounds.Z = MaxValue_VerticalSpread;
+			BSConfig->DynamicSpawnAreaScaling.StartBounds.Z = MaxValue_VerticalSpread;
+			
+			State.MenuOptionEnabledState = EMenuOptionEnabledState::DependentMissing;
+			State.MenuOptionTooltipKey = "DM_VerticalSpread_Grid";
+		}
+		else if (bHeadShotHeightOnly)
+		{
+			if (!FMath::IsNearlyEqual(MenuOption_VerticalSpread->GetSnapSize(), HeadshotHeight_VerticalSpread))
+			{
+				MenuOption_VerticalSpread->SetValues(HeadshotHeight_VerticalSpread, HeadshotHeight_VerticalSpread,
+					HeadshotHeight_VerticalSpread);
+			}
+
+			BSConfig->TargetConfig.BoxBounds.Z = HeadshotHeight_VerticalSpread;
+			BSConfig->DynamicSpawnAreaScaling.StartBounds.Z = HeadshotHeight_VerticalSpread;
+			
+			State.MenuOptionEnabledState = EMenuOptionEnabledState::DependentMissing;
+			State.MenuOptionTooltipKey = "DM_VerticalSpread_HeadshotHeightOnly";
+		}
+		else
+		{
+			if (FMath::IsNearlyEqual(MenuOption_VerticalSpread->GetSnapSize(), HeadshotHeight_VerticalSpread))
+			{
+				MenuOption_VerticalSpread->SetValues(MinValue_VerticalSpread, MaxValue_VerticalSpread,
+					SnapSize_VerticalSpread);
+				BSConfig->TargetConfig.BoxBounds.Z =
+					FMath::Max(BSConfig->TargetConfig.BoxBounds.Z, MinValue_VerticalSpread);
+				BSConfig->DynamicSpawnAreaScaling.StartBounds.Z = FMath::Max(
+					BSConfig->DynamicSpawnAreaScaling.StartBounds.Z, MinValue_VerticalSpread);
+			}
+		}
+		
+		if (bTracking)
+		{
+			State.SubWidgetEnabledState = EMenuOptionEnabledState::DependentMissing;
+			State.SubWidgetTooltipKey = "DM_VerticalSpread_Tracking";
+		}
+	}
+	else if (Widget == MenuOption_HorizontalSpread)
+	{
+		if (bGrid)
+		{
+			BSConfig->TargetConfig.BoxBounds.Y = MaxValue_HorizontalSpread;
+			BSConfig->DynamicSpawnAreaScaling.StartBounds.Y = MaxValue_HorizontalSpread;
+			State.MenuOptionEnabledState = EMenuOptionEnabledState::DependentMissing;
+			State.MenuOptionTooltipKey = "DM_HorizontalSpread_Grid";
+		}
+
+		if (bTracking)
+		{
+			State.SubWidgetEnabledState = EMenuOptionEnabledState::DependentMissing;
+			State.SubWidgetTooltipKey = "DM_HorizontalSpread_Tracking";
+		}
+	}
+	SetMenuOptionEnabledStateAndAddTooltip(Widget, State.MenuOptionEnabledState, State.MenuOptionTooltipKey);
+	SetSubMenuOptionEnabledStateAndAddTooltip(Widget, UCheckBox::StaticClass(), State.SubWidgetEnabledState,
+		State.SubWidgetTooltipKey);
 }
 
 void UCGMWC_SpawnArea::OnSelectionChanged_TargetDistributionPolicy(const TArray<FString>& Selected,
 	const ESelectInfo::Type SelectionType)
 {
 	if (SelectionType == ESelectInfo::Type::Direct || Selected.Num() != 1) return;
-	
-	BSConfig->TargetConfig.TargetDistributionPolicy = GetEnumFromString_FromTagMap<ETargetDistributionPolicy>(Selected[0]);
-	UpdateDependentOptions_TargetDistributionPolicy(BSConfig->TargetConfig.TargetDistributionPolicy);
-	UpdateDependentOptions_BoundsScalingPolicy(BSConfig->TargetConfig.BoundsScalingPolicy);
+
+	BSConfig->TargetConfig.TargetDistributionPolicy = GetEnumFromString_FromTagMap<
+		ETargetDistributionPolicy>(Selected[0]);
+	UpdateSpread();
+	UpdateDependentOptions_TargetDistributionPolicy();
+	UpdateDependentOption_BoundsScalingPolicy();
 	UpdateBrushColors();
 	UpdateAllOptionsValid();
+	RequestGameModePreviewUpdate.Broadcast();
 }
 
-void UCGMWC_SpawnArea::OnSelectionChanged_DynamicBoundsScalingPolicy(const TArray<FString>& Selected,
-	const ESelectInfo::Type SelectionType)
-{
-	if (SelectionType == ESelectInfo::Type::Direct || Selected.Num() < 1) return;
-	
-	BSConfig->DynamicSpawnAreaScaling.DynamicBoundsScalingPolicy = GetEnumArrayFromStringArray_FromTagMap<
-		EDynamicBoundsScalingPolicy>(Selected);
-	UpdateAllOptionsValid();
-}
-
-FString UCGMWC_SpawnArea::GetComboBoxEntryTooltipStringTableKey_BoundsScalingPolicy(
-	const FString& EnumString)
-{
-	const EBoundsScalingPolicy EnumValue = GetEnumFromString_FromTagMap<EBoundsScalingPolicy>(EnumString);
-	return GetStringTableKeyNameFromEnum(EnumValue);
-}
-
-FString UCGMWC_SpawnArea::GetComboBoxEntryTooltipStringTableKey_TargetDistributionPolicy(
-	const FString& EnumString)
+FString UCGMWC_SpawnArea::GetComboBoxEntryTooltipStringTableKey_TargetDistributionPolicy(const FString& EnumString)
 {
 	const ETargetDistributionPolicy EnumValue = GetEnumFromString_FromTagMap<ETargetDistributionPolicy>(EnumString);
-	return GetStringTableKeyNameFromEnum(EnumValue);
-}
-
-FString UCGMWC_SpawnArea::GetComboBoxEntryTooltipStringTableKey_DynamicBoundsScalingPolicy(
-	const FString& EnumString)
-{
-	const EDynamicBoundsScalingPolicy EnumValue = GetEnumFromString_FromTagMap<EDynamicBoundsScalingPolicy>(EnumString);
 	return GetStringTableKeyNameFromEnum(EnumValue);
 }

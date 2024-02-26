@@ -19,7 +19,6 @@ protected:
 	
 	void UpdateDependentOptions_TargetSpawnResponses(const TArray<ETargetSpawnResponse>& Responses);
 	void UpdateDependentOptions_TargetActivationResponses(const TArray<ETargetActivationResponse>& Responses);
-	void UpdateDependentOptions_TargetDeactivationConditions(const TArray<ETargetDeactivationCondition>& Conditions);
 	void UpdateDependentOptions_TargetDeactivationResponses(const TArray<ETargetDeactivationResponse>& Responses);
 
 	UFUNCTION()

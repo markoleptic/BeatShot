@@ -25,10 +25,10 @@ enum class EMenuOptionEnabledState : uint8
 {
 	/** All features enabled */
 	Enabled UMETA(DisplayName="Enabled"),
-	/** The option is not interactable because it depends on another menu option selection, but does show a tooltip
-	 *  showing why it is not interactable */
+	/** The option is not interactive because it depends on another menu option selection, but does show a tooltip
+	 *  showing why it is not interactive */
 	DependentMissing UMETA(DisplayName="DependentMissing"),
-	/** The option is not interactable and displays no tooltip. Same as regular disabled */
+	/** The option is not interactive and displays no tooltip. Same as regular disabled */
 	Disabled UMETA(DisplayName="Disabled"),
 };
 ENUM_RANGE_BY_FIRST_AND_LAST(EMenuOptionEnabledState, EMenuOptionEnabledState::Enabled,
@@ -50,6 +50,9 @@ protected:
 public:
 	/** Sets the custom enabled state of the menu option */
 	virtual void SetMenuOptionEnabledState(const EMenuOptionEnabledState EnabledState);
+
+	/** Sets the custom enabled state of the menu option */
+	virtual UWidget* SetSubMenuOptionEnabledState(const TSubclassOf<UWidget> SubWidget, const EMenuOptionEnabledState State) { return nullptr; }
 
 	/** Returns the custom enabled state of the menu option */
 	EMenuOptionEnabledState GetMenuOptionEnabledState() const { return MenuOptionEnabledState; }

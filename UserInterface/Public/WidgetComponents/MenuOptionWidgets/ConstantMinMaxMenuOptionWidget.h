@@ -28,37 +28,60 @@ class USERINTERFACE_API UConstantMinMaxMenuOptionWidget : public UMenuOptionWidg
 	GENERATED_BODY()
 
 public:
+	/** Set's the widget's enabled state and adds a tooltip for the entire widget if a Key is provided,
+	 *  otherwise the tooltip will be cleared. */
 	virtual void SetMenuOptionEnabledState(const EMenuOptionEnabledState EnabledState) override;
 	
+	/** Sets the custom enabled state of the menu option */
+	virtual UWidget* SetSubMenuOptionEnabledState(const TSubclassOf<UWidget> SubWidget, const EMenuOptionEnabledState State) override;
+	
 	/** Returns the value for the MinOrConstant slider */
-	float GetMinOrConstantSliderValue() const;
+	float GetMinSliderValue(const bool bClamped) const;
 
 	/** Returns the value for the Max slider, NOT the max value of a slider */
-	float GetMaxSliderValue() const;
+	float GetMaxSliderValue(const bool bClamped) const;
+
+	/** Returns the value for the constant slider */
+	float GetConstantSliderValue(const bool bClamped) const;
 
 	/** Returns the value for the MinOrConstant EditableTextBox */
-	float GetMinOrConstantEditableTextBoxValue() const;
+	float GetMinEditableTextBoxValue(const bool bClamped) const;
 
 	/** Returns the value for the Max EditableTextBox */
-	float GetMaxEditableTextBoxValue() const;
+	float GetMaxEditableTextBoxValue(const bool bClamped) const;
 
-	/** Returns true if the CheckBox is checked */
-	bool GetIsChecked() const;
+	/** Returns the value for the constant EditableTextBox */
+	float GetConstantEditableTextBoxValue(const bool bClamped) const;
+
+	/** Returns true if the if the CheckBox is checked and only one slider and editable text box is visible */
+	bool IsInConstantMode() const;
 	
 	/** Sets the Min and Max values of the sliders and sets the grid snap size */
 	void SetValues(const float Min, const float Max, const float SnapSize);
 
 	/** Sets the value for the ConstantOrMin slider & EditableTextBox */
-	void SetValue_ConstantOrMin(const float Value) const;
+	void SetValue_Min(const float Value) const;
 
 	/** Sets the value for the Max slider & EditableTextBox */
 	void SetValue_Max(const float Value) const;
 
+	/** Sets the value for both sliders & EditableTextBoxes */
+	void SetValue_Constant(const float Value) const;
+
 	/** Sets the checked state for the Checkbox and calls UpdateMinMaxDependencies to update visibility stuff */
-	void SetIsChecked(const bool bIsChecked) const;
+	void SetConstantMode(const bool bUseConstantMode) const;
+
+	/** Locks or unlocks the Checkbox for constant mode */
+	void SetConstantModeLocked(const bool bLock) const;
+
+	/** Sets the the value of bUseMinAsConstant */
+	void SetUseMinAsConstant(const bool bInUseMinAsConstant) { bUseMinAsConstant = bInUseMinAsConstant; }
 	
 	/** Locks or unlocks the slider and sets the EditableTextBox to read-only or not */
 	void SetSliderAndTextBoxEnabledStates(const bool bEnabled) const;
+
+	/** Returns the current snap size */
+	float GetSnapSize() const { return GridSnapSize; }
 
 	/** Broadcast when the slider value changes or the EditableTextBox has text committed to it */
 	FOnMinMaxMenuOptionChanged OnMinMaxMenuOptionChanged;
@@ -72,11 +95,11 @@ protected:
 	void UpdateMinMaxDependencies(const bool bConstant) const;
 
 	UFUNCTION()
-	void OnSliderChanged_ConstantOrMin(const float Value);
+	void OnSliderChanged_Min(const float Value);
 	UFUNCTION()
 	void OnSliderChanged_Max(const float Value);
 	UFUNCTION()
-	void OnTextCommitted_ConstantOrMin(const FText& Text, ETextCommit::Type CommitType);
+	void OnTextCommitted_Min(const FText& Text, ETextCommit::Type CommitType);
 	UFUNCTION()
 	void OnTextCommitted_Max(const FText& Text, ETextCommit::Type CommitType);
 	UFUNCTION()
@@ -84,22 +107,29 @@ protected:
 	
 	float GridSnapSize = 1.f;
 
+	/** Whether or not to use the minimum or maximum slider when the checkbox is checked. */
+	bool bUseMinAsConstant = true;
+
+	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSHorizontalBox* BSBox_ConstantOrMin;
+	UHorizontalBox* Box_CheckBox_Tooltip;
+	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UHorizontalBox* Box_Left_ConstantOrMin;
+	UBSHorizontalBox* BSBox_Min;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UHorizontalBox* Box_Right_ConstantOrMin;
+	UHorizontalBox* Box_Left_Min;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USpacer* Indent_Left_ConstantOrMin;
+	UHorizontalBox* Box_Right_Min;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UCommonTextBlock* TextBlock_Description_ConstantOrMin;
+	USpacer* Indent_Left_Min;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UCommonTextBlock* TextBlock_ConstantOrMin;
+	UCommonTextBlock* TextBlock_Description_Min;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USlider* Slider_ConstantOrMin;
+	UCommonTextBlock* TextBlock_Min;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UEditableTextBox* EditableTextBox_ConstantOrMin;
+	USlider* Slider_Min;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UEditableTextBox* EditableTextBox_Min;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSHorizontalBox* BSBox_Max;

@@ -851,8 +851,12 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Debug")
 	int32 DebugSphereSegments = 12;
 
-	#if !UE_BUILD_SHIPPING
-	
+#if !UE_BUILD_SHIPPING
+public:
+	/** Draws debug boxes and/or lines based on debug bool variables. */
+	void DrawDebug() const;
+
+protected:
 	/** Draws debug boxes using SpawnAreas. */
 	void DrawDebug_Boxes(const TSet<USpawnArea*>& InSpawnAreas, const FColor& Color, const int32 Thickness,
 		bool bPersistent) const;
@@ -878,9 +882,6 @@ protected:
 	static void PrintDebug_Matrix(const TArray<int32>& Matrix, const int32 NumRows, const int32 NumCols);
 	
 public:
-	/** Clears all debug persistent lines/boxes and draws new ones based on debug bool variables. */
-	void RefreshDebugBoxes() const;
-
 	/** Toggles showing debug boxes for all SpawnAreas. */
 	bool bShowDebug_AllSpawnAreas;
 
@@ -921,7 +922,7 @@ public:
 	mutable TSet<USpawnArea*> DebugCached_SpawnableValidSpawnAreas;
 	mutable TSet<USpawnArea*> DebugCached_NonAdjacentSpawnAreas;
 
-	#endif
+#endif
 
 private:
 

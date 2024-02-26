@@ -23,6 +23,8 @@ static constexpr int32 DefaultNumTargetsToActivate = 100;
 static constexpr int32 DefaultMinToActivate_MinClamp = 1;
 static constexpr int32 MaxToActivate_MinClamp = 1;
 
+static const TArray AnyDirectionModeMultipliers = {FVector(0, -1, -1), FVector(0, 1, -1),
+	FVector(0, -1, 1), FVector(0, 1, 1)};
 
 /** Class responsible for spawning and managing targets for all game modes. */
 UCLASS()
@@ -102,6 +104,15 @@ protected:
 	/** Curves to look up values for Dynamic target scaling */
 	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")
 	UCompositeCurveTable* CCT_TargetScale;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")
+	FName CurveTableRowName_Cubic_ThresholdMet = FName("Cubic_ThresholdMet");
+
+	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")
+	FName CurveTableRowName_Linear_ThresholdMet = FName("Linear_ThresholdMet");
+
+	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")
+	FName CurveTableRowName_Linear_PreThreshold = FName("Linear_PreThreshold");
 
 public:
 	/** Initializes  */
@@ -203,8 +214,7 @@ protected:
 
 	/** Static function that returns the location to place the SpawnVolume based on the Factor if dynamic or the
 	 *  StaticExtents otherwise. X and Y will be the same as the SpawnBox's location */
-	static FVector GenerateSpawnVolumeLocation(const FVector& InOrigin, const FVector& InDynamicStartExtents,
-		const FVector& InStaticExtents, const float Factor = 1.f);
+	static FVector GenerateSpawnVolumeLocation(const FBSConfig* InCfg, const FVector& InOrigin, const FVector& InSpawnVolumeExtents);
 
 	/** Static function that returns the extents to apply to the SpawnVolume based on the Factor if dynamic or the
 	 *  StaticExtents otherwise. X and Y will be the same as the SpawnBox's extents */
@@ -246,6 +256,8 @@ protected:
 
 	/** Returns a new unit vector direction for a target */
 	FVector GetNewTargetDirection(const FVector& LocationBeforeChange, const bool bLastDirectionChangeHorizontal) const;
+
+	static TArray<FVector> GetAnyDirectionMultipliers(const FVector& LocationBeforeChange, const FVector& Origin);
 
 	/** Updates the total amount of damage that can be done if a tracking target is damageable */
 	void UpdateTotalPossibleDamage();
@@ -322,16 +334,31 @@ protected:
 	double TotalPossibleDamage;
 
 	/** Whether or not the last activated target direction change was horizontal */
-	mutable bool bLastActivatedTargetDirectionChangeHorizontal;
+	mutable bool bLastActivatedTargetDirectionHorizontal;
 
 	/** Whether or not the last spawned target direction change was horizontal */
-	mutable bool bLastSpawnedTargetDirectionChangeHorizontal;
+	mutable bool bLastSpawnedTargetDirectionHorizontal;
 
 	/** Spawn parameters for spawning targets */
 	FActorSpawnParameters TargetSpawnInfo;
 
 	#if !UE_BUILD_SHIPPING
+
+	/** Clears all debug persistent lines and draws debug boxes and/or lines based on debug bool variables. Calls
+	 *	same function on Spawn Area Manager. */
+	void DrawDebug();
+	
 	/** Delegate used to record execution time taken for SpawnAreaManager's GetSpawnableSpawnAreas function. */
 	TDelegate<void(const double)> ExecutionTimeDelegate;
+
+	/** The most recent sectors for a target that received a new direction when the moving target direction mode is
+	 *  set to any. */
+	mutable FAnyMovingTargetDirectionModeDebug LastAnyTargetDirectionModeSectors;
+
+	/** Toggles showing debug boxes for choosing a random target location when the moving target direction mode is
+	 *  set to any. */
+public:
+	bool bShowDebug_AnyMovingTargetDirectionMode;
+	
 	#endif
 };

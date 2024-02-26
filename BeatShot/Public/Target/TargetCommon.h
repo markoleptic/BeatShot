@@ -162,3 +162,23 @@ struct FTargetSpawnParams
 		return GetTypeHash(Params.SpawnAreaIndex);
 	}
 };
+
+#if !UE_BUILD_SHIPPING
+/** The center and extents for a MovingTargetDirectionMode::Any debug box. */
+struct FAnyMovingTargetDirectionModeSector
+{
+	FVector Center, Extents;
+
+	FAnyMovingTargetDirectionModeSector(const FVector& InCenter, const FVector& InExtents) :
+		Center(InCenter), Extents(InExtents)
+	{}
+};
+
+/** Info to debug MovingTargetDirectionMode::Any. */
+struct FAnyMovingTargetDirectionModeDebug
+{
+	TArray<FAnyMovingTargetDirectionModeSector> Sectors;
+	FVector LineStart, LineEnd;
+};
+
+#endif

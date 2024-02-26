@@ -3,14 +3,19 @@
 
 #include "SaveGameCustomGameMode.h"
 
-void USaveGameCustomGameMode::Serialize(FArchive& Ar)
+USaveGameCustomGameMode::USaveGameCustomGameMode() : Version(-1)
 {
-	Super::Serialize(Ar);
 }
 
 void USaveGameCustomGameMode::Serialize(FStructuredArchive::FRecord Record)
 {
 	Super::Serialize(Record);
+	FArchive& UnderlyingArchive = Record.GetUnderlyingArchive();
+	if (UnderlyingArchive.IsLoading())
+	{
+		UnderlyingArchive << Version;
+		UE_LOG(LogTemp, Warning, TEXT("Version: %d"), Version);
+	}
 }
 
 TArray<FBSConfig> USaveGameCustomGameMode::GetCustomGameModes() const

@@ -14,8 +14,8 @@ class BEATSHOTGLOBAL_API USaveGameCustomGameMode : public USaveGame
 
 
 public:
-	virtual void Serialize(FArchive& Ar) override;
-
+	USaveGameCustomGameMode();
+	
 	virtual void Serialize(FStructuredArchive::FRecord Record) override;
 	
 	/** Returns a copy of CustomGameModes */
@@ -39,4 +39,7 @@ public:
 private:
 	UPROPERTY()
 	TArray<FBSConfig> CustomGameModes;
+
+	UPROPERTY()
+	int32 Version;
 };

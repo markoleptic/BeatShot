@@ -20,9 +20,9 @@ void UConstantMinMaxMenuOptionWidget::NativeConstruct()
 	
 	TextBlock_Max->SetText(MaxText);
 
-	Slider_ConstantOrMin->OnValueChanged.AddUniqueDynamic(this, &ThisClass::OnSliderChanged_ConstantOrMin);
+	Slider_Min->OnValueChanged.AddUniqueDynamic(this, &ThisClass::OnSliderChanged_Min);
 	Slider_Max->OnValueChanged.AddUniqueDynamic(this, &ThisClass::OnSliderChanged_Max);
-	EditableTextBox_ConstantOrMin->OnTextCommitted.AddUniqueDynamic(this, &ThisClass::OnTextCommitted_ConstantOrMin);
+	EditableTextBox_Min->OnTextCommitted.AddUniqueDynamic(this, &ThisClass::OnTextCommitted_Min);
 	EditableTextBox_Max->OnTextCommitted.AddUniqueDynamic(this, &ThisClass::OnTextCommitted_Max);
 	CheckBox->OnCheckStateChanged.AddUniqueDynamic(this, &ThisClass::OnCheckStateChanged_CheckBox);
 }
@@ -30,7 +30,10 @@ void UConstantMinMaxMenuOptionWidget::NativeConstruct()
 void UConstantMinMaxMenuOptionWidget::NativePreConstruct()
 {
 	Super::NativePreConstruct();
-	TextBlock_Max->SetText(MaxText);
+	if (TextBlock_Max)
+	{
+		TextBlock_Max->SetText(MaxText);
+	}
 }
 
 void UConstantMinMaxMenuOptionWidget::SetStyling()
@@ -38,26 +41,26 @@ void UConstantMinMaxMenuOptionWidget::SetStyling()
 	Super::SetStyling();
 	if (MenuOptionStyle)
 	{
-		if (EditableTextBox_ConstantOrMin)
+		if (EditableTextBox_Min)
 		{
-			EditableTextBox_ConstantOrMin->WidgetStyle.SetFont(MenuOptionStyle->Font_EditableTextBesideSlider);
+			EditableTextBox_Min->WidgetStyle.SetFont(MenuOptionStyle->Font_EditableTextBesideSlider);
 		}
 		if (EditableTextBox_Max)
 		{
 			EditableTextBox_Max->WidgetStyle.SetFont(MenuOptionStyle->Font_EditableTextBesideSlider);
 		}
-		if (TextBlock_ConstantOrMin)
+		if (TextBlock_Min)
 		{
-			TextBlock_ConstantOrMin->SetFont(MenuOptionStyle->Font_DescriptionText);
+			TextBlock_Min->SetFont(MenuOptionStyle->Font_DescriptionText);
 		}
 		if (TextBlock_Max)
 		{
 			TextBlock_Max->SetFont(MenuOptionStyle->Font_DescriptionText);
 		}
-		if (TextBlock_Description_ConstantOrMin)
+		if (TextBlock_Description_Min)
 		{
-			TextBlock_Description_ConstantOrMin->SetFont(MenuOptionStyle->Font_DescriptionText);
-			UHorizontalBoxSlot* HorizontalBoxSlot = Cast<UHorizontalBoxSlot>(TextBlock_Description_ConstantOrMin->Slot);
+			TextBlock_Description_Min->SetFont(MenuOptionStyle->Font_DescriptionText);
+			UHorizontalBoxSlot* HorizontalBoxSlot = Cast<UHorizontalBoxSlot>(TextBlock_Description_Min->Slot);
 			if (HorizontalBoxSlot)
 			{
 				HorizontalBoxSlot->SetPadding(MenuOptionStyle->Padding_DescriptionText);
@@ -72,9 +75,9 @@ void UConstantMinMaxMenuOptionWidget::SetStyling()
 				HorizontalBoxSlot->SetPadding(MenuOptionStyle->Padding_DescriptionText);
 			}
 		}
-		if (Indent_Left_ConstantOrMin)
+		if (Indent_Left_Min)
 		{
-			Indent_Left_ConstantOrMin->SetSize(FVector2d(IndentLevel * MenuOptionStyle->IndentAmount, 0.f));
+			Indent_Left_Min->SetSize(FVector2d(IndentLevel * MenuOptionStyle->IndentAmount, 0.f));
 		}
 		if (Indent_Left_Max)
 		{
@@ -87,16 +90,16 @@ void UConstantMinMaxMenuOptionWidget::SetStyling()
 				BorderSlot->SetPadding(MenuOptionStyle->Padding_LeftBox);
 			}
 		}
-		if (Box_Left_ConstantOrMin)
+		if (Box_Left_Min)
 		{
-			if (UBorderSlot* BorderSlot = Cast<UBorderSlot>(Box_Left_ConstantOrMin->Slot))
+			if (UBorderSlot* BorderSlot = Cast<UBorderSlot>(Box_Left_Min->Slot))
 			{
 				BorderSlot->SetPadding(MenuOptionStyle->Padding_LeftBox);
 			}
 		}
-		if (Box_Right_ConstantOrMin)
+		if (Box_Right_Min)
 		{
-			if (UBorderSlot* BorderSlot = Cast<UBorderSlot>(Box_Right_ConstantOrMin->Slot))
+			if (UBorderSlot* BorderSlot = Cast<UBorderSlot>(Box_Right_Min->Slot))
 			{
 				BorderSlot->SetPadding(MenuOptionStyle->Padding_RightBox);
 			}
@@ -113,19 +116,19 @@ void UConstantMinMaxMenuOptionWidget::SetStyling()
 
 void UConstantMinMaxMenuOptionWidget::SetValues(const float Min, const float Max, const float SnapSize)
 {
-	Slider_ConstantOrMin->SetMinValue(Min);
+	Slider_Min->SetMinValue(Min);
 	Slider_Max->SetMinValue(Min);
-	Slider_ConstantOrMin->SetMaxValue(Max);
+	Slider_Min->SetMaxValue(Max);
 	Slider_Max->SetMaxValue(Max);
-	Slider_ConstantOrMin->SetStepSize(SnapSize);
+	Slider_Min->SetStepSize(SnapSize);
 	Slider_Max->SetStepSize(SnapSize);
 	GridSnapSize = SnapSize;
 }
 
-void UConstantMinMaxMenuOptionWidget::SetValue_ConstantOrMin(const float Value) const
+void UConstantMinMaxMenuOptionWidget::SetValue_Min(const float Value) const
 {
-	IBSWidgetInterface::SetSliderAndEditableTextBoxValues(Value, EditableTextBox_ConstantOrMin, Slider_ConstantOrMin,
-		GridSnapSize, Slider_ConstantOrMin->GetMinValue(), Slider_ConstantOrMin->GetMaxValue());
+	IBSWidgetInterface::SetSliderAndEditableTextBoxValues(Value, EditableTextBox_Min, Slider_Min,
+		GridSnapSize, Slider_Min->GetMinValue(), Slider_Min->GetMaxValue());
 }
 
 void UConstantMinMaxMenuOptionWidget::SetValue_Max(const float Value) const
@@ -134,10 +137,21 @@ void UConstantMinMaxMenuOptionWidget::SetValue_Max(const float Value) const
 		Slider_Max->GetMinValue(), Slider_Max->GetMaxValue());
 }
 
-void UConstantMinMaxMenuOptionWidget::SetIsChecked(const bool bIsChecked) const
+void UConstantMinMaxMenuOptionWidget::SetValue_Constant(const float Value) const
 {
-	CheckBox->SetIsChecked(bIsChecked);
-	UpdateMinMaxDependencies(bIsChecked);
+	SetValue_Min(Value);
+	SetValue_Max(Value);
+}
+
+void UConstantMinMaxMenuOptionWidget::SetConstantMode(const bool bUseConstantMode) const
+{
+	CheckBox->SetIsChecked(bUseConstantMode);
+	UpdateMinMaxDependencies(bUseConstantMode);
+}
+
+void UConstantMinMaxMenuOptionWidget::SetConstantModeLocked(const bool bLock) const
+{
+	CheckBox->SetIsEnabled(!bLock);
 }
 
 void UConstantMinMaxMenuOptionWidget::SetMenuOptionEnabledState(const EMenuOptionEnabledState EnabledState)
@@ -146,11 +160,11 @@ void UConstantMinMaxMenuOptionWidget::SetMenuOptionEnabledState(const EMenuOptio
 	
 	switch (EnabledState) {
 	case EMenuOptionEnabledState::Enabled:
-		Box_Right_ConstantOrMin->SetIsEnabled(true);
+		Box_Right_Min->SetIsEnabled(true);
 		Box_Right_Max->SetIsEnabled(true);
 		break;
 	case EMenuOptionEnabledState::DependentMissing:
-		Box_Right_ConstantOrMin->SetIsEnabled(false);
+		Box_Right_Min->SetIsEnabled(false);
 		Box_Right_Max->SetIsEnabled(false);
 		break;
 	case EMenuOptionEnabledState::Disabled:
@@ -158,46 +172,94 @@ void UConstantMinMaxMenuOptionWidget::SetMenuOptionEnabledState(const EMenuOptio
 	}
 }
 
-float UConstantMinMaxMenuOptionWidget::GetMinOrConstantSliderValue() const
+UWidget* UConstantMinMaxMenuOptionWidget::SetSubMenuOptionEnabledState(const TSubclassOf<UWidget> SubWidget,
+	const EMenuOptionEnabledState State)
 {
-	return Slider_ConstantOrMin->GetValue();
+	if (SubWidget->GetDefaultObject()->IsA<UCheckBox>())
+	{
+		switch (State) {
+		case EMenuOptionEnabledState::Enabled:
+			CheckBox->SetIsEnabled(true);
+			break;
+		case EMenuOptionEnabledState::DependentMissing:
+			CheckBox->SetIsEnabled(false);
+			break;
+		case EMenuOptionEnabledState::Disabled:
+			break;
+		}
+		return Box_CheckBox_Tooltip;
+	}
+	return nullptr;
 }
 
-float UConstantMinMaxMenuOptionWidget::GetMaxSliderValue() const
+float UConstantMinMaxMenuOptionWidget::GetMinSliderValue(const bool bClamped) const
 {
-	return Slider_Max->GetValue();
-}
-
-float UConstantMinMaxMenuOptionWidget::GetMinOrConstantEditableTextBoxValue() const
-{
-	const FString StringTextValue = EditableTextBox_ConstantOrMin->GetText().ToString().Replace(*FString(","), *FString(),
-	ESearchCase::IgnoreCase);
-	const float ClampedValue = FMath::Clamp(FCString::Atof(*StringTextValue), Slider_ConstantOrMin->GetMinValue(),
-		Slider_ConstantOrMin->GetMaxValue());
+	if (!bClamped) return Slider_Min->GetValue();
+	
+	const float ClampedValue = FMath::Clamp(Slider_Min->GetValue(), Slider_Min->GetMinValue(),
+		Slider_Min->GetMaxValue());
 	const float SnappedValue = FMath::GridSnap(ClampedValue, GridSnapSize);
 	return SnappedValue;
 }
 
-float UConstantMinMaxMenuOptionWidget::GetMaxEditableTextBoxValue() const
+float UConstantMinMaxMenuOptionWidget::GetMaxSliderValue(const bool bClamped) const
+{
+	if (!bClamped) return Slider_Max->GetValue();
+	
+	const float ClampedValue = FMath::Clamp(Slider_Max->GetValue(), Slider_Max->GetMinValue(),
+		Slider_Max->GetMaxValue());
+	const float SnappedValue = FMath::GridSnap(ClampedValue, GridSnapSize);
+	return SnappedValue;
+}
+
+float UConstantMinMaxMenuOptionWidget::GetConstantSliderValue(const bool bClamped) const
+{
+	if (bUseMinAsConstant) return GetMinSliderValue(bClamped);
+	return GetMaxSliderValue(bClamped);
+}
+
+float UConstantMinMaxMenuOptionWidget::GetMinEditableTextBoxValue(const bool bClamped) const
+{
+	const FString StringTextValue = EditableTextBox_Min->GetText().ToString().Replace(*FString(","), *FString(),
+		ESearchCase::IgnoreCase);
+	
+	if (!bClamped) return FCString::Atof(*StringTextValue);
+	
+	const float ClampedValue = FMath::Clamp(FCString::Atof(*StringTextValue), Slider_Min->GetMinValue(),
+		Slider_Min->GetMaxValue());
+	const float SnappedValue = FMath::GridSnap(ClampedValue, GridSnapSize);
+	return SnappedValue;
+}
+
+float UConstantMinMaxMenuOptionWidget::GetMaxEditableTextBoxValue(const bool bClamped) const
 {
 	const FString StringTextValue = EditableTextBox_Max->GetText().ToString().Replace(*FString(","), *FString(),
-	ESearchCase::IgnoreCase);
+		ESearchCase::IgnoreCase);
+
+	if (!bClamped) return FCString::Atof(*StringTextValue);
+	
 	const float ClampedValue = FMath::Clamp(FCString::Atof(*StringTextValue), Slider_Max->GetMinValue(),
 		Slider_Max->GetMaxValue());
 	const float SnappedValue = FMath::GridSnap(ClampedValue, GridSnapSize);
 	return SnappedValue;
 }
 
-bool UConstantMinMaxMenuOptionWidget::GetIsChecked() const
+float UConstantMinMaxMenuOptionWidget::GetConstantEditableTextBoxValue(const bool bClamped) const
+{
+	if (bUseMinAsConstant) return GetMinEditableTextBoxValue(bClamped);
+	return GetMaxEditableTextBoxValue(bClamped);
+}
+
+bool UConstantMinMaxMenuOptionWidget::IsInConstantMode() const
 {
 	return CheckBox->IsChecked();
 }
 
 void UConstantMinMaxMenuOptionWidget::SetSliderAndTextBoxEnabledStates(const bool bEnabled) const
 {
-	Slider_ConstantOrMin->SetLocked(!bEnabled);
+	Slider_Min->SetLocked(!bEnabled);
 	Slider_Max->SetLocked(!bEnabled);
-	EditableTextBox_ConstantOrMin->SetIsReadOnly(!bEnabled);
+	EditableTextBox_Min->SetIsReadOnly(!bEnabled);
 	EditableTextBox_Max->SetIsReadOnly(!bEnabled);
 }
 
@@ -205,45 +267,96 @@ void UConstantMinMaxMenuOptionWidget::UpdateMinMaxDependencies(const bool bConst
 {
 	if (bConstant)
 	{
-		TextBlock_ConstantOrMin->SetVisibility(ESlateVisibility::Collapsed);
-		BSBox_Max->SetVisibility(ESlateVisibility::Collapsed);
+		if (bUseMinAsConstant)
+		{
+			TextBlock_Min->SetVisibility(ESlateVisibility::Collapsed);
+			BSBox_Max->SetVisibility(ESlateVisibility::Collapsed);
+		}
+		else
+		{
+			TextBlock_Max->SetVisibility(ESlateVisibility::Collapsed);
+			BSBox_Min->SetVisibility(ESlateVisibility::Collapsed);
+		}
 	}
 	else
 	{
-		TextBlock_ConstantOrMin->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		TextBlock_ConstantOrMin->SetText(MinText);
+		TextBlock_Min->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		TextBlock_Min->SetText(MinText);
 		BSBox_Max->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		TextBlock_Max->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		TextBlock_Max->SetText(MaxText);
+		BSBox_Min->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	}
 }
 
-void UConstantMinMaxMenuOptionWidget::OnSliderChanged_ConstantOrMin(const float Value)
+void UConstantMinMaxMenuOptionWidget::OnSliderChanged_Min(const float Value)
 {
-	const float ClampedValue = IBSWidgetInterface::OnSliderChanged(Value, EditableTextBox_ConstantOrMin, GridSnapSize);
-	OnMinMaxMenuOptionChanged.Broadcast(this, CheckBox->IsChecked(), ClampedValue, GetMaxSliderValue());
+	const float ClampedValue = IBSWidgetInterface::OnSliderChanged(Value, EditableTextBox_Min, GridSnapSize);
+	if (IsInConstantMode())
+	{
+		if (bUseMinAsConstant)
+		{
+			OnMinMaxMenuOptionChanged.Broadcast(this, true, ClampedValue, ClampedValue);
+		}
+	}
+	else
+	{
+		OnMinMaxMenuOptionChanged.Broadcast(this, false, ClampedValue, GetMaxSliderValue(true));
+	}
 }
 
 void UConstantMinMaxMenuOptionWidget::OnSliderChanged_Max(const float Value)
 {
 	const float ClampedValue = IBSWidgetInterface::OnSliderChanged(Value, EditableTextBox_Max, GridSnapSize);
-	OnMinMaxMenuOptionChanged.Broadcast(this, CheckBox->IsChecked(), GetMinOrConstantSliderValue(), ClampedValue);
+	if (IsInConstantMode())
+	{
+		if (!bUseMinAsConstant)
+		{
+			OnMinMaxMenuOptionChanged.Broadcast(this, true, ClampedValue, ClampedValue);
+		}
+	}
+	else
+	{
+		OnMinMaxMenuOptionChanged.Broadcast(this, false, GetMinSliderValue(true), ClampedValue);
+	}
 }
 
-void UConstantMinMaxMenuOptionWidget::OnTextCommitted_ConstantOrMin(const FText& Text, ETextCommit::Type CommitType)
+void UConstantMinMaxMenuOptionWidget::OnTextCommitted_Min(const FText& Text, ETextCommit::Type CommitType)
 {
-	const float ClampedValue = IBSWidgetInterface::OnEditableTextBoxChanged(Text, EditableTextBox_ConstantOrMin,
-		Slider_ConstantOrMin, GridSnapSize, Slider_ConstantOrMin->GetMinValue(), Slider_ConstantOrMin->GetMaxValue());
-	OnMinMaxMenuOptionChanged.Broadcast(this, CheckBox->IsChecked(), ClampedValue, GetMaxSliderValue());
+	const float ClampedValue = IBSWidgetInterface::OnEditableTextBoxChanged(Text, EditableTextBox_Min,
+		Slider_Min, GridSnapSize, Slider_Min->GetMinValue(), Slider_Min->GetMaxValue());
+	if (IsInConstantMode())
+	{
+		if (bUseMinAsConstant)
+		{
+			OnMinMaxMenuOptionChanged.Broadcast(this, true, ClampedValue, ClampedValue);
+		}
+	}
+	else
+	{
+		OnMinMaxMenuOptionChanged.Broadcast(this, false, ClampedValue, GetMaxSliderValue(true));
+	}
 }
 
 void UConstantMinMaxMenuOptionWidget::OnTextCommitted_Max(const FText& Text, ETextCommit::Type CommitType)
 {
 	const float ClampedValue = IBSWidgetInterface::OnEditableTextBoxChanged(Text, EditableTextBox_Max, Slider_Max,
 		GridSnapSize, Slider_Max->GetMinValue(), Slider_Max->GetMaxValue());
-	OnMinMaxMenuOptionChanged.Broadcast(this, CheckBox->IsChecked(), GetMinOrConstantSliderValue(), ClampedValue);
+	if (IsInConstantMode())
+	{
+		if (!bUseMinAsConstant)
+		{
+			OnMinMaxMenuOptionChanged.Broadcast(this, true, ClampedValue, ClampedValue);
+		}
+	}
+	else
+	{
+		OnMinMaxMenuOptionChanged.Broadcast(this, false, GetMinSliderValue(true), ClampedValue);
+	}
 }
 
 void UConstantMinMaxMenuOptionWidget::OnCheckStateChanged_CheckBox(const bool bChecked)
 {
 	UpdateMinMaxDependencies(bChecked);
-	OnMinMaxMenuOptionChanged.Broadcast(this, bChecked, GetMinOrConstantSliderValue(), GetMaxSliderValue());
+	OnMinMaxMenuOptionChanged.Broadcast(this, bChecked, GetMinSliderValue(true), GetMaxSliderValue(true));
 }

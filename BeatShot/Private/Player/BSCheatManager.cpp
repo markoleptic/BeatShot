@@ -98,6 +98,11 @@ namespace BeatShotCVars
 	    TEXT("Y: Green\n")
 	    TEXT("Z: Blue\n"));
 
+	
+	static TAutoConsoleVariable CVarShowDebug_MovingTargetDirectionModeAny(TEXT("bs_showdebug.movingany"),
+		0,
+		TEXT("Draw debug boxes showing sectors for moving target direction mode any.\n"));
+
 
 	static TAutoConsoleVariable CVarShowDebug_AllSpawnAreas(TEXT("bs_showdebug.allspawnareas"),
 		0,
@@ -178,6 +183,7 @@ void UBSCheatManager::InitCheatManager()
 	BIND_BS_CVAR(CVarShowDebug_DirectionalBoxes, this, &UBSCheatManager::ShowDebug_DirectionalBoxes);
 	BIND_BS_CVAR(CVarShowDebug_FrontSpotLight, this, &UBSCheatManager::ShowDebug_SpotLightFront);
 	BIND_BS_CVAR(CVarSetTimeOfDay, this, &UBSCheatManager::SetTimeOfDay);
+	BIND_BS_CVAR(CVarShowDebug_MovingTargetDirectionModeAny, this, &UBSCheatManager::ShowDebug_MovingTargetDirectionModeAny);
 	
 	BIND_BS_COMP_CVAR(CVarShowDebug_AllSpawnAreas, this, SetComponentDebugValue, &USpawnAreaManagerComponent::bShowDebug_AllSpawnAreas);
 	BIND_BS_COMP_CVAR(CVarShowDebug_ValidInvalid, this, SetComponentDebugValue, &USpawnAreaManagerComponent::bShowDebug_ValidInvalidSpawnAreas);
@@ -476,6 +482,17 @@ void UBSCheatManager::ShowDebug_SpotLightFront(IConsoleVariable* Variable)
 	{
 		GI->GetTimeOfDayManager()->SetSpotLightFrontEnabledState(Variable->GetBool());
 	}
+}
+
+void UBSCheatManager::ShowDebug_MovingTargetDirectionModeAny(IConsoleVariable* Variable)
+{
+	const ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (!GameMode) return;
+
+	ATargetManager* TargetManager = GameMode->GetTargetManager();
+	if (!TargetManager) return;
+
+	TargetManager->bShowDebug_AnyMovingTargetDirectionMode = Variable->GetBool();
 }
 
 void UBSCheatManager::SetTimeOfDay(IConsoleVariable* Variable)

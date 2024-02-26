@@ -11,17 +11,18 @@ void UCGMWC_TargetScaling::NativeConstruct()
 {
 	Super::NativeConstruct();
 	
-	SliderTextBoxOption_DeactivatedTargetScaleMultiplier->SetValues(MinValue_ConsecutiveChargeScaleMultiplier,
-		MaxValue_ConsecutiveChargeScaleMultiplier, SnapSize_ConsecutiveChargeScaleMultiplier);
-	SliderTextBoxOption_StartThreshold->SetValues(MinValue_DynamicStartThreshold, MaxValue_DynamicStartThreshold,
-	SnapSize_DynamicStartThreshold);
-	SliderTextBoxOption_EndThreshold->SetValues(MinValue_DynamicEndThreshold, MaxValue_DynamicEndThreshold,
-		SnapSize_DynamicEndThreshold);
-	SliderTextBoxOption_DecrementAmount->SetValues(MinValue_DynamicDecrementAmount, MaxValue_DynamicDecrementAmount,
-		SnapSize_DynamicDecrementAmount);
-	SliderTextBoxOption_LifetimeTargetScaleMultiplier->SetValues(MinValue_TargetScale, MaxValue_TargetScale,
-		SnapSize_TargetScale);
-	MenuOption_TargetScale->SetValues(MinValue_TargetScale, MaxValue_TargetScale, SnapSize_TargetScale);
+	SliderTextBoxOption_DeactivatedTargetScaleMultiplier->SetValues(Constants::MinValue_ConsecutiveChargeScaleMultiplier,
+		Constants::MaxValue_ConsecutiveChargeScaleMultiplier, Constants::SnapSize_ConsecutiveChargeScaleMultiplier);
+	SliderTextBoxOption_StartThreshold->SetValues(Constants::MinValue_DynamicStartThreshold,
+		Constants::MaxValue_DynamicStartThreshold, Constants::SnapSize_DynamicStartThreshold);
+	SliderTextBoxOption_EndThreshold->SetValues(Constants::MinValue_DynamicEndThreshold,
+		Constants::MaxValue_DynamicEndThreshold, Constants::SnapSize_DynamicEndThreshold);
+	SliderTextBoxOption_DecrementAmount->SetValues(Constants::MinValue_DynamicDecrementAmount,
+		Constants::MaxValue_DynamicDecrementAmount, Constants::SnapSize_DynamicDecrementAmount);
+	SliderTextBoxOption_LifetimeTargetScaleMultiplier->SetValues(Constants::MinValue_TargetScale,
+		Constants::MaxValue_TargetScale, Constants::SnapSize_TargetScale);
+	MenuOption_TargetScale->SetValues(Constants::MinValue_TargetScale, Constants::MaxValue_TargetScale,
+		Constants::SnapSize_TargetScale);
 	
 	SliderTextBoxOption_DeactivatedTargetScaleMultiplier->OnSliderTextBoxValueChanged.AddUObject(this,
 		&ThisClass::OnSliderTextBoxValueChanged);
@@ -96,11 +97,11 @@ void UCGMWC_TargetScaling::SetupWarningTooltipCallbacks()
 {
 	MenuOption_TargetScale->AddDynamicWarningTooltipData(
 	FTooltipData("Invalid_Grid_MaxSpawnedTargetScale", ETooltipImageType::Warning),
-	"Invalid_Grid_MaxSpawnedTargetScale_Fallback", MinValue_TargetScale, 2).BindLambda([this]()
+	"Invalid_Grid_MaxSpawnedTargetScale_Fallback", Constants::MinValue_TargetScale, 2).BindLambda([this]()
 	{
 		const float Max = FMath::Max(BSConfig->TargetConfig.MaxSpawnedTargetScale,
 			BSConfig->TargetConfig.MinSpawnedTargetScale);
-		return FDynamicTooltipState(Max, GetMaxAllowedTargetScale(), !MenuOption_TargetScale->GetIsChecked());
+		return FDynamicTooltipState(Max, GetMaxAllowedTargetScale(), !MenuOption_TargetScale->IsInConstantMode());
 	});
 }
 
@@ -149,11 +150,11 @@ void UCGMWC_TargetScaling::UpdateDependentOptions_ConsecutiveTargetScalePolicy(
 
 	if (InConsecutiveTargetScalePolicy == EConsecutiveTargetScalePolicy::Static)
 	{
-		MenuOption_TargetScale->SetIsChecked(true);
+		MenuOption_TargetScale->SetConstantMode(true);
 	}
 	else
 	{
-		MenuOption_TargetScale->SetIsChecked(false);
+		MenuOption_TargetScale->SetConstantMode(false);
 		LastSelectedConsecutiveTargetScalePolicy = InConsecutiveTargetScalePolicy;
 	}
 }
@@ -233,13 +234,13 @@ void UCGMWC_TargetScaling::OnSelectionChanged_ConsecutiveTargetScalePolicy(const
 
 	if (BSConfig->TargetConfig.ConsecutiveTargetScalePolicy == EConsecutiveTargetScalePolicy::Static)
 	{
-		BSConfig->TargetConfig.MinSpawnedTargetScale = MenuOption_TargetScale->GetMinOrConstantSliderValue();
+		BSConfig->TargetConfig.MinSpawnedTargetScale = MenuOption_TargetScale->GetMinSliderValue(true);
 		BSConfig->TargetConfig.MaxSpawnedTargetScale = BSConfig->TargetConfig.MinSpawnedTargetScale;
 	}
 	else
 	{
-		BSConfig->TargetConfig.MinSpawnedTargetScale = MenuOption_TargetScale->GetMinOrConstantSliderValue();
-		BSConfig->TargetConfig.MaxSpawnedTargetScale = MenuOption_TargetScale->GetMaxSliderValue();
+		BSConfig->TargetConfig.MinSpawnedTargetScale = MenuOption_TargetScale->GetMinSliderValue(true);
+		BSConfig->TargetConfig.MaxSpawnedTargetScale = MenuOption_TargetScale->GetMaxSliderValue(true);
 	}
 	UpdateBrushColors();
 	UpdateAllOptionsValid();

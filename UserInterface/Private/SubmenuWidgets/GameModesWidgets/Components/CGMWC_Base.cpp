@@ -165,16 +165,16 @@ bool UCGMWC_Base::UpdateValueIfDifferent(const UEditableTextBoxOptionWidget* Wid
 bool UCGMWC_Base::UpdateValuesIfDifferent(const UConstantMinMaxMenuOptionWidget* Widget, const bool bIsChecked,
 	const float Min, const float Max)
 {
-	bool bDifferent = Widget->GetIsChecked() != bIsChecked;
-	if (bDifferent) Widget->SetIsChecked(bIsChecked);
+	bool bDifferent = Widget->IsInConstantMode() != bIsChecked;
+	if (bDifferent) Widget->SetConstantMode(bIsChecked);
 
-	const bool bMinDifferent = !FMath::IsNearlyEqual(Widget->GetMinOrConstantSliderValue(), Min) || !
-		FMath::IsNearlyEqual(Widget->GetMinOrConstantEditableTextBoxValue(), Min);
-	if (bMinDifferent) Widget->SetValue_ConstantOrMin(Min);
+	const bool bMinDifferent = !FMath::IsNearlyEqual(Widget->GetMinSliderValue(false), Min) || !
+		FMath::IsNearlyEqual(Widget->GetMinEditableTextBoxValue(false), Min);
+	if (bMinDifferent) Widget->SetValue_Min(Min);
 	bDifferent = bMinDifferent || bDifferent;
 
-	const bool bMaxDifferent = !FMath::IsNearlyEqual(Widget->GetMaxSliderValue(), Max) || !FMath::IsNearlyEqual(
-		Widget->GetMaxEditableTextBoxValue(), Max);
+	const bool bMaxDifferent = !FMath::IsNearlyEqual(Widget->GetMaxSliderValue(false), Max) || !FMath::IsNearlyEqual(
+		Widget->GetMaxEditableTextBoxValue(false), Max);
 	if (bMaxDifferent) Widget->SetValue_Max(Max);
 	bDifferent = bMaxDifferent || bDifferent;
 
@@ -213,7 +213,7 @@ bool UCGMWC_Base::UpdateValuesIfDifferent(const USliderTextBoxCheckBoxOptionWidg
 bool UCGMWC_Base::UpdateWarningTooltips()
 {
 	bool bAllClean = true;
-	for (const TObjectPtr<UMenuOptionWidget> Widget : MenuOptionWidgets)
+	for (const TWeakObjectPtr<UMenuOptionWidget>& Widget : MenuOptionWidgets)
 	{
 		Widget->UpdateAllWarningTooltips();
 		TArray<FTooltipData>& TooltipData = Widget->GetTooltipWarningData();
@@ -243,7 +243,7 @@ void UCGMWC_Base::UpdateCustomGameModeCategoryInfo()
 {
 	int32 NumWarnings = 0;
 	int32 NumCautions = 0;
-	for (const TObjectPtr<UMenuOptionWidget> Widget : MenuOptionWidgets)
+	for (const TWeakObjectPtr<UMenuOptionWidget>& Widget : MenuOptionWidgets)
 	{
 		NumWarnings += Widget->GetNumberOfWarnings();
 		NumCautions += Widget->GetNumberOfCautions();
@@ -264,6 +264,24 @@ void UCGMWC_Base::SetMenuOptionEnabledStateAndAddTooltip(UMenuOptionWidget* Widg
 	else
 	{
 		Widget->SetToolTip(nullptr);
+	}
+}
+
+void UCGMWC_Base::SetSubMenuOptionEnabledStateAndAddTooltip(UMenuOptionWidget* Widget,
+	const TSubclassOf<UWidget> SubWidgetClass, const EMenuOptionEnabledState State, const FString& Key)
+{
+	UWidget* SubWidget = Widget->SetSubMenuOptionEnabledState(SubWidgetClass, State);
+	if (!SubWidget) return;
+	
+	if (State == EMenuOptionEnabledState::DependentMissing && !Key.IsEmpty())
+	{
+		UTooltipWidget* TooltipWidget = ConstructTooltipWidget();
+		TooltipWidget->TooltipDescriptor->SetText(GetTooltipTextFromKey(Key));
+		SubWidget->SetToolTip(TooltipWidget);
+	}
+	else
+	{
+		SubWidget->SetToolTip(nullptr);
 	}
 }
 

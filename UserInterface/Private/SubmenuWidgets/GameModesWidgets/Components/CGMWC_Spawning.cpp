@@ -13,12 +13,12 @@ void UCGMWC_Spawning::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	SliderTextBoxOption_MaxNumTargetsAtOnce->SetValues(MinValue_MaxNumTargetsAtOnce, MaxValue_MaxNumTargetsAtOnce,
-		SnapSize_MaxNumTargetsAtOnce);
-	SliderTextBoxOption_NumUpfrontTargetsToSpawn->SetValues(MinValue_NumUpfrontTargetsToSpawn,
-		MaxValue_NumUpfrontTargetsToSpawn, SnapSize_NumUpfrontTargetsToSpawn);
-	SliderTextBoxOption_NumRuntimeTargetsToSpawn->SetValues(MinValue_NumRuntimeTargetsToSpawn,
-		MaxValue_NumRuntimeTargetsToSpawn, SnapSize_NumRuntimeTargetsToSpawn);
+	SliderTextBoxOption_MaxNumTargetsAtOnce->SetValues(Constants::MinValue_MaxNumTargetsAtOnce,
+		Constants::MaxValue_MaxNumTargetsAtOnce, Constants::SnapSize_MaxNumTargetsAtOnce);
+	SliderTextBoxOption_NumUpfrontTargetsToSpawn->SetValues(Constants::MinValue_NumUpfrontTargetsToSpawn,
+		Constants::MaxValue_NumUpfrontTargetsToSpawn, Constants::SnapSize_NumUpfrontTargetsToSpawn);
+	SliderTextBoxOption_NumRuntimeTargetsToSpawn->SetValues(Constants::MinValue_NumRuntimeTargetsToSpawn,
+		Constants::MaxValue_NumRuntimeTargetsToSpawn, Constants::SnapSize_NumRuntimeTargetsToSpawn);
 
 	SliderTextBoxOption_MaxNumTargetsAtOnce->OnSliderTextBoxValueChanged.AddUObject(this,
 		&ThisClass::OnSliderTextBoxValueChanged);
@@ -99,8 +99,7 @@ void UCGMWC_Spawning::UpdateOptionsFromConfig()
 	UpdateValueIfDifferent(CheckBoxOption_SpawnEveryOtherTargetInCenter,
 		BSConfig->TargetConfig.bSpawnEveryOtherTargetInCenter);
 
-	UpdateDependentOptions_TargetSpawningPolicy(BSConfig->TargetConfig.TargetSpawningPolicy,
-		BSConfig->TargetConfig.bUseBatchSpawning, BSConfig->TargetConfig.bAllowSpawnWithoutActivation);
+	UpdateDependentOptions_TargetSpawningPolicy(BSConfig->TargetConfig.TargetSpawningPolicy);
 
 	UpdateBrushColors();
 }
@@ -135,20 +134,23 @@ void UCGMWC_Spawning::SetupWarningTooltipCallbacks()
 	});
 }
 
-void UCGMWC_Spawning::UpdateDependentOptions_TargetSpawningPolicy(const ETargetSpawningPolicy& InTargetSpawningPolicy,
-	const bool bUseBatchSpawning, const bool bAllowSpawnWithoutActivation)
+void UCGMWC_Spawning::UpdateDependentOptions_TargetSpawningPolicy(const ETargetSpawningPolicy& InTargetSpawningPolicy)
 {
 	if (InTargetSpawningPolicy == ETargetSpawningPolicy::RuntimeOnly)
 	{
-		CheckBoxOption_BatchSpawning->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		CheckBoxOption_SpawnAtOriginWheneverPossible->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		CheckBoxOption_SpawnEveryOtherTargetInCenter->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		SetMenuOptionEnabledStateAndAddTooltip(CheckBoxOption_BatchSpawning, EMenuOptionEnabledState::Enabled);
+		SetMenuOptionEnabledStateAndAddTooltip(CheckBoxOption_SpawnAtOriginWheneverPossible,
+			EMenuOptionEnabledState::Enabled);
+		SetMenuOptionEnabledStateAndAddTooltip(CheckBoxOption_SpawnEveryOtherTargetInCenter,
+			EMenuOptionEnabledState::Enabled);
+
 		SliderTextBoxOption_NumUpfrontTargetsToSpawn->SetVisibility(ESlateVisibility::Collapsed);
 		SliderTextBoxOption_NumRuntimeTargetsToSpawn->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
 		if (BSConfig->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::Grid)
 		{
-			ComboBoxOption_RuntimeTargetSpawningLocationSelectionMode->ComboBox->SetIsEnabled(true);
+			SetMenuOptionEnabledStateAndAddTooltip(ComboBoxOption_RuntimeTargetSpawningLocationSelectionMode,
+				EMenuOptionEnabledState::Enabled);
 		}
 		else
 		{
@@ -156,11 +158,12 @@ void UCGMWC_Spawning::UpdateDependentOptions_TargetSpawningPolicy(const ETargetS
 				ERuntimeTargetSpawningLocationSelectionMode::Random;
 			ComboBoxOption_RuntimeTargetSpawningLocationSelectionMode->ComboBox->SetSelectedOption(
 				GetStringFromEnum_FromTagMap(BSConfig->TargetConfig.RuntimeTargetSpawningLocationSelectionMode));
-			ComboBoxOption_RuntimeTargetSpawningLocationSelectionMode->ComboBox->SetIsEnabled(false);
+			SetMenuOptionEnabledStateAndAddTooltip(ComboBoxOption_RuntimeTargetSpawningLocationSelectionMode,
+				EMenuOptionEnabledState::DependentMissing, "DM_RuntimeTargetSpawningLocationSelectionMode_NonGrid");
 		}
 
-		ComboBoxOption_RuntimeTargetSpawningLocationSelectionMode->
-			SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		SetMenuOptionEnabledStateAndAddTooltip(SliderTextBoxOption_MaxNumTargetsAtOnce,
+			EMenuOptionEnabledState::Enabled);
 	}
 	else if (InTargetSpawningPolicy == ETargetSpawningPolicy::UpfrontOnly)
 	{
@@ -171,26 +174,36 @@ void UCGMWC_Spawning::UpdateDependentOptions_TargetSpawningPolicy(const ETargetS
 		UpdateValueIfDifferent(CheckBoxOption_BatchSpawning, false);
 		UpdateValueIfDifferent(CheckBoxOption_SpawnAtOriginWheneverPossible, false);
 		UpdateValueIfDifferent(CheckBoxOption_SpawnEveryOtherTargetInCenter, false);
+		
+		SetMenuOptionEnabledStateAndAddTooltip(CheckBoxOption_BatchSpawning, EMenuOptionEnabledState::DependentMissing,
+			"DM_RuntimeTargetSpawningExclusive");
+		SetMenuOptionEnabledStateAndAddTooltip(CheckBoxOption_SpawnAtOriginWheneverPossible,
+			EMenuOptionEnabledState::DependentMissing, "DM_RuntimeTargetSpawningExclusive");
+		SetMenuOptionEnabledStateAndAddTooltip(CheckBoxOption_SpawnEveryOtherTargetInCenter,
+			EMenuOptionEnabledState::DependentMissing, "DM_RuntimeTargetSpawningExclusive");
 
-		CheckBoxOption_BatchSpawning->SetVisibility(ESlateVisibility::Collapsed);
-		CheckBoxOption_SpawnAtOriginWheneverPossible->SetVisibility(ESlateVisibility::Collapsed);
-		CheckBoxOption_SpawnEveryOtherTargetInCenter->SetVisibility(ESlateVisibility::Collapsed);
 		SliderTextBoxOption_NumUpfrontTargetsToSpawn->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		SliderTextBoxOption_NumRuntimeTargetsToSpawn->SetVisibility(ESlateVisibility::Collapsed);
 
-		ComboBoxOption_RuntimeTargetSpawningLocationSelectionMode->SetVisibility(ESlateVisibility::Collapsed);
+		SetMenuOptionEnabledStateAndAddTooltip(ComboBoxOption_RuntimeTargetSpawningLocationSelectionMode,
+			EMenuOptionEnabledState::DependentMissing, "DM_RuntimeTargetSpawningExclusive");
 
 		if (BSConfig->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::Grid)
 		{
-			SliderTextBoxOption_NumUpfrontTargetsToSpawn->SetSliderAndTextBoxEnabledStates(false);
-			SliderTextBoxOption_NumUpfrontTargetsToSpawn->SetValue(BSConfig->GridConfig.NumHorizontalGridTargets * BSConfig->GridConfig.NumVerticalGridTargets);
-			SliderTextBoxOption_MaxNumTargetsAtOnce->SetSliderAndTextBoxEnabledStates(false);
+			SliderTextBoxOption_NumUpfrontTargetsToSpawn->SetValue(BSConfig->GridConfig.NumHorizontalGridTargets *
+				BSConfig->GridConfig.NumVerticalGridTargets);
+			SetMenuOptionEnabledStateAndAddTooltip(SliderTextBoxOption_NumUpfrontTargetsToSpawn,
+				EMenuOptionEnabledState::DependentMissing, "DM_NumUpfrontTargetsToSpawn_Grid");
 			SliderTextBoxOption_MaxNumTargetsAtOnce->SetValue(-1.f);
+			SetMenuOptionEnabledStateAndAddTooltip(SliderTextBoxOption_MaxNumTargetsAtOnce,
+				EMenuOptionEnabledState::DependentMissing, "DM_MaxNumTargetsAtOnce_Upfront_Grid");
 		}
 		else
 		{
-			SliderTextBoxOption_NumUpfrontTargetsToSpawn->SetSliderAndTextBoxEnabledStates(true);
-			SliderTextBoxOption_MaxNumTargetsAtOnce->SetSliderAndTextBoxEnabledStates(true);
+			SetMenuOptionEnabledStateAndAddTooltip(SliderTextBoxOption_NumUpfrontTargetsToSpawn,
+				EMenuOptionEnabledState::Enabled);
+			SetMenuOptionEnabledStateAndAddTooltip(SliderTextBoxOption_MaxNumTargetsAtOnce,
+				EMenuOptionEnabledState::Enabled);
 		}
 	}
 }
@@ -256,8 +269,7 @@ void UCGMWC_Spawning::OnSelectionChanged_TargetSpawningPolicy(const TArray<FStri
 
 	BSConfig->TargetConfig.TargetSpawningPolicy = GetEnumFromString_FromTagMap<ETargetSpawningPolicy>(Selected[0]);
 
-	UpdateDependentOptions_TargetSpawningPolicy(BSConfig->TargetConfig.TargetSpawningPolicy,
-		BSConfig->TargetConfig.bUseBatchSpawning, BSConfig->TargetConfig.bSpawnEveryOtherTargetInCenter);
+	UpdateDependentOptions_TargetSpawningPolicy(BSConfig->TargetConfig.TargetSpawningPolicy);
 	UpdateBrushColors();
 	UpdateAllOptionsValid();
 }

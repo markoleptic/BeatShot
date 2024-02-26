@@ -495,10 +495,8 @@ void ATarget::DeactivateTarget()
 
 void ATarget::CheckForHealthReset(const bool bOutOfHealth)
 {
-	const bool bPersist = Config.TargetDestructionConditions.Contains(ETargetDestructionCondition::Persistent);
 	const bool bUnlimitedHealth = Config.MaxHealth <= 0.f;
-
-	if ((bPersist || bUnlimitedHealth) && bOutOfHealth) ResetHealth();
+	if (bUnlimitedHealth && bOutOfHealth) ResetHealth();
 }
 
 /* ------------------------ */

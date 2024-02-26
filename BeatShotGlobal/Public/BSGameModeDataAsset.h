@@ -274,7 +274,7 @@ UENUM(BlueprintType)
 enum class ETargetDeactivationCondition : uint8
 {
 	None UMETA(DisplayName="None"),
-	/** Targets are never deactivated, even if their health reaches zero */
+	/** DEPRECATED */
 	Persistent UMETA(DisplayName="Persistent"),
 	/** Target is deactivated when it receives any damage from the player */
 	OnAnyExternalDamageTaken UMETA(DisplayName="On Any External Damage Taken"),
@@ -286,7 +286,7 @@ enum class ETargetDeactivationCondition : uint8
 	OnSpecificHealthLost UMETA(DisplayName="On Specific Health Lost"),
 };
 
-ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDeactivationCondition, ETargetDeactivationCondition::Persistent,
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDeactivationCondition, ETargetDeactivationCondition::OnAnyExternalDamageTaken,
 	ETargetDeactivationCondition::OnSpecificHealthLost);
 
 
@@ -338,7 +338,7 @@ UENUM(BlueprintType)
 enum class ETargetDestructionCondition : uint8
 {
 	None UMETA(DisplayName="None"),
-	/** Targets are never destroyed, even if their health reaches zero. Can still be reactivated/deactivated */
+	/** DEPRECATED */
 	Persistent UMETA(DisplayName="Persistent"),
 	/** Target is deactivated after its damageable window closes */
 	OnExpiration UMETA(DisplayName="On Expiration"),
@@ -349,7 +349,7 @@ enum class ETargetDestructionCondition : uint8
 	/** Target is destroyed when any of its deactivation conditions are met. This essentially makes any deactivation condition a destruction condition */
 	OnDeactivation UMETA(DisplayName="On Deactivation")};
 
-ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDestructionCondition, ETargetDestructionCondition::Persistent,
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDestructionCondition, ETargetDestructionCondition::OnExpiration,
 	ETargetDestructionCondition::OnDeactivation);
 
 
@@ -484,10 +484,14 @@ struct FBS_DefiningConfig
 	{
 		return HashCombine(GetTypeHash(Config.GameModeType), HashCombine(GetTypeHash(Config.BaseGameMode),
 			HashCombine(GetTypeHash(Config.CustomGameModeName), GetTypeHash(Config.Difficulty))));
-		//return FCrc::MemCrc32(&Config, sizeof(FBS_DefiningConfig));
 	}
 };
 
+template<typename T>
+bool CheckEquality(const T& CurrentValue, const T& NewValue)
+{
+	return CurrentValue == NewValue;
+}
 USTRUCT(BlueprintType)
 struct FBS_AIConfig
 {
@@ -557,6 +561,7 @@ struct FBS_AIConfig
 		return true;
 	}
 };
+
 
 USTRUCT(BlueprintType)
 struct FBS_GridConfig
@@ -726,11 +731,6 @@ struct FBS_Dynamic_SpawnArea : public FBS_Dynamic
 {
 	GENERATED_BODY()
 
-	/** Which direction(s) to change the SpawnArea/BoxBounds. If a direction is not included,
-	 *  it will always stay at StartBounds */
-	UPROPERTY(EditDefaultsOnly)
-	TArray<EDynamicBoundsScalingPolicy> DynamicBoundsScalingPolicy;
-
 	/** The size of the SpawnArea/BoxBounds when zero consecutively destroyed targets.
 	 *  X is forward, Y is horizontal, Z is vertical */
 	UPROPERTY(EditDefaultsOnly)
@@ -748,9 +748,6 @@ struct FBS_Dynamic_SpawnArea : public FBS_Dynamic
 		EndThreshold = 100;
 		bIsCubicInterpolation = false;
 		DecrementAmount = 5;
-		DynamicBoundsScalingPolicy = TArray({
-			EDynamicBoundsScalingPolicy::Horizontal, EDynamicBoundsScalingPolicy::Vertical
-		});
 		StartBounds = FVector(0, 200.f, 200.f);
 	}
 
@@ -769,10 +766,6 @@ struct FBS_Dynamic_SpawnArea : public FBS_Dynamic
 			return false;
 		}
 		if (DecrementAmount != Other.DecrementAmount)
-		{
-			return false;
-		}
-		if (DynamicBoundsScalingPolicy != Other.DynamicBoundsScalingPolicy)
 		{
 			return false;
 		}
@@ -955,7 +948,7 @@ struct FBS_TargetConfig
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
 	float TargetSpawnCD;
 
-	/** The size of the target spawn BoundingBox. Dimensions are half of the the total length/width */
+	/** The size of the target spawn BoundingBox */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "SpawnArea")
 	FVector BoxBounds;
 
@@ -1570,3 +1563,33 @@ struct FGameModeTransitionState
 	/** The game mode properties, only used if Start or Restart */
 	FBSConfig BSConfig;
 };
+
+/*for (TFieldIterator<FStructProperty> It(FBSConfig::StaticStruct(), EFieldIterationFlags::None); It; ++It)
+{
+	void *Buh;
+	(*It)->GetValue_InContainer(BSConfig.Get(), &Buh);
+}*/
+
+/*template <typename VariableType, typename ...StructType>
+struct TStructMemberPointer
+{
+	using MemberType = VariableType;
+	using FirstStruct = std::tuple_element_t<0, std::tuple<StructType...>>;
+	using NestedType = std::conditional_t<(sizeof...(StructType) > 1), TStructMemberPointer, MemberType>;
+
+	NestedType FirstStruct::*Member;
+};
+	
+template <typename ...Member>
+void UpdateState(FBSConfig* Config, Member... Members)
+{
+	(UpdateStateHelper(Config, Members), ...);
+}
+
+template <typename VariableType, typename... StructTypes>
+void UpdateStateHelper(FBSConfig* Config, TStructMemberPointer<VariableType, StructTypes...> Member) {
+	Config->*(Member.Member);
+}
+
+UpdateState(BSConfig.Get(), TStructMemberPointer<FVector, FBS_TargetConfig>{&FBS_TargetConfig::BoxBounds});
+*/

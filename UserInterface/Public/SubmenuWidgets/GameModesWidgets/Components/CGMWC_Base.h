@@ -86,16 +86,31 @@ public:
 
 protected:
 
-	/** Adds a GameModeCategoryTagWidget for each matching GameplayTag on the Menu Option widget*/
+	/** Adds a GameModeCategoryTagWidget for each matching GameplayTag on the Menu Option widget */
 	void AddGameModeCategoryTagWidgets(UMenuOptionWidget* MenuOptionWidget);
 
+	/** Updates the slider and editable text box values if different from Value */
 	static bool UpdateValueIfDifferent(const USliderTextBoxOptionWidget* Widget, const float Value);
+
+	/** Updates the combo box selection if NewOption is different from existing */
 	static bool UpdateValueIfDifferent(const UComboBoxOptionWidget* Widget, const FString& NewOption);
+
+	/** Updates the combo box selection if NewOptions is different from existing */
 	static bool UpdateValueIfDifferent(const UComboBoxOptionWidget* Widget, const TArray<FString>& NewOptions);
+
+	/** Updates the check box checked state if bIsChecked is different from existing */
 	static bool UpdateValueIfDifferent(const UCheckBoxOptionWidget* Widget, const bool bIsChecked);
+
+	/** Updates the editable text box if NewText is different from existing */
 	static bool UpdateValueIfDifferent(const UEditableTextBoxOptionWidget* Widget, const FText& NewText);
+
+	/** Updates the Min and Max slider and editable text box values if different from Min and Max. Also updates the
+	 *  checked state */
 	static bool UpdateValuesIfDifferent(const UConstantMinMaxMenuOptionWidget* Widget, const bool bIsChecked,
 		const float Min, const float Max);
+
+	/** Updates the slider and editable text box values if different from Value,
+	 *  but only if the check box is unchecked */
 	static bool UpdateValuesIfDifferent(const USliderTextBoxCheckBoxOptionWidget* Widget, const bool bIsChecked,
 		const float Value);
 
@@ -104,7 +119,8 @@ protected:
 	 *  Calls UpdateCustomGameModeCategoryInfo when finished. Returns false if any tooltips required an update */
 	bool UpdateWarningTooltips();
 
-	/** Iterates through all MenuOptionWidgets to sum the total of Warning and Caution tooltips visible. Updates CustomGameModeCategoryInfo struct */
+	/** Iterates through all MenuOptionWidgets to sum the total of Warning and Caution tooltips visible.
+	 *  Updates CustomGameModeCategoryInfo struct */
 	void UpdateCustomGameModeCategoryInfo();
 
 	float GetMinRequiredHorizontalSpread() const;
@@ -116,14 +132,22 @@ protected:
 	float GetMaxAllowedVerticalSpacing() const;
 	float GetMaxAllowedTargetScale() const;
 
-	void SetMenuOptionEnabledStateAndAddTooltip(UMenuOptionWidget* Widget, const EMenuOptionEnabledState State, const FString& Key = FString());
+	/** Set's the widget's enabled state and adds a tooltip for the entire widget if a Key is provided,
+	 *  otherwise the tooltip will be cleared. */
+	void SetMenuOptionEnabledStateAndAddTooltip(UMenuOptionWidget* Widget, const EMenuOptionEnabledState State,
+		const FString& Key = FString());
+
+	/** Set's the sub widget's enabled state and adds a tooltip for just the sub widget if a Key is provided,
+	*   otherwise the tooltip will be cleared. */
+	void SetSubMenuOptionEnabledStateAndAddTooltip(UMenuOptionWidget* Widget, const TSubclassOf<UWidget> SubWidgetClass, const EMenuOptionEnabledState State,
+		const FString& Key = FString());
 
 	/** Shared pointer to the game mode config inside GameModesWidget */
 	TSharedPtr<FBSConfig> BSConfig;
 
 	/** Pointer to next widget in linked list. Used for CreatorView */
 	UPROPERTY()
-	TObjectPtr<UCGMWC_Base> Next;
+	TWeakObjectPtr<UCGMWC_Base> Next;
 
 	/** Whether or not Init has been called */
 	bool bIsInitialized = false;
@@ -135,7 +159,7 @@ protected:
 	FCustomGameModeCategoryInfo CustomGameModeCategoryInfo;
 
 	UPROPERTY()
-	TArray<TObjectPtr<UMenuOptionWidget>> MenuOptionWidgets;
+	TArray<TWeakObjectPtr<UMenuOptionWidget>> MenuOptionWidgets;
 
 	/** Whether or not to index this widget as part of the carousel */
 	UPROPERTY(EditAnywhere, Category="CustomGameModesWidgetComponent")
@@ -147,16 +171,19 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="CustomGameModesWidgetComponent")
 	TObjectPtr<UGameModeCategoryTagMap> GameModeCategoryTagMap;
 	
-	/** Returns the string display name of the enum, or empty string if not found */
+	/** Returns the string display name of the enum, or empty string if not found. Requires EnumTagMap  */
 	template <typename T>
 	FString GetStringFromEnum_FromTagMap(const T& InEnum);
 
+	/** Returns an array of string display names corresponding to the InEnumArray. Requires EnumTagMap  */
 	template <typename T>
 	TArray<FString> GetStringArrayFromEnumArray_FromTagMap(const TArray<T>& InEnumArray);
 
+	/** Returns the enum value based on the string display name. Requires EnumTagMap */
 	template <typename T>
 	T GetEnumFromString_FromTagMap(const FString& InString);
 
+	/** Returns an array of enum values based on the string display names. Requires EnumTagMap */
 	template <typename T>
 	TArray<T> GetEnumArrayFromStringArray_FromTagMap(const TArray<FString>& InStringArray);
 };
