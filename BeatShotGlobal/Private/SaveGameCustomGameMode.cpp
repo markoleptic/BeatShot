@@ -103,5 +103,10 @@ void USaveGameCustomGameMode::UpgradeCustomGameModeToVersion1(FBSConfig& InConfi
 	if (InConfig.TargetConfig.TargetDestructionConditions.Contains(ETargetDestructionCondition::Persistent_DEPRECATED))
 	{
 		InConfig.TargetConfig.TargetDestructionConditions.Remove(ETargetDestructionCondition::Persistent_DEPRECATED);
+		if (InConfig.TargetConfig.TargetDestructionConditions.IsEmpty())
+		{
+			InConfig.TargetConfig.TargetDestructionConditions.Add(ETargetDestructionCondition::OnHealthReachedZero);
+			InConfig.TargetConfig.MaxHealth = -1.f;
+		}
 	}
 }

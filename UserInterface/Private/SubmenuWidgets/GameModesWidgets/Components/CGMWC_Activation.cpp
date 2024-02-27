@@ -92,6 +92,8 @@ void UCGMWC_Activation::UpdateDependentOptions_TargetDistributionPolicy(const ET
 	switch (Policy)
 	{
 	case ETargetDistributionPolicy::Grid:
+		SetMenuOptionEnabledStateAndAddTooltip(ComboBoxOption_TargetActivationSelectionPolicy,
+			EMenuOptionEnabledState::Enabled);
 		ComboBoxOption_TargetActivationSelectionPolicy->ComboBox->SetIsEnabled(true);
 		break;
 	case ETargetDistributionPolicy::None:
@@ -101,7 +103,8 @@ void UCGMWC_Activation::UpdateDependentOptions_TargetDistributionPolicy(const ET
 		BSConfig->TargetConfig.TargetActivationSelectionPolicy = ETargetActivationSelectionPolicy::Random;
 		UpdateValueIfDifferent(ComboBoxOption_TargetActivationSelectionPolicy,
 			GetStringFromEnum_FromTagMap(BSConfig->TargetConfig.TargetActivationSelectionPolicy));
-		ComboBoxOption_TargetActivationSelectionPolicy->ComboBox->SetIsEnabled(false);
+		SetMenuOptionEnabledStateAndAddTooltip(ComboBoxOption_TargetActivationSelectionPolicy,
+			EMenuOptionEnabledState::DependentMissing, "DM_ActivationSelectionPolicy_NonGrid");
 		break;
 	}
 }

@@ -29,9 +29,6 @@ public:
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "SettingsMenuWidget", meta = (ExposeOnSpawn="true"))
 	bool bIsPauseMenuChild;
 
-	UPROPERTY(EditDefaultsOnly, Category = "SettingsMenuWidget")
-	TArray<FText> NavBarButtonText;
-
 	/** Broadcast to owning widget that user has clicked restart button */
 	FOnRestartButtonClicked OnRestartButtonClicked;
 

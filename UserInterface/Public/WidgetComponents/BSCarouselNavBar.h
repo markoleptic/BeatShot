@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "BSCarouselNavBar.generated.h"
 
+class UCarouselNavButtonStyle;
 class UButtonNotificationWidget;
 class UCommonWidgetCarousel;
 class UBSButton;
@@ -16,19 +17,11 @@ class USERINTERFACE_API UBSCarouselNavBar : public UWidget
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CarouselNavBar|Buttons")
-	TSubclassOf<UBSButton> ButtonWidgetType;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CarouselNavBar")
+	TSubclassOf<UCarouselNavButtonStyle> StyleClass;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CarouselNavBar|Buttons")
-	FMargin Padding_Button;
-	
-	/** The horizontal alignment of the button */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CarouselNavBar|Buttons")
-	TEnumAsByte<EHorizontalAlignment> HAlign_Button = HAlign_Fill;
-
-	/** The vertical alignment of the button */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CarouselNavBar|Buttons")
-	TEnumAsByte<EVerticalAlignment> VAlign_Button = VAlign_Fill;
+	UPROPERTY()
+	const UCarouselNavButtonStyle* Style;
 	
 	/**
 	 * Establishes the Widget Carousel instance that this Nav Bar should interact with
@@ -36,8 +29,6 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "CarouselNavBar")
 	void SetLinkedCarousel(UCommonWidgetCarousel* CommonCarousel);
-
-	void SetNavButtonText(const TArray<FText>& InButtonText);
 
 	void UpdateNotifications(const int32 Index, const int32 NumCautions, const int32 NumWarnings);
 
@@ -65,7 +56,4 @@ protected:
 
 	UPROPERTY()
 	TArray<TObjectPtr<UBSButton>> Buttons;
-	
-	UPROPERTY()
-	TArray<FText> ButtonText;
 };

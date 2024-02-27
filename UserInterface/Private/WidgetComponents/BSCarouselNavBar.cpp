@@ -2,8 +2,11 @@
 
 
 #include "WidgetComponents/BSCarouselNavBar.h"
+
+#include "BSWidgetInterface.h"
 #include "WidgetComponents/Buttons/BSButton.h"
 #include "CommonWidgetCarousel.h"
+#include "Styles/CarouselNavButtonStyle.h"
 #include "WidgetComponents/Buttons/NotificationButtonCombo.h"
 
 void UBSCarouselNavBar::SetLinkedCarousel(UCommonWidgetCarousel* CommonCarousel)
@@ -18,11 +21,6 @@ void UBSCarouselNavBar::SetLinkedCarousel(UCommonWidgetCarousel* CommonCarousel)
 	}
 
 	RebuildButtons();
-}
-
-void UBSCarouselNavBar::SetNavButtonText(const TArray<FText>& InButtonText)
-{
-	ButtonText = InButtonText;
 }
 
 void UBSCarouselNavBar::UpdateNotifications(const int32 Index, const int32 NumCautions, const int32 NumWarnings)
@@ -72,36 +70,47 @@ TSharedRef<SWidget> UBSCarouselNavBar::RebuildWidget()
 
 void UBSCarouselNavBar::RebuildButtons()
 {
-	if (!MyContainer || !LinkedCarousel || !ButtonWidgetType) return;
+	if (!MyContainer || !LinkedCarousel || !StyleClass) return;
+	if (!Style)
+	{
+		Style = IBSWidgetInterface::GetStyleCDO(StyleClass);
+	}
+	
+	if (!Style) return;
 
 	MyContainer->ClearChildren();
 	
 	const int32 NumPages = LinkedCarousel->GetChildrenCount();
-	const int32 LastPage = NumPages - 1;
-
+	const int32 NumButtonStyles = Style->ButtonStyles.Num();
+	
+	check(NumPages == NumButtonStyles);
 	if (NumPages <= 0) return;
 	
 	for (int32 CurPage = 0; CurPage < NumPages; CurPage++)
 	{
-		UBSButton* ButtonUserWidget = Cast<UBSButton>(CreateWidget(GetOwningPlayer(), ButtonWidgetType));
+		UBSButton* ButtonUserWidget = Cast<UBSButton>(CreateWidget(GetOwningPlayer(), Style->ButtonWidgetType));
 		if (!ButtonUserWidget) continue;
+		
+		auto [Text, Padding, HAlign, VAlign, bFillWidth, FillWidth] = Style->ButtonStyles[CurPage];
 
 		Buttons.Add(ButtonUserWidget);
 		TSharedRef<SWidget> ButtonSWidget = ButtonUserWidget->TakeWidget();
 		
-		if (ButtonText.IsValidIndex(CurPage))
-		{
-			ButtonUserWidget->SetButtonText(ButtonText[CurPage]);
-		}
+		ButtonUserWidget->SetButtonText(Text);
 
-		FMargin CurrentPadding = Padding_Button;
-		if (CurPage == 0) CurrentPadding.Left = 0.f;
-		if (CurPage == LastPage) CurrentPadding.Right = 0.f;
-		
 		MyContainer->AddSlot()
-			.HAlign(HAlign_Button).VAlign(VAlign_Button)
-			.FillWidth(1.f).Padding(CurrentPadding)
+			.HAlign(HAlign).VAlign(VAlign)
+			.Padding(Padding)
 			[ButtonSWidget];
+		
+		if (bFillWidth)
+		{
+			MyContainer->GetSlot(CurPage).SetFillWidth(FillWidth);
+		}
+		else
+		{
+			MyContainer->GetSlot(CurPage).SetAutoWidth();
+		}
 	}
 	
 	

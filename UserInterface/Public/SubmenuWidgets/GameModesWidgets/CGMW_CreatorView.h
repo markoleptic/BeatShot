@@ -39,6 +39,4 @@ protected:
 	UCommonWidgetCarousel* Carousel;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSCarouselNavBar* CarouselNavBar;
-	UPROPERTY(EditDefaultsOnly, Category="Carousel")
-	TArray<FText> NavBarButtonText;
 };

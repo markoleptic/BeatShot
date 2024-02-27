@@ -15,7 +15,7 @@ struct USERINTERFACE_API FLoadingScreenStyle : public FSlateWidgetStyle
 	GENERATED_USTRUCT_BODY()
 
 	FLoadingScreenStyle();
-	virtual ~FLoadingScreenStyle();
+	virtual ~FLoadingScreenStyle() override;
 
 	// FSlateWidgetStyle
 	virtual void GetResources(TArray<const FSlateBrush*>& OutBrushes) const override;

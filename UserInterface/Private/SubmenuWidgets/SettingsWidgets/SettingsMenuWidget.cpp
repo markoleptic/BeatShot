@@ -14,7 +14,6 @@ void USettingsMenuWidget::NativeConstruct()
 
 	Carousel->OnCurrentPageIndexChanged.AddUniqueDynamic(this, &ThisClass::OnCarouselWidgetIndexChanged);
 	Carousel->SetActiveWidgetIndex(0);
-	CarouselNavBar->SetNavButtonText(NavBarButtonText);
 	CarouselNavBar->SetLinkedCarousel(Carousel);
 
 	if (bIsPauseMenuChild)

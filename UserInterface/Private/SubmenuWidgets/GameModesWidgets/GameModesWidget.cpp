@@ -36,13 +36,11 @@ void UGameModesWidget::NativeConstruct()
 	Carousel_DefaultCustom->OnCurrentPageIndexChanged.AddUniqueDynamic(this,
 		&ThisClass::OnCarouselWidgetIndexChanged_DefaultCustom);
 	Carousel_DefaultCustom->SetActiveWidgetIndex(0);
-	CarouselNavBar_DefaultCustom->SetNavButtonText(NavBarButtonText_DefaultCustom);
 	CarouselNavBar_DefaultCustom->SetLinkedCarousel(Carousel_DefaultCustom);
 
 	Carousel_CreatorProperty->OnCurrentPageIndexChanged.AddUniqueDynamic(this,
 		&ThisClass::OnCarouselWidgetIndexChanged_CreatorProperty);
 	Carousel_CreatorProperty->SetActiveWidgetIndex(0);
-	CarouselNavBar_CreatorProperty->SetNavButtonText(NavBarButtonText_CreatorProperty);
 	CarouselNavBar_CreatorProperty->SetLinkedCarousel(Carousel_CreatorProperty);
 	
 	CustomGameModesWidget_Current = CustomGameModesWidget_CreatorView;

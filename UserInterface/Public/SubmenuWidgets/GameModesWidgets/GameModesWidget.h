@@ -136,10 +136,6 @@ public:
 	FRequestSimulateTargetManagerStateChange RequestSimulateTargetManagerStateChange;
 
 protected:
-	UPROPERTY(EditDefaultsOnly, Category = "GameModesWidget")
-	TArray<FText> NavBarButtonText_DefaultCustom;
-	UPROPERTY(EditDefaultsOnly, Category = "GameModesWidget")
-	TArray<FText> NavBarButtonText_CreatorProperty;
 	UPROPERTY(EditDefaultsOnly, Category = "GameModesWidget|CustomGameModes")
 	TObjectPtr<UBSGameModeDataAsset> GameModeDataAsset;
 	UPROPERTY(EditDefaultsOnly, Category = "GameModesWidget|Classes|AudioSelect")
