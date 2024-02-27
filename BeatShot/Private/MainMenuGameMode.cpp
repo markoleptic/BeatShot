@@ -21,10 +21,11 @@ void AMainMenuGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	GI->GetPublicGameSettingsChangedDelegate().AddUObject(this, &ThisClass::OnPlayerSettingsChanged_Game);
+	GI->RegisterPlayerSettingsSubscriber<AMainMenuGameMode, FPlayerSettings_Game>(this,
+		&AMainMenuGameMode::OnPlayerSettingsChanged);
 }
 
-void AMainMenuGameMode::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings)
+void AMainMenuGameMode::OnPlayerSettingsChanged(const FPlayerSettings_Game& GameSettings)
 {
 	PlayerSettings_Game = GameSettings;
 }
@@ -36,7 +37,7 @@ void AMainMenuGameMode::SetupTargetManager(UGameModesWidget* GameModesWidget)
 	TargetManager = GetWorld()->SpawnActor<ATargetManagerPreview>(TargetManagerClass, FVector::Zero(),
 		FRotator::ZeroRotator);
 	TargetManager->InitBoxBoundsWidget(GameModesWidget->CustomGameModesWidget_CreatorView->Widget_Preview);
-	TargetManager->Init(BSConfig, PlayerSettings_Game);
+	TargetManager->Init(BSConfig, FCommonScoreInfo(), PlayerSettings_Game);
 
 	GameModesWidget->RequestSimulateTargetManagerStateChange.AddUObject(this,
 		&ThisClass::OnRequestSimulationStateChange);
@@ -72,7 +73,7 @@ void AMainMenuGameMode::StartSimulation()
 		return;
 	}
 
-	TargetManager->Init(BSConfig, PlayerSettings_Game);
+	TargetManager->Init(BSConfig, FCommonScoreInfo(), PlayerSettings_Game);
 	TargetManager->SetSimulatePlayerDestroyingTargets(true);
 	TargetManager->SetShouldSpawn(true);
 	

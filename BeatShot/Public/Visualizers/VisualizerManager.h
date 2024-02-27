@@ -3,10 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SaveGamePlayerSettings.h"
 #include "GameFramework/Actor.h"
 #include "VisualizerManager.generated.h"
 
+struct FPlayerSettings_AudioAnalyzer;
+struct FPlayerSettings_Game;
 class AVisualizerBase;
 class AStaticCubeVisualizer;
 class ABeamVisualizer;

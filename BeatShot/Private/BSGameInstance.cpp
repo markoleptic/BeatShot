@@ -216,7 +216,7 @@ void UBSGameInstance::SavePlayerScoresToDatabase(ABSPlayerController* PC, const 
 	}
 
 	// No account
-	if (LoadPlayerSettings().User.RefreshCookie.IsEmpty())
+	if (PC->GetPlayerSettings().User.RefreshCookie.IsEmpty())
 	{
 		if (bQuitToDesktopAfterSave)
 		{
@@ -253,7 +253,7 @@ void UBSGameInstance::SavePlayerScoresToDatabase(ABSPlayerController* PC, const 
 						EQuitPreference::Quit, false);
 				}
 			});
-			PostPlayerScores(LoadPlayerScores_UnsavedToDatabase(), LoadPlayerSettings().User.UserID,
+			PostPlayerScores(LoadPlayerScores_UnsavedToDatabase(), PC->GetPlayerSettings().User.UserID,
 				AccessTokenResponse->AccessToken, PostScoresResponse);
 		}
 		else // Unsuccessful access token retrieval
@@ -268,7 +268,7 @@ void UBSGameInstance::SavePlayerScoresToDatabase(ABSPlayerController* PC, const 
 			}
 		}
 	});
-	RequestAccessToken(LoadPlayerSettings().User.RefreshCookie, AccessTokenResponse);
+	RequestAccessToken(PC->GetPlayerSettings().User.RefreshCookie, AccessTokenResponse);
 }
 
 void UBSGameInstance::OnSteamOverlayIsOn()
@@ -294,52 +294,29 @@ void UBSGameInstance::OnSteamOverlayIsActive(bool bIsOverlayActive) const
 	}
 }
 
-void UBSGameInstance::AddDelegateToOnPlayerSettingsChanged(FOnPlayerSettingsChanged_Game& Delegate)
-{
-	Delegate.AddUObject(this, &UBSGameInstance::OnPlayerSettingsChanged_Game);
-}
-
-void UBSGameInstance::AddDelegateToOnPlayerSettingsChanged(FOnPlayerSettingsChanged_AudioAnalyzer& Delegate)
-{
-	Delegate.AddUObject(this, &UBSGameInstance::OnPlayerSettingsChanged_AudioAnalyzer);
-}
-
-void UBSGameInstance::AddDelegateToOnPlayerSettingsChanged(FOnPlayerSettingsChanged_User& Delegate)
-{
-	Delegate.AddUObject(this, &UBSGameInstance::OnPlayerSettingsChanged_User);
-}
-
-void UBSGameInstance::AddDelegateToOnPlayerSettingsChanged(FOnPlayerSettingsChanged_CrossHair& Delegate)
-{
-	Delegate.AddUObject(this, &UBSGameInstance::OnPlayerSettingsChanged_CrossHair);
-}
-
-void UBSGameInstance::AddDelegateToOnPlayerSettingsChanged(FOnPlayerSettingsChanged_VideoAndSound& Delegate)
-{
-	Delegate.AddUObject(this, &UBSGameInstance::OnPlayerSettingsChanged_VideoAndSound);
-}
-
-void UBSGameInstance::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings)
+void UBSGameInstance::OnPlayerSettingsChanged(const FPlayerSettings_Game& GameSettings)
 {
 	OnPlayerSettingsChangedDelegate_Game.Broadcast(GameSettings);
 }
 
-void UBSGameInstance::OnPlayerSettingsChanged_AudioAnalyzer(const FPlayerSettings_AudioAnalyzer& AudioAnalyzerSettings)
+void UBSGameInstance::OnPlayerSettingsChanged(const FPlayerSettings_AudioAnalyzer& AudioAnalyzerSettings)
 {
 	OnPlayerSettingsChangedDelegate_AudioAnalyzer.Broadcast(AudioAnalyzerSettings);
 }
 
-void UBSGameInstance::OnPlayerSettingsChanged_User(const FPlayerSettings_User& UserSettings)
+void UBSGameInstance::OnPlayerSettingsChanged(const FPlayerSettings_User& UserSettings)
 {
 	OnPlayerSettingsChangedDelegate_User.Broadcast(UserSettings);
 }
 
-void UBSGameInstance::OnPlayerSettingsChanged_CrossHair(const FPlayerSettings_CrossHair& CrossHairSettings)
+void UBSGameInstance::OnPlayerSettingsChanged(const FPlayerSettings_CrossHair& CrossHairSettings)
 {
 	OnPlayerSettingsChangedDelegate_CrossHair.Broadcast(CrossHairSettings);
 }
 
-void UBSGameInstance::OnPlayerSettingsChanged_VideoAndSound(const FPlayerSettings_VideoAndSound& VideoAndSoundSettings)
+void UBSGameInstance::OnPlayerSettingsChanged(const FPlayerSettings_VideoAndSound& VideoAndSoundSettings)
 {
 	OnPlayerSettingsChangedDelegate_VideoAndSound.Broadcast(VideoAndSoundSettings);
 }
+
+

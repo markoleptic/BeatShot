@@ -12,7 +12,6 @@ class BEATSHOTGLOBAL_API USaveGameCustomGameMode : public USaveGame
 {
 	GENERATED_BODY()
 
-
 public:
 	USaveGameCustomGameMode();
 	
@@ -21,8 +20,8 @@ public:
 	/** Returns a copy of CustomGameModes */
 	TArray<FBSConfig> GetCustomGameModes() const;
 	
-	/** Returns a copy of the CustomGameMode matching the CustomGameModeName, or default struct if not found */
-	FBSConfig FindCustomGameMode(const FString& GameModeName) const;
+	/** Returns true if found custom game mode and copied to OutConfig */
+	bool FindCustomGameMode(const FString& GameModeName, FBSConfig& OutConfig) const;
 
 	/** Adds a new entry to CustomGameModes or overwrites one if found with matching FBS_DefiningConfig */
 	void SaveCustomGameMode(const FBSConfig& InCustomGameMode);
@@ -36,10 +35,25 @@ public:
 	/** Returns true if there is a CustomGameMode matching the GameModeName */
 	bool IsCustomGameMode(const FString& GameModeName) const;
 
+	/** Returns the version of the SaveGame */
+	int32 GetVersion() const { return Version; }
+
+	/** Returns the last loaded version of the SaveGame */
+	int32 GetLastLoadedVersion() const { return LastLoadedVersion; }
+
+	/** Upgrades all Custom Game Modes in CustomGameModes to the latest Version */
+	void UpgradeCustomGameModes();
+
+	/** Upgrades an FBSConfig struct to Version 1 from Version 0 */
+	static void UpgradeCustomGameModeToVersion1(FBSConfig& InConfig);
+
 private:
 	UPROPERTY()
 	TArray<FBSConfig> CustomGameModes;
 
 	UPROPERTY()
-	int32 Version;
+	int32 Version = 0;
+
+	UPROPERTY(Transient)
+	int32 LastLoadedVersion = -1;
 };

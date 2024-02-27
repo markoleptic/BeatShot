@@ -3,10 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SaveLoadInterface.h"
+#include "BSPlayerSettingsInterface.h"
 #include "Blueprint/UserWidget.h"
 #include "PlayerHUD.generated.h"
 
+struct FPlayerScore;
+struct FBSConfig;
 class UHitTimingWidget;
 class UImage;
 class UHorizontalBox;
@@ -16,7 +18,7 @@ class UMaterialInstanceDynamic;
 
 /** The widget displayed during a game mode that shows current stats */
 UCLASS()
-class USERINTERFACE_API UPlayerHUD : public UUserWidget, public ISaveLoadInterface
+class USERINTERFACE_API UPlayerHUD : public UUserWidget, public IBSPlayerSettingsInterface
 {
 	GENERATED_BODY()
 
@@ -28,7 +30,7 @@ public:
 	FOnPlayerSettingsChanged_Game& GetGameDelegate() { return OnPlayerSettingsChangedDelegate_Game; }
 
 	/** Called when another class saves Game settings */
-	virtual void OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings) override;
+	virtual void OnPlayerSettingsChanged(const FPlayerSettings_Game& GameSettings) override;
 
 	/** Takes in a PlayerScore struct and updates all elements of the PlayerHUD */
 	UFUNCTION()

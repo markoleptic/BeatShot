@@ -3,12 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SaveLoadInterface.h"
+#include "BSPlayerSettingsInterface.h"
 #include "GameFramework/Actor.h"
 #include "BSKnife.generated.h"
 
+struct FPlayerSettings_Game;
+
 UCLASS()
-class BEATSHOT_API ABSKnife : public AActor, public ISaveLoadInterface
+class BEATSHOT_API ABSKnife : public AActor, public IBSPlayerSettingsInterface
 {
 	GENERATED_BODY()
 
@@ -19,9 +21,9 @@ protected:
 	/** Called when the game starts or when spawned */
 	virtual void BeginPlay() override;
 
-	/** ~ISaveLoadInterface begin */
-	virtual void OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings) override;
-	/** ~ISaveLoadInterface end */
+	/** ~IBSPlayerSettingsInterface begin */
+	virtual void OnPlayerSettingsChanged(const FPlayerSettings_Game& GameSettings) override;
+	/** ~IBSPlayerSettingsInterface end */
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
 	UStaticMeshComponent* Knife;

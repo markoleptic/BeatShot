@@ -114,7 +114,7 @@ void UCrossHairWidget::SetCrossHairDotOutlineColor(const FLinearColor NewColor)
 	}
 }
 
-void UCrossHairWidget::OnPlayerSettingsChanged_CrossHair(const FPlayerSettings_CrossHair& CrossHairSettings)
+void UCrossHairWidget::OnPlayerSettingsChanged(const FPlayerSettings_CrossHair& CrossHairSettings)
 {
 	InitializeCrossHair(CrossHairSettings);
 }

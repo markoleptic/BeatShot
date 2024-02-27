@@ -3,11 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SaveLoadInterface.h"
-#include "SpawnAreaSpotLight.h"
+#include "BSPlayerSettingsInterface.h"
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Actor.h"
-#include "BeatShot/BeatShot.h"
 #include "TimeOfDayManager.generated.h"
 
 class ARectLight;
@@ -21,6 +19,7 @@ class ADirectionalLight;
 class UCurveFloat;
 class AMoon;
 class UMaterialInstanceDynamic;
+class ASpawnAreaSpotLight;
 
 /** Enum representing the different times of the day */
 UENUM(BlueprintType)
@@ -37,7 +36,7 @@ ENUM_RANGE_BY_FIRST_AND_LAST(ETimeOfDay, ETimeOfDay::Day, ETimeOfDay::NightToDay
 DECLARE_DELEGATE_OneParam(FOnTimeOfDayTransitionCompleted, const ETimeOfDay NewTimeOfDay);
 
 UCLASS()
-class BEATSHOT_API ATimeOfDayManager : public AActor, public ISaveLoadInterface
+class BEATSHOT_API ATimeOfDayManager : public AActor, public IBSPlayerSettingsInterface
 {
 	GENERATED_BODY()
 
@@ -77,16 +76,11 @@ public:
 	FOnTimeOfDayTransitionCompleted OnTimeOfDayTransitionCompleted;
 
 protected:
-	/** Changes TimeOfDay */
-	UFUNCTION()
-	void OnStreakThresholdPassed();
+	/** Callback function to respond to NightMode change from WallMenu */
+	virtual void OnPlayerSettingsChanged(const FPlayerSettings_Game& GameSettings) override;
 
 	/** Callback function to respond to NightMode change from WallMenu */
-	virtual void OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings) override;
-
-	/** Callback function to respond to NightMode change from WallMenu */
-	virtual void
-	OnPlayerSettingsChanged_VideoAndSound(const FPlayerSettings_VideoAndSound& VideoAndSoundSettings) override;
+	virtual void OnPlayerSettingsChanged(const FPlayerSettings_VideoAndSound& VideoAndSoundSettings) override;
 
 	/** Calls RefreshMaterial function in SkySphere */
 	UFUNCTION(BlueprintImplementableEvent)

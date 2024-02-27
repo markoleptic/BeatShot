@@ -3,9 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SaveLoadInterface.h"
 #include "GameFramework/Character.h"
 #include "AbilitySystemInterface.h"
+#include "BSPlayerSettingsInterface.h"
 #include "Input/BSInputConfig.h"
 #include "GameplayTagAssetInterface.h"
 #include "GameplayTagContainer.h"
@@ -40,7 +40,7 @@ inline float SimpleSpline(const float Value)
 
 /** Base Character for this game */
 UCLASS()
-class BEATSHOT_API ABSCharacterBase : public ACharacter, public ISaveLoadInterface, public IAbilitySystemInterface,
+class BEATSHOT_API ABSCharacterBase : public ACharacter, public IBSPlayerSettingsInterface, public IAbilitySystemInterface,
                                   public IGameplayTagAssetInterface
 {
 	GENERATED_BODY()
@@ -223,10 +223,10 @@ protected:
 	void Input_AbilityInputTagPressed(FGameplayTag InputTag);
 	void Input_AbilityInputTagReleased(FGameplayTag InputTag);
 	
-	/** Implement ISaveLoadInterface */
-	virtual void OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings) override;
-	virtual void OnPlayerSettingsChanged_User(const FPlayerSettings_User& UserSettings) override;
-	/** End Implement ISaveLoadInterface */
+	/** Implement IBSPlayerSettingsInterface */
+	virtual void OnPlayerSettingsChanged(const FPlayerSettings_Game& GameSettings) override;
+	virtual void OnPlayerSettingsChanged(const FPlayerSettings_User& UserSettings) override;
+	/** End Implement IBSPlayerSettingsInterface */
 	
 	/** Multiplier to controller pitch and yaw */
 	float Sensitivity;

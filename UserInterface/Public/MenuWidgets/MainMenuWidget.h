@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SaveLoadInterface.h"
+#include "BSPlayerSettingsInterface.h"
 #include "HttpRequestInterface.h"
 #include "Blueprint/UserWidget.h"
 #include "MainMenuWidget.generated.h"
@@ -39,7 +39,7 @@ DECLARE_DELEGATE(FOnSteamLoginRequest);
 
 /** Widget that is the entry point into the game, holding most other widgets that aren't MenuWidgets */
 UCLASS()
-class USERINTERFACE_API UMainMenuWidget : public UUserWidget, public ISaveLoadInterface, public IHttpRequestInterface
+class USERINTERFACE_API UMainMenuWidget : public UUserWidget, public IBSPlayerSettingsInterface, public IHttpRequestInterface
 {
 	GENERATED_BODY()
 
@@ -58,7 +58,7 @@ public:
 	FOnPlayerSettingsChanged_User& GetUserDelegate() { return OnPlayerSettingsChangedDelegate_User; }
 
 	/** Called when another class saves User settings */
-	virtual void OnPlayerSettingsChanged_User(const FPlayerSettings_User& UserSettings) override;
+	virtual void OnPlayerSettingsChanged(const FPlayerSettings_User& UserSettings) override;
 
 	/** Executed when the player requests to try to login through Steam after a failed attempt */
 	FOnSteamLoginRequest OnSteamLoginRequest;

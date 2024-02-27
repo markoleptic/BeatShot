@@ -19,7 +19,7 @@
 #include "GlobalConstants.h"
 #include "Components/SpotLightComponent.h"
 #include "GameFramework/GameUserSettings.h"
-#include "Kismet/GameplayStatics.h"
+#include "RangeActors/SpawnAreaSpotLight.h"
 
 using namespace Constants;
 
@@ -65,28 +65,25 @@ void ATimeOfDayManager::PostInitializeComponents()
 		DayDirectionalLight->GetLightComponent()->SetIntensity(DayDirectionalLightIntensity);
 	}
 
-	bUsingLowGISettings = UGameUserSettings::GetGameUserSettings()->GetGlobalIlluminationQuality() < 2 ? true : false;
+	bUsingLowGISettings = UGameUserSettings::GetGameUserSettings()->GetGlobalIlluminationQuality() < 2;
 
 	if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
 	{
-		GI->GetPublicGameSettingsChangedDelegate().AddUObject(this, &ATimeOfDayManager::OnPlayerSettingsChanged_Game);
-		GI->GetPublicVideoAndSoundSettingsChangedDelegate().AddUObject(this,
-			&ATimeOfDayManager::OnPlayerSettingsChanged_VideoAndSound);
+		GI->RegisterPlayerSettingsSubscriber<ATimeOfDayManager, FPlayerSettings_Game>(this,
+			&ATimeOfDayManager::OnPlayerSettingsChanged);
+		GI->RegisterPlayerSettingsSubscriber<ATimeOfDayManager, FPlayerSettings_VideoAndSound>(this,
+			&ATimeOfDayManager::OnPlayerSettingsChanged);
 		GI->SetTimeOfDayManager(this);
 		
-		if (ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
+		// Initialize the time of day
+		const FPlayerSettings Settings = LoadPlayerSettings();
+		if (Settings.User.bNightModeUnlocked && Settings.Game.bNightModeSelected)
 		{
-			GameMode->OnStreakThresholdPassed.BindUObject(this, &ATimeOfDayManager::OnStreakThresholdPassed);
-	
-			// Initialize the time of day
-			if (LoadPlayerSettings().User.bNightModeUnlocked && LoadPlayerSettings().Game.bNightModeSelected)
-			{
-				SetTimeOfDay(ETimeOfDay::Night);
-			}
-			else
-			{
-				SetTimeOfDay(ETimeOfDay::Day);
-			}
+			SetTimeOfDay(ETimeOfDay::Night);
+		}
+		else
+		{
+			SetTimeOfDay(ETimeOfDay::Day);
 		}
 	}
 }
@@ -271,15 +268,7 @@ void ATimeOfDayManager::SetSpotLightFrontEnabledState(const bool bEnable)
 	}
 }
 
-void ATimeOfDayManager::OnStreakThresholdPassed()
-{
-	if (GetTimeOfDay() == ETimeOfDay::Day)
-	{
-		BeginTransitionToNight();
-	}
-}
-
-void ATimeOfDayManager::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings)
+void ATimeOfDayManager::OnPlayerSettingsChanged(const FPlayerSettings_Game& GameSettings)
 {
 	if (LoadPlayerSettings().User.bNightModeUnlocked)
 	{
@@ -300,7 +289,7 @@ void ATimeOfDayManager::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game&
 	}
 }
 
-void ATimeOfDayManager::OnPlayerSettingsChanged_VideoAndSound(
+void ATimeOfDayManager::OnPlayerSettingsChanged(
 	const FPlayerSettings_VideoAndSound& VideoAndSoundSettings)
 {
 	// Adjust SkyLight brightness if using Low or Medium Global Illumination Settings

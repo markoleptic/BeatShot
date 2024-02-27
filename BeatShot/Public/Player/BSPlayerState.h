@@ -6,7 +6,6 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerState.h"
 #include "AbilitySystemInterface.h"
-#include "GameplayEffectTypes.h"
 #include "BSPlayerState.generated.h"
 
 class UBSAttributeSetBase;

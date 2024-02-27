@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "SaveLoadInterface.h"
+#include "BSPlayerSettingsInterface.h"
 #include "CrossHairWidget.generated.h"
 
 class UCanvasPanelSlot;
@@ -13,7 +13,7 @@ class UImage;
 
 /** Widget used to show the CrossHair */
 UCLASS()
-class USERINTERFACE_API UCrossHairWidget : public UUserWidget, public ISaveLoadInterface
+class USERINTERFACE_API UCrossHairWidget : public UUserWidget, public IBSPlayerSettingsInterface
 {
 	GENERATED_BODY()
 
@@ -95,5 +95,5 @@ public:
 	void SetCrossHairDotOutlineColor(const FLinearColor NewColor);
 
 	/** Reinitialize CrossHair if Player Settings change */
-	virtual void OnPlayerSettingsChanged_CrossHair(const FPlayerSettings_CrossHair& CrossHairSettings) override;
+	virtual void OnPlayerSettingsChanged(const FPlayerSettings_CrossHair& CrossHairSettings) override;
 };

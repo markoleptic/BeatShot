@@ -2,7 +2,7 @@
 
 
 #include "SubMenuWidgets/ScoreBrowserWidget.h"
-
+#include "BSPlayerSettingsInterface.h"
 #include "SaveGamePlayerSettings.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
@@ -70,11 +70,11 @@ void UScoreBrowserWidget::InitScoreBrowser(const EScoreBrowserType InScoreBrowse
 		}
 		if (MinDateScore.DefiningConfig.GameModeType == EGameModeType::Preset)
 		{
-			BrowserWidget->LoadDefaultGameModesURL(LoadPlayerSettings().User.UserID);
+			BrowserWidget->LoadDefaultGameModesURL(IBSPlayerSettingsInterface::LoadPlayerSettings().User.UserID);
 		}
 		else
 		{
-			BrowserWidget->LoadCustomGameModesURL(LoadPlayerSettings().User.UserID);
+			BrowserWidget->LoadCustomGameModesURL(IBSPlayerSettingsInterface::LoadPlayerSettings().User.UserID);
 		}
 	}
 }

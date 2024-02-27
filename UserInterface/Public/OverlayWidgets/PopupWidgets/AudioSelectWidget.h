@@ -3,7 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SaveLoadInterface.h"
+#include "BSPlayerScoreInterface.h"
+#include "BSPlayerSettingsInterface.h"
 #include "BSWidgetInterface.h"
 #include "Blueprint/UserWidget.h"
 #include "Delegates/DelegateCombinations.h"
@@ -26,7 +27,8 @@ class UWidgetAnimation;
 
 /** Widget that prompts user to choose an audio input type and gather info about the audio configuration to be used for the game mode */
 UCLASS()
-class USERINTERFACE_API UAudioSelectWidget : public UUserWidget, public ISaveLoadInterface, public IBSWidgetInterface
+class USERINTERFACE_API UAudioSelectWidget : public UUserWidget, public IBSPlayerSettingsInterface,
+	public IBSWidgetInterface, public IBSPlayerScoreInterface
 {
 	GENERATED_BODY()
 

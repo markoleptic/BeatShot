@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "SaveGamePlayerSettings.h"
-#include "SaveLoadInterface.h"
+#include "BSPlayerSettingsInterface.h"
 #include "SubmenuWidgets/SettingsWidgets/BSSettingCategoryWidget.h"
 #include "SettingsMenuWidget_AudioAnalyzer.generated.h"
 
@@ -20,7 +20,7 @@ DECLARE_DELEGATE(FOnRestartButtonClicked);
 
 /** Settings category widget holding AudioAnalyzer settings */
 UCLASS()
-class USERINTERFACE_API USettingsMenuWidget_AudioAnalyzer : public UBSSettingCategoryWidget, public ISaveLoadInterface
+class USERINTERFACE_API USettingsMenuWidget_AudioAnalyzer : public UBSSettingCategoryWidget, public IBSPlayerSettingsInterface
 {
 	GENERATED_BODY()
 

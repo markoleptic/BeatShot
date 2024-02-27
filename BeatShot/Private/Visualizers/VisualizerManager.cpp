@@ -2,6 +2,8 @@
 
 
 #include "Visualizers/VisualizerManager.h"
+
+#include "SaveGamePlayerSettings.h"
 #include "Visualizers/VisualizerBase.h"
 #include "Visualizers/StaticCubeVisualizer.h"
 #include "Visualizers/BeamVisualizer.h"

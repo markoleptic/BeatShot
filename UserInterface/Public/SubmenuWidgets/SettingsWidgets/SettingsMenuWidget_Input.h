@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SaveLoadInterface.h"
+#include "BSPlayerSettingsInterface.h"
 #include "SubmenuWidgets/SettingsWidgets/BSSettingCategoryWidget.h"
 #include "WidgetComponents/InputMappingWidget.h"
 #include "SettingsMenuWidget_Input.generated.h"
@@ -19,7 +19,7 @@ class UTextBlock;
 class UInputMappingWidget;
 
 UCLASS()
-class USERINTERFACE_API USettingsMenuWidget_Input : public UBSSettingCategoryWidget, public ISaveLoadInterface
+class USERINTERFACE_API USettingsMenuWidget_Input : public UBSSettingCategoryWidget, public IBSPlayerSettingsInterface
 {
 	GENERATED_BODY()
 

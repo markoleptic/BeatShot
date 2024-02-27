@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "SaveGamePlayerSettings.h"
-#include "SaveLoadInterface.h"
+#include "BSPlayerSettingsInterface.h"
 #include "Delegates/DelegateCombinations.h"
 #include "SubmenuWidgets/SettingsWidgets/BSSettingCategoryWidget.h"
 #include "SettingsMenuWidget_CrossHair.generated.h"
@@ -22,7 +22,7 @@ class UBSButton;
 
 /** Settings category widget holding CrossHair settings */
 UCLASS()
-class USERINTERFACE_API USettingsMenuWidget_CrossHair : public UBSSettingCategoryWidget, public ISaveLoadInterface
+class USERINTERFACE_API USettingsMenuWidget_CrossHair : public UBSSettingCategoryWidget, public IBSPlayerSettingsInterface
 {
 	GENERATED_BODY()
 

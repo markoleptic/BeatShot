@@ -4,6 +4,8 @@
 
 namespace Constants
 {
+	inline constexpr int32 CustomGameModeVersion = 1;
+	
 	/** Min Value allowed for a BandFrequency channel */
 	inline constexpr float MinValue_BandFrequency = 0.f;
 

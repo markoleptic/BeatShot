@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "BSEquipmentActor.h"
-#include "SaveLoadInterface.h"
+#include "BSPlayerSettingsInterface.h"
 #include "GameFramework/Actor.h"
 #include "BSGun.generated.h"
 
@@ -14,7 +14,7 @@ DECLARE_DELEGATE_OneParam(FOnShotFired, class ABSPlayerController*);
 
 /** The base gun used in this game */
 UCLASS()
-class BEATSHOT_API ABSGun : public ABSEquipmentActor, public ISaveLoadInterface
+class BEATSHOT_API ABSGun : public ABSEquipmentActor, public IBSPlayerSettingsInterface
 {
 	GENERATED_BODY()
 
@@ -24,9 +24,9 @@ class BEATSHOT_API ABSGun : public ABSEquipmentActor, public ISaveLoadInterface
 	/** Called when the game starts or when spawned */
 	virtual void BeginPlay() override;
 
-	/** ~ISaveLoadInterface begin */
-	virtual void OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings) override;
-	/** ~ISaveLoadInterface end */
+	/** ~IBSPlayerSettingsInterface begin */
+	virtual void OnPlayerSettingsChanged(const FPlayerSettings_Game& GameSettings) override;
+	/** ~IBSPlayerSettingsInterface end */
 
 public:
 	/** Increments ShotsFired, executes OnShotFired */

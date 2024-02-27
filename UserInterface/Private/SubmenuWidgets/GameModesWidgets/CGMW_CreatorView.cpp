@@ -30,7 +30,7 @@ void UCGMW_CreatorView::UpdateAllChildWidgetOptionsValid()
 	     ChildWidgetValidityMap)
 	{
 		// Widget_Start has a separate validity check
-		if (ChildWidgetValidity.Key == Widget_Start) continue;
+		if (ChildWidgetValidity.Key.IsA<UCGMWC_Start>()) continue;
 		CarouselNavBar->UpdateNotifications(ChildWidgetValidity.Key->GetIndex(), ChildWidgetValidity.Value->NumCautions,
 			ChildWidgetValidity.Value->NumWarnings);
 	}

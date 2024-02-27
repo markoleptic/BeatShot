@@ -48,7 +48,7 @@ public:
 	bool UpdateGameModeTemplateVisibility() const;
 
 	/** Clears all GameModeTemplate options and repopulates */
-	void RefreshGameModeTemplateComboBoxOptions() const;
+	void RefreshGameModeTemplateComboBoxOptions(const TArray<FBSConfig>& CustomGameModes) const;
 
 protected:
 	virtual void NativeConstruct() override;

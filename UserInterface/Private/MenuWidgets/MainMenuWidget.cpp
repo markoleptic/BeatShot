@@ -66,7 +66,7 @@ void UMainMenuWidget::SetStyles()
 	MenuStyle = IBSWidgetInterface::GetStyleCDO<UMenuStyle>(MenuStyleClass);
 }
 
-void UMainMenuWidget::OnPlayerSettingsChanged_User(const FPlayerSettings_User& UserSettings)
+void UMainMenuWidget::OnPlayerSettingsChanged(const FPlayerSettings_User& UserSettings)
 {
 }
 

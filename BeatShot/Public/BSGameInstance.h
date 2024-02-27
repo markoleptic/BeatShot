@@ -3,8 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BSPlayerScoreInterface.h"
+#include "BSPlayerSettingsInterface.h"
 #include "HttpRequestInterface.h"
-#include "SaveLoadInterface.h"
 #include "Engine/GameInstance.h"
 #include "BSGameInstance.generated.h"
 
@@ -15,7 +16,7 @@ class USteamManager;
 
 /** Base GameInstance for this game */
 UCLASS()
-class BEATSHOT_API UBSGameInstance : public UGameInstance, public ISaveLoadInterface, public IHttpRequestInterface
+class BEATSHOT_API UBSGameInstance : public UGameInstance, public IBSPlayerSettingsInterface, public IHttpRequestInterface, public IBSPlayerScoreInterface
 {
 	GENERATED_BODY()
 
@@ -75,60 +76,16 @@ public:
 	void OnSteamOverlayIsOn();
 	void OnSteamOverlayIsOff();
 
-	/** Binds an actor's Game Settings delegate to the Game Instance's OnPlayerSettingsChanged_Game function,
-	 *  which broadcasts OnPlayerSettingsChangedDelegate_Game to all actors subscribed for updates. */
-	void AddDelegateToOnPlayerSettingsChanged(FOnPlayerSettingsChanged_Game& Delegate);
+	/** Binds OnPlayerSettingsChanged delegates to the function in this class with the matching signature. When the
+	 *  delegate is broadcast, this class will also broadcast its matching delegate to all objects subscribed. */
+	template <typename... T>
+	void RegisterPlayerSettingsUpdaters(TMulticastDelegate<void(const T& SettingType)>&... Delegates);
 
-	/** Binds an actor's Audio Analyzer Settings delegate to the Game Instance's OnPlayerSettingsChanged_AudioAnalyzer
-	 *  function, which broadcasts OnPlayerSettingsChangedDelegate_AudioAnalyzer to all actors subscribed for updates. */
-	void AddDelegateToOnPlayerSettingsChanged(FOnPlayerSettingsChanged_AudioAnalyzer& Delegate);
-
-	/** Binds an actor's User Settings delegate to the Game Instance's OnPlayerSettingsChanged_User function,
-	 *  which broadcasts OnPlayerSettingsChangedDelegate_User to all actors subscribed for updates. */
-	void AddDelegateToOnPlayerSettingsChanged(FOnPlayerSettingsChanged_User& Delegate);
-
-	/** Binds an actor's CrossHair Settings delegate to the Game Instance's OnPlayerSettingsChanged_CrossHair function,
-	 *  which broadcasts OnPlayerSettingsChangedDelegate_CrossHair to all actors subscribed for updates. */
-	void AddDelegateToOnPlayerSettingsChanged(FOnPlayerSettingsChanged_CrossHair& Delegate);
-
-	/** Binds an actor's Video and Sound Settings delegate to the Game Instance's OnPlayerSettingsChanged_VideoAndSound
-	 *  function, which broadcasts OnPlayerSettingsChangedDelegate_VideoAndSound to all actors subscribed for updates. */
-	void AddDelegateToOnPlayerSettingsChanged(FOnPlayerSettingsChanged_VideoAndSound& Delegate);
-
-	/** Returns the Game Instance's OnPlayerSettingsChangedDelegate_Game, which can be used to add a function to the
-	 *  delegate's call list. The function is then called any time a Game Setting is changed. */
-	FOnPlayerSettingsChanged_Game& GetPublicGameSettingsChangedDelegate()
-	{
-		return OnPlayerSettingsChangedDelegate_Game;
-	}
-
-	/** Returns the Game Instance's OnPlayerSettingsChangedDelegate_AudioAnalyzer, which can be used to add a function
-	 *  to the delegate's call list. The function is then called any time an Audio Analyzer Setting is changed. */
-	FOnPlayerSettingsChanged_AudioAnalyzer& GetPublicAudioAnalyzerSettingsChangedDelegate()
-	{
-		return OnPlayerSettingsChangedDelegate_AudioAnalyzer;
-	}
-
-	/** Returns the Game Instance's OnPlayerSettingsChangedDelegate_User, which can be used to add a function to the
-	 *  delegate's call list. The function is then called any time a User Setting is changed. */
-	FOnPlayerSettingsChanged_User& GetPublicUserSettingsChangedDelegate()
-	{
-		return OnPlayerSettingsChangedDelegate_User;
-	}
-
-	/** Returns the Game Instance's OnPlayerSettingsChangedDelegate_CrossHair, which can be used to add a function to
-	 *  the delegate's call list. The function is then called any time a CrossHair Setting is changed. */
-	FOnPlayerSettingsChanged_CrossHair& GetPublicCrossHairSettingsChangedDelegate()
-	{
-		return OnPlayerSettingsChangedDelegate_CrossHair;
-	}
-
-	/** Returns the Game Instance's OnPlayerSettingsChangedDelegate_VideoAndSound, which can be used to add a function
-	 *  to the delegate's call list. The function is then called any time a Video And Sound Setting is changed. */
-	FOnPlayerSettingsChanged_VideoAndSound& GetPublicVideoAndSoundSettingsChangedDelegate()
-	{
-		return OnPlayerSettingsChangedDelegate_VideoAndSound;
-	}
+	/** Binds a function to an OnPlayerSettingsChanged delegate with the matching signature. The function will be
+	 *  called any time an updater broadcasts their delegate. */
+	template <typename UserClass, typename StructType>
+	void RegisterPlayerSettingsSubscriber(UserClass* InUserObject,
+		typename TMemFunPtrType<false, UserClass, void (const StructType&)>::Type InFunc);
 
 protected:
 	void SetBSConfig(const FBSConfig& InConfig);
@@ -139,12 +96,12 @@ protected:
 	/** Pauses the game and shows the Pause Screen if the overlay is active. */
 	void OnSteamOverlayIsActive(bool bIsOverlayActive) const;
 
-	virtual void OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings) override;
-	virtual void OnPlayerSettingsChanged_AudioAnalyzer(const FPlayerSettings_AudioAnalyzer& AudioAnalyzerSettings) override;
-	virtual void OnPlayerSettingsChanged_User(const FPlayerSettings_User& UserSettings) override;
-	virtual void OnPlayerSettingsChanged_CrossHair(const FPlayerSettings_CrossHair& CrossHairSettings) override;
-	virtual void OnPlayerSettingsChanged_VideoAndSound(const FPlayerSettings_VideoAndSound& VideoAndSoundSettings) override;
-
+	virtual void OnPlayerSettingsChanged(const FPlayerSettings_Game& GameSettings) override;
+	virtual void OnPlayerSettingsChanged(const FPlayerSettings_AudioAnalyzer& AudioAnalyzerSettings) override;
+	virtual void OnPlayerSettingsChanged(const FPlayerSettings_User& UserSettings) override;
+	virtual void OnPlayerSettingsChanged(const FPlayerSettings_CrossHair& CrossHairSettings) override;
+	virtual void OnPlayerSettingsChanged(const FPlayerSettings_VideoAndSound& VideoAndSoundSettings) override;
+	
 	/** Object that interfaces with Steam API. */
 	UPROPERTY()
 	TObjectPtr<USteamManager> SteamManager;
@@ -189,3 +146,35 @@ protected:
 	/** Whether or not the loading screen is the initial one, which changes how the loading screen is rendered. */
 	bool bIsInitialLoadingScreen = true;
 };
+
+template <typename... T>
+void UBSGameInstance::RegisterPlayerSettingsUpdaters(TMulticastDelegate<void(const T& SettingType)>&... Delegates)
+{
+	(Delegates.AddUObject(this, &UBSGameInstance::OnPlayerSettingsChanged), ...);
+}
+
+template <typename UserClass, typename StructType>
+void UBSGameInstance::RegisterPlayerSettingsSubscriber(UserClass* InUserObject,
+	typename TMemFunPtrType<false, UserClass, void (const StructType&)>::Type InFunc)
+{
+	if constexpr (std::is_same_v<StructType, FPlayerSettings_Game>)
+	{
+		OnPlayerSettingsChangedDelegate_Game.AddUObject(InUserObject, InFunc);
+	}
+	else if constexpr (std::is_same_v<StructType, FPlayerSettings_User>)
+	{
+		OnPlayerSettingsChangedDelegate_User.AddUObject(InUserObject, InFunc);
+	}
+	else if constexpr (std::is_same_v<StructType, FPlayerSettings_VideoAndSound>)
+	{
+		OnPlayerSettingsChangedDelegate_VideoAndSound.AddUObject(InUserObject, InFunc);
+	}
+	else if constexpr (std::is_same_v<StructType, FPlayerSettings_CrossHair>)
+	{
+		OnPlayerSettingsChangedDelegate_CrossHair.AddUObject(InUserObject, InFunc);
+	}
+	else if constexpr (std::is_same_v<StructType, FPlayerSettings_AudioAnalyzer>)
+	{
+		OnPlayerSettingsChangedDelegate_AudioAnalyzer.AddUObject(InUserObject, InFunc);
+	}
+}

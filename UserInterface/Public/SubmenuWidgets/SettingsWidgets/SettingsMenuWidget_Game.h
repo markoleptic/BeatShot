@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "SaveGamePlayerSettings.h"
-#include "SaveLoadInterface.h"
+#include "BSPlayerSettingsInterface.h"
 #include "SubmenuWidgets/SettingsWidgets/BSSettingCategoryWidget.h"
 #include "SettingsMenuWidget_Game.generated.h"
 
@@ -19,7 +19,7 @@ class USavedTextWidget;
 
 /** Settings category widget holding game settings */
 UCLASS()
-class USERINTERFACE_API USettingsMenuWidget_Game : public UBSSettingCategoryWidget, public ISaveLoadInterface
+class USERINTERFACE_API USettingsMenuWidget_Game : public UBSSettingCategoryWidget, public IBSPlayerSettingsInterface
 {
 	GENERATED_BODY()
 

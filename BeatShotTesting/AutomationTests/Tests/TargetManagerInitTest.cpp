@@ -1,6 +1,7 @@
 ﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #include "CoreMinimal.h"
+#include "SaveGamePlayerScore.h"
 #include "SaveGamePlayerSettings.h"
 #include "../TestBase/TargetManagerTestWithWorld.h"
 #include "Target/TargetManager.h"
@@ -37,7 +38,7 @@ bool FTestInit::RunTest(const FString& Parameters)
 	}
 
 	BSConfig = MakeShared<FBSConfig>(*FoundConfig);
-	TargetManager->Init(BSConfig, FPlayerSettings_Game());
+	TargetManager->Init(BSConfig, FCommonScoreInfo(), FPlayerSettings_Game());
 	AddInfo(FString::Printf(TEXT("Shared Reference Count after Init: %d"), BSConfig.GetSharedReferenceCount()));
 	TargetManager->Clear();
 	AddInfo(FString::Printf(TEXT("Shared Reference Count after Clear: %d"), BSConfig.GetSharedReferenceCount()));

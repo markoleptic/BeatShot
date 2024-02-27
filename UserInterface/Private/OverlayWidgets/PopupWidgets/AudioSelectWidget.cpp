@@ -306,7 +306,7 @@ void UAudioSelectWidget::OnCheckStateChanged_PlaybackAudio(const bool bIsChecked
 
 void UAudioSelectWidget::PopulateSongOptionComboBox()
 {
-	for (FPlayerScore SavedScoreObj : LoadPlayerScores())
+	for (const FPlayerScore& SavedScoreObj : LoadPlayerScores())
 	{
 		if (ComboBox_SongTitle->FindOptionIndex(SavedScoreObj.SongTitle) == -1)
 		{

@@ -3,9 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BSPlayerScoreInterface.h"
+#include "BSPlayerSettingsInterface.h"
 #include "HttpRequestInterface.h"
 #include "SaveGamePlayerSettings.h"
-#include "SaveLoadInterface.h"
 #include "AbilitySystem/Globals/BSAbilitySet.h"
 #include "GameFramework/GameMode.h"
 #include "Target/Target.h"
@@ -24,14 +25,14 @@ class UAudioAnalyzerManager;
 DECLARE_LOG_CATEGORY_EXTERN(LogAudioData, Log, All);
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnAAManagerSecondPassed, const float PlaybackTime);
-DECLARE_DELEGATE(FOnStreakThresholdPassed)
 
 /** GameMode used for the Range level. A BSCharacter is spawned and possessed for each player controller. The game mode
  *  is responsible for starting and ending a BeatShot default or custom game mode, spawning and destroying the
  *  TargetManager and VisualizerManager, and monitoring the AudioAnalyzer on tick. It also manages abilities used for
  *  specific BeatShot game modes and saves scores locally before asking Game Instance to save to database */
 UCLASS()
-class BEATSHOT_API ABSGameMode : public AGameMode, public ISaveLoadInterface, public IHttpRequestInterface
+class BEATSHOT_API ABSGameMode : public AGameMode, public IBSPlayerSettingsInterface, public IHttpRequestInterface,
+	public IBSPlayerScoreInterface
 {
 	GENERATED_BODY()
 
@@ -109,16 +110,13 @@ public:
 	/** Binds to the gun's OnShotFired delegate */
 	void RegisterGun(ABSGun* InGun);
 
-	virtual void OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings) override;
-	virtual void OnPlayerSettingsChanged_AudioAnalyzer(const FPlayerSettings_AudioAnalyzer& AudioAnalyzerSettings) override;
-	virtual void OnPlayerSettingsChanged_VideoAndSound(const FPlayerSettings_VideoAndSound& VideoAndSoundSettings) override;
+	virtual void OnPlayerSettingsChanged(const FPlayerSettings_Game& NewGameSettings) override;
+	virtual void OnPlayerSettingsChanged(const FPlayerSettings_AudioAnalyzer& NewAudioAnalyzerSettings) override;
+	virtual void OnPlayerSettingsChanged(const FPlayerSettings_VideoAndSound& NewVideoAndSoundSettings) override;
 
 	/** Delegate that is executed every second to update the progress into song on PlayerHUD.
 	 *  PlayerHUD binds to it, while DefaultGameMode (this) executes it */
 	FOnAAManagerSecondPassed OnSecondPassed;
-
-	/** Called if the streak threshold is passed and user has not unlocked night mode */
-	FOnStreakThresholdPassed OnStreakThresholdPassed;
 
 private:
 	/** Starts all DefaultGameMode timers */
@@ -226,6 +224,10 @@ private:
 	/* Locally stored AASettings since they must be accessed frequently in OnTick() */
 	UPROPERTY()
 	FPlayerSettings_AudioAnalyzer AASettings;
+
+	/* Locally stored VideoAndSoundSettings since they must be accessed frequently */
+	UPROPERTY()
+	FPlayerSettings_VideoAndSound VideoAndSoundSettings;
 	
 	/** Timer that spans the length of the song */
 	UPROPERTY()

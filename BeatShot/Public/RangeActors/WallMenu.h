@@ -4,8 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
+#include "BSPlayerSettingsInterface.h"
 #include "GameFramework/Actor.h"
-#include "SaveLoadInterface.h"
 #include "WallMenu.generated.h"
 
 enum class ETimeOfDay : uint8;
@@ -81,7 +81,7 @@ struct FText3DToggle
 
 /** Displays some settings on a wall that can be changed by shooting them */
 UCLASS()
-class BEATSHOT_API AWallMenu : public AActor, public ISaveLoadInterface, public IAbilitySystemInterface
+class BEATSHOT_API AWallMenu : public AActor, public IBSPlayerSettingsInterface, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -222,8 +222,8 @@ protected:
 	/** Displays which settings are on/off etc by lighting the correct words */
 	void Init(const FPlayerSettings_Game& GameSettings, const FPlayerSettings_User& UserSettings, const bool bFromSettingsUpdate = false);
 
-	virtual void OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings) override;
-	virtual void OnPlayerSettingsChanged_User(const FPlayerSettings_User& UserSettings) override;
+	virtual void OnPlayerSettingsChanged(const FPlayerSettings_Game& GameSettings) override;
+	virtual void OnPlayerSettingsChanged(const FPlayerSettings_User& UserSettings) override;
 
 	void SetupMainText(UText3DComponent* InComponent, USceneComponent* InParent, const bool bFirstText,
 		const FString& Key, const FVector& AdditionalOffset = FVector::ZeroVector) const;

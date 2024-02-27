@@ -2,6 +2,8 @@
 
 
 #include "SubMenuWidgets/GameModesWidgets/Components/CGMWC_Start.h"
+
+#include "BSGameModeInterface.h"
 #include "Components/CheckBox.h"
 #include "Components/EditableTextBox.h"
 #include "WidgetComponents/Boxes/BSComboBoxString.h"
@@ -24,8 +26,6 @@ void UCGMWC_Start::NativeConstruct()
 
 	ComboBoxOption_GameModeTemplates->ComboBox->ClearOptions();
 	ComboBoxOption_GameModeDifficulty->ComboBox->ClearOptions();
-
-	RefreshGameModeTemplateComboBoxOptions();
 
 	for (const EGameModeDifficulty& Difficulty : TEnumRange<EGameModeDifficulty>())
 	{
@@ -61,7 +61,7 @@ FStartWidgetProperties UCGMWC_Start::GetStartWidgetProperties() const
 		return Properties;
 	}
 
-	if (IsPresetGameMode(GameModeTemplateString))
+	if (IBSGameModeInterface::IsPresetGameMode(GameModeTemplateString))
 	{
 		Properties.DefiningConfig.BaseGameMode = GetEnumFromString<EBaseGameMode>(GameModeTemplateString);
 		Properties.DefiningConfig.Difficulty = GetEnumFromString<EGameModeDifficulty>(DifficultyString);
@@ -69,7 +69,7 @@ FStartWidgetProperties UCGMWC_Start::GetStartWidgetProperties() const
 	else
 	{
 		Properties.DefiningConfig.BaseGameMode = EBaseGameMode::None;
-		if (IsCustomGameMode(GameModeTemplateString))
+		if (IBSGameModeInterface::IsCustomGameMode(GameModeTemplateString))
 		{
 			Properties.DefiningConfig.CustomGameModeName = GameModeTemplateString;
 			Properties.DefiningConfig.Difficulty = EGameModeDifficulty::None;
@@ -113,8 +113,8 @@ void UCGMWC_Start::SetStartWidgetProperties(const FStartWidgetProperties& InProp
 	const FString CustomGameModeString = InProperties.DefiningConfig.CustomGameModeName;
 	const FString DifficultyString = GetStringFromEnum(InProperties.DefiningConfig.Difficulty);
 
-	const bool bIsCustom = IsCustomGameMode(InProperties.DefiningConfig.CustomGameModeName);
-	const bool bIsPreset = IsPresetGameMode(BaseGameModeString);
+	const bool bIsCustom = IBSGameModeInterface::IsCustomGameMode(InProperties.DefiningConfig.CustomGameModeName);
+	const bool bIsPreset = IBSGameModeInterface::IsPresetGameMode(BaseGameModeString);
 
 	const FString NewTemplateOptionString = bIsCustom ? CustomGameModeString : bIsPreset ? BaseGameModeString : "";
 
@@ -139,7 +139,7 @@ bool UCGMWC_Start::UpdateDifficultySelection(const EGameModeDifficulty& Difficul
 	const int32 SelectedOptionCount = ComboBoxOption_GameModeDifficulty->ComboBox->GetSelectedOptionCount();
 	const FString GameModeTemplateString = ComboBoxOption_GameModeTemplates->ComboBox->GetSelectedOption();
 
-	if (IsPresetGameMode(GameModeTemplateString))
+	if (IBSGameModeInterface::IsPresetGameMode(GameModeTemplateString))
 	{
 		if (SelectedOptionCount == 0)
 		{
@@ -160,7 +160,7 @@ bool UCGMWC_Start::UpdateDifficultySelection(const EGameModeDifficulty& Difficul
 		return true;
 	}
 
-	if (IsCustomGameMode(GameModeTemplateString))
+	if (IBSGameModeInterface::IsCustomGameMode(GameModeTemplateString))
 	{
 		// No change
 		if (SelectedOptionCount == 0)
@@ -177,7 +177,7 @@ bool UCGMWC_Start::UpdateDifficultySelection(const EGameModeDifficulty& Difficul
 bool UCGMWC_Start::UpdateDifficultyVisibility() const
 {
 	const FString TemplateOptionString = ComboBoxOption_GameModeTemplates->ComboBox->GetSelectedOption();
-	const ESlateVisibility NewVisibility = IsPresetGameMode(TemplateOptionString)
+	const ESlateVisibility NewVisibility = IBSGameModeInterface::IsPresetGameMode(TemplateOptionString)
 		? ESlateVisibility::SelfHitTestInvisible
 		: ESlateVisibility::Collapsed;
 
@@ -193,7 +193,8 @@ bool UCGMWC_Start::UpdateDifficultyVisibility() const
 bool UCGMWC_Start::UpdateGameModeTemplateVisibility() const
 {
 	const FString TemplateOptionString = ComboBoxOption_GameModeTemplates->ComboBox->GetSelectedOption();
-	const bool bShouldShow = IsPresetGameMode(TemplateOptionString) || IsCustomGameMode(TemplateOptionString) ||
+	const bool bShouldShow = IBSGameModeInterface::IsPresetGameMode(TemplateOptionString) ||
+		IBSGameModeInterface::IsCustomGameMode(TemplateOptionString) ||
 		CheckBoxOption_UseTemplate->CheckBox->IsChecked();
 	const ESlateVisibility NewVisibility = bShouldShow
 		? ESlateVisibility::SelfHitTestInvisible
@@ -208,7 +209,7 @@ bool UCGMWC_Start::UpdateGameModeTemplateVisibility() const
 	return true;
 }
 
-void UCGMWC_Start::RefreshGameModeTemplateComboBoxOptions() const
+void UCGMWC_Start::RefreshGameModeTemplateComboBoxOptions(const TArray<FBSConfig>& CustomGameModes) const
 {
 	ComboBoxOption_GameModeTemplates->ComboBox->ClearOptions();
 	TArray<FString> Options;
@@ -226,7 +227,7 @@ void UCGMWC_Start::RefreshGameModeTemplateComboBoxOptions() const
 	}
 	Options.Empty();
 
-	for (const FBSConfig& GameMode : LoadCustomGameModes())
+	for (const FBSConfig& GameMode : CustomGameModes)
 	{
 		Options.Add(GameMode.DefiningConfig.CustomGameModeName);
 	}
@@ -249,7 +250,7 @@ void UCGMWC_Start::UpdateAllOptionsValid()
 	uint8 NumWarnings = 0;
 
 	// Never let a user save a custom game mode with a Preset Game Mode name
-	if (IsPresetGameMode(CustomGameModeNameText.ToString()))
+	if (IBSGameModeInterface::IsPresetGameMode(CustomGameModeNameText.ToString()))
 	{
 		NumWarnings++;
 	}
@@ -257,7 +258,7 @@ void UCGMWC_Start::UpdateAllOptionsValid()
 	// Can only have empty CustomGameModeName if template is custom
 	if (CustomGameModeNameText.IsEmptyOrWhitespace())
 	{
-		if (!IsCustomGameMode(GameModeTemplateString))
+		if (!IBSGameModeInterface::IsCustomGameMode(GameModeTemplateString))
 		{
 			NumWarnings++;
 		}
@@ -270,7 +271,7 @@ void UCGMWC_Start::UpdateAllOptionsValid()
 		{
 			NumWarnings++;
 		}
-		if (IsPresetGameMode(GameModeTemplateString))
+		if (IBSGameModeInterface::IsPresetGameMode(GameModeTemplateString))
 		{
 			// Need to select a difficulty if using Preset
 			if (ComboBoxOption_GameModeDifficulty->ComboBox->GetSelectedOptionCount() != 1)
@@ -288,7 +289,7 @@ void UCGMWC_Start::UpdateOptionsFromConfig()
 	const bool bUpdatedTemplateVisibility = UpdateGameModeTemplateVisibility();
 	const bool bUpdatedDifficultyVisibility = UpdateDifficultyVisibility();
 
-	if (IsPresetGameMode(ComboBoxOption_GameModeTemplates->ComboBox->GetSelectedOption()))
+	if (IBSGameModeInterface::IsPresetGameMode(ComboBoxOption_GameModeTemplates->ComboBox->GetSelectedOption()))
 	{
 		if (ComboBoxOption_GameModeDifficulty->ComboBox->GetSelectedOptionCount() == 0)
 		{
@@ -298,8 +299,9 @@ void UCGMWC_Start::UpdateOptionsFromConfig()
 
 	// Select a custom mode if conditions permit, mainly for saving and repopulating after saving
 	if (CheckBoxOption_UseTemplate->CheckBox->IsChecked() &&
-		IsCustomGameMode(BSConfig->DefiningConfig.CustomGameModeName) && ComboBoxOption_GameModeTemplates->ComboBox->
-		GetSelectedOptionCount() == 0 && ComboBoxOption_GameModeDifficulty->ComboBox->GetSelectedOptionCount() == 0 &&
+		IBSGameModeInterface::IsCustomGameMode(BSConfig->DefiningConfig.CustomGameModeName) &&
+		ComboBoxOption_GameModeTemplates->ComboBox->GetSelectedOptionCount() == 0 &&
+		ComboBoxOption_GameModeDifficulty->ComboBox->GetSelectedOptionCount() == 0 &&
 		EditableTextBoxOption_CustomGameModeName->EditableTextBox->GetText().IsEmpty())
 	{
 		ComboBoxOption_GameModeTemplates->ComboBox->SetSelectedOption(BSConfig->DefiningConfig.CustomGameModeName);
@@ -366,7 +368,7 @@ void UCGMWC_Start::OnSelectionChanged_GameModeDifficulty(const TArray<FString>& 
 
 	// Only request update for difficulty if Preset GameMode
 	if (const FString GameModeTemplateString = ComboBoxOption_GameModeTemplates->ComboBox->GetSelectedOption();
-		IsPresetGameMode(GameModeTemplateString))
+		IBSGameModeInterface::IsPresetGameMode(GameModeTemplateString))
 	{
 		RequestGameModeTemplateUpdate.Broadcast(GameModeTemplateString,
 			GetEnumFromString<EGameModeDifficulty>(Selected[0]));

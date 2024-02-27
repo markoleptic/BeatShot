@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SaveLoadInterface.h"
+#include "BSPlayerSettingsInterface.h"
 #include "HttpRequestInterface.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -21,7 +21,7 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FOnLoginButtonClicked, const FLoginPayload L
 
 /** Widget used to prompt a user to login and handle login through HTTP requests */
 UCLASS()
-class USERINTERFACE_API ULoginWidget : public UUserWidget, public ISaveLoadInterface
+class USERINTERFACE_API ULoginWidget : public UUserWidget, public IBSPlayerSettingsInterface
 {
 	GENERATED_BODY()
 

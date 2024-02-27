@@ -3,11 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SaveLoadInterface.h"
 #include "TargetCommon.h"
 #include "GameFramework/Actor.h"
 #include "TargetManager.generated.h"
 
+struct FCommonScoreInfo;
+struct FBSConfig;
 class UCompositeCurveTable;
 class ATarget;
 class UBoxComponent;
@@ -28,7 +29,7 @@ static const TArray AnyDirectionModeMultipliers = {FVector(0, -1, -1), FVector(0
 
 /** Class responsible for spawning and managing targets for all game modes. */
 UCLASS()
-class BEATSHOT_API ATargetManager : public AActor, public ISaveLoadInterface
+class BEATSHOT_API ATargetManager : public AActor
 {
 	GENERATED_BODY()
 	
@@ -116,7 +117,8 @@ protected:
 
 public:
 	/** Initializes  */
-	void Init(const TSharedPtr<FBSConfig>& InConfig, const FPlayerSettings_Game& InPlayerSettings);
+	void Init(const TSharedPtr<FBSConfig>& InConfig, const FCommonScoreInfo& InCommonScoreInfo,
+		const FPlayerSettings_Game& InPlayerSettings);
 	
 	/** Resets all state and destroys all actors. Calls clear on Components who also manage state. */
 	void Clear();

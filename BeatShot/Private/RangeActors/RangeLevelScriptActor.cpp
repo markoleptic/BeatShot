@@ -3,6 +3,7 @@
 
 #include "RangeActors/RangeLevelScriptActor.h"
 #include "BSGameInstance.h"
+#include "SaveGamePlayerSettings.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/PostProcessVolume.h"
 
@@ -19,11 +20,11 @@ void ARangeLevelScriptActor::BeginPlay()
 	}
 
 	UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance());
-	GI->GetPublicVideoAndSoundSettingsChangedDelegate().AddUObject(this, &ThisClass::OnPlayerSettingsChanged_VideoAndSound);
-	OnPlayerSettingsChanged_VideoAndSound(LoadPlayerSettings().VideoAndSound);
+	GI->RegisterPlayerSettingsSubscriber<ARangeLevelScriptActor, FPlayerSettings_VideoAndSound>(this, &ARangeLevelScriptActor::OnPlayerSettingsChanged);
+	OnPlayerSettingsChanged(LoadPlayerSettings().VideoAndSound);
 }
 
-void ARangeLevelScriptActor::OnPlayerSettingsChanged_VideoAndSound(
+void ARangeLevelScriptActor::OnPlayerSettingsChanged(
 	const FPlayerSettings_VideoAndSound& VideoAndSoundSettings)
 {
 	if (PostProcessVolume)

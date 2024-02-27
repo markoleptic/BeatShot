@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "SaveGamePlayerSettings.h"
-#include "SaveLoadInterface.h"
+#include "BSPlayerSettingsInterface.h"
 #include "SubmenuWidgets/SettingsWidgets/BSSettingCategoryWidget.h"
 #include "WidgetComponents/Buttons/VideoSettingButton.h"
 #include "SettingsMenuWidget_VideoAndSound.generated.h"
@@ -27,7 +27,7 @@ class UBSButton;
 
 /** Settings category widget holding Video and Sound settings */
 UCLASS()
-class USERINTERFACE_API USettingsMenuWidget_VideoAndSound : public UBSSettingCategoryWidget, public ISaveLoadInterface
+class USERINTERFACE_API USettingsMenuWidget_VideoAndSound : public UBSSettingCategoryWidget, public IBSPlayerSettingsInterface
 {
 	GENERATED_BODY()
 

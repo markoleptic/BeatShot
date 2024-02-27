@@ -24,13 +24,13 @@ void ABSGun::BeginPlay()
 {
 	Super::BeginPlay();
 
-	OnPlayerSettingsChanged_Game(LoadPlayerSettings().Game);
+	OnPlayerSettingsChanged(LoadPlayerSettings().Game);
 
 	UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance());
-	GI->GetPublicGameSettingsChangedDelegate().AddUObject(this, &ABSGun::OnPlayerSettingsChanged_Game);
+	GI->RegisterPlayerSettingsSubscriber<ABSGun, FPlayerSettings_Game>(this, &ABSGun::OnPlayerSettingsChanged);
 }
 
-void ABSGun::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings)
+void ABSGun::OnPlayerSettingsChanged(const FPlayerSettings_Game& GameSettings)
 {
 	SetShouldRecoil(GameSettings.bShouldRecoil);
 	SetFireRate(GameSettings.bAutomaticFire);

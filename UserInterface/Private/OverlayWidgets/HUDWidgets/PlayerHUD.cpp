@@ -76,7 +76,7 @@ void UPlayerHUD::Init(const TSharedPtr<FBSConfig> InConfig)
 	TextBlock_TotalSongLength->SetText(FText::FromString(Time));
 }
 
-void UPlayerHUD::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings)
+void UPlayerHUD::OnPlayerSettingsChanged(const FPlayerSettings_Game& GameSettings)
 {
 	if (GameSettings.bShowHitTimingWidget && (Config->TargetConfig.TargetDamageType == ETargetDamageType::Hit ||
 		Config->TargetConfig.TargetDamageType == ETargetDamageType::Combined))

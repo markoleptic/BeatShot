@@ -3,6 +3,7 @@
 // ReSharper disable CppNonExplicitConvertingConstructor
 // ReSharper disable CppClassCanBeFinal
 #include "CoreMinimal.h"
+#include "SaveGamePlayerScore.h"
 #include "SaveGamePlayerSettings.h"
 #include "../TestBase/TargetManagerTestWithWorld.h"
 #include "Target/SpawnAreaManagerComponent.h"
@@ -98,7 +99,7 @@ bool FTargetCollisionTest::RunTest(const FString& Parameters)
 	}
 	
 	BSConfig = MakeShared<FBSConfig>(*FoundConfig);
-	TargetManager->Init(BSConfig, FPlayerSettings_Game());
+	TargetManager->Init(BSConfig, FCommonScoreInfo(), FPlayerSettings_Game());
 	TargetManager->SetShouldSpawn(true);
 	
 	for (int Iter = 0; Iter < NumIterations; Iter++)

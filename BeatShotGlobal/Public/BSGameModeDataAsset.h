@@ -275,7 +275,7 @@ enum class ETargetDeactivationCondition : uint8
 {
 	None UMETA(DisplayName="None"),
 	/** DEPRECATED */
-	Persistent UMETA(DisplayName="Persistent"),
+	Persistent_DEPRECATED UMETA(DisplayName="Persistent"),
 	/** Target is deactivated when it receives any damage from the player */
 	OnAnyExternalDamageTaken UMETA(DisplayName="On Any External Damage Taken"),
 	/** Target is deactivated after its damageable window closes */
@@ -339,7 +339,7 @@ enum class ETargetDestructionCondition : uint8
 {
 	None UMETA(DisplayName="None"),
 	/** DEPRECATED */
-	Persistent UMETA(DisplayName="Persistent"),
+	Persistent_DEPRECATED UMETA(DisplayName="Persistent"),
 	/** Target is deactivated after its damageable window closes */
 	OnExpiration UMETA(DisplayName="On Expiration"),
 	/** Target is destroyed when it receives any damage from the player */

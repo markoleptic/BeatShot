@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SaveLoadInterface.h"
+#include "BSPlayerSettingsInterface.h"
 #include "Engine/LevelScriptActor.h"
 #include "RangeLevelScriptActor.generated.h"
 
@@ -12,7 +12,7 @@ class ATimeOfDayManager;
 
 /** The base level used for this game */
 UCLASS()
-class BEATSHOT_API ARangeLevelScriptActor : public ALevelScriptActor, public ISaveLoadInterface
+class BEATSHOT_API ARangeLevelScriptActor : public ALevelScriptActor, public IBSPlayerSettingsInterface
 {
 	GENERATED_BODY()
 
@@ -22,9 +22,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	/** Callback function to respond to video setting changes */
-	UFUNCTION()
-	virtual void
-	OnPlayerSettingsChanged_VideoAndSound(const FPlayerSettings_VideoAndSound& VideoAndSoundSettings) override;
+	virtual void OnPlayerSettingsChanged(const FPlayerSettings_VideoAndSound& VideoAndSoundSettings) override;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Lighting|References")
 	TSoftObjectPtr<APostProcessVolume> PostProcessVolume;

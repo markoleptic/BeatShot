@@ -61,19 +61,26 @@ void ABSPlayerController::BeginPlay()
 		}
 	}*/
 
-	const FPlayerSettings Settings = LoadPlayerSettings();
-	if (Settings.VideoAndSound.bShowFPSCounter)
-	{
-		ShowFPSCounter();
-	}
-	CombatTextFrequency = Settings.Game.CombatTextFrequency;
-	bShowStreakCombatText = Settings.Game.bShowStreakCombatText;
-	bNightModeUnlocked = Settings.User.bNightModeUnlocked;
+	// Initialize variables that depend on Player Settings
+	PlayerSettings = LoadPlayerSettings();
+	OnPlayerSettingsChanged(PlayerSettings.VideoAndSound);
+	OnPlayerSettingsChanged(PlayerSettings.Game);
+	OnPlayerSettingsChanged(PlayerSettings.User);
+	OnPlayerSettingsChanged(PlayerSettings.CrossHair);
+	OnPlayerSettingsChanged(PlayerSettings.AudioAnalyzer);
 
 	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	GI->AddDelegateToOnPlayerSettingsChanged(OnPlayerSettingsChangedDelegate_VideoAndSound);
-	GI->GetPublicVideoAndSoundSettingsChangedDelegate().AddUObject(this, &ABSPlayerController::OnPlayerSettingsChanged);
-	GI->GetPublicGameSettingsChangedDelegate().AddUObject(this, &ABSPlayerController::OnPlayerSettingsChanged);
+	
+	GI->RegisterPlayerSettingsSubscriber<ABSPlayerController, FPlayerSettings_VideoAndSound>(this,
+		&ABSPlayerController::OnPlayerSettingsChanged);
+	GI->RegisterPlayerSettingsSubscriber<ABSPlayerController, FPlayerSettings_Game>(this,
+		&ABSPlayerController::OnPlayerSettingsChanged);
+	GI->RegisterPlayerSettingsSubscriber<ABSPlayerController, FPlayerSettings_User>(this,
+		&ABSPlayerController::OnPlayerSettingsChanged);
+	GI->RegisterPlayerSettingsSubscriber<ABSPlayerController, FPlayerSettings_VideoAndSound>(this,
+		&ABSPlayerController::OnPlayerSettingsChanged);
+	GI->RegisterPlayerSettingsSubscriber<ABSPlayerController, FPlayerSettings_AudioAnalyzer>(this,
+		&ABSPlayerController::OnPlayerSettingsChanged);
 
 	if (UGameplayStatics::GetCurrentLevelName(GetWorld()).Contains("MainMenu"))
 	{
@@ -144,23 +151,24 @@ void ABSPlayerController::ShowMainMenu()
 	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	
 	MainMenuWidget = CreateWidget<UMainMenuWidget>(this, MainMenuClass);
-	MainMenuWidget->AddToViewport();
 	MainMenuWidget->GameModesWidget->OnGameModeStateChanged.AddUObject(GI, &UBSGameInstance::HandleGameModeTransition);
 	MainMenuWidget->OnSteamLoginRequest.BindUObject(this, &ThisClass::InitiateSteamLogin);
-
+	GI->RegisterPlayerSettingsUpdaters(
+		MainMenuWidget->SettingsMenuWidget->GetGameDelegate(),
+		MainMenuWidget->SettingsMenuWidget->GetVideoAndSoundDelegate(),
+		MainMenuWidget->SettingsMenuWidget->GetCrossHairDelegate(),
+		MainMenuWidget->SettingsMenuWidget->GetAudioAnalyzerDelegate(),
+		MainMenuWidget->SettingsMenuWidget->GetUserDelegate(),
+		MainMenuWidget->GetUserDelegate());
+	
+	MainMenuWidget->AddToViewport();
+	
 	if (AMainMenuGameMode* GameMode = Cast<AMainMenuGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
 	{
 		GameMode->SetupTargetManager(MainMenuWidget->GameModesWidget);
 	}
-
-	GI->AddDelegateToOnPlayerSettingsChanged(MainMenuWidget->SettingsMenuWidget->GetGameDelegate());
-	GI->AddDelegateToOnPlayerSettingsChanged(MainMenuWidget->SettingsMenuWidget->GetVideoAndSoundDelegate());
-	GI->AddDelegateToOnPlayerSettingsChanged(MainMenuWidget->SettingsMenuWidget->GetCrossHairDelegate());
-	GI->AddDelegateToOnPlayerSettingsChanged(MainMenuWidget->SettingsMenuWidget->GetAudioAnalyzerDelegate());
-	GI->AddDelegateToOnPlayerSettingsChanged(MainMenuWidget->SettingsMenuWidget->GetUserDelegate());
-	GI->AddDelegateToOnPlayerSettingsChanged(MainMenuWidget->GetUserDelegate());
-
-	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(LoadPlayerSettings().VideoAndSound.FrameRateLimitMenu);
+	
+	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(PlayerSettings.VideoAndSound.FrameRateLimitMenu);
 	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
 
 	if (!bIsLoggedIn)
@@ -193,16 +201,17 @@ void ABSPlayerController::ShowPauseMenu()
 
 	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 
-	GI->AddDelegateToOnPlayerSettingsChanged(PauseMenuWidget->SettingsMenuWidget->GetGameDelegate());
-	GI->AddDelegateToOnPlayerSettingsChanged(PauseMenuWidget->SettingsMenuWidget->GetVideoAndSoundDelegate());
-	GI->AddDelegateToOnPlayerSettingsChanged(PauseMenuWidget->SettingsMenuWidget->GetCrossHairDelegate());
-	GI->AddDelegateToOnPlayerSettingsChanged(PauseMenuWidget->SettingsMenuWidget->GetAudioAnalyzerDelegate());
-	GI->AddDelegateToOnPlayerSettingsChanged(PauseMenuWidget->SettingsMenuWidget->GetUserDelegate());
+	GI->RegisterPlayerSettingsUpdaters(
+		PauseMenuWidget->SettingsMenuWidget->GetGameDelegate(),
+		PauseMenuWidget->SettingsMenuWidget->GetVideoAndSoundDelegate(),
+		PauseMenuWidget->SettingsMenuWidget->GetCrossHairDelegate(),
+		PauseMenuWidget->SettingsMenuWidget->GetAudioAnalyzerDelegate(),
+		PauseMenuWidget->SettingsMenuWidget->GetUserDelegate());
 
 	PauseMenuWidget->QuitMenuWidget->OnGameModeStateChanged.AddUObject(GI, &UBSGameInstance::HandleGameModeTransition);
 	PauseMenuWidget->AddToViewport();
 
-	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(LoadPlayerSettings().VideoAndSound.FrameRateLimitMenu);
+	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(PlayerSettings.VideoAndSound.FrameRateLimitMenu);
 	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
 }
 
@@ -212,8 +221,7 @@ void ABSPlayerController::HidePauseMenu()
 	{
 		PauseMenuWidget->RemoveFromParent();
 		PauseMenuWidget = nullptr;
-		UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(
-			LoadPlayerSettings().VideoAndSound.FrameRateLimitGame);
+		UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(PlayerSettings.VideoAndSound.FrameRateLimitGame);
 		UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
 	}
 }
@@ -224,8 +232,8 @@ void ABSPlayerController::ShowCrossHair()
 	CrossHairWidget = CreateWidget<UCrossHairWidget>(this, CrossHairClass);
 
 	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	GI->GetPublicCrossHairSettingsChangedDelegate().AddUObject(CrossHairWidget,
-		&UCrossHairWidget::OnPlayerSettingsChanged_CrossHair);
+	GI->RegisterPlayerSettingsSubscriber<UCrossHairWidget, FPlayerSettings_CrossHair>(CrossHairWidget.Get(),
+		&UCrossHairWidget::OnPlayerSettingsChanged);
 
 	CrossHairWidget->AddToViewport();
 }
@@ -248,8 +256,9 @@ void ABSPlayerController::ShowPlayerHUD()
 	check(GI->GetBSConfig())
 	PlayerHUDWidget->Init(GI->GetBSConfig());
 	
-	GI->AddDelegateToOnPlayerSettingsChanged(PlayerHUDWidget->GetGameDelegate());
-	GI->GetPublicGameSettingsChangedDelegate().AddUObject(PlayerHUDWidget, &UPlayerHUD::OnPlayerSettingsChanged_Game);
+	GI->RegisterPlayerSettingsUpdaters(PlayerHUDWidget->GetGameDelegate());
+	GI->RegisterPlayerSettingsSubscriber<UPlayerHUD, FPlayerSettings_Game>(PlayerHUDWidget.Get(),
+		&UPlayerHUD::OnPlayerSettingsChanged);
 
 	ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	GameMode->OnSecondPassed.AddUObject(PlayerHUDWidget, &UPlayerHUD::UpdateSongProgress);
@@ -290,7 +299,7 @@ void ABSPlayerController::ShowCountdown()
 	CountdownWidget->OnCountdownCompleted.BindUObject(GameMode, &ABSGameMode::StartGameMode);
 	CountdownWidget->StartAAManagerPlayback.BindUObject(GameMode, &ABSGameMode::StartAAManagerPlayback);
 	CountdownWidget->AddToViewport();
-	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(LoadPlayerSettings().VideoAndSound.FrameRateLimitGame);
+	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(PlayerSettings.VideoAndSound.FrameRateLimitGame);
 	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
 
 	BSCharacter->BindLeftClick();
@@ -316,11 +325,12 @@ void ABSPlayerController::ShowPostGameMenu()
 	PostGameMenuWidget->QuitMenuWidget->OnGameModeStateChanged.AddUObject(GI,
 		&UBSGameInstance::HandleGameModeTransition);
 
-	GI->AddDelegateToOnPlayerSettingsChanged(PostGameMenuWidget->SettingsMenuWidget->GetGameDelegate());
-	GI->AddDelegateToOnPlayerSettingsChanged(PostGameMenuWidget->SettingsMenuWidget->GetVideoAndSoundDelegate());
-	GI->AddDelegateToOnPlayerSettingsChanged(PostGameMenuWidget->SettingsMenuWidget->GetCrossHairDelegate());
-	GI->AddDelegateToOnPlayerSettingsChanged(PostGameMenuWidget->SettingsMenuWidget->GetAudioAnalyzerDelegate());
-	GI->AddDelegateToOnPlayerSettingsChanged(PostGameMenuWidget->SettingsMenuWidget->GetUserDelegate());
+	GI->RegisterPlayerSettingsUpdaters(
+		PostGameMenuWidget->SettingsMenuWidget->GetGameDelegate(),
+		PostGameMenuWidget->SettingsMenuWidget->GetVideoAndSoundDelegate(),
+		PostGameMenuWidget->SettingsMenuWidget->GetCrossHairDelegate(),
+		PostGameMenuWidget->SettingsMenuWidget->GetAudioAnalyzerDelegate(),
+		PostGameMenuWidget->SettingsMenuWidget->GetUserDelegate());
 	
 	PostGameMenuWidget->AddToViewport();
 
@@ -328,7 +338,7 @@ void ABSPlayerController::ShowPostGameMenu()
 	SetShowMouseCursor(true);
 	SetPlayerEnabledState(false);
 
-	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(LoadPlayerSettings().VideoAndSound.FrameRateLimitMenu);
+	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(PlayerSettings.VideoAndSound.FrameRateLimitMenu);
 	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
 }
 
@@ -447,11 +457,10 @@ void ABSPlayerController::LoginUser()
 
 				if (LocalSteamID == ResponseSteamID)
 				{
-					FPlayerSettings_User PlayerSettings = LoadPlayerSettings().User;
-					PlayerSettings.DisplayName = FString(SteamFriends()->GetPersonaName());
-					PlayerSettings.UserID = SteamAuthTicketResponse->SteamID;
-					PlayerSettings.RefreshCookie = SteamAuthTicketResponse->RefreshCookie;
-					SavePlayerSettings(PlayerSettings);
+					PlayerSettings.User.DisplayName = FString(SteamFriends()->GetPersonaName());
+					PlayerSettings.User.UserID = SteamAuthTicketResponse->SteamID;
+					PlayerSettings.User.RefreshCookie = SteamAuthTicketResponse->RefreshCookie;
+					SavePlayerSettings(PlayerSettings.User);
 					bIsLoggedIn = true;
 				}
 				
@@ -623,9 +632,10 @@ void ABSPlayerController::HideRLAgentWidget()
 void ABSPlayerController::ShowCombatText(const int32 Streak, const FTransform& Transform)
 {
 	if (!IsLocalController()) return;
-	if (!bShowStreakCombatText) return;
+	if (!PlayerSettings.Game.bShowStreakCombatText) return;
 
-	if (Streak > 0 && CombatTextFrequency != 0 && Streak % CombatTextFrequency == 0)
+	if (Streak > 0 && PlayerSettings.Game.CombatTextFrequency != 0 &&
+		Streak % PlayerSettings.Game.CombatTextFrequency == 0)
 	{
 		AFloatingTextActor* CombatText = GetWorld()->SpawnActorDeferred<AFloatingTextActor>(FloatingTextActorClass,
 		FTransform(), this, nullptr, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
@@ -656,9 +666,10 @@ void ABSPlayerController::ShowAccuracyText(const float TimeOffset, const FTransf
 	CombatText->FinishSpawning(CombatText->GetTextTransform(Transform, false), false);
 }
 
-void ABSPlayerController::OnPlayerSettingsChanged(const FPlayerSettings_VideoAndSound& PlayerSettings)
+void ABSPlayerController::OnPlayerSettingsChanged(const FPlayerSettings_VideoAndSound& NewVideoAndSoundSettings)
 {
-	if (PlayerSettings.bShowFPSCounter)
+	PlayerSettings.VideoAndSound = NewVideoAndSoundSettings;
+	if (PlayerSettings.VideoAndSound.bShowFPSCounter)
 	{
 		if (!FPSCounterWidget)
 		{
@@ -674,15 +685,24 @@ void ABSPlayerController::OnPlayerSettingsChanged(const FPlayerSettings_VideoAnd
 	}
 }
 
-void ABSPlayerController::OnPlayerSettingsChanged(const FPlayerSettings_Game& GameSettings)
+void ABSPlayerController::OnPlayerSettingsChanged(const FPlayerSettings_Game& NewGameSettings)
 {
-	CombatTextFrequency = GameSettings.CombatTextFrequency;
-	bShowStreakCombatText = GameSettings.bShowStreakCombatText;
+	PlayerSettings.Game = NewGameSettings;
 }
 
-void ABSPlayerController::OnPlayerSettingsChanged(const FPlayerSettings_User& UserSettings)
+void ABSPlayerController::OnPlayerSettingsChanged(const FPlayerSettings_User& NewUserSettings)
 {
-	bNightModeUnlocked = UserSettings.bNightModeUnlocked;
+	PlayerSettings.User = NewUserSettings;
+}
+
+void ABSPlayerController::OnPlayerSettingsChanged(const FPlayerSettings_AudioAnalyzer& NewAudioAnalyzerSettings)
+{
+	PlayerSettings.AudioAnalyzer = NewAudioAnalyzerSettings;
+}
+
+void ABSPlayerController::OnPlayerSettingsChanged(const FPlayerSettings_CrossHair& NewCrossHairSettings)
+{
+	PlayerSettings.CrossHair = NewCrossHairSettings;
 }
 
 void ABSPlayerController::TryResetAuthTicketHandle(const uint32 Handle)

@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SaveLoadInterface.h"
 #include "EnumTagMap.h"
 #include "SubMenuWidgets/GameModesWidgets/CGMW_Base.h"
 #include "SubmenuWidgets/SettingsWidgets/BSSettingCategoryWidget.h"
@@ -47,7 +46,7 @@ DECLARE_MULTICAST_DELEGATE(FRequestComponentUpdate);
 
 /** Base class for child widgets (components) of Custom Game Modes Widgets (UCGMW) */
 UCLASS(Abstract)
-class USERINTERFACE_API UCGMWC_Base : public UBSSettingCategoryWidget, public ISaveLoadInterface
+class USERINTERFACE_API UCGMWC_Base : public UBSSettingCategoryWidget
 {
 	GENERATED_BODY()
 

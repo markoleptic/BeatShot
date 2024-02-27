@@ -4,10 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "BSVisualizerDefinition.h"
-#include "SaveLoadInterface.h"
 #include "GameFramework/Actor.h"
 #include "VisualizerBase.generated.h"
 
+struct FPlayerSettings_AudioAnalyzer;
 class UBSVisualizerDefinition;
 class USplineComponent;
 class USceneComponent;

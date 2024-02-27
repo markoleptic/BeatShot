@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "BSGameModeDataAsset.h"
-#include "SaveLoadInterface.h"
 #include "Blueprint/UserWidget.h"
 #include "SubMenuWidgets/GameModesWidgets/GameModesWidget.h"
 #include "CGMW_Base.generated.h"
@@ -66,7 +65,7 @@ struct FCustomGameModeCategoryInfo
 
 /** Base class for the two types of CustomGameModesWidgets */
 UCLASS()
-class USERINTERFACE_API UCGMW_Base : public UUserWidget, public ISaveLoadInterface
+class USERINTERFACE_API UCGMW_Base : public UUserWidget
 {
 	GENERATED_BODY()
 
@@ -94,7 +93,7 @@ public:
 	bool GetAllNonStartChildWidgetOptionsValid() const;
 
 	/** Clears all GameModeTemplate ComboBox options and repopulates */
-	void RefreshGameModeTemplateComboBoxOptions() const;
+	void RefreshGameModeTemplateComboBoxOptions(const TArray<FBSConfig>& CustomGameModes) const;
 
 	/** Broadcast any time Widget_Start broadcasts their RequestGameModeTemplateUpdate delegate */
 	FRequestGameModeTemplateUpdate RequestGameModeTemplateUpdate;
@@ -112,9 +111,6 @@ protected:
 	/** Adds child widgets to ChildWidgets array, binds to Widget_Start's RequestGameModeTemplateUpdate */
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
-
-	/** Override to provide widget with access to FindPresetGameMode functions from ISaveLoadInterface */
-	virtual UBSGameModeDataAsset* GetGameModeDataAsset() const override;
 
 	/** Called any time Widget_Start broadcasts their RequestGameModeTemplateUpdate delegate */
 	virtual void OnRequestGameModeTemplateUpdate(const FString& InGameMode, const EGameModeDifficulty& Difficulty);

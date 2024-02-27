@@ -151,9 +151,9 @@ void AWallMenu::BeginPlay()
 
 	if (UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld())))
 	{
-		GI->AddDelegateToOnPlayerSettingsChanged(OnPlayerSettingsChangedDelegate_Game);
-		GI->GetPublicGameSettingsChangedDelegate().AddUObject(this, &AWallMenu::OnPlayerSettingsChanged_Game);
-		GI->GetPublicUserSettingsChangedDelegate().AddUObject(this, &AWallMenu::OnPlayerSettingsChanged_User);
+		GI->RegisterPlayerSettingsUpdaters(OnPlayerSettingsChangedDelegate_Game);
+		GI->RegisterPlayerSettingsSubscriber<AWallMenu, FPlayerSettings_Game>(this, &AWallMenu::OnPlayerSettingsChanged);
+		GI->RegisterPlayerSettingsSubscriber<AWallMenu, FPlayerSettings_User>(this, &AWallMenu::OnPlayerSettingsChanged);
 	}
 
 	if (TimeOfDayManager)
@@ -255,8 +255,9 @@ void AWallMenu::BeginPlay()
 		Pair.Value.OnText->SetFrontMaterial(DynamicMatFrontOn);
 		Pair.Value.OffText->SetFrontMaterial(DynamicMatFrontOff);
 	}
-	
-	Init(LoadPlayerSettings().Game, LoadPlayerSettings().User, false);
+
+	const FPlayerSettings PlayerSettings = LoadPlayerSettings();
+	Init(PlayerSettings.Game, PlayerSettings.User, false);
 	bIsWaitingOnTimeOfDayTransition = false;
 }
 
@@ -284,25 +285,25 @@ void AWallMenu::OnGameplayEffectAppliedToSelf(UAbilitySystemComponent* ABS, cons
 		if (Found)
 		{
 			bool bRequiresSave = false;
-			FPlayerSettings_Game PlayerSettings_Game = LoadPlayerSettings().Game;
-			if (Found->SettingType == "bNightModeSelected" && LoadPlayerSettings().User.bNightModeUnlocked)
+			FPlayerSettings PlayerSettings = LoadPlayerSettings();
+			if (Found->SettingType == "bNightModeSelected" && PlayerSettings.User.bNightModeUnlocked)
 			{
 				if (!bIsWaitingOnTimeOfDayTransition)
 				{
-					bRequiresSave = (PlayerSettings_Game.bNightModeSelected != Found->bIsOnText) || bRequiresSave;
-					PlayerSettings_Game.bNightModeSelected = Found->bIsOnText;
+					bRequiresSave = (PlayerSettings.Game.bNightModeSelected != Found->bIsOnText) || bRequiresSave;
+					PlayerSettings.Game.bNightModeSelected = Found->bIsOnText;
 				}
 			}
 			else if (Found->SettingType == "bShowLightVisualizers")
 			{
 				// Don't do anything if its already on
-				if (Found->bIsOnText && PlayerSettings_Game.bShowLightVisualizers)
+				if (Found->bIsOnText && PlayerSettings.Game.bShowLightVisualizers)
 				{
 					return;
 				}
 
 				bRequiresSave = true;
-				PlayerSettings_Game.bShowLightVisualizers = Found->bIsOnText;
+				PlayerSettings.Game.bShowLightVisualizers = Found->bIsOnText;
 
 				// By default, only turn on 3 lights when initially toggling on
 				if (Found->bIsOnText)
@@ -314,12 +315,12 @@ void AWallMenu::OnGameplayEffectAppliedToSelf(UAbilitySystemComponent* ABS, cons
 					ToggleText(false, ToggleText_LVLeftBeam_On, ToggleText_LVLeftBeam_Off);
 					ToggleText(false, ToggleText_LVRightBeam_On, ToggleText_LVRightBeam_Off);
 
-					PlayerSettings_Game.bShow_LVTopBeam = true;
-					PlayerSettings_Game.bShow_LVLeftCube = true;
-					PlayerSettings_Game.bShow_LVRightCube = true;
-					PlayerSettings_Game.bShow_LVFrontBeam = false;
-					PlayerSettings_Game.bShow_LVLeftBeam = false;
-					PlayerSettings_Game.bShow_LVRightBeam = false;
+					PlayerSettings.Game.bShow_LVTopBeam = true;
+					PlayerSettings.Game.bShow_LVLeftCube = true;
+					PlayerSettings.Game.bShow_LVRightCube = true;
+					PlayerSettings.Game.bShow_LVFrontBeam = false;
+					PlayerSettings.Game.bShow_LVLeftBeam = false;
+					PlayerSettings.Game.bShow_LVRightBeam = false;
 				}
 				// Toggle all off if disabled
 				else if (!Found->bIsOnText)
@@ -331,48 +332,48 @@ void AWallMenu::OnGameplayEffectAppliedToSelf(UAbilitySystemComponent* ABS, cons
 					ToggleText(false, ToggleText_LVLeftBeam_On, ToggleText_LVLeftBeam_Off);
 					ToggleText(false, ToggleText_LVRightBeam_On, ToggleText_LVRightBeam_Off);
 
-					PlayerSettings_Game.bShow_LVTopBeam = false;
-					PlayerSettings_Game.bShow_LVLeftCube = false;
-					PlayerSettings_Game.bShow_LVRightCube = false;
-					PlayerSettings_Game.bShow_LVFrontBeam = false;
-					PlayerSettings_Game.bShow_LVLeftBeam = false;
-					PlayerSettings_Game.bShow_LVRightBeam = false;
+					PlayerSettings.Game.bShow_LVTopBeam = false;
+					PlayerSettings.Game.bShow_LVLeftCube = false;
+					PlayerSettings.Game.bShow_LVRightCube = false;
+					PlayerSettings.Game.bShow_LVFrontBeam = false;
+					PlayerSettings.Game.bShow_LVLeftBeam = false;
+					PlayerSettings.Game.bShow_LVRightBeam = false;
 				}
 			}
 			else if (Found->SettingType == "bShow_LVFrontBeam")
 			{
-				bRequiresSave = (PlayerSettings_Game.bShow_LVFrontBeam != Found->bIsOnText) || bRequiresSave;
-				PlayerSettings_Game.bShow_LVFrontBeam = Found->bIsOnText;
+				bRequiresSave = (PlayerSettings.Game.bShow_LVFrontBeam != Found->bIsOnText) || bRequiresSave;
+				PlayerSettings.Game.bShow_LVFrontBeam = Found->bIsOnText;
 			}
 			else if (Found->SettingType == "bShow_LVLeftBeam")
 			{
-				bRequiresSave = (PlayerSettings_Game.bShow_LVLeftBeam != Found->bIsOnText) || bRequiresSave;
-				PlayerSettings_Game.bShow_LVLeftBeam = Found->bIsOnText;
+				bRequiresSave = (PlayerSettings.Game.bShow_LVLeftBeam != Found->bIsOnText) || bRequiresSave;
+				PlayerSettings.Game.bShow_LVLeftBeam = Found->bIsOnText;
 			}
 			else if (Found->SettingType == "bShow_LVRightBeam")
 			{
-				bRequiresSave = (PlayerSettings_Game.bShow_LVRightBeam != Found->bIsOnText) || bRequiresSave;
-				PlayerSettings_Game.bShow_LVRightBeam = Found->bIsOnText;
+				bRequiresSave = (PlayerSettings.Game.bShow_LVRightBeam != Found->bIsOnText) || bRequiresSave;
+				PlayerSettings.Game.bShow_LVRightBeam = Found->bIsOnText;
 			}
 			else if (Found->SettingType == "bShow_LVTopBeam")
 			{
-				bRequiresSave = (PlayerSettings_Game.bShow_LVTopBeam != Found->bIsOnText) || bRequiresSave;
-				PlayerSettings_Game.bShow_LVTopBeam = Found->bIsOnText;
+				bRequiresSave = (PlayerSettings.Game.bShow_LVTopBeam != Found->bIsOnText) || bRequiresSave;
+				PlayerSettings.Game.bShow_LVTopBeam = Found->bIsOnText;
 			}
 			else if (Found->SettingType == "bShow_LVLeftCube")
 			{
-				bRequiresSave = (PlayerSettings_Game.bShow_LVLeftCube != Found->bIsOnText) || bRequiresSave;
-				PlayerSettings_Game.bShow_LVLeftCube = Found->bIsOnText;
+				bRequiresSave = (PlayerSettings.Game.bShow_LVLeftCube != Found->bIsOnText) || bRequiresSave;
+				PlayerSettings.Game.bShow_LVLeftCube = Found->bIsOnText;
 			}
 			else if (Found->SettingType == "bShow_LVRightCube")
 			{
-				bRequiresSave = (PlayerSettings_Game.bShow_LVRightCube != Found->bIsOnText) || bRequiresSave;
-				PlayerSettings_Game.bShow_LVRightCube = Found->bIsOnText;
+				bRequiresSave = (PlayerSettings.Game.bShow_LVRightCube != Found->bIsOnText) || bRequiresSave;
+				PlayerSettings.Game.bShow_LVRightCube = Found->bIsOnText;
 			}
 			
 			if (bRequiresSave)
 			{
-				SavePlayerSettings(PlayerSettings_Game);
+				SavePlayerSettings(PlayerSettings.Game);
 				ToggleText(Found->bIsOnText, Found->OnText.Get(), Found->OffText.Get());
 			}
 		}
@@ -400,7 +401,8 @@ void AWallMenu::OnTimeOfDayChangeCompleted(const ETimeOfDay NewTimeOfDay)
 	bIsWaitingOnTimeOfDayTransition = false;
 }
 
-void AWallMenu::Init(const FPlayerSettings_Game& GameSettings, const FPlayerSettings_User& UserSettings, const bool bFromSettingsUpdate)
+void AWallMenu::Init(const FPlayerSettings_Game& GameSettings, const FPlayerSettings_User& UserSettings,
+	const bool bFromSettingsUpdate)
 {
 	MainText_Enable_NightMode->SetVisibility(UserSettings.bNightModeUnlocked);
 	ToggleText_NightMode_On->SetVisibility(UserSettings.bNightModeUnlocked);
@@ -435,12 +437,12 @@ void AWallMenu::Init(const FPlayerSettings_Game& GameSettings, const FPlayerSett
 	}
 }
 
-void AWallMenu::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings)
+void AWallMenu::OnPlayerSettingsChanged(const FPlayerSettings_Game& GameSettings)
 {
 	Init(GameSettings, LoadPlayerSettings().User, true);
 }
 
-void AWallMenu::OnPlayerSettingsChanged_User(const FPlayerSettings_User& UserSettings)
+void AWallMenu::OnPlayerSettingsChanged(const FPlayerSettings_User& UserSettings)
 {
 	Init(LoadPlayerSettings().Game, UserSettings, true);
 }

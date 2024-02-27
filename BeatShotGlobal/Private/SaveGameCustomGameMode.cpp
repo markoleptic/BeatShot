@@ -3,19 +3,14 @@
 
 #include "SaveGameCustomGameMode.h"
 
-USaveGameCustomGameMode::USaveGameCustomGameMode() : Version(-1)
+USaveGameCustomGameMode::USaveGameCustomGameMode()
 {
 }
 
 void USaveGameCustomGameMode::Serialize(FStructuredArchive::FRecord Record)
 {
 	Super::Serialize(Record);
-	FArchive& UnderlyingArchive = Record.GetUnderlyingArchive();
-	if (UnderlyingArchive.IsLoading())
-	{
-		UnderlyingArchive << Version;
-		UE_LOG(LogTemp, Warning, TEXT("Version: %d"), Version);
-	}
+	LastLoadedVersion = Version;
 }
 
 TArray<FBSConfig> USaveGameCustomGameMode::GetCustomGameModes() const
@@ -23,16 +18,17 @@ TArray<FBSConfig> USaveGameCustomGameMode::GetCustomGameModes() const
 	return CustomGameModes;
 }
 
-FBSConfig USaveGameCustomGameMode::FindCustomGameMode(const FString& GameModeName) const
+bool USaveGameCustomGameMode::FindCustomGameMode(const FString& GameModeName, FBSConfig& OutConfig) const
 {
 	for (const FBSConfig& Mode : CustomGameModes)
 	{
 		if (Mode.DefiningConfig.CustomGameModeName.Equals(GameModeName))
 		{
-			return Mode;
+			OutConfig = Mode;
+			return true;
 		}
 	}
-	return FBSConfig();
+	return false;
 }
 
 void USaveGameCustomGameMode::SaveCustomGameMode(const FBSConfig& InCustomGameMode)
@@ -72,4 +68,40 @@ bool USaveGameCustomGameMode::IsCustomGameMode(const FString& GameModeName) cons
 		}
 	}
 	return false;
+}
+
+void USaveGameCustomGameMode::UpgradeCustomGameModes()
+{
+	while (Version < Constants::CustomGameModeVersion)
+	{
+		switch (Version++)
+		{
+		case 0:
+			{
+				for (FBSConfig& Mode : CustomGameModes)
+				{
+					UpgradeCustomGameModeToVersion1(Mode);
+				}
+			}
+			break;
+		default:
+			break;
+		}
+	}
+}
+
+void USaveGameCustomGameMode::UpgradeCustomGameModeToVersion1(FBSConfig& InConfig)
+{
+	if (InConfig.TargetConfig.BoundsScalingPolicy == EBoundsScalingPolicy::Static)
+	{
+		InConfig.DynamicSpawnAreaScaling.StartBounds = InConfig.TargetConfig.BoxBounds;
+	}
+	if (InConfig.TargetConfig.TargetDeactivationConditions.Contains(ETargetDeactivationCondition::Persistent_DEPRECATED))
+	{
+		InConfig.TargetConfig.TargetDeactivationConditions.Remove(ETargetDeactivationCondition::Persistent_DEPRECATED);
+	}
+	if (InConfig.TargetConfig.TargetDestructionConditions.Contains(ETargetDestructionCondition::Persistent_DEPRECATED))
+	{
+		InConfig.TargetConfig.TargetDestructionConditions.Remove(ETargetDestructionCondition::Persistent_DEPRECATED);
+	}
 }

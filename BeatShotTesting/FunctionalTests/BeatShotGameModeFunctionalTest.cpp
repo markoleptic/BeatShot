@@ -2,6 +2,8 @@
 
 
 #include "BeatShotGameModeFunctionalTest.h"
+
+#include "SaveGamePlayerScore.h"
 #include "Algo/RandomShuffle.h"
 #include "Target/SpawnArea.h"
 #include "Target/SpawnAreaManagerComponent.h"
@@ -137,7 +139,7 @@ void ABeatShotGameModeFunctionalTest::StartGameMode()
 	}
 	
 	GameModeConfig = MakeShareable(new FBSConfig(GameModesToTest[CurrentIndex]));
-	TargetManager->Init(GameModeConfig, PlayerSettings_Game);
+	TargetManager->Init(GameModeConfig, FCommonScoreInfo(), PlayerSettings_Game);
 	TargetManager->SetShouldSpawn(true);
 	GetWorldTimerManager().SetTimer(GameModeTimer, this, &ThisClass::StopGameMode, GameModeDuration, false);
 	GetWorldTimerManager().SetTimer(BeatTimer, this, &ThisClass::OnAudioAnalyzerBeat, BeatFrequency, true,

@@ -88,7 +88,7 @@ void ATargetManager::Tick(float DeltaTime)
 	}
 }
 
-void ATargetManager::Init(const TSharedPtr<FBSConfig>& InConfig, const FPlayerSettings_Game& InPlayerSettings)
+void ATargetManager::Init(const TSharedPtr<FBSConfig>& InConfig, const FCommonScoreInfo& InCommonScoreInfo, const FPlayerSettings_Game& InPlayerSettings)
 {
 	Clear();
 	BSConfig = InConfig;
@@ -122,8 +122,7 @@ void ATargetManager::Init(const TSharedPtr<FBSConfig>& InConfig, const FPlayerSe
 	// Init RLC
 	if (BSConfig->IsCompatibleWithReinforcementLearning())
 	{
-		const FCommonScoreInfo CommonScoreInfo = FindOrAddCommonScoreInfo(BSConfig->DefiningConfig);
-		const FRLAgentParams Params(BSConfig->AIConfig, CommonScoreInfo, SpawnAreaManager->GetSpawnAreaSize());
+		const FRLAgentParams Params(BSConfig->AIConfig, InCommonScoreInfo, SpawnAreaManager->GetSpawnAreaSize());
 		RLComponent->Init(Params);
 
 		// Bind the SpawnAreaManager to the RLComponent if it should request activation locations
@@ -144,7 +143,7 @@ void ATargetManager::Init(const TSharedPtr<FBSConfig>& InConfig, const FPlayerSe
 			Options.MaximumIntegralDigits = 1;
 			Options.MinimumIntegralDigits = 1;
 			UE_LOG(LogTargetManager, Display, TEXT("Loaded QTable:"));
-			USaveGamePlayerScore::PrintQTable(BSConfig->DefiningConfig, CommonScoreInfo, Options);
+			USaveGamePlayerScore::PrintQTable(BSConfig->DefiningConfig, InCommonScoreInfo, Options);
 		}
 		#endif
 	}

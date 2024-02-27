@@ -3,11 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BSPlayerSettingsInterface.h"
 #include "SaveGamePlayerSettings.h"
-#include "SaveLoadInterface.h"
 #include "GameFramework/GameModeBase.h"
 #include "MainMenuGameMode.generated.h"
 
+struct FBSConfig;
 class UGameModesWidget;
 class ATargetManagerPreview;
 class ABSPlayerController;
@@ -16,7 +17,7 @@ class UTargetWidget;
 /** Game mode used for the Main Menu level. Responsible for spawning a Target Manager for game mode preview purposes,
  *  which is bound to the GameModesWidget. */
 UCLASS()
-class BEATSHOT_API AMainMenuGameMode : public AGameModeBase, public ISaveLoadInterface
+class BEATSHOT_API AMainMenuGameMode : public AGameModeBase, public IBSPlayerSettingsInterface
 {
 	GENERATED_BODY()
 
@@ -24,7 +25,7 @@ public:
 	AMainMenuGameMode();
 
 	virtual void BeginPlay() override;
-	virtual void OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings) override;
+	virtual void OnPlayerSettingsChanged(const FPlayerSettings_Game& GameSettings) override;
 
 	/** Enables communication between GameModesWidget and TargetManager. */
 	void SetupTargetManager(UGameModesWidget* GameModesWidget);

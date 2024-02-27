@@ -3,9 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BSGameModeInterface.h"
 #include "BSWidgetInterface.h"
 #include "HttpRequestInterface.h"
-#include "SaveLoadInterface.h"
 #include "Blueprint/UserWidget.h"
 #include "OverlayWidgets/PopupWidgets/PopupMessageWidget.h"
 #include "WidgetComponents/BSCarouselNavBar.h"
@@ -103,15 +103,16 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FOnGameModeBreakingChange, const bool bIsGam
 /** The base widget for selecting or customizing a game mode. The custom portion is split into multiple
  *  SettingsCategoryWidgets. Includes a default game modes section */
 UCLASS()
-class USERINTERFACE_API UGameModesWidget : public UUserWidget, public ISaveLoadInterface, public IBSWidgetInterface, public IHttpRequestInterface
+class USERINTERFACE_API UGameModesWidget : public UUserWidget, public IBSWidgetInterface,
+	public IHttpRequestInterface, public IBSGameModeInterface
 {
 	GENERATED_BODY()
 
 	virtual void NativeConstruct() override;
 	virtual void NativePreConstruct() override;
 	virtual void NativeDestruct() override;
-	virtual UBSGameModeDataAsset* GetGameModeDataAsset() const override { return GameModeDataAsset.Get(); }
 	virtual UTooltipWidget* ConstructTooltipWidget() override { return nullptr; }
+	TArray<FBSConfig> LoadCustomGameModesWrapper();
 
 public:
 	/** Returns BSConfig */
@@ -338,4 +339,7 @@ private:
 
 	/** Whether or not one of the custom game modes widgets has at least one breaking game mode option, or none */
 	bool bGameModeBreakingOptionPresent = false;
+
+	/** Whether or not the user has any Custom Game Modes saved */
+	bool bCustomGameModesEmpty = true;
 };

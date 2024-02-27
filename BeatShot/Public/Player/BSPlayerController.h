@@ -4,8 +4,10 @@
 
 
 #include "CoreMinimal.h"
+#include "BSPlayerScoreInterface.h"
+#include "BSPlayerSettingsInterface.h"
 #include "HttpRequestInterface.h"
-#include "SaveLoadInterface.h"
+#include "SaveGamePlayerSettings.h"
 #include "Target/ReinforcementLearningComponent.h"
 #include "BSPlayerController.generated.h"
 
@@ -29,7 +31,8 @@ DECLARE_DELEGATE(FOnScreenFadeToBlackFinish);
 /** Base PlayerController class for this game. Responsible for adding any main widget from the UserInterface module
  *  to the viewport (MainMenuWidget, PauseMenu, PostGameModeMenu), and several other overlay widgets. */
 UCLASS()
-class BEATSHOT_API ABSPlayerController : public APlayerController, public ISaveLoadInterface, public IHttpRequestInterface
+class BEATSHOT_API ABSPlayerController : public APlayerController, public IHttpRequestInterface,
+	public IBSPlayerSettingsInterface, public IBSPlayerScoreInterface
 {
 	GENERATED_BODY()
 
@@ -48,6 +51,8 @@ class BEATSHOT_API ABSPlayerController : public APlayerController, public ISaveL
 public:
 	/** Returns the possessed character. */
 	ABSCharacterBase* GetBSCharacter() const;
+
+	const FPlayerSettings& GetPlayerSettings() const { return PlayerSettings; }
 	
 	/** Sets the enabled state of the pawn. */
 	void SetPlayerEnabledState(const bool bPlayerEnabled);
@@ -184,10 +189,12 @@ private:
 	/** Callback function for screen fade widget's OnFadeFromBlackFinish delegate. */
 	void OnFadeScreenFromBlackFinish();
 	
-	/** Callback function for when video and sound settings change. */
-	void OnPlayerSettingsChanged(const FPlayerSettings_VideoAndSound& PlayerSettings);
-	void OnPlayerSettingsChanged(const FPlayerSettings_Game& GameSettings);
-	void OnPlayerSettingsChanged(const FPlayerSettings_User& UserSettings);
+	/** Callback functions for when settings change. */
+	virtual void OnPlayerSettingsChanged(const FPlayerSettings_VideoAndSound& NewVideoAndSoundSettings) override;
+	virtual void OnPlayerSettingsChanged(const FPlayerSettings_Game& NewGameSettings) override;
+	virtual void OnPlayerSettingsChanged(const FPlayerSettings_User& NewUserSettings) override;
+	virtual void OnPlayerSettingsChanged(const FPlayerSettings_AudioAnalyzer& NewAudioAnalyzerSettings) override;
+	virtual void OnPlayerSettingsChanged(const FPlayerSettings_CrossHair& NewCrossHairSettings) override;
 
 	/** Calls ResetAuthTicket from SteamAPI if both MainMenuWidget and BeatShot API requests were completed. */
 	void TryResetAuthTicketHandle(const uint32 Handle);
@@ -225,12 +232,6 @@ private:
 	/** Z Order for the FPS counter widget. */
 	const int32 ZOrderFPSCounter = 19;
 
-	/** Cached player setting for how often to show combat text. */
-	int32 CombatTextFrequency = 5;
-
-	/** Cached player setting whether or not to show combat text. */
-	bool bShowStreakCombatText = false;
-
-	/** Cached player setting whether or not night mode has been unlocked. */
-	bool bNightModeUnlocked = false;
+	UPROPERTY()
+	FPlayerSettings PlayerSettings;
 };

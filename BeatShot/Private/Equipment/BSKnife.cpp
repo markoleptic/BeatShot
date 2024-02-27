@@ -18,13 +18,13 @@ void ABSKnife::BeginPlay()
 {
 	Super::BeginPlay();
 
-	OnPlayerSettingsChanged_Game(LoadPlayerSettings().Game);
+	OnPlayerSettingsChanged(LoadPlayerSettings().Game);
 
 	UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance());
-	GI->GetPublicGameSettingsChangedDelegate().AddUObject(this, &ThisClass::OnPlayerSettingsChanged_Game);
+	GI->RegisterPlayerSettingsSubscriber<ABSKnife, FPlayerSettings_Game>(this, &ABSKnife::OnPlayerSettingsChanged);
 }
 
-void ABSKnife::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings)
+void ABSKnife::OnPlayerSettingsChanged(const FPlayerSettings_Game& GameSettings)
 {
 	SetShowKnifeMesh(GameSettings.bShowWeaponMesh);
 }

@@ -35,16 +35,12 @@ void ABSGameMode::BeginPlay()
 	Super::BeginPlay();
 
 	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	GI->AddDelegateToOnPlayerSettingsChanged(OnPlayerSettingsChangedDelegate_Game);
-	GI->AddDelegateToOnPlayerSettingsChanged(OnPlayerSettingsChangedDelegate_User);
-	GI->AddDelegateToOnPlayerSettingsChanged(OnPlayerSettingsChangedDelegate_AudioAnalyzer);
-	GI->AddDelegateToOnPlayerSettingsChanged(OnPlayerSettingsChangedDelegate_VideoAndSound);
-	GI->GetPublicGameSettingsChangedDelegate().AddUObject(this, &ABSGameMode::OnPlayerSettingsChanged_Game);
-	GI->GetPublicUserSettingsChangedDelegate().AddUObject(this, &ABSGameMode::OnPlayerSettingsChanged_User);
-	GI->GetPublicAudioAnalyzerSettingsChangedDelegate().AddUObject(this,
-		&ABSGameMode::OnPlayerSettingsChanged_AudioAnalyzer);
-	GI->GetPublicVideoAndSoundSettingsChangedDelegate().AddUObject(this,
-		&ABSGameMode::OnPlayerSettingsChanged_VideoAndSound);
+	
+	GI->RegisterPlayerSettingsSubscriber<ABSGameMode, FPlayerSettings_Game>(this, &ABSGameMode::OnPlayerSettingsChanged);
+	GI->RegisterPlayerSettingsSubscriber<ABSGameMode, FPlayerSettings_AudioAnalyzer>(this,
+		&ABSGameMode::OnPlayerSettingsChanged);
+	GI->RegisterPlayerSettingsSubscriber<ABSGameMode, FPlayerSettings_VideoAndSound>(this,
+		&ABSGameMode::OnPlayerSettingsChanged);
 
 	InitializeGameMode(GI->GetBSConfig());
 }
@@ -106,13 +102,12 @@ void ABSGameMode::InitializeGameMode(const TSharedPtr<FBSConfig> InConfig)
 		Controller->FadeScreenFromBlack();
 		Controller->ShowCountdown();
 	}
-
+	
 	/* Load settings */
 	const FPlayerSettings PlayerSettings = LoadPlayerSettings();
-	OnPlayerSettingsChanged_Game(PlayerSettings.Game);
-	OnPlayerSettingsChanged_User(PlayerSettings.User);
-	OnPlayerSettingsChanged_AudioAnalyzer(PlayerSettings.AudioAnalyzer);
-	OnPlayerSettingsChanged_VideoAndSound(PlayerSettings.VideoAndSound);
+	OnPlayerSettingsChanged(PlayerSettings.Game);
+	OnPlayerSettingsChanged(PlayerSettings.VideoAndSound);
+	OnPlayerSettingsChanged(PlayerSettings.AudioAnalyzer);
 
 	/* Get config from Game Instance */
 	check(InConfig);
@@ -124,7 +119,8 @@ void ABSGameMode::InitializeGameMode(const TSharedPtr<FBSConfig> InConfig)
 		TargetManager = GetWorld()->SpawnActor<ATargetManager>(TargetManagerClass, FVector::Zero(),
 			FRotator::ZeroRotator, SpawnParameters);
 	}
-	TargetManager->Init(BSConfig, PlayerSettings.Game);
+	const FCommonScoreInfo CommonScoreInfo = FindOrAddCommonScoreInfo(BSConfig->DefiningConfig);
+	TargetManager->Init(BSConfig, CommonScoreInfo, PlayerSettings.Game);
 
 	
 	// Spawn VisualizerManager if not spawned, initialize it
@@ -348,22 +344,22 @@ void ABSGameMode::StartAAManagerPlayback()
 		else
 		{
 			/* If no AAPlayer, game has started and should use AATracker for audio playback */
-			SetAAManagerVolume(LoadPlayerSettings().VideoAndSound.GlobalVolume,
-				LoadPlayerSettings().VideoAndSound.MusicVolume, AATracker);
+			SetAAManagerVolume(VideoAndSoundSettings.GlobalVolume,
+				VideoAndSoundSettings.MusicVolume, AATracker);
 		}
 		break;
 	case EAudioFormat::Capture:
 		{
 			AATracker->StartCapture(BSConfig->AudioConfig.bPlaybackAudio, false);
-			SetAAManagerVolume(LoadPlayerSettings().VideoAndSound.GlobalVolume,
-				LoadPlayerSettings().VideoAndSound.MusicVolume, AATracker);
+			SetAAManagerVolume(VideoAndSoundSettings.GlobalVolume,
+				VideoAndSoundSettings.MusicVolume, AATracker);
 			break;
 		}
 	case EAudioFormat::Loopback:
 		{
 			AATracker->StartLoopback(false);
-			SetAAManagerVolume(LoadPlayerSettings().VideoAndSound.GlobalVolume,
-				LoadPlayerSettings().VideoAndSound.MusicVolume, AATracker);
+			SetAAManagerVolume(VideoAndSoundSettings.GlobalVolume,
+				VideoAndSoundSettings.MusicVolume, AATracker);
 			break;
 		}
 	default:
@@ -517,7 +513,7 @@ void ABSGameMode::PlayAAPlayer() const
 		return;
 	}
 	AAPlayer->Play();
-	SetAAManagerVolume(LoadPlayerSettings().VideoAndSound.GlobalVolume, LoadPlayerSettings().VideoAndSound.MusicVolume,
+	SetAAManagerVolume(VideoAndSoundSettings.GlobalVolume, VideoAndSoundSettings.MusicVolume,
 		AAPlayer);
 	UE_LOG(LogTemp, Display, TEXT("Now Playing AAPlayer %f"), AAPlayer->GetPlaybackVolume());
 }
@@ -713,7 +709,7 @@ void ABSGameMode::GetCompletedPlayerScores(FPlayerScore& InScore)
 	InScore.Completion = FloatDivide(InScore.TargetsHit, InScore.TargetsSpawned);
 }
 
-void ABSGameMode::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings)
+void ABSGameMode::OnPlayerSettingsChanged(const FPlayerSettings_Game& GameSettings)
 {
 	if (VisualizerManager)
 	{
@@ -725,17 +721,18 @@ void ABSGameMode::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameS
 	}
 }
 
-void ABSGameMode::OnPlayerSettingsChanged_AudioAnalyzer(const FPlayerSettings_AudioAnalyzer& AudioAnalyzerSettings)
+void ABSGameMode::OnPlayerSettingsChanged(const FPlayerSettings_AudioAnalyzer& NewAudioAnalyzerSettings)
 {
-	AASettings = AudioAnalyzerSettings;
+	AASettings = NewAudioAnalyzerSettings;
 	if (VisualizerManager)
 	{
-		VisualizerManager->UpdateAASettings(AudioAnalyzerSettings);
+		VisualizerManager->UpdateAASettings(AASettings);
 	}
 }
 
-void ABSGameMode::OnPlayerSettingsChanged_VideoAndSound(const FPlayerSettings_VideoAndSound& VideoAndSoundSettings)
+void ABSGameMode::OnPlayerSettingsChanged(const FPlayerSettings_VideoAndSound& NewVideoAndSoundSettings)
 {
+	VideoAndSoundSettings = NewVideoAndSoundSettings;
 	SetAAManagerVolume(VideoAndSoundSettings.GlobalVolume, VideoAndSoundSettings.MusicVolume);
 }
 
@@ -831,13 +828,9 @@ void ABSGameMode::UpdateStreak(ABSPlayerController* Controller, FPlayerScore& In
 	}
 	Controller->ShowCombatText(Streak, Transform);
 
-	if (Streak > StreakThreshold && !Controller->LoadPlayerSettings().User.bNightModeUnlocked)
+	if (Streak > StreakThreshold && !Controller->GetPlayerSettings().User.bNightModeUnlocked)
 	{
-		if (OnStreakThresholdPassed.IsBound())
-		{
-			OnStreakThresholdPassed.Execute();
-		}
-		FPlayerSettings_User Settings = Controller->LoadPlayerSettings().User;
+		FPlayerSettings_User Settings = Controller->GetPlayerSettings().User;
 		Settings.bNightModeUnlocked = true;
 		Controller->SavePlayerSettings(Settings);
 	}
@@ -872,7 +865,7 @@ float ABSGameMode::GetScoreFromTimeAlive(const float InTimeAlive) const
 	// Early shot
 	if (InTimeAlive < BSConfig->TargetConfig.SpawnBeatDelay)
 	{
-		const float MinEarlyShot = 0.f;
+		constexpr float MinEarlyShot = 0.f;
 		const float MaxEarlyShot = BSConfig->TargetConfig.SpawnBeatDelay - Constants::PerfectScoreTimeThreshold / 2.f;
 		const FVector2d InputRange = FVector2d(MinEarlyShot, MaxEarlyShot);
 		const float LerpValue = FMath::GetMappedRangeValueClamped(InputRange, FVector2D(0.f, 1.f), InTimeAlive);
@@ -913,7 +906,7 @@ float ABSGameMode::GetNormalizedHitTimingError(const float InTimeAlive) const
 	// Early shot
 	if (InTimeAlive < BSConfig->TargetConfig.SpawnBeatDelay)
 	{
-		const float MinEarlyShot = 0.f;
+		constexpr float MinEarlyShot = 0.f;
 		const float MaxEarlyShot = BSConfig->TargetConfig.SpawnBeatDelay;
 		const FVector2d InputRange = FVector2d(MinEarlyShot, MaxEarlyShot);
 		return FMath::GetMappedRangeValueClamped(InputRange, FVector2D(0.f, 0.5f), InTimeAlive);

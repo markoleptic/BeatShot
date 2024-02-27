@@ -20,11 +20,6 @@ void UCGMW_Base::NativeDestruct()
 	BSConfig = nullptr;
 }
 
-UBSGameModeDataAsset* UCGMW_Base::GetGameModeDataAsset() const
-{
-	return GameModeDataAsset ? GameModeDataAsset.Get() : nullptr;
-}
-
 void UCGMW_Base::Init(TSharedPtr<FBSConfig> InConfig, const TObjectPtr<UBSGameModeDataAsset> InGameModeDataAsset)
 {
 	BSConfig = InConfig;
@@ -130,9 +125,9 @@ bool UCGMW_Base::GetAllNonStartChildWidgetOptionsValid() const
 	return true;
 }
 
-void UCGMW_Base::RefreshGameModeTemplateComboBoxOptions() const
+void UCGMW_Base::RefreshGameModeTemplateComboBoxOptions(const TArray<FBSConfig>& CustomGameModes) const
 {
-	Widget_Start->RefreshGameModeTemplateComboBoxOptions();
+	Widget_Start->RefreshGameModeTemplateComboBoxOptions(CustomGameModes);
 }
 
 void UCGMW_Base::OnRequestGameModeTemplateUpdate(const FString& InGameMode,

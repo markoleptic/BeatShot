@@ -123,14 +123,14 @@ void ABSCharacterBase::BeginPlay()
 	MaxJumpTime = -4.0f * GetCharacterMovement()->JumpZVelocity / (3.0f * GetCharacterMovement()->GetGravityZ());
 
 	const FPlayerSettings Settings = LoadPlayerSettings();
-	OnPlayerSettingsChanged_Game(Settings.Game);
-	OnPlayerSettingsChanged_User(Settings.User);
+	OnPlayerSettingsChanged(Settings.Game);
+	OnPlayerSettingsChanged(Settings.User);
 
 	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	GI->AddDelegateToOnPlayerSettingsChanged(OnPlayerSettingsChangedDelegate_Game);
-	GI->AddDelegateToOnPlayerSettingsChanged(OnPlayerSettingsChangedDelegate_User);
-	GI->GetPublicGameSettingsChangedDelegate().AddUObject(this, &ThisClass::OnPlayerSettingsChanged_Game);
-	GI->GetPublicUserSettingsChangedDelegate().AddUObject(this, &ThisClass::OnPlayerSettingsChanged_User);
+	GI->RegisterPlayerSettingsSubscriber<ABSCharacterBase, FPlayerSettings_Game>(this,
+		&ABSCharacterBase::OnPlayerSettingsChanged);
+	GI->RegisterPlayerSettingsSubscriber<ABSCharacterBase, FPlayerSettings_User>(this,
+		&ABSCharacterBase::OnPlayerSettingsChanged);
 }
 
 void ABSCharacterBase::Tick(float DeltaTime)
@@ -727,7 +727,7 @@ void ABSCharacterBase::Input_AbilityInputTagReleased(FGameplayTag InputTag)
 	GetBSAbilitySystemComponent()->AbilityInputTagReleased(InputTag);
 }
 
-void ABSCharacterBase::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings)
+void ABSCharacterBase::OnPlayerSettingsChanged(const FPlayerSettings_Game& GameSettings)
 {
 	if (!GetAbilitySystemComponent()) return;
 	/* Changing activation policy for FireGun ability based on automatic fire bool */
@@ -754,7 +754,7 @@ void ABSCharacterBase::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& 
 	SetActorHiddenInGame(!GameSettings.bShowCharacterMesh);
 }
 
-void ABSCharacterBase::OnPlayerSettingsChanged_User(const FPlayerSettings_User& UserSettings)
+void ABSCharacterBase::OnPlayerSettingsChanged(const FPlayerSettings_User& UserSettings)
 {
 	Sensitivity = UserSettings.Sensitivity;
 }
