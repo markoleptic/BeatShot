@@ -2,7 +2,9 @@
 
 
 #include "Target/ReinforcementLearningComponent.h"
+#if !UE_BUILD_SHIPPING
 #include "Target/TargetManager.h"
+#endif
 
 
 UReinforcementLearningComponent::UReinforcementLearningComponent()

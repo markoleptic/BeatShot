@@ -313,7 +313,6 @@ TSet<FVector> USpawnArea::MakeVerticesBase(const FVector& InScale, const bool bO
 	return Out;
 }
 
-
 TSet<FVector> USpawnArea::MakeOccupiedVertices(const FVector& InScale) const
 {
 	return MakeVerticesBase(InScale, true);
@@ -424,9 +423,13 @@ void USpawnArea::IncrementTotalTrackingDamage()
 	TotalTrackingDamage++;
 }
 
+#if !UE_BUILD_SHIPPING
+
 TSet<FVector> USpawnArea::SetMakeDebugOccupiedVertices(const FVector& InScale)
 {
 	DebugOccupiedVertices = MakeOccupiedVertices(InScale);
 	LastOccupiedVerticesTargetScale = InScale;
 	return DebugOccupiedVertices;
 }
+
+#endif

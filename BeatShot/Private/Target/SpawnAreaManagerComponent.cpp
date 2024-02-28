@@ -5,9 +5,11 @@
 #include "Target/Target.h"
 #include "Target/MatrixFunctions.h"
 #include "Target/SpawnArea.h"
-#include "Target/TargetManager.h"
 #include "Algo/RandomShuffle.h"
 #include <stack>
+#if !UE_BUILD_SHIPPING
+#include "Target/TargetManager.h"
+#endif
 
 void FRectCandidate::MergeSubRectangles()
 {

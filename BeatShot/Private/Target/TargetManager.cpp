@@ -54,7 +54,10 @@ ATargetManager::ATargetManager()
 	TotalPossibleDamage = 0.f;
 	bLastSpawnedTargetDirectionHorizontal = false;
 	bLastActivatedTargetDirectionHorizontal = false;
+
+	#if !UE_BUILD_SHIPPING
 	bShowDebug_AnyMovingTargetDirectionMode = false;
+	#endif
 }
 
 void ATargetManager::BeginPlay()
@@ -1374,6 +1377,8 @@ void ATargetManager::UpdateCommonScoreInfoQTable(FCommonScoreInfo& InCommonScore
 	}
 }
 
+#if !UE_BUILD_SHIPPING
+
 void ATargetManager::DrawDebug()
 {
 	FlushPersistentDebugLines(GetWorld());
@@ -1388,3 +1393,5 @@ void ATargetManager::DrawDebug()
 	}
 	SpawnAreaManager->DrawDebug();
 }
+
+#endif
