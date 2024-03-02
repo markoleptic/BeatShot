@@ -74,10 +74,10 @@ void ABSGun::SetFireRate(const bool bAutomatic)
 
 	if (bAutomatic)
 	{
-		AddGameplayTag(FBSGameplayTags().Get().State_Weapon_AutomaticFire);
+		AddGameplayTag(BSGameplayTags::State_Weapon_AutomaticFire);
 		return;
 	}
-	RemoveGameplayTag(FBSGameplayTags().Get().State_Weapon_AutomaticFire);
+	RemoveGameplayTag(BSGameplayTags::State_Weapon_AutomaticFire);
 }
 
 void ABSGun::SetShouldRecoil(const bool bRecoil)
@@ -86,30 +86,30 @@ void ABSGun::SetShouldRecoil(const bool bRecoil)
 
 	if (bRecoil)
 	{
-		AddGameplayTag(FBSGameplayTags().Get().State_Weapon_Recoil);
+		AddGameplayTag(BSGameplayTags::State_Weapon_Recoil);
 		return;
 	}
-	RemoveGameplayTag(FBSGameplayTags().Get().State_Weapon_Recoil);
+	RemoveGameplayTag(BSGameplayTags::State_Weapon_Recoil);
 }
 
 void ABSGun::SetShowDecals(const bool bShowDecals)
 {
 	if (bShowDecals)
 	{
-		AddGameplayTag(FBSGameplayTags().Get().State_Weapon_ShowDecals);
+		AddGameplayTag(BSGameplayTags::State_Weapon_ShowDecals);
 		return;
 	}
-	RemoveGameplayTag(FBSGameplayTags().Get().State_Weapon_ShowDecals);
+	RemoveGameplayTag(BSGameplayTags::State_Weapon_ShowDecals);
 }
 
 void ABSGun::SetShowTracers(const bool bShowTracers)
 {
 	if (bShowTracers)
 	{
-		AddGameplayTag(FBSGameplayTags().Get().State_Weapon_ShowTracers);
+		AddGameplayTag(BSGameplayTags::State_Weapon_ShowTracers);
 		return;
 	}
-	RemoveGameplayTag(FBSGameplayTags().Get().State_Weapon_ShowTracers);
+	RemoveGameplayTag(BSGameplayTags::State_Weapon_ShowTracers);
 }
 
 void ABSGun::SetShowWeaponMesh(const bool bShow)
@@ -117,18 +117,18 @@ void ABSGun::SetShowWeaponMesh(const bool bShow)
 	SetActorHiddenInGame(!bShow);
 	if (bShow)
 	{
-		AddGameplayTag(FBSGameplayTags().Get().State_Weapon_ShowMesh);
+		AddGameplayTag(BSGameplayTags::State_Weapon_ShowMesh);
 		return;
 	}
-	RemoveGameplayTag(FBSGameplayTags().Get().State_Weapon_ShowMesh);
+	RemoveGameplayTag(BSGameplayTags::State_Weapon_ShowMesh);
 }
 
 void ABSGun::SetShowMuzzleFlash(const bool bShow)
 {
 	if (bShow)
 	{
-		AddGameplayTag(FBSGameplayTags().Get().State_Weapon_ShowMuzzleFlash);
+		AddGameplayTag(BSGameplayTags::State_Weapon_ShowMuzzleFlash);
 		return;
 	}
-	RemoveGameplayTag(FBSGameplayTags().Get().State_Weapon_ShowMuzzleFlash);
+	RemoveGameplayTag(BSGameplayTags::State_Weapon_ShowMuzzleFlash);
 }

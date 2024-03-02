@@ -148,7 +148,6 @@ public:
 	float MainMenuMusicFadeInDuration = 2.f;
 
 	/** The time the screen fade widget plays its animations for. Also applies to fading out MainMenu music. */
-	UPROPERTY(EditDefaultsOnly, Category = "BSPlayerController|Loading Screen")
 	float ScreenFadeWidgetAnimationDuration = 0.75f;
 
 protected:

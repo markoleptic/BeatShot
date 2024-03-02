@@ -28,6 +28,7 @@
 #include "SubMenuWidgets/ScoreBrowserWidget.h"
 #include "SubMenuWidgets/SettingsWidgets/SettingsMenuWidget.h"
 #include "SubMenuWidgets/GameModesWidgets/CGMW_CreatorView.h"
+#include "System/BSLoadingScreenSettings.h"
 #include "System/SteamManager.h"
 
 void ABSPlayerController::BeginPlay()
@@ -60,7 +61,10 @@ void ABSPlayerController::BeginPlay()
 				*UEnum::GetValueAsString(GetLocalRole()), *UEnum::GetValueAsString(GetRemoteRole()));
 		}
 	}*/
-
+	
+	const UBSLoadingScreenSettings* LoadingScreenSettings = GetDefault<UBSLoadingScreenSettings>();
+	ScreenFadeWidgetAnimationDuration = LoadingScreenSettings->ScreenFadeWidgetAnimationDuration;
+	
 	// Initialize variables that depend on Player Settings
 	PlayerSettings = LoadPlayerSettings();
 	OnPlayerSettingsChanged(PlayerSettings.VideoAndSound);
@@ -128,7 +132,7 @@ void ABSPlayerController::SetPlayerEnabledState(const bool bPlayerEnabled)
 			GetPawn()->EnableInput(this);
 			if (GetBSAbilitySystemComponent())
 			{
-				GetBSAbilitySystemComponent()->RemoveLooseGameplayTag(FBSGameplayTags::Get().Ability_InputBlocked);
+				GetBSAbilitySystemComponent()->RemoveLooseGameplayTag(BSGameplayTags::Ability_InputBlocked);
 			}
 		}
 		else
@@ -136,7 +140,7 @@ void ABSPlayerController::SetPlayerEnabledState(const bool bPlayerEnabled)
 			GetPawn()->DisableInput(this);
 			if (GetBSAbilitySystemComponent())
 			{
-				GetBSAbilitySystemComponent()->AddLooseGameplayTag(FBSGameplayTags::Get().Ability_InputBlocked);
+				GetBSAbilitySystemComponent()->AddLooseGameplayTag(BSGameplayTags::Ability_InputBlocked);
 			}
 		}
 	}

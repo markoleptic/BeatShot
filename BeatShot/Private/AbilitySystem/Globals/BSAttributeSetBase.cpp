@@ -101,7 +101,7 @@ void UBSAttributeSetBase::PostGameplayEffectExecute(const FGameplayEffectModCall
 
 	// If health has actually changed activate callbacks. Also check that it isn't resetting health, in which case we
 	// don't want the target to be notified
-	if (GetHealth() != HealthBeforeAttributeChange && !Container.HasTag(FBSGameplayTags().Get().Target_ResetHealth))
+	if (GetHealth() != HealthBeforeAttributeChange && !Container.HasTag(BSGameplayTags::Target_ResetHealth))
 	{
 		if (DamageType != ETargetDamageType::None)
 		{

@@ -23,7 +23,7 @@ public class BeatShot : ModuleRules
 
 		PrivateDependencyModuleNames.AddRange(new[]
 		{
-			"ParallelcubeAudioAnalyzer", "ParallelcubeTaglib", "EnhancedInput", "MoviePlayer"
+			"ParallelcubeAudioAnalyzer", "ParallelcubeTaglib", "EnhancedInput", "MoviePlayer", "DeveloperSettings"
 		});
 
 		PublicIncludePaths.AddRange(new[]

@@ -12,6 +12,7 @@
 #include "GameFramework/GameUserSettings.h"
 #include "SaveGamePlayerSettings.h"
 #include "OverlayWidgets/LoadingScreenWidgets/SLoadingScreenWidget.h"
+#include "System/BSLoadingScreenSettings.h"
 
 void UBSGameInstance::Init()
 {
@@ -68,11 +69,12 @@ void UBSGameInstance::PrepareLoadingScreen()
 	Attributes.bAllowEngineTick = true;
 	Attributes.bMoviesAreSkippable = false;
 	Attributes.bWaitForManualStop = true;
-	Attributes.MinimumLoadingScreenDisplayTime = MinimumLoadingScreenDisplayTime;
-	if (SlateWidgetStyleAsset && SlateWidgetStyleAsset->CustomStyle)
+	const UBSLoadingScreenSettings* LoadingScreenSettings = GetDefault<UBSLoadingScreenSettings>();
+	Attributes.MinimumLoadingScreenDisplayTime = LoadingScreenSettings->MinimumLoadingScreenDisplayTime;
+	if (LoadingScreenSettings->LoadingScreenStyle && LoadingScreenSettings->LoadingScreenStyle->CustomStyle)
 	{
-		if (const FLoadingScreenStyle* Style = static_cast<const struct FLoadingScreenStyle*>(SlateWidgetStyleAsset->
-			CustomStyle->GetStyle()))
+		if (const FLoadingScreenStyle* Style = static_cast<const struct FLoadingScreenStyle*>(
+			LoadingScreenSettings->LoadingScreenStyle->CustomStyle->GetStyle()))
 		{
 			SAssignNew(LoadingScreenWidget, SLoadingScreenWidget).LoadingScreenStyle(Style).OnFadeOutComplete(
 				BIND_UOBJECT_DELEGATE(FOnFadeOutComplete, OnLoadingScreenFadeOutComplete)).bIsInitialLoadingScreen(

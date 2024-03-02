@@ -3,136 +3,149 @@
 #pragma once
 
 #include "GameplayTagContainer.h"
+#include "NativeGameplayTags.h"
 
 class UGameplayTagsManager;
 
 /** Singleton containing native gameplay tags */
-struct FBSGameplayTags
+namespace BSGameplayTags
 {
-	static const FBSGameplayTags& Get() { return GameplayTags; }
-	static void InitializeTags();
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Fire);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_KnifeAttack);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_BackStab);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Inspect);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Track);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Jump);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Sprint);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Crouch);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Interact);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_ShiftInteract);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_InputBlocked);
 
-	FGameplayTag GameplayCue_Sprint;
-	FGameplayTag GameplayCue_MuzzleFlash;
-	FGameplayTag GameplayCue_FireGun_Impact;
-	FGameplayTag GameplayCue_TrackGun_Hit;
-	FGameplayTag GameplayCue_TrackGun_Miss;
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(AnimEffect);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(AnimEffect_Footstep);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(AnimEffect_Footstep_Jog);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(AnimEffect_Footstep_Land);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(AnimEffect_Footstep_Walk);
+	
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Cheat);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Cheat_AimBot);
+	
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Data);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Data_Cooldown);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Data_Damage);
+	
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Equipped);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Equipped_None);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Equipped_Gun);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Equipped_Knife);
+	
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Montage);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Montage_EndAbility);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Montage_SpawnProjectile);
 
-	FGameplayTag Data;
-	FGameplayTag Data_Damage;
-	FGameplayTag Data_Cooldown;
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameModeCategory);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameModeCategory_Spawning);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameModeCategory_Activation);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameModeCategory_Deactivation);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameModeCategory_Destruction);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameModeCategory_SpawnArea);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameModeCategory_Scale);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameModeCategory_Movement);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameModeCategory_Position);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameModeCategory_Velocity);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameModeCategory_Direction);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameModeCategory_Health);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameModeCategory_Damage);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameModeCategory_Time);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameModeCategory_Dynamic);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameModeCategory_Target);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameModeCategory_AI);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameModeCategory_Grid);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameModeCategory_Effects);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameModeCategory_Static);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameModeCategory_MultiSelect);
+	
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_Sprint);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_MuzzleFlash);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_FireGun_Impact);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_TrackGun_Hit);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_TrackGun_Miss);
+	
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_Move);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_Move_Forward);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_Move_Backward);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_Move_Left);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_Move_Right);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_Look);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_Crouch);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_Fire);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_Walk);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_Sprint);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_Jump);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_Interact);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_ShiftInteract);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_Inspect);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_KnifeAttack);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_BackStab);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_EquipmentSlot);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_EquipmentSlot_1);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_EquipmentSlot_2);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_EquipmentSlot_3);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_EquipmentSlot_LastEquipped);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_Pause);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_LeftClick);
 
-	FGameplayTag Event;
-	FGameplayTag Event_Montage;
-	FGameplayTag Event_Montage_EndAbility;
-	FGameplayTag Event_Montage_SpawnProjectile;
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Crouching);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Inspecting);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_KnifeAttacking);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_BackStabbing);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Firing);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Recoiling);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Tracking);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Jumping);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Moving);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Sprinting);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_PlayingBSGameMode);
 
-	FGameplayTag Input;
-	FGameplayTag Input_Move;
-	FGameplayTag Input_Move_Forward;
-	FGameplayTag Input_Move_Backward;
-	FGameplayTag Input_Move_Left;
-	FGameplayTag Input_Move_Right;
-	FGameplayTag Input_Look;
-	FGameplayTag Input_Crouch;
-	FGameplayTag Input_Fire;
-	FGameplayTag Input_Walk;
-	FGameplayTag Input_Sprint;
-	FGameplayTag Input_Jump;
-	FGameplayTag Input_Interact;
-	FGameplayTag Input_ShiftInteract;
-	FGameplayTag Input_Inspect;
-	FGameplayTag Input_KnifeAttack;
-	FGameplayTag Input_BackStab;
-	FGameplayTag Input_EquipmentSlot;
-	FGameplayTag Input_EquipmentSlot_1;
-	FGameplayTag Input_EquipmentSlot_2;
-	FGameplayTag Input_EquipmentSlot_3;
-	FGameplayTag Input_EquipmentSlot_LastEquipped;
-	FGameplayTag Input_Pause;
-	FGameplayTag Input_LeftClick;
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Weapon_AutomaticFire);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Weapon_ShowDecals);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Weapon_ShowTracers);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Weapon_ShowMuzzleFlash);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Weapon_ShowMesh);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Weapon_Recoil);
+	
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(SurfaceType);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(SurfaceType_Character);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(SurfaceType_Concrete);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(SurfaceType_Default);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(SurfaceType_Dirt);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(SurfaceType_Glass);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(SurfaceType_Grass);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(SurfaceType_Gravel);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(SurfaceType_Ice);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(SurfaceType_Metal);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(SurfaceType_Mud);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(SurfaceType_Sand);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(SurfaceType_Snow);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(SurfaceType_Water);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(SurfaceType_Wood);
 
-	FGameplayTag Ability;
-	FGameplayTag Ability_Fire;
-	FGameplayTag Ability_KnifeAttack;
-	FGameplayTag Ability_BackStab;
-	FGameplayTag Ability_Inspect;
-	FGameplayTag Ability_Track;
-	FGameplayTag Ability_Jump;
-	FGameplayTag Ability_Sprint;
-	FGameplayTag Ability_Crouch;
-	FGameplayTag Ability_Interact;
-	FGameplayTag Ability_ShiftInteract;
-	FGameplayTag Ability_InputBlocked;
-
-	FGameplayTag Equipped;
-	FGameplayTag Equipped_None;
-	FGameplayTag Equipped_Gun;
-	FGameplayTag Equipped_Knife;
-
-	FGameplayTag State;
-	FGameplayTag State_Crouching;
-	FGameplayTag State_Inspecting;
-	FGameplayTag State_KnifeAttacking;
-	FGameplayTag State_BackStabbing;
-	FGameplayTag State_Firing;
-	FGameplayTag State_Recoiling;
-	FGameplayTag State_Tracking;
-	FGameplayTag State_Jumping;
-	FGameplayTag State_Moving;
-	FGameplayTag State_Sprinting;
-	FGameplayTag State_PlayingBSGameMode;
-
-	FGameplayTag State_Weapon_AutomaticFire;
-	FGameplayTag State_Weapon_ShowDecals;
-	FGameplayTag State_Weapon_ShowTracers;
-	FGameplayTag State_Weapon_ShowMuzzleFlash;
-	FGameplayTag State_Weapon_ShowMesh;
-	FGameplayTag State_Weapon_Recoil;
-
-	FGameplayTag Target;
-	FGameplayTag Target_State;
-	FGameplayTag Target_State_PreGameModeStart;
-	FGameplayTag Target_State_Immune;
-	FGameplayTag Target_State_Immune_TrackingDamage;
-	FGameplayTag Target_State_Immune_HitDamage;
-	FGameplayTag Target_State_Grid;
-	FGameplayTag Target_State_Single;
-	FGameplayTag Target_State_Multi;
-	FGameplayTag Target_State_Tracking;
-	FGameplayTag Target_State_Charged;
-	FGameplayTag Target_ResetHealth;
-	FGameplayTag Target_TreatAsExternalDamage;
-
-	FGameplayTag Cheat;
-	FGameplayTag Cheat_AimBot;
-
-	FGameplayTag GameModeCategory;
-	FGameplayTag GameModeCategory_Spawning;
-	FGameplayTag GameModeCategory_Activation;
-	FGameplayTag GameModeCategory_Deactivation;
-	FGameplayTag GameModeCategory_Destruction;
-	FGameplayTag GameModeCategory_SpawnArea;
-	FGameplayTag GameModeCategory_Scale;
-	FGameplayTag GameModeCategory_Movement;
-	FGameplayTag GameModeCategory_Position;
-	FGameplayTag GameModeCategory_Velocity;
-	FGameplayTag GameModeCategory_Direction;
-	FGameplayTag GameModeCategory_Health;
-	FGameplayTag GameModeCategory_Damage;
-	FGameplayTag GameModeCategory_Time;
-	FGameplayTag GameModeCategory_Dynamic;
-	FGameplayTag GameModeCategory_Target;
-	FGameplayTag GameModeCategory_AI;
-	FGameplayTag GameModeCategory_Grid;
-	FGameplayTag GameModeCategory_Effects;
-	FGameplayTag GameModeCategory_Static;
-	FGameplayTag GameModeCategory_MultiSelect;
-
-protected:
-	void AddAllTags(UGameplayTagsManager& Manager);
-	void AddTag(FGameplayTag& OutTag, const ANSICHAR* TagName, const ANSICHAR* TagComment);
-
-private:
-	static FBSGameplayTags GameplayTags;
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Target);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Target_State);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Target_State_PreGameModeStart);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Target_State_Immune);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Target_State_Immune_TrackingDamage);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Target_State_Immune_HitDamage);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Target_State_Grid);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Target_State_Single);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Target_State_Multi);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Target_State_Tracking);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Target_State_Charged);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Target_ResetHealth);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Target_TreatAsExternalDamage);
 };

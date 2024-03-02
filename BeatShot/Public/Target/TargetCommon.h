@@ -9,8 +9,15 @@ enum class ETargetDamageType : uint8;
 class ATarget;
 struct FTargetDamageEvent;
 
+/** Contains a map that maps target guid's to their current location. */
+struct FMovingTargetLocations
+{
+	TMap<FGuid, FVector> Map;
+};
+
 DECLARE_DELEGATE_RetVal_TwoParams(int32, FRequestRLCSpawnArea, const int32, const TArray<int32>&);
 DECLARE_DELEGATE_OneParam(FOnBeatTrackDirectionChanged, const FVector& Vector);
+DECLARE_DELEGATE_OneParam(FRequestMovingTargetLocations, FMovingTargetLocations&);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnTargetActivated, const ETargetDamageType& DamageType);
 DECLARE_MULTICAST_DELEGATE_OneParam(FPostTargetDamageEvent, const FTargetDamageEvent& Event);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnTargetActivated_AimBot, ATarget* Target);

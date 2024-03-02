@@ -19,7 +19,6 @@ struct FPlayerSettings_Game;
 struct FBS_TargetConfig;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTargetManager, Log, All);
-
 static constexpr int32 DefaultNumTargetsToActivate = 100;
 static constexpr int32 DefaultMinToActivate_MinClamp = 1;
 static constexpr int32 MaxToActivate_MinClamp = 1;
@@ -278,6 +277,9 @@ protected:
 
 	/** Destroys all targets in the ManagedTargets map. */
 	void DestroyTargets();
+
+	/** Returns a map containing the locations of all moving targets in ManagedTargets. */
+	void GetMovingTargetLocations(FMovingTargetLocations& MovingTargetLocations) const;
 public:
 	
 	/** Function called from BSGameMode any time a player changes settings.
@@ -348,7 +350,7 @@ protected:
 
 	/** Clears all debug persistent lines and draws debug boxes and/or lines based on debug bool variables. Calls
 	 *	same function on Spawn Area Manager. */
-	void DrawDebug();
+	void DrawDebug() const;
 	
 	/** Delegate used to record execution time taken for SpawnAreaManager's GetSpawnableSpawnAreas function. */
 	TDelegate<void(const double)> ExecutionTimeDelegate;

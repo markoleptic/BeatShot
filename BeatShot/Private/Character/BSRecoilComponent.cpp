@@ -54,7 +54,7 @@ void UBSRecoilComponent::Recoil(const float FireRate)
 		{
 			if (UAbilitySystemComponent* ASC = Character->GetAbilitySystemComponent())
 			{
-				ASC->AddLooseGameplayTag(FBSGameplayTags::Get().State_Recoiling);
+				ASC->AddLooseGameplayTag(BSGameplayTags::State_Recoiling);
 			}
 		}
 	}
@@ -97,7 +97,7 @@ void UBSRecoilComponent::SetRecoilRotation(float DeltaTime)
 			{
 				if (UAbilitySystemComponent* ASC = Character->GetAbilitySystemComponent())
 				{
-					ASC->RemoveLooseGameplayTag(FBSGameplayTags::Get().State_Recoiling);
+					ASC->RemoveLooseGameplayTag(BSGameplayTags::State_Recoiling);
 				}
 			}
 		}

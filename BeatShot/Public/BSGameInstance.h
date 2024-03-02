@@ -124,12 +124,6 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Sound")
 	USoundMix* GlobalSoundMix;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Loading Screen")
-	USlateWidgetStyleAsset* SlateWidgetStyleAsset;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Loading Screen")
-	float MinimumLoadingScreenDisplayTime = 2.f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Levels")
 	FName MainMenuLevelName;

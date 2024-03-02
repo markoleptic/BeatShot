@@ -10,8 +10,44 @@
 class USpawnArea;
 struct FAccuracyData;
 
-typedef std::pair<int32, int32> FIndexPair;
-typedef std::pair<int32, int32> FRectDims;
+struct FIndexPair
+{
+	int32 StartIndex, EndIndex;
+	
+	FIndexPair() : StartIndex(-1), EndIndex(-1)
+	{}
+	FIndexPair(const int32 InStart, const int32 InEnd) : StartIndex(InStart), EndIndex(InEnd)
+	{}
+
+	friend FORCEINLINE uint32 GetTypeHash(const FIndexPair& Other)
+	{
+		return HashCombine(GetTypeHash(Other.StartIndex), GetTypeHash(Other.EndIndex));
+	}
+
+	FORCEINLINE bool operator==(const FIndexPair& Other) const
+	{
+		return StartIndex == Other.StartIndex && EndIndex == Other.EndIndex;
+	}
+
+	FORCEINLINE bool operator<(const FIndexPair& Other) const
+	{
+		if (EndIndex == Other.EndIndex)
+		{
+			return StartIndex < Other.StartIndex;
+		}
+		return EndIndex < Other.EndIndex;
+	}
+};
+
+struct FRectDims
+{
+	int32 Width, Height;
+	
+	FRectDims() : Width(0), Height(0)
+	{}
+	FRectDims(const int32 InWidth, const int32 InHeight) : Width(InWidth), Height(InHeight)
+	{}
+};
 
 /** A unique pair of factors for a number */
 struct FFactor
@@ -21,18 +57,13 @@ struct FFactor
 	int32 Distance;
 
 	FFactor(): Factor1(-1), Factor2(-1), Distance(-1)
-	{
-	}
+	{}
 
 	FFactor(const int32 F1, const int32 F2) : Factor1(F1), Factor2(F2), Distance(abs(F1 - F2))
-	{
-	}
+	{}
 
 	explicit FFactor(const int32 InDistance) : Factor1(-1), Factor2(-1), Distance(InDistance)
-	{
-	}
-
-	~FFactor() = default;
+	{}
 
 	bool IsValid() const
 	{
@@ -91,19 +122,19 @@ struct FSubRectangle
 	/** Column index */
 	int32 ColIndex;
 
-	/** (StartIndex, EndIndex) of the sub rectangle */
-	FIndexPair StartEndIndex;
+	/** The start index (bottom left) and end index (top right) of the sub rectangle */
+	FIndexPair BoundingIndices;
 
-	/** (Width, Height) of the sub rectangle */
+	/** Dimensions of the sub rectangle */
 	FRectDims Dimensions;
 
 	/** Area of the sub rectangle */
 	int32 Area;
 
-	/** (StartRowIndex, EndRowIndex) */
+	/** Start and end row indices */
 	FIndexPair Row;
 
-	/** (StartColIndex, EndColIndex) */
+	/** Start and end column indices */
 	FIndexPair Col;
 
 	/** Indices that are included within the Index of this rectangle */
@@ -112,46 +143,49 @@ struct FSubRectangle
 	/** Indices that have been validated as being potential start index candidates */
 	TArray<FIndexPair> StartIndexCandidates;
 	
-	FSubRectangle() = default;
+	FSubRectangle() : Index(-1), ColIndex(-1), Area(0)
+	{}
+
 	FSubRectangle(const int32 InIndex, const int32 InColIndex, const int32 InHeight) : Index(InIndex),
 		ColIndex(InColIndex), Dimensions(0, InHeight), Area(0)
-	{
-	}
+	{}
 
 	/** Updates the width, StartEndIndex, Dimensions, Area, Row, and Col. */
 	void UpdateDimensions(const int32 InNewWidth)
 	{
-		Dimensions.first = InNewWidth;
-		StartEndIndex.first = Index - NumCols * (Dimensions.second - 1);
-		StartEndIndex.second = Index + (Dimensions.first - 1);
-		Area = Dimensions.first * Dimensions.second;
-		Row = FIndexPair(StartEndIndex.first / NumCols, StartEndIndex.second / NumCols);
-		Col = FIndexPair(StartEndIndex.first % NumCols, StartEndIndex.second % NumCols);
+		Dimensions.Width = InNewWidth;
+		BoundingIndices.StartIndex = Index - NumCols * (Dimensions.Height - 1);
+		BoundingIndices.EndIndex = Index + (Dimensions.Width - 1);
+		Area = Dimensions.Width * Dimensions.Height;
+		Row = FIndexPair(BoundingIndices.StartIndex / NumCols, BoundingIndices.EndIndex / NumCols);
+		Col = FIndexPair(BoundingIndices.StartIndex % NumCols, BoundingIndices.EndIndex % NumCols);
+	}
+
+	/** Returns whether or not the rectangle has area greater than 1 and the EndIndex is greater than StartIndex */
+	bool IsValid() const
+	{
+		return Area > 0 && BoundingIndices.EndIndex > BoundingIndices.StartIndex;
 	}
 
 	FString ToString() const
 	{
-		return FString::Printf(TEXT("Index: [%d, %d] Size: %dx%d"), StartEndIndex.first, StartEndIndex.second,
-			Dimensions.first, Dimensions.second);
+		return FString::Printf(TEXT("Index: [%d, %d] Size: %dx%d"), BoundingIndices.StartIndex,
+			BoundingIndices.EndIndex, Dimensions.Width, Dimensions.Height);
 	}
 	
 	FORCEINLINE bool operator==(const FSubRectangle& Other) const
 	{
-		return  StartEndIndex.first == Other.StartEndIndex.first && StartEndIndex.second == Other.StartEndIndex.second;
+		return BoundingIndices == Other.BoundingIndices;
 	}
 	
 	FORCEINLINE bool operator<(const FSubRectangle& Other) const
 	{
-		if (StartEndIndex.second == Other.StartEndIndex.second)
-		{
-			return StartEndIndex.first < Other.StartEndIndex.first;
-		}
-		return StartEndIndex.second < Other.StartEndIndex.second;
+		return BoundingIndices < Other.BoundingIndices;
 	}
 	
 	friend FORCEINLINE uint32 GetTypeHash(const FSubRectangle& Other)
 	{
-		return HashCombine(GetTypeHash(Other.StartEndIndex.first), GetTypeHash(Other.StartEndIndex.second));
+		return GetTypeHash(Other.BoundingIndices);
 	}
 
 	static void SetNumCols(const int32 InNumCols) { NumCols = InNumCols; }
@@ -163,17 +197,17 @@ struct FFSubRectangleKeyFuncs : BaseKeyFuncs<FSubRectangle, FIndexPair, false>
 	/** Compares two keys for equality */
 	static FORCEINLINE bool Matches(const FIndexPair& A, const FIndexPair& B)
 	{
-		return A.first == B.first && A.second == B.second;
+		return A == B;
 	}
 	/** Calculates a hash index for a key. */
 	static FORCEINLINE uint32 GetKeyHash(const FIndexPair& Key)
 	{
-		return HashCombine(GetTypeHash(Key.first), GetTypeHash(Key.second));
+		return GetTypeHash(Key);
 	}
 	/** Extracts the key from an element. */
 	static FORCEINLINE const FIndexPair& GetSetKey(const FSubRectangle& Element)
 	{
-		return Element.StartEndIndex;
+		return Element.BoundingIndices;
 	}
 };
 
@@ -207,12 +241,12 @@ struct FRectCandidate
 	/** The size of the block used to set the Chosen Start/End Row/Col Indices */
 	int32 ChosenBlockSize;
 
-	FRectCandidate() = default;
+	FRectCandidate(): NumRowsAvailable(0), NumColsAvailable(0), ActualBlockSize(0), ChosenBlockSize(0)
+	{}
 
-	explicit FRectCandidate(const FFactor& InFactor) : Factor(InFactor), ChosenRow(-1, -1), ChosenCol(-1, -1),
-		ChosenSubRectangle(), NumRowsAvailable(-1), NumColsAvailable(-1), ActualBlockSize(-1), ChosenBlockSize(-1)
-	{
-	}
+	explicit FRectCandidate(const FFactor& InFactor) : Factor(InFactor), NumRowsAvailable(-1), NumColsAvailable(-1),
+		ActualBlockSize(-1), ChosenBlockSize(-1)
+	{}
 
 	~FRectCandidate() = default;
 	
@@ -231,8 +265,8 @@ struct FRectCandidate
 	{
 		ChosenSubRectangle = SubRectangle;
 		
-		NumRowsAvailable = SubRectangle.Row.second - SubRectangle.Row.first + 1;
-		NumColsAvailable = SubRectangle.Col.second - SubRectangle.Col.first + 1;
+		NumRowsAvailable = SubRectangle.Row.EndIndex - SubRectangle.Row.StartIndex + 1;
+		NumColsAvailable = SubRectangle.Col.EndIndex - SubRectangle.Col.StartIndex + 1;
 		ActualBlockSize = FMath::Min(InBlockSize, SubRectangle.Area);
 
 		ChosenRow = SubRectangle.Row;
@@ -266,8 +300,7 @@ struct FRectCandidate
 	/** Returns true if the ChosenSubRectangle is valid. */
 	bool HasChosenSubRectangle() const
 	{
-		return ChosenSubRectangle.Area > 0 &&
-			ChosenSubRectangle.StartEndIndex.second - ChosenSubRectangle.StartEndIndex.first > 0;
+		return ChosenSubRectangle.IsValid();
 	}
 
 	/** Returns a human-readable string of the rectangle. */
@@ -357,6 +390,11 @@ public:
 	 *  @return FRequestRLCSpawnArea delegate used to request spawn areas from the reinforcement learning component
 	 */
 	FRequestRLCSpawnArea& GetSpawnAreaRequestDelegate() { return RequestRLCSpawnArea; }
+
+	/** Get a reference to the FRequestMovingTargetLocations delegate.
+	 *  @return FRequestMovingTargetLocations delegate used to request moving target locations
+	 */
+	FRequestMovingTargetLocations& GetRequestMovingTargetLocationsDelegate() { return RequestMovingTargetLocations; }
 
 	/** Finds a SpawnArea with the matching location and increments TotalTrackingDamagePossible.
 	 * 	@param InLocation target location to find the SpawnArea by
@@ -627,10 +665,10 @@ protected:
 	 *  Non-Grid SpawnAreas since grid-based will never have to worry about overlapping.
 	 *  
 	 * 	@param ValidSpawnAreas a set of valid Spawn Areas to modify
-	 *  @param ChosenSpawnAreas a set of Spawn Areas that have already been chosen
+	 *  @param InvalidSpawnAreas a set of Spawn Areas that are invalid or have already been chosen
 	 *  @param NewScale the scale of the target to be spawned
 	 */
-	void RemoveOverlappingSpawnAreas(TSet<USpawnArea*>& ValidSpawnAreas, const TSet<USpawnArea*>& ChosenSpawnAreas,
+	void RemoveOverlappingSpawnAreas(TSet<USpawnArea*>& ValidSpawnAreas, const TSet<USpawnArea*>& InvalidSpawnAreas,
 		const FVector& NewScale) const;
 
 	/** Filters out any SpawnAreas that aren't bordering Current.
@@ -997,6 +1035,9 @@ private:
 
 	/** Delegate used to request a SpawnArea selection from the RLC */
 	FRequestRLCSpawnArea RequestRLCSpawnArea;
+
+	/** Delegate used to request active target locations */
+	FRequestMovingTargetLocations RequestMovingTargetLocations;
 };
 
 /** Returns a set of Spawn Area indices adjacent to the InSpawnAreas according to Directions.

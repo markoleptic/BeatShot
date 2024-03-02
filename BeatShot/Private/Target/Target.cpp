@@ -21,7 +21,7 @@ FTargetDamageEvent::FTargetDamageEvent(const FDamageEventData& InData, const flo
 {
 	Target = InTarget;
 	// For testing and main menu purposes
-	if (InData.EffectSpec->GetDynamicAssetTags().HasTagExact(FBSGameplayTags::Get().Target_TreatAsExternalDamage))
+	if (InData.EffectSpec->GetDynamicAssetTags().HasTagExact(BSGameplayTags::Target_TreatAsExternalDamage))
 	{
 		bDamagedSelf = false;
 		DamageType = InTarget->GetTargetDamageType();
@@ -434,7 +434,7 @@ void ATarget::DamageSelf(const bool bTreatAsExternalDamage)
 		FGameplayEffectSpec* Spec = Handle.Data.Get();
 		if (bTreatAsExternalDamage)
 		{
-			Spec->AddDynamicAssetTag(FBSGameplayTags::Get().Target_TreatAsExternalDamage);
+			Spec->AddDynamicAssetTag(BSGameplayTags::Target_TreatAsExternalDamage);
 		}
 		Comp->ApplyGameplayEffectSpecToSelf(*Spec);
 	}

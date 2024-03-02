@@ -215,7 +215,7 @@ void UBSAbilitySystemComponent::AbilitySpecInputReleased(FGameplayAbilitySpec& S
 
 void UBSAbilitySystemComponent::ProcessAbilityInput(float DeltaTime, bool bGamePaused)
 {
-	if (HasMatchingGameplayTag(FBSGameplayTags::Get().Ability_InputBlocked))
+	if (HasMatchingGameplayTag(BSGameplayTags::Ability_InputBlocked))
 	{
 		ClearAbilityInput();
 		return;

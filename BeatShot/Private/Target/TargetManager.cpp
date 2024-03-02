@@ -91,7 +91,8 @@ void ATargetManager::Tick(float DeltaTime)
 	}
 }
 
-void ATargetManager::Init(const TSharedPtr<FBSConfig>& InConfig, const FCommonScoreInfo& InCommonScoreInfo, const FPlayerSettings_Game& InPlayerSettings)
+void ATargetManager::Init(const TSharedPtr<FBSConfig>& InConfig, const FCommonScoreInfo& InCommonScoreInfo,
+	const FPlayerSettings_Game& InPlayerSettings)
 {
 	Clear();
 	BSConfig = InConfig;
@@ -121,6 +122,13 @@ void ATargetManager::Init(const TSharedPtr<FBSConfig>& InConfig, const FCommonSc
 	UpdateSpawnBoxExtents(Factor);
 	UpdateSpawnVolume(Factor);
 	SpawnAreaManager->OnExtremaChanged(GetSpawnBoxExtrema());
+
+	if (BSConfig->TargetConfig.MovingTargetDirectionMode == EMovingTargetDirectionMode::HorizontalOnly ||
+		BSConfig->TargetConfig.MovingTargetDirectionMode == EMovingTargetDirectionMode::VerticalOnly)
+	{
+		SpawnAreaManager->GetRequestMovingTargetLocationsDelegate().BindUObject(this,
+				&ATargetManager::GetMovingTargetLocations);
+	}
 
 	// Init RLC
 	if (BSConfig->IsCompatibleWithReinforcementLearning())
@@ -192,6 +200,7 @@ void ATargetManager::Clear()
 	ShouldSpawn = false;
 	DestroyTargets();
 	CurrentStreak = 0;
+	BSConfig.Reset();
 	BSConfig = nullptr;
 	LastTargetDamageType = ETargetDamageType::Tracking;
 	CurrentTargetScale = FVector(1.f);
@@ -1346,6 +1355,17 @@ void ATargetManager::DestroyTargets()
 	ManagedTargets.Empty();
 }
 
+void ATargetManager::GetMovingTargetLocations(FMovingTargetLocations& MovingTargetLocations) const
+{
+	for (const TPair<FGuid, ATarget*>& Pair : ManagedTargets)
+	{
+		if (!FMath::IsNearlyZero(Pair.Value->GetTargetVelocity().Length(), UE_KINDA_SMALL_NUMBER))
+		{
+			MovingTargetLocations.Map.Add(Pair.Key, Pair.Value->GetActorLocation());
+		}
+	}
+}
+
 void ATargetManager::UpdatePlayerSettings(const FPlayerSettings_Game& InPlayerSettings)
 {
 	if (!ManagedTargets.IsEmpty())
@@ -1379,7 +1399,7 @@ void ATargetManager::UpdateCommonScoreInfoQTable(FCommonScoreInfo& InCommonScore
 
 #if !UE_BUILD_SHIPPING
 
-void ATargetManager::DrawDebug()
+void ATargetManager::DrawDebug() const
 {
 	FlushPersistentDebugLines(GetWorld());
 	if (bShowDebug_AnyMovingTargetDirectionMode)

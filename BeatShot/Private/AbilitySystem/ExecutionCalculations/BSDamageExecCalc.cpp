@@ -52,14 +52,14 @@ void UBSDamageExecCalc::Execute_Implementation(const FGameplayEffectCustomExecut
 	EvaluationParameters.TargetTags = TargetTags;
 
 	float HitDamage = 0.0f;
-	if (!TargetTags->HasTag(FBSGameplayTags::Get().Target_State_Immune_HitDamage))
+	if (!TargetTags->HasTag(BSGameplayTags::Target_State_Immune_HitDamage))
 	{
 		ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().HitDamageDef, EvaluationParameters,
 			HitDamage);
 	}
 
 	float TrackingDamage = 0.0f;
-	if (!TargetTags->HasTag(FBSGameplayTags::Get().Target_State_Immune_TrackingDamage))
+	if (!TargetTags->HasTag(BSGameplayTags::Target_State_Immune_TrackingDamage))
 	{
 		ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().TrackingDamageDef,
 			EvaluationParameters, TrackingDamage);

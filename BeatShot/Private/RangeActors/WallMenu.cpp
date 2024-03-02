@@ -273,7 +273,7 @@ void AWallMenu::OnGameplayEffectAppliedToSelf(UAbilitySystemComponent* ABS, cons
 	EffectSpec.GetAllAssetTags(Container);
 	const FHitResult* Hit = EffectSpec.GetEffectContext().GetHitResult();
 
-	if (!Hit || !Container.HasTagExact(FBSGameplayTags::Get().Ability_Fire))
+	if (!Hit || !Container.HasTagExact(BSGameplayTags::Ability_Fire))
 	{
 		return;
 	}

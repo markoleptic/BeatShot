@@ -2,7 +2,6 @@
 
 
 #include "System/BSAssetManager.h"
-#include "BeatShot/BSGameplayTags.h"
 
 UBSAssetManager::UBSAssetManager()
 {
@@ -19,7 +18,4 @@ UBSAssetManager& UBSAssetManager::Get()
 void UBSAssetManager::StartInitialLoading()
 {
 	Super::StartInitialLoading();
-
-	//Load Native Tags
-	FBSGameplayTags::InitializeTags();
 }

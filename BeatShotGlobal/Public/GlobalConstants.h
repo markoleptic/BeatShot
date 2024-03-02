@@ -74,6 +74,8 @@ namespace Constants
 
 	inline constexpr int32 DefaultNumberOfAccuracyDataColumns = 5;
 
+	inline constexpr int32 DefaultSpawnAreaDimension = 50;
+
 	#pragma region DefaultSettings
 
 	/** The default Band Limit Thresholds for the AudioAnalyzer */
