@@ -3,14 +3,14 @@
 
 #include "Character/BSCharacterMovementComponent.h"
 
+#include "Audio/BSMovementSounds.h"
 #include "Character/BSCharacterBase.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
-#include "Character/BSMoveStepSound.h"
 #include "PhysicalMaterials/PhysicalMaterial.h"
 #include "PhysicsEngine/PhysicsSettings.h"
-#include "Sound/SoundCue.h"
+#include "System/BSAudioSettings.h"
 
 static TAutoConsoleVariable CVarShowPos(TEXT("cl.ShowPos"), 0, TEXT("Show position and movement information.\n"),
 	ECVF_Default);
@@ -209,17 +209,12 @@ const FCharacterGroundInfo& UBSCharacterMovementComponent::GetGroundInfo()
 		const FVector TraceStart(GetActorLocation());
 		const FVector TraceEnd(TraceStart.X, TraceStart.Y, TraceStart.Z - GroundTraceDistance - CapsuleHalfHeight);
 		
-		FCollisionQueryParams QueryParams(SCENE_QUERY_STAT(CharacterFloorTrace), true, CharacterOwner);
-		// must trace complex to get mesh phys materials
-		QueryParams.bTraceComplex = true;
-		// must get materials
+		FCollisionQueryParams QueryParams;
+		QueryParams.AddIgnoredActor(CharacterOwner);
 		QueryParams.bReturnPhysicalMaterial = true;
 		
-		FCollisionResponseParams ResponseParam;
-		InitCollisionParams(QueryParams, ResponseParam);
-		
 		FHitResult HitResult;
-		GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, CollisionChannel, QueryParams, ResponseParam);
+		GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, CollisionChannel, QueryParams);
 		
 		CachedGroundInfo.GroundHitResult = HitResult;
 		CachedGroundInfo.GroundDistance = GroundTraceDistance;
@@ -269,8 +264,6 @@ void UBSCharacterMovementComponent::TickComponent(float DeltaTime, ELevelTick Ti
 	FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	PlayMoveSound(DeltaTime);
 
 	if (bHasDeferredMovementMode)
 	{
@@ -1545,17 +1538,6 @@ void UBSCharacterMovementComponent::OnMovementModeChanged(EMovementMode Previous
 	// Reset step side if we are changing modes
 	StepSide = false;
 
-	// did we jump or land
-	bool bJumped = false;
-
-	if (PreviousMovementMode == MOVE_Walking && MovementMode == MOVE_Falling)
-	{
-		bJumped = true;
-	}
-	PlayJumpSound(GetGroundInfo().GroundHitResult, bJumped);
-
-	Super::OnMovementModeChanged(PreviousMovementMode, PreviousCustomMode);
-
 	Super::OnMovementModeChanged(PreviousMovementMode, PreviousCustomMode);
 }
 
@@ -1604,240 +1586,32 @@ void UBSCharacterMovementComponent::ToggleNoClip()
 	SetNoClip(!bCheatFlying);
 }
 
-void UBSCharacterMovementComponent::PlayMoveSound(float DeltaTime)
+void UBSCharacterMovementComponent::PlayMovementSound_Implementation(const FName Bone, const FGameplayTag MotionEffect,
+	USceneComponent* StaticMeshComponent, const FVector LocationOffset, const FRotator RotationOffset,
+	const UAnimSequenceBase* AnimationSequence, const FHitResult HitResult, FGameplayTagContainer Context,
+	float AudioVolume, float AudioPitch)
 {
-	if (!bShouldPlayMoveSounds)
+	if (HitResult.PhysMaterial.IsValid())
 	{
-		return;
-	}
-
-	// Count move sound time down if we've got it
-	if (MoveSoundTime > 0.0f)
-	{
-		MoveSoundTime = FMath::Max(0.0f, MoveSoundTime - 1000.0f * DeltaTime);
-	}
-
-	// Check if it's time to play the sound
-	if (MoveSoundTime > 0.0f)
-	{
-		return;
-	}
-
-	const float Speed = Velocity.SizeSquared();
-	float RunSpeedThreshold;
-	float SprintSpeedThreshold;
-
-	if (IsCrouching() || bOnLadder)
-	{
-		RunSpeedThreshold = MaxWalkSpeedCrouched;
-		SprintSpeedThreshold = MaxWalkSpeedCrouched * 1.7f;
-	}
-	else
-	{
-		RunSpeedThreshold = WalkSpeed;
-		SprintSpeedThreshold = SprintSpeed;
-	}
-
-	// Only play sounds if we are moving fast enough on the ground or on a
-	// ladder
-	const bool bPlaySound = (bBrakingWindowElapsed || bOnLadder) && Speed >= RunSpeedThreshold * RunSpeedThreshold;
-
-	if (!bPlaySound)
-	{
-		return;
-	}
-
-	const bool bSprinting = Speed >= SprintSpeedThreshold * SprintSpeedThreshold;
-
-	float MoveSoundVolume = 0.f;
-
-	UBSMoveStepSound* MoveSound = nullptr;
-
-	if (bOnLadder)
-	{
-		MoveSoundVolume = 0.5f;
-		MoveSoundTime = 450.0f;
-		MoveSound = GetMoveStepSoundBySurface(SurfaceType1);
-	}
-	else
-	{
-		MoveSoundTime = bSprinting ? 300.0f : 400.0f;
-		if (const FCharacterGroundInfo GroundInfo = GetGroundInfo(); GroundInfo.GroundHitResult.PhysMaterial.IsValid())
+		TEnumAsByte<EPhysicalSurface> SurfaceType = HitResult.PhysMaterial->SurfaceType;
+		if (const UBSAudioSettings* AudioSettings = GetDefault<UBSAudioSettings>())
 		{
-			MoveSound = GetMoveStepSoundBySurface(GroundInfo.GroundHitResult.PhysMaterial->SurfaceType);
-		}
-		if (!MoveSound)
-		{
-			MoveSound = GetMoveStepSoundBySurface(SurfaceType_Default);
-		}
-
-		// Double-check that is valid before accessing it
-		if (MoveSound)
-		{
-			MoveSoundVolume = bSprinting ? MoveSound->GetSprintVolume() : MoveSound->GetWalkVolume();
-
-			if (IsCrouching())
+			if (const FGameplayTag* SurfaceContextPtr = AudioSettings->SurfaceTypeToGameplayTagMap.Find(SurfaceType))
 			{
-				MoveSoundVolume *= 0.65f;
-				MoveSoundTime += 100.0f;
+				FGameplayTag SurfaceContext = *SurfaceContextPtr;
+				Context.AddTag(SurfaceContext);
 			}
 		}
-	}
-
-	if (MoveSound)
-	{
-		TArray<USoundCue*> MoveSoundCues;
-
-		if (bSprinting && !bOnLadder)
+		if (MovementSounds)
 		{
-			MoveSoundCues = StepSide ? MoveSound->GetSprintLeftSounds() : MoveSound->GetSprintRightSounds();
-		}
-		if (!bSprinting || bOnLadder || MoveSoundCues.Num() < 1)
-		{
-			MoveSoundCues = StepSide ? MoveSound->GetStepLeftSounds() : MoveSound->GetStepRightSounds();
-		}
-
-		// Error handling - Sounds not valid
-		if (MoveSoundCues.Num() < 1) // Sounds array not valid
-		{
-			// Get default sounds
-			MoveSound = GetMoveStepSoundBySurface(SurfaceType_Default);
-
-			if (!MoveSound)
+			TArray<TObjectPtr<USoundBase>> Sounds;
+			MovementSounds->GetFootstepSounds(MotionEffect, Context, Sounds);
+			for (const TObjectPtr<USoundBase>& Sound : Sounds)
 			{
-				return;
-			}
-
-			if (bSprinting)
-			{
-				// Get default sprint sounds
-				MoveSoundCues = StepSide ? MoveSound->GetSprintLeftSounds() : MoveSound->GetSprintRightSounds();
-			}
-
-			if (!bSprinting || MoveSoundCues.Num() < 1)
-			{
-				// If bSprinting = true, the code enter this IF only if the updated MoveSoundCues with default sprint sounds is not valid (length < 1)
-				// If bSprinting = false, the code enter this IF because the walk sounds are not valid and must try to pick them from the default surface
-				// Get default walk sounds
-				MoveSoundCues = StepSide ? MoveSound->GetStepLeftSounds() : MoveSound->GetStepRightSounds();
-			}
-
-			if (MoveSoundCues.Num() < 1)
-			{
-				// SurfaceType_Default sounds not found, return
-				return;
+				UGameplayStatics::SpawnSoundAttached(Sound.Get(), StaticMeshComponent, Bone, LocationOffset,
+					RotationOffset, EAttachLocation::KeepRelativeOffset, false, AudioVolume, AudioPitch, 0.0f,
+					nullptr, nullptr, true);
 			}
 		}
-
-		// Sound array is valid, play a sound
-		// If the array has just one element pick that one skipping random
-		USoundCue* Sound = MoveSoundCues[MoveSoundCues.Num() == 1 ? 0 : FMath::RandRange(0, MoveSoundCues.Num() - 1)];
-
-		Sound->VolumeMultiplier = MoveSoundVolume;
-
-		const FVector Location = CharacterOwner->GetActorLocation();
-		const FVector StepLocation(FVector(Location.X, Location.Y,
-			Location.Z - GetCharacterOwner()->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()));
-
-		/*UPBGameplayStatics::SpawnSoundAtLocation(CharacterOwner->GetWorld(), Sound, StepLocation);*/
-		UGameplayStatics::SpawnSoundAtLocation(CharacterOwner->GetWorld(), Sound, StepLocation);
-
-		StepSide = !StepSide;
-	}
-}
-
-UBSMoveStepSound* UBSCharacterMovementComponent::GetMoveStepSoundBySurface(EPhysicalSurface SurfaceType) const
-{
-	if (const TSubclassOf<UBSMoveStepSound>* GotSound = BSCharacter->GetMoveStepSound(TEnumAsByte(SurfaceType)))
-	{
-		return GotSound->GetDefaultObject();
-	}
-
-	return nullptr;
-}
-
-void UBSCharacterMovementComponent::PlayJumpSound(const FHitResult& Hit, bool bJumped)
-{
-	if (!bShouldPlayMoveSounds)
-	{
-		return;
-	}
-
-	UBSMoveStepSound* MoveSound = nullptr;
-	TSubclassOf<UBSMoveStepSound>* GotSound = nullptr;
-	if (Hit.PhysMaterial.IsValid())
-	{
-		GotSound = BSCharacter->GetMoveStepSound(Hit.PhysMaterial->SurfaceType);
-	}
-	if (GotSound)
-	{
-		MoveSound = GotSound->GetDefaultObject();
-	}
-	if (!MoveSound)
-	{
-		if (!BSCharacter->GetMoveStepSound(TEnumAsByte<EPhysicalSurface>(SurfaceType_Default)))
-		{
-			return;
-		}
-		MoveSound = BSCharacter->GetMoveStepSound(TEnumAsByte<EPhysicalSurface>(SurfaceType_Default))->
-		                         GetDefaultObject();
-	}
-
-	if (MoveSound)
-	{
-		float MoveSoundVolume;
-
-		// if we didn't jump, adjust volume for landing
-		if (!bJumped)
-		{
-			const float FallSpeed = -Velocity.Z;
-			if (FallSpeed > BSCharacter->GetMinSpeedForFallDamage())
-			{
-				MoveSoundVolume = 1.0f;
-			}
-			else if (FallSpeed > BSCharacter->GetMinSpeedForFallDamage() / 2.0f)
-			{
-				MoveSoundVolume = 0.85f;
-			}
-			else if (FallSpeed < BSCharacter->GetMinLandBounceSpeed())
-			{
-				MoveSoundVolume = 0.0f;
-			}
-			else
-			{
-				MoveSoundVolume = 0.5f;
-			}
-		}
-		else
-		{
-			MoveSoundVolume = BSCharacter->IsSprinting() ? MoveSound->GetSprintVolume() : MoveSound->GetWalkVolume();
-		}
-
-		if (IsCrouching())
-		{
-			MoveSoundVolume *= 0.65f;
-		}
-
-		if (MoveSoundVolume <= 0.0f)
-		{
-			return;
-		}
-
-		const TArray<USoundCue*>& MoveSoundCues = bJumped ? MoveSound->GetJumpSounds() : MoveSound->GetLandSounds();
-
-		if (MoveSoundCues.Num() < 1)
-		{
-			return;
-		}
-
-		// If the array has just one element pick that one skipping random
-		USoundCue* Sound = MoveSoundCues[MoveSoundCues.Num() == 1 ? 0 : FMath::RandRange(0, MoveSoundCues.Num() - 1)];
-
-		Sound->VolumeMultiplier = MoveSoundVolume;
-		const FVector Location = CharacterOwner->GetActorLocation();
-		const FVector StepLocation(Location.X, Location.Y,
-			Location.Z - GetCharacterOwner()->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
-		/*UPBGameplayStatics::SpawnSoundAtLocation(CharacterOwner->GetWorld(), Sound, StepLocation);*/
-		UGameplayStatics::SpawnSoundAtLocation(CharacterOwner->GetWorld(), Sound, StepLocation);
 	}
 }

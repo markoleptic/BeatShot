@@ -15,7 +15,7 @@
 class UBSRecoilComponent;
 class UBSCharacterMovementComponent;
 class ABSPlayerState;
-class UBSMoveStepSound;
+class UBSMovementSounds;
 class UBSInventoryManagerComponent;
 class UBSInventoryItemDefinition;
 class UBSEquipmentManagerComponent;
@@ -87,10 +87,6 @@ protected:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "BeatShot|Inventory")
 	TArray<TSubclassOf<UBSInventoryItemDefinition>> InitialInventoryItems;
 
-	/** Move step sounds by physical surface */
-	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = "true"), Category = "BeatShot|Sounds")
-	TMap<TEnumAsByte<EPhysicalSurface>, TSubclassOf<UBSMoveStepSound>> MoveStepSounds;
-
 	/** Ability system component that lives on the PlayerState. */
 	TWeakObjectPtr<UBSAbilitySystemComponent> AbilitySystemComponent;
 
@@ -145,11 +141,6 @@ public:
 
 	UFUNCTION(Category = "BeatShot|Character", BlueprintCallable)
 	void SetAutoBunnyHop(bool Value) { bAutoBunnyHop = Value; }
-
-	FORCEINLINE TSubclassOf<UBSMoveStepSound>* GetMoveStepSound(const TEnumAsByte<EPhysicalSurface> Surface)
-	{
-		return MoveStepSounds.Find(Surface);
-	}
 	
 	/** Implement IGameplayTagAssetInterface */
 	virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override;
