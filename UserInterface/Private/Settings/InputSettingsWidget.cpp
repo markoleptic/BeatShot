@@ -51,7 +51,7 @@ void UInputSettingsWidget::NativeConstruct()
 		EnhancedInputUserSettings->RegisterInputMappingContext(BaseMappingContext);
 	}
 
-	const UEnhancedPlayerMappableKeyProfile* KeyProfile = EnhancedInputUserSettings->GetCurrentKeyProfile();
+	const UEnhancedPlayerMappableKeyProfile* KeyProfile = EnhancedInputUserSettings->GetActiveKeyProfile();
 	InitialPlayerMappingRows = KeyProfile->GetPlayerMappingRows();
 
 	InitializeInputSettings();
@@ -71,7 +71,7 @@ void UInputSettingsWidget::InitializeInputSettings(const TMap<FName, FKeyMapping
 	{
 		UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(
 			GetOwningPlayer()->GetLocalPlayer());
-		Rows = Subsystem->GetUserSettings()->GetCurrentKeyProfile()->GetPlayerMappingRows();
+		Rows = Subsystem->GetUserSettings()->GetActiveKeyProfile()->GetPlayerMappingRows();
 	}
 
 	TArray<FMapPlayerKeyArgs> LegacyPlayerKeyArgs = PlayerSettings_User.GetLegacyKeybindings();
@@ -278,7 +278,7 @@ void UInputSettingsWidget::OnButtonClicked_Save()
 	}
 
 	Subsystem->GetUserSettings()->SaveSettings();
-	InitialPlayerMappingRows = Subsystem->GetUserSettings()->GetCurrentKeyProfile()->GetPlayerMappingRows();
+	InitialPlayerMappingRows = Subsystem->GetUserSettings()->GetActiveKeyProfile()->GetPlayerMappingRows();
 	SavePlayerSettings(Settings_User);
 
 	SavedTextWidget->SetSavedText(GetWidgetTextFromKey("SM_Saved_Input"));
@@ -289,7 +289,7 @@ void UInputSettingsWidget::OnButtonClicked_Reset()
 {
 	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(
 		GetOwningPlayer()->GetLocalPlayer());
-	UEnhancedPlayerMappableKeyProfile* KeyProfile = Subsystem->GetUserSettings()->GetCurrentKeyProfile();
+	UEnhancedPlayerMappableKeyProfile* KeyProfile = Subsystem->GetUserSettings()->GetActiveKeyProfile();
 	KeyProfile->ResetToDefault();
 	Subsystem->GetUserSettings()->SaveSettings();
 	InitializeInputSettings();

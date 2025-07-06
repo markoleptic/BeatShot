@@ -1222,7 +1222,7 @@ void USpawnAreaManagerComponent::FindAdjacentGridUsingDFS(TSet<USpawnArea*>& Val
 
 		while (!Stack.IsEmpty())
 		{
-			USpawnArea* Vertex = Stack.Pop(false);
+			USpawnArea* Vertex = Stack.Pop(EAllowShrinking::No);
 			if (Visited.Contains(Vertex))
 			{
 				continue;

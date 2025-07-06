@@ -81,7 +81,7 @@ public:
 	{
 		if (InSubclass)
 		{
-			if (const T* Style = Cast<T>(InSubclass->ClassDefaultObject))
+			if (const T* Style = Cast<T>(GetDefault<T>()))
 			{
 				return Style;
 			}

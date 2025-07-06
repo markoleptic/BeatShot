@@ -30,7 +30,7 @@ void UBSAbilitySystemComponent::CancelAbilitiesByFunc(TShouldCancelAbilityFunc S
 
 		UBSGameplayAbility* AbilityCDO = CastChecked<UBSGameplayAbility>(AbilitySpec.Ability);
 
-		if (AbilityCDO->GetInstancingPolicy() != EGameplayAbilityInstancingPolicy::NonInstanced)
+		if (AbilityCDO->GetInstancingPolicy() != EGameplayAbilityInstancingPolicy::InstancedPerActor)
 		{
 			// Cancel all the spawned instances, not the CDO.
 			TArray<UGameplayAbility*> Instances = AbilitySpec.GetAbilityInstances();
@@ -193,9 +193,10 @@ void UBSAbilitySystemComponent::AbilitySpecInputPressed(FGameplayAbilitySpec& Sp
 	// Use replicated events instead so that the WaitInputPress ability task works.
 	if (Spec.IsActive())
 	{
+		const UGameplayAbility* Instance = Spec.GetPrimaryInstance();
+		const FPredictionKey OriginalPredictionKey = Instance->GetCurrentActivationInfo().GetActivationPredictionKey();
 		// Invoke the InputPressed event. This is not replicated here. If someone is listening, they may replicate the InputPressed event to the server.
-		InvokeReplicatedEvent(EAbilityGenericReplicatedEvent::InputPressed, Spec.Handle,
-			Spec.ActivationInfo.GetActivationPredictionKey());
+		InvokeReplicatedEvent(EAbilityGenericReplicatedEvent::InputPressed, Spec.Handle, OriginalPredictionKey);
 	}
 }
 
@@ -207,9 +208,10 @@ void UBSAbilitySystemComponent::AbilitySpecInputReleased(FGameplayAbilitySpec& S
 	// Use replicated events instead so that the WaitInputRelease ability task works.
 	if (Spec.IsActive())
 	{
+		const UGameplayAbility* Instance = Spec.GetPrimaryInstance();
+		const FPredictionKey OriginalPredictionKey = Instance->GetCurrentActivationInfo().GetActivationPredictionKey();
 		// Invoke the InputReleased event. This is not replicated here. If someone is listening, they may replicate the InputReleased event to the server.
-		InvokeReplicatedEvent(EAbilityGenericReplicatedEvent::InputReleased, Spec.Handle,
-			Spec.ActivationInfo.GetActivationPredictionKey());
+		InvokeReplicatedEvent(EAbilityGenericReplicatedEvent::InputReleased, Spec.Handle, OriginalPredictionKey);
 	}
 }
 
@@ -267,7 +269,7 @@ void UBSAbilitySystemComponent::ProcessAbilityInput(float DeltaTime, bool bGameP
 					BSAbilityCDO->GetActivationPolicy() == EBSAbilityActivationPolicy::OnInputTriggered || BSAbilityCDO
 					->GetActivationPolicy() == EBSAbilityActivationPolicy::SpammableTriggered)
 				{
-					// Ability is not active and but should be since input has been triggered
+					// Ability is not active but should be since input has been triggered
 					AbilitiesToActivate.AddUnique(AbilitySpec->Handle);
 				}
 			}
@@ -318,7 +320,7 @@ void UBSAbilitySystemComponent::AbilityInputTagPressed(FGameplayTag InputTag)
 	{
 		for (FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities.Items)
 		{
-			if (AbilitySpec.Ability && (AbilitySpec.DynamicAbilityTags.HasTagExact(InputTag)))
+			if (AbilitySpec.Ability && AbilitySpec.GetDynamicSpecSourceTags().HasTagExact(InputTag))
 			{
 				InputPressedSpecHandles.AddUnique(AbilitySpec.Handle);
 				InputHeldSpecHandles.AddUnique(AbilitySpec.Handle);
@@ -333,7 +335,7 @@ void UBSAbilitySystemComponent::AbilityInputTagReleased(FGameplayTag InputTag)
 	{
 		for (const FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities.Items)
 		{
-			if (AbilitySpec.Ability && (AbilitySpec.DynamicAbilityTags.HasTagExact(InputTag)))
+			if (AbilitySpec.Ability && AbilitySpec.GetDynamicSpecSourceTags().HasTagExact(InputTag))
 			{
 				InputReleasedSpecHandles.AddUnique(AbilitySpec.Handle);
 				InputHeldSpecHandles.Remove(AbilitySpec.Handle);

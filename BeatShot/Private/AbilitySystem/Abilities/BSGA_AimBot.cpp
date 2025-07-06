@@ -11,7 +11,7 @@ UBSGA_AimBot::UBSGA_AimBot()
 	SmoothingCurve = nullptr;
 	ActivationPolicy = EBSAbilityActivationPolicy::OnSpawn;
 	ActivationGroup = EBSAbilityActivationGroup::Independent;
-	AbilityTags.AddTag(BSGameplayTags::Cheat_AimBot);
+	SetAssetTags(FGameplayTagContainer(BSGameplayTags::Cheat_AimBot));
 	ActivationOwnedTags.AddTag(BSGameplayTags::Cheat_AimBot);
 	bYPositive = false;
 	bYNegative = false;

@@ -334,16 +334,15 @@ bool UAudioSelectWidget::FileDialogShared(bool bSave, const void* ParentWindowHa
 
 #if PLATFORM_WINDOWS
 	WCHAR Filename[MAX_FILENAME_STR];
-	FCString::Strcpy(Filename, MAX_FILENAME_STR, *(DefaultFile.Replace(TEXT("/"), TEXT("\\"))));
+	FCString::Strncpy(Filename, *DefaultFile.Replace(TEXT("/"), TEXT("\\")), MAX_FILENAME_STR);
 
 	// Convert the forward slashes in the path name to backslashes, otherwise it'll be ignored as invalid and use whatever is cached in the registry
 	WCHAR Pathname[MAX_FILENAME_STR];
-	FCString::Strcpy(Pathname, MAX_FILENAME_STR,
-		*(FPaths::ConvertRelativePathToFull(DefaultPath).Replace(TEXT("/"), TEXT("\\"))));
+	FCString::Strncpy(Pathname, *FPaths::ConvertRelativePathToFull(DefaultPath).Replace(TEXT("/"), TEXT("\\")), MAX_FILENAME_STR);
 
 	// Convert the "|" delimited list of filetypes to NULL delimited then add a second NULL character to indicate the end of the list
 	WCHAR FileTypeStr[MAX_FILETYPES_STR];
-	WCHAR* FileTypesPtr = NULL;
+	WCHAR* FileTypesPtr = nullptr;
 	const int32 FileTypesLen = FileTypes.Len();
 
 	// Nicely formatted file types for lookup later and suitable to append to filenames without extensions
@@ -369,7 +368,7 @@ bool UAudioSelectWidget::FileDialogShared(bool bSave, const void* ParentWindowHa
 	if (FileTypesLen > 0 && FileTypesLen - 1 < MAX_FILETYPES_STR)
 	{
 		FileTypesPtr = FileTypeStr;
-		FCString::Strcpy(FileTypeStr, MAX_FILETYPES_STR, *FileTypes);
+		FCString::Strncpy(FileTypeStr, *FileTypes, MAX_FILETYPES_STR);
 
 		TCHAR* Pos = FileTypeStr;
 		while (Pos[0] != 0)

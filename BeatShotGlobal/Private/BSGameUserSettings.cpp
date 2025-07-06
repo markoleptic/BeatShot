@@ -657,12 +657,7 @@ TMap<FString, uint8> UBSGameUserSettings::GetSupportedNvidiaSettingModes(
 		break;
 	case ENvidiaSettingType::StreamlineReflexMode:
 		{
-			TArray<EStreamlineReflexMode> Modes = TArray{EStreamlineReflexMode::Off};
-			if (UStreamlineLibraryReflex::IsReflexSupported())
-			{
-				Modes.Add(EStreamlineReflexMode::Enabled);
-				Modes.Add(EStreamlineReflexMode::Boost);
-			}
+			TArray<EStreamlineReflexMode> Modes = UStreamlineLibraryReflex::GetSupportedReflexModes();
 			Out = VideoSettingEnumMap->GetNvidiaSettingModes(Modes);
 		}
 		break;

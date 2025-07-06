@@ -125,8 +125,8 @@ void UAudioAnalyzerSettingsWidget::OnSelectionChanged_NumBandChannels(const TArr
 	}
 	else
 	{
-		NewAASettings.BandLimits.SetNum(NewAASettings.NumBandChannels, true);
-		NewAASettings.BandLimitsThreshold.SetNum(NewAASettings.NumBandChannels, true);
+		NewAASettings.BandLimits.SetNum(NewAASettings.NumBandChannels, EAllowShrinking::Yes);
+		NewAASettings.BandLimitsThreshold.SetNum(NewAASettings.NumBandChannels, EAllowShrinking::Yes);
 	}
 	PopulateAASettings();
 }
