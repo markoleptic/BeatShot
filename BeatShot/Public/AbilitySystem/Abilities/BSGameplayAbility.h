@@ -42,7 +42,8 @@ enum class EBSAbilityActivationGroup : uint8
 
 	/** Ability blocks all other exclusive abilities from activating. */
 	Exclusive_Blocking UMETA(DisplayName="Exclusive_Blocking"),
-	Max UMETA(Hidden)};
+	Max UMETA(Hidden)
+};
 
 ENUM_RANGE_BY_FIRST_AND_LAST(EBSAbilityActivationGroup, EBSAbilityActivationGroup::Independent,
 	EBSAbilityActivationGroup::Max);

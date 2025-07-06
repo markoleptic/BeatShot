@@ -113,7 +113,7 @@ void ABeatShotGameModeFunctionalTest::CleanUp()
 
 void ABeatShotGameModeFunctionalTest::OnAudioAnalyzerBeat()
 {
-	TargetManager->OnAudioAnalyzerBeat();
+	TargetManager->HandleAudioAnalyzerBeat();
 
 	const int32 NumActivated = TargetManager->SpawnAreaManager->GetNumActivated();
 	const int32 NumManaged = TargetManager->SpawnAreaManager->GetNumManaged();

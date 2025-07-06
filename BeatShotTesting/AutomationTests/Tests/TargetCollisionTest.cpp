@@ -16,37 +16,12 @@ class FTargetCollisionTest : public FTargetManagerTestWithWorld
 public:
 	FTargetCollisionTest(const FString& InName) : FTargetManagerTestWithWorld(InName, true)
 	{
-		static_assert(
-			(EAutomationTestFlags::CommandletContext | EAutomationTestFlags::EditorContext |
-				EAutomationTestFlags::HighPriorityAndAbove | EAutomationTestFlags::EngineFilter) &
-			EAutomationTestFlags::ApplicationContextMask,
-			"AutomationTest has no application flag.  It shouldn't run.  See AutomationTest.h.");
-		static_assert(
-			(((EAutomationTestFlags::CommandletContext | EAutomationTestFlags::EditorContext |
-					EAutomationTestFlags::HighPriorityAndAbove | EAutomationTestFlags::EngineFilter) &
-				EAutomationTestFlags::FilterMask) == EAutomationTestFlags::SmokeFilter) || (((
-					EAutomationTestFlags::CommandletContext | EAutomationTestFlags::EditorContext |
-					EAutomationTestFlags::HighPriorityAndAbove | EAutomationTestFlags::EngineFilter) &
-				EAutomationTestFlags::FilterMask) == EAutomationTestFlags::EngineFilter) || (((
-					EAutomationTestFlags::CommandletContext | EAutomationTestFlags::EditorContext |
-					EAutomationTestFlags::HighPriorityAndAbove | EAutomationTestFlags::EngineFilter) &
-				EAutomationTestFlags::FilterMask) == EAutomationTestFlags::ProductFilter) || (((
-					EAutomationTestFlags::CommandletContext | EAutomationTestFlags::EditorContext |
-					EAutomationTestFlags::HighPriorityAndAbove | EAutomationTestFlags::EngineFilter) &
-				EAutomationTestFlags::FilterMask) == EAutomationTestFlags::PerfFilter) || (((
-					EAutomationTestFlags::CommandletContext | EAutomationTestFlags::EditorContext |
-					EAutomationTestFlags::HighPriorityAndAbove | EAutomationTestFlags::EngineFilter) &
-				EAutomationTestFlags::FilterMask) == EAutomationTestFlags::StressFilter) || (((
-					EAutomationTestFlags::CommandletContext | EAutomationTestFlags::EditorContext |
-					EAutomationTestFlags::HighPriorityAndAbove | EAutomationTestFlags::EngineFilter) &
-				EAutomationTestFlags::FilterMask) == EAutomationTestFlags::NegativeFilter),
-			"All AutomationTests must have exactly 1 filter type specified.  See AutomationTest.h.");
 	}
 
-	virtual uint32 GetTestFlags() const override
+	virtual EAutomationTestFlags GetTestFlags() const override
 	{
 		return ((EAutomationTestFlags::CommandletContext | EAutomationTestFlags::EditorContext |
-			EAutomationTestFlags::HighPriorityAndAbove | EAutomationTestFlags::EngineFilter) & ~(
+			EAutomationTestFlags_HighPriorityAndAbove | EAutomationTestFlags::EngineFilter) & ~(
 			EAutomationTestFlags::SmokeFilter));
 	}
 
@@ -107,7 +82,7 @@ bool FTargetCollisionTest::RunTest(const FString& Parameters)
 
 	for (int Iter = 0; Iter < NumIterations; Iter++)
 	{
-		TargetManager->OnAudioAnalyzerBeat();
+		TargetManager->HandleAudioAnalyzerBeat();
 		TArray<FSphere> Spheres;
 		for (auto [Guid, Target] : GetManagedTargets())
 		{

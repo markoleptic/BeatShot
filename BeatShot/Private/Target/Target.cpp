@@ -207,7 +207,7 @@ void ATarget::PostInitializeComponents()
 		CurrentDeactivationHealthThreshold = Config.MaxHealth - Config.DeactivationHealthLostThreshold;
 
 		HealthComponent->InitializeWithAbilitySystem(AbilitySystemComponent);
-		HealthComponent->OnDamageTakenDelegate.AddUObject(this, &ATarget::OnIncomingDamageTaken);
+		HealthComponent->OnDamageTakenDelegate.AddUObject(this, &ATarget::HandleDamageEvent);
 		ASC->OnImmunityBlockGameplayEffectDelegate.AddUObject(this, &ATarget::OnImmunityBlockGameplayEffect);
 
 		switch (Config.TargetDamageType)
@@ -394,7 +394,7 @@ void ATarget::GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const
 /* -- Damage/Health functions -- */
 /* ----------------------------- */
 
-void ATarget::OnIncomingDamageTaken(const FDamageEventData& InData)
+void ATarget::HandleDamageEvent(const FDamageEventData& InData)
 {
 	if (InData.NewValue > InData.OldValue)
 	{

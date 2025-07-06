@@ -398,7 +398,7 @@ void USpawnAreaManagerComponent::HandleTargetDamageEvent(const FTargetDamageEven
 	}
 }
 
-void USpawnAreaManagerComponent::OnExtremaChanged(const FExtrema& Extrema)
+void USpawnAreaManagerComponent::HandleExtremaChanged(const FExtrema& Extrema)
 {
 	switch (TargetConfig().TargetDistributionPolicy)
 	{

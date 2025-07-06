@@ -90,17 +90,19 @@ struct FSimpleBeamLightConfig
 
 	/** Auto calculates the beam length by doing a line trace on initialization. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Simple Beam Light Config | Niagara Beam",
-		meta=(DisplayPriority=1200, EditCondition="NiagaraSystem!=nullptr", EditConditionHides))
+		meta=(DisplayPriority=1200, EditCondition="NiagaraSystem != nullptr", EditConditionHides))
 	bool bAutoCalculateBeamLength = true;
 
 	/** The Niagara System float parameters to used for this light. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Simple Beam Light Config | Niagara Beam",
-		meta=(ForceInlineRow), meta=(DisplayPriority=1300, EditCondition="NiagaraSystem!=nullptr", EditConditionHides))
+		meta=(ForceInlineRow),
+		meta=(DisplayPriority=1300, EditCondition="NiagaraSystem != nullptr", EditConditionHides))
 	TMap<FString, float> NiagaraFloatParameters;
 
 	/** The Niagara System Color parameters to used for this light. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Simple Beam Light Config | Niagara Beam",
-		meta=(ForceInlineRow), meta=(DisplayPriority=1400, EditCondition="NiagaraSystem!=nullptr", EditConditionHides))
+		meta=(ForceInlineRow),
+		meta=(DisplayPriority=1400, EditCondition="NiagaraSystem != nullptr", EditConditionHides))
 	TMap<FString, FLinearColor> NiagaraColorParameters;
 
 	/** The index of this instance inside an array of this type. */

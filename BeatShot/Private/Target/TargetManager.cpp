@@ -120,7 +120,7 @@ void ATargetManager::Init(const TSharedPtr<FBSConfig>& InConfig, const FCommonSc
 	const float Factor = bDynamic ? GetCurveTableValue(true, DynamicLookUpValue_SpawnAreaScale) : 1.f;
 	UpdateSpawnBoxExtents(Factor);
 	UpdateSpawnVolume(Factor);
-	SpawnAreaManager->OnExtremaChanged(GetSpawnBoxExtrema());
+	SpawnAreaManager->HandleExtremaChanged(GetSpawnBoxExtrema());
 
 	if (BSConfig->TargetConfig.MovingTargetDirectionMode == EMovingTargetDirectionMode::HorizontalOnly || BSConfig->
 		TargetConfig.MovingTargetDirectionMode == EMovingTargetDirectionMode::VerticalOnly)
@@ -230,7 +230,7 @@ void ATargetManager::SetShouldSpawn(const bool bShouldSpawn)
 	ShouldSpawn = bShouldSpawn;
 }
 
-void ATargetManager::OnPlayerStopTrackingTarget()
+void ATargetManager::HandlePlayerStopTrackingTarget()
 {
 	for (const TTuple<FGuid, ATarget*>& Pair : ManagedTargets)
 	{
@@ -245,7 +245,7 @@ void ATargetManager::OnPlayerStopTrackingTarget()
 /* -- Target spawning and activation -- */
 /* ------------------------------------ */
 
-void ATargetManager::OnAudioAnalyzerBeat()
+void ATargetManager::HandleAudioAnalyzerBeat()
 {
 	if (!ShouldSpawn)
 	{
@@ -274,7 +274,7 @@ ATarget* ATargetManager::SpawnTarget(const FTargetSpawnParams& Params)
 #endif
 
 	Target->SetTargetDamageType(FindNextTargetDamageType());
-	Target->OnTargetDamageEvent.AddUObject(this, &ATargetManager::OnTargetDamageEvent);
+	Target->OnTargetDamageEvent.AddUObject(this, &ATargetManager::HandleTargetDamageEvent);
 	AddToManagedTargets(Target, Params.SpawnAreaIndex);
 
 	if (!Target)
@@ -847,7 +847,7 @@ ETargetDamageType ATargetManager::FindNextTargetDamageType()
 /* -- Deactivation and Destruction -- */
 /* ---------------------------------- */
 
-void ATargetManager::OnTargetDamageEvent(FTargetDamageEvent& Event)
+void ATargetManager::HandleTargetDamageEvent(FTargetDamageEvent& Event)
 {
 	// Set TargetManagerData
 	Event.SetTargetManagerData(
@@ -1175,7 +1175,7 @@ void ATargetManager::UpdateSpawnBoxExtents(const float Factor) const
 	}
 
 	SpawnBox->SetBoxExtent(NewExtents);
-	SpawnAreaManager->OnExtremaChanged(GetSpawnBoxExtrema());
+	SpawnAreaManager->HandleExtremaChanged(GetSpawnBoxExtrema());
 }
 
 void ATargetManager::UpdateSpawnVolume(const float Factor) const

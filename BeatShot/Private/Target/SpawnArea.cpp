@@ -16,7 +16,7 @@ FExtrema USpawnArea::TotalSpawnAreaExtrema = FExtrema();
 
 USpawnArea::USpawnArea()
 {
-	Vertex_BottomLeft = FVector(-1.f);
+	BottomLeftVertex = FVector(-1.f);
 	CenterPoint = FVector(-1.f);
 	ChosenPoint = FVector(-1.f);
 	TargetScale = FVector(1.f);
@@ -38,13 +38,13 @@ USpawnArea::USpawnArea()
 
 void USpawnArea::Init(const int32 InIndex, const FVector& InBottomLeftVertex)
 {
-	Vertex_BottomLeft = InBottomLeftVertex;
-	CenterPoint = Vertex_BottomLeft + FVector(0, Width * 0.5f, Height * 0.5f);
-	Vertex_BottomRight = Vertex_BottomLeft + FVector(0, Width, 0);
-	Vertex_TopLeft = Vertex_BottomLeft + FVector(0, 0, Height);
-	Vertex_TopRight = Vertex_BottomLeft + FVector(0, Width, Height);
+	BottomLeftVertex = InBottomLeftVertex;
+	CenterPoint = BottomLeftVertex + FVector(0, Width * 0.5f, Height * 0.5f);
+	BottomRightVertex = BottomLeftVertex + FVector(0, Width, 0);
+	TopLeftVertex = BottomLeftVertex + FVector(0, 0, Height);
+	TopRightVertex = BottomLeftVertex + FVector(0, Width, Height);
 
-	ChosenPoint = Vertex_BottomLeft;
+	ChosenPoint = BottomLeftVertex;
 	TargetScale = FVector(1.f);
 
 	TotalSpawns = INDEX_NONE;
@@ -245,7 +245,7 @@ void USpawnArea::SetTargetScale(const FVector& InScale)
 
 void USpawnArea::SetChosenPoint(const FVector& InLocation)
 {
-	ChosenPoint = Vertex_BottomLeft + InLocation;
+	ChosenPoint = BottomLeftVertex + InLocation;
 }
 
 void USpawnArea::SetIsRecent(const bool bSetIsRecent)
@@ -272,17 +272,17 @@ TSet<FVector> USpawnArea::MakeVerticesBase(const FVector& InScale, const bool bO
 
 	const float Radius = CalcTraceRadius(InScale);
 
-	const FSphere Sphere = FSphere(Vertex_BottomLeft, Radius);
+	const FSphere Sphere = FSphere(BottomLeftVertex, Radius);
 
 	const int32 IncY = floor(Radius / Width);
 	const int32 IncZ = floor(Radius / Height);
 
-	const float MinY = FMath::Max(TotalSpawnAreaExtrema.Min.Y, Vertex_BottomLeft.Y - IncY * Width);
-	const float MaxY = FMath::Min(TotalSpawnAreaExtrema.Max.Y - Width, Vertex_BottomLeft.Y + IncY * Width);
-	const float MinZ = FMath::Max(TotalSpawnAreaExtrema.Min.Z, Vertex_BottomLeft.Z - IncZ * Height);
-	const float MaxZ = FMath::Min(TotalSpawnAreaExtrema.Max.Z - Height, Vertex_BottomLeft.Z + IncZ * Height);
+	const float MinY = FMath::Max(TotalSpawnAreaExtrema.Min.Y, BottomLeftVertex.Y - IncY * Width);
+	const float MaxY = FMath::Min(TotalSpawnAreaExtrema.Max.Y - Width, BottomLeftVertex.Y + IncY * Width);
+	const float MinZ = FMath::Max(TotalSpawnAreaExtrema.Min.Z, BottomLeftVertex.Z - IncZ * Height);
+	const float MaxZ = FMath::Min(TotalSpawnAreaExtrema.Max.Z - Height, BottomLeftVertex.Z + IncZ * Height);
 
-	FVector Vertex(Vertex_BottomLeft.X, 0.f, 0.f);
+	FVector Vertex(BottomLeftVertex.X, 0.f, 0.f);
 
 	if (bOccupied)
 	{

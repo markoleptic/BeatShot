@@ -49,10 +49,10 @@ class BEATSHOT_API USpawnArea : public UObject
 
 	/** Bottom left vertex of the box, used for comparison between SpawnAreas. This Vertex corresponds to a location
 	 *  in AllSpawnLocations (in TargetManager). */
-	FVector Vertex_BottomLeft;
-	FVector Vertex_TopRight;
-	FVector Vertex_BottomRight;
-	FVector Vertex_TopLeft;
+	FVector BottomLeftVertex;
+	FVector TopRightVertex;
+	FVector BottomRightVertex;
+	FVector TopLeftVertex;
 
 	/** whether this SpawnArea has a target active. */
 	bool bIsActivated;
@@ -146,7 +146,7 @@ public:
 	FVector GetChosenPoint() const { return ChosenPoint; }
 
 	/** Returns the bottom left vertex of the spawn area 2D representation. */
-	FVector GetBottomLeftVertex() const { return Vertex_BottomLeft; }
+	FVector GetBottomLeftVertex() const { return BottomLeftVertex; }
 
 	/** Returns the middle location between the bottom left and top left. */
 	FVector GetCenterPoint() const { return CenterPoint; };
@@ -278,8 +278,8 @@ public:
 		{
 			return true;
 		}
-		if ((Other.Vertex_BottomLeft.Y >= Vertex_BottomLeft.Y) && (Other.Vertex_BottomLeft.Z >= Vertex_BottomLeft.Z) &&
-			(Other.Vertex_BottomLeft.Y < Vertex_TopRight.Y - 0.01) && (Other.Vertex_BottomLeft.Z < Vertex_TopRight.Z -
+		if ((Other.BottomLeftVertex.Y >= BottomLeftVertex.Y) && (Other.BottomLeftVertex.Z >= BottomLeftVertex.Z) &&
+			(Other.BottomLeftVertex.Y < TopRightVertex.Y - 0.01) && (Other.BottomLeftVertex.Z < TopRightVertex.Z -
 				0.01))
 		{
 			return true;
@@ -289,11 +289,11 @@ public:
 
 	FORCEINLINE bool operator <(const USpawnArea& Other) const
 	{
-		if (Vertex_BottomLeft.Z < Other.Vertex_BottomLeft.Z)
+		if (BottomLeftVertex.Z < Other.BottomLeftVertex.Z)
 		{
 			return true;
 		}
-		if (Vertex_BottomLeft.Z == Other.Vertex_BottomLeft.Z && Vertex_BottomLeft.Y < Other.Vertex_BottomLeft.Y)
+		if (BottomLeftVertex.Z == Other.BottomLeftVertex.Z && BottomLeftVertex.Y < Other.BottomLeftVertex.Y)
 		{
 			return true;
 		}
@@ -306,8 +306,8 @@ public:
 		{
 			return true;
 		}
-		if ((Other->Vertex_BottomLeft.Y >= Vertex_BottomLeft.Y) && (Other->Vertex_BottomLeft.Z >= Vertex_BottomLeft.Z)
-			&& (Other->Vertex_BottomLeft.Y < Vertex_TopRight.Y - 0.01) && (Other->Vertex_BottomLeft.Z < Vertex_TopRight.
+		if ((Other->BottomLeftVertex.Y >= BottomLeftVertex.Y) && (Other->BottomLeftVertex.Z >= BottomLeftVertex.Z)
+			&& (Other->BottomLeftVertex.Y < TopRightVertex.Y - 0.01) && (Other->BottomLeftVertex.Z < TopRightVertex.
 				Z - 0.01))
 		{
 			return true;
@@ -317,11 +317,11 @@ public:
 
 	FORCEINLINE bool operator <(const USpawnArea* Other) const
 	{
-		if (Vertex_BottomLeft.Z < Other->Vertex_BottomLeft.Z)
+		if (BottomLeftVertex.Z < Other->BottomLeftVertex.Z)
 		{
 			return true;
 		}
-		if (Vertex_BottomLeft.Z == Other->Vertex_BottomLeft.Z && Vertex_BottomLeft.Y < Other->Vertex_BottomLeft.Y)
+		if (BottomLeftVertex.Z == Other->BottomLeftVertex.Z && BottomLeftVertex.Y < Other->BottomLeftVertex.Y)
 		{
 			return true;
 		}

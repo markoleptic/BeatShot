@@ -61,6 +61,27 @@ enum class EMovingTargetDirectionMode : uint8
 ENUM_RANGE_BY_FIRST_AND_LAST(EMovingTargetDirectionMode, EMovingTargetDirectionMode::None,
 	EMovingTargetDirectionMode::ForwardOnly);
 
+/** A direction that a target moves. */
+UENUM(BlueprintType)
+enum class ETargetDirection : uint8
+{
+	None UMETA(DisplayName="None"),
+	/** Left and right movement, parallel to the floor. */
+	Horizontal UMETA(DisplayName="Horizontal"),
+	/** Up and down movement, perpendicular to the floor. */
+	Vertical UMETA(DisplayName="Vertical"),
+	/** Forward movement, perpendicular to the total spawn area. */
+	Forward UMETA(DisplayName="Forward"),
+	/** Left and right movement constrained to +/-45-degrees from the horizontal axis. */
+	RandomHorizontal UMETA(DisplayName="Horizontal"),
+	/** Up and down movement constrained to +/-45-degrees from the vertical axis. */
+	RandomVertical UMETA(DisplayName="Vertical"),
+	/** Forward movement constrained to a 45-degree cone centered on the forward axis. */
+	RandomForward UMETA(DisplayName="Forward"),
+	/** Unconstrained movement in any direction. */
+	Random UMETA(DisplayName="Forward"),
+};
+
 
 /** How to handle changing the target scale between consecutively activated targets. */
 UENUM(BlueprintType)
@@ -292,7 +313,8 @@ enum class ETargetDestructionCondition : uint8
 	OnHealthReachedZero UMETA(DisplayName="On Health Reached Zero"),
 	/** Target is destroyed when any of its deactivation conditions are met. This essentially makes any deactivation
 	 *  condition a destruction condition. */
-	OnDeactivation UMETA(DisplayName="On Deactivation")};
+	OnDeactivation UMETA(DisplayName="On Deactivation")
+};
 
 ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDestructionCondition, ETargetDestructionCondition::OnExpiration,
 	ETargetDestructionCondition::OnDeactivation);

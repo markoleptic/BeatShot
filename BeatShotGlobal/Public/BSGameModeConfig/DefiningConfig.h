@@ -11,7 +11,8 @@ enum class EGameModeType : uint8
 {
 	None UMETA(DisplayName="None"),
 	Preset UMETA(DisplayName="Preset"),
-	Custom UMETA(DisplayName="Custom")};
+	Custom UMETA(DisplayName="Custom")
+};
 
 ENUM_RANGE_BY_FIRST_AND_LAST(EGameModeType, EGameModeType::Preset, EGameModeType::Custom);
 
@@ -41,7 +42,8 @@ enum class EGameModeDifficulty : uint8
 	None UMETA(DisplayName="None"),
 	Normal UMETA(DisplayName="Normal"),
 	Hard UMETA(DisplayName="Hard"),
-	Death UMETA(DisplayName="Death")};
+	Death UMETA(DisplayName="Death")
+};
 
 ENUM_RANGE_BY_FIRST_AND_LAST(EGameModeDifficulty, EGameModeDifficulty::None, EGameModeDifficulty::Death);
 

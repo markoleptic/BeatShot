@@ -232,7 +232,7 @@ public:
 
 protected:
 	/** Called from HealthComponent when a target receives damage. Main Deactivation and Destruction handler. */
-	void OnIncomingDamageTaken(const FDamageEventData& InData);
+	void HandleDamageEvent(const FDamageEventData& InData);
 
 	/** Callback function for when ExpirationTimer timer expires. */
 	UFUNCTION()

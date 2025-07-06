@@ -135,11 +135,11 @@ public:
 	/** Called when a player moves the CrossHair off a target. Updates target colors if they are vulnerable
 	 *  to tracking damage. */
 	UFUNCTION()
-	void OnPlayerStopTrackingTarget();
+	void HandlePlayerStopTrackingTarget();
 
 	/** Called from GameMode when it's an appropriate time to spawn or activate a target. This is the main loop
 	 *  that drives this class. */
-	void OnAudioAnalyzerBeat();
+	void HandleAudioAnalyzerBeat();
 
 protected:
 	/** Generic spawn function that all game modes use to spawn a target. Initializes the target, binds to its
@@ -192,7 +192,7 @@ protected:
 	/** The expiration or destruction of any target is bound to this function, which handles firing delegates,
 	 *  target flags, target removal. */
 	UFUNCTION()
-	void OnTargetDamageEvent(FTargetDamageEvent& Event);
+	void HandleTargetDamageEvent(FTargetDamageEvent& Event);
 
 	/** Updates CurrentStreak, based on if the target expired or not. */
 	void UpdateCurrentStreak(const FTargetDamageEvent& Event);

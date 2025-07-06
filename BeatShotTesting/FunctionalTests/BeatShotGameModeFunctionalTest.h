@@ -37,7 +37,7 @@ protected:
 	/** Imports Custom Game Modes using CustomGameModesToTest, which are game modes exported from within the game. */
 	void ImportCustomGameModes();
 
-	/** Calls OnAudioAnalyzerBeat function of target manager. Callback function for BeatTimer. */
+	/** Calls HandleAudioAnalyzerBeat function of target manager. Callback function for BeatTimer. */
 	void OnAudioAnalyzerBeat();
 
 	/** Initializes target manager and starts timers. */
@@ -86,7 +86,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Configuration")
 	float GameModeDuration = 10.f;
 
-	/** How frequently to call the OnAudioAnalyzerBeat function of target manager, effectively spawning or activating
+	/** How frequently to call the HandleAudioAnalyzerBeat function of target manager, effectively spawning or activating
 	 *  targets. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Configuration")
 	float BeatFrequency = 0.1f;

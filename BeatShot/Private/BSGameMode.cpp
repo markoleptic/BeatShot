@@ -180,7 +180,7 @@ void ABSGameMode::InitializeGameMode(const TSharedPtr<FBSConfig>& InConfig)
 			if (UBSGA_TrackGun* TrackAbility = Cast<UBSGA_TrackGun>(TrackGunSpec->GetPrimaryInstance()))
 			{
 				TrackAbility->OnPlayerStopTrackingTarget.AddUniqueDynamic(TargetManager.Get(),
-					&ATargetManager::OnPlayerStopTrackingTarget);
+					&ATargetManager::HandlePlayerStopTrackingTarget);
 				ASC->MarkAbilitySpecDirty(*TrackGunSpec);
 			}
 		}
@@ -299,29 +299,24 @@ void ABSGameMode::EndGameMode(const bool bSaveScores, const ETransitionState Tra
 		case ETransitionState::StartFromPostGameMenu:
 		case ETransitionState::Restart:
 		case ETransitionState::PlayAgain:
+			// Fade screen to black and reinitialize
+			Controller->OnScreenFadeToBlackFinish.BindLambda([this, Controller]
 			{
-				// Fade screen to black and reinitialize
-				Controller->OnScreenFadeToBlackFinish.BindLambda([this, Controller]
-				{
-					Controller->HidePostGameMenu();
-					Controller->HidePlayerHUD();
-					Controller->HideCrossHair();
-					InitializeGameMode(BSConfig);
-				});
-				Controller->FadeScreenToBlack();
-			}
-			break;
-		case ETransitionState::QuitToMainMenu:
-			{
-				Controller->FadeScreenToBlack();
-			}
-			break;
-		case ETransitionState::None:
-			{
+				Controller->HidePostGameMenu();
 				Controller->HidePlayerHUD();
 				Controller->HideCrossHair();
-				Controller->ShowPostGameMenu();
-			}
+				InitializeGameMode(BSConfig);
+			});
+			Controller->FadeScreenToBlack();
+			break;
+		case ETransitionState::QuitToMainMenu:
+			Controller->FadeScreenToBlack();
+			break;
+		case ETransitionState::None:
+			Controller->HidePlayerHUD();
+			Controller->HideCrossHair();
+			Controller->ShowPostGameMenu();
+			break;
 		case ETransitionState::QuitToDesktop:
 			bQuitToDesktopAfterSave = true;
 			break;
@@ -352,7 +347,7 @@ void ABSGameMode::SpawnNewTarget(const bool bNewTargetState)
 		if (Elapsed > BSConfig->TargetConfig.TargetSpawnCD)
 		{
 			Elapsed = 0.f;
-			TargetManager->OnAudioAnalyzerBeat();
+			TargetManager->HandleAudioAnalyzerBeat();
 		}
 	}
 	else if (!bNewTargetState && bLastTargetOnSet)
@@ -611,7 +606,6 @@ void ABSGameMode::HandleScoreSaving(const bool bExternalSaveScores, const bool b
 		return;
 	}
 
-	// Get location accuracy from Target Manager
 	const FAccuracyData AccuracyData = TargetManager->GetLocationAccuracy();
 
 	for (auto& CurrentPlayerScore : CurrentPlayerScores)

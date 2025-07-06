@@ -427,7 +427,7 @@ public:
 	/** Called when the BoxBounds of the TargetManager are changed to update CachedExtrema or CachedEdgeOnly sets.
 	 * 	@param Extrema the current extrema of the total spawn area
 	 */
-	void OnExtremaChanged(const FExtrema& Extrema);
+	void HandleExtremaChanged(const FExtrema& Extrema);
 
 	/** Get the number of elements in the CachedActivated set.
 	 * 	@return number of activated Spawn Areas
@@ -720,11 +720,11 @@ protected:
 		const TSet<EAdjacentDirection>& Directions) const;
 
 	/** Creates an array with size equal to the number of Spawn Areas, where each index represents whether the
-	 *  SpawnArea should be consider valid.
+	 *  Spawn Area should be considered valid.
 	 *
 	 * 	@param ValidSpawnAreas a set of valid Spawn Areas to get indices from
 	 *  @param NumSpawnAreas the total number of Spawn Areas
-	 *  @return an array where each index represents whether the SpawnArea should be consider valid
+	 *  @return an array where each index represents whether the SpawnArea should be considered valid
 	 */
 	static TArray<int32> CreateIndexValidityArray(const TSet<USpawnArea*>& ValidSpawnAreas, const int32 NumSpawnAreas);
 
@@ -783,7 +783,7 @@ protected:
 	 *  @param ChosenRectangle the rectangle to choose the position for
 	 *  @param Orientation the IndexPair return from ChooseRectangleOrientation
 	 *  @param bBordering whether to prefer bordering indices
-	 *  @return A pair of bool values where the first indicates if i corresponds to rows and the second indicates
+	 *  @return A pair of bool values where the first indicates if it corresponds to rows and the second indicates
 	 *  if incrementing or decrementing
 	 */
 	static std::pair<bool, bool> ChooseRectanglePosition(FRectCandidate& ChosenRectangle, const FIndexPair& Orientation,
@@ -796,7 +796,7 @@ protected:
 	/** Updates the rectangle candidates' AdjacentIndices and StartIndexCandidates.
 	 *
 	 *  @param Rectangles the rectangles to update
-	 *  @param Adjacent a set of adjacent indices to to update the rectangles with
+	 *  @param Adjacent a set of adjacent indices to update the rectangles with
 	 */
 	static void UpdateRectangleCandidateAdjacentIndices(FRectangleSet& Rectangles, const TSet<int32>& Adjacent);
 
@@ -1018,7 +1018,7 @@ private:
 	TMap<FGuid, USpawnArea*> GuidMap;
 
 	/** A set of SpawnAreas that fall within the current BoxBounds. All are added initially, updated when the SpawnBox
-	 *  extents changes through the OnExtremaChanged function. */
+	 *  extents changes through the HandleExtremaChanged function. */
 	UPROPERTY()
 	TSet<USpawnArea*> CachedExtrema;
 

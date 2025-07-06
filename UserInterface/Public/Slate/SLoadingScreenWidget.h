@@ -14,7 +14,8 @@ enum class ELoadingScreenState : uint8
 	None UMETA(DisplayName="None"),
 	FadingIn UMETA(DisplayName="FadingIn"),
 	FadingOut UMETA(DisplayName="FadingOut"),
-	FullOpacity UMETA(DisplayName="FullOpacity")};
+	FullOpacity UMETA(DisplayName="FullOpacity")
+};
 
 ENUM_RANGE_BY_FIRST_AND_LAST(ELoadingScreenState, ELoadingScreenState::None, ELoadingScreenState::FullOpacity);
 

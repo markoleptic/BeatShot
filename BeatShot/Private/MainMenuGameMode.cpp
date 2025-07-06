@@ -83,7 +83,7 @@ void AMainMenuGameMode::OnSimulationInterval()
 {
 	if (TargetManager && !bGameModeBreakingChangePresent)
 	{
-		TargetManager->OnAudioAnalyzerBeat();
+		TargetManager->HandleAudioAnalyzerBeat();
 	}
 }
 
