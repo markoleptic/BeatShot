@@ -942,15 +942,15 @@ FString UVideoAndSoundSettingsWidget::GetComboBoxEntryTooltipStringTableKey_DLSS
 
 FString UVideoAndSoundSettingsWidget::GetComboBoxEntryTooltipStringTableKey_Reflex(const FString& EnumString)
 {
-	if (EnumString.Contains("Disabled"))
+	if (EnumString.Contains("Off"))
 	{
-		return "StreamlineReflexMode_Disabled";
+		return "StreamlineReflexMode_Off";
 	}
 	if (EnumString.Contains("Enabled"))
 	{
 		if (EnumString.Contains("Boost"))
 		{
-			return "StreamlineReflexMode_EnabledPlusBoost";
+			return "StreamlineReflexMode_Boost";
 		}
 		return "StreamlineReflexMode_Enabled";
 	}

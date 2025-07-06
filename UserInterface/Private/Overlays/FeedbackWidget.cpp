@@ -60,20 +60,20 @@ void UFeedbackWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 		{
 			if (Response->bConnectedSuccessfully && Response->HttpStatus <= 300)
 			{
-				TextBlock_FeedbackResponseTitle->SetText(
-					FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "FeedbackResponseSuccessTitle"));
-				TextBlock_FeedbackResponseInfo->SetText(
-					FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "FeedbackResponseSuccessInfo"));
+				TextBlock_FeedbackResponseTitle->SetText(FText::FromStringTable(
+					"/Game/StringTables/ST_Widgets.ST_Widgets", FString("FeedbackResponseSuccessTitle")));
+				TextBlock_FeedbackResponseInfo->SetText(FText::FromStringTable(
+					"/Game/StringTables/ST_Widgets.ST_Widgets", FString("FeedbackResponseSuccessInfo")));
 				Value_Title->SetText(FText::GetEmpty());
 				Value_Content->SetText(FText::GetEmpty());
 				Button_SubmitFeedback->SetIsEnabled(false);
 			}
 			else
 			{
-				TextBlock_FeedbackResponseTitle->SetText(
-					FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "FeedbackResponseFailureTitle"));
-				TextBlock_FeedbackResponseInfo->SetText(
-					FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "FeedbackResponseFailureInfo"));
+				TextBlock_FeedbackResponseTitle->SetText(FText::FromStringTable(
+					"/Game/StringTables/ST_Widgets.ST_Widgets", FString("FeedbackResponseFailureTitle")));
+				TextBlock_FeedbackResponseInfo->SetText(FText::FromStringTable(
+					"/Game/StringTables/ST_Widgets.ST_Widgets", FString("FeedbackResponseFailureInfo")));
 			}
 			PlayFadeInResponse();
 		});

@@ -243,11 +243,8 @@ void UBSGameInstance::SetLoadingScreenAudioComponentState(const float FadeTarget
 		}
 		if (UMetaSoundOutputSubsystem* Subsystem = GetWorld()->GetSubsystem<UMetaSoundOutputSubsystem>())
 		{
-			if (!Subsystem->IsTickable())
-			{
-				Subsystem->WatchOutput(LoadingScreenAudioComponent.Get(), FName("PlaybackTime"), PlaybackTime);
-				Subsystem->WatchOutput(LoadingScreenAudioComponent.Get(), FName("OnFadeCompleted"), OnFadeCompleted);
-			}
+			Subsystem->WatchOutput(LoadingScreenAudioComponent.Get(), FName("PlaybackTime"), PlaybackTime);
+			Subsystem->WatchOutput(LoadingScreenAudioComponent.Get(), FName("OnFadeCompleted"), OnFadeCompleted);
 		}
 	}
 }

@@ -7,20 +7,15 @@ public class BeatShotGlobal : ModuleRules
 {
 	public BeatShotGlobal(ReadOnlyTargetRules Target) : base(Target)
 	{
-		PublicDependencyModuleNames.AddRange(new[]
-		{
+		PublicDependencyModuleNames.AddRange([
 			"Core", "CoreUObject", "InputCore", "Engine", "HTTP", "Json", "JsonUtilities",
-			"DLSSBlueprint", "NISBlueprint", "StreamlineBlueprint", "GameplayTags", "UMG", "EnhancedInput",
+			"DLSSBlueprint", "NISBlueprint", "StreamlineBlueprint", "StreamlineDLSSGBlueprint",
+			"StreamlineReflexBlueprint", "GameplayTags", "UMG", "EnhancedInput",
 			"PhysicsCore", "Slate", "SlateCore", "AudioMixer"
-		});
+		]);
 
-		PrivateDependencyModuleNames.AddRange(new[]
-		{
+		PrivateDependencyModuleNames.AddRange([
 			"DeveloperSettings", "AudioModulation"
-		});
-
-		PublicIncludePaths.Add(Path.Combine(EngineDirectory, "Plugins/Marketplace/DLSS/Source/ThirdParty/NGX/Include"));
-		PublicIncludePaths.Add(Path.Combine(EngineDirectory,
-			"Plugins/Marketplace/Streamline/Source/ThirdParty/Streamline/include"));
+		]);
 	}
 }

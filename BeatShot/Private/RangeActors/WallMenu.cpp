@@ -460,7 +460,7 @@ void AWallMenu::SetupToggleText(USceneComponent* InParent, UText3DComponent* InT
 	InToggleTextOn->SetRelativeLocation(Offset_OnText + AdditionalOffset);
 	InToggleTextOn->SetExtrude(5.f);
 	InToggleTextOn->SetBevel(2.f);
-	InToggleTextOn->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "WallMenu_On"));
+	InToggleTextOn->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", FString("WallMenu_On")));
 	InToggleTextOn->SetCastShadow(false);
 	InToggleTextOn->SetHorizontalAlignment(EText3DHorizontalTextAlignment::Center);
 
@@ -468,7 +468,8 @@ void AWallMenu::SetupToggleText(USceneComponent* InParent, UText3DComponent* InT
 	InToggleTextOff->SetRelativeLocation(Offset_OffText + AdditionalOffset);
 	InToggleTextOff->SetExtrude(5.f);
 	InToggleTextOff->SetBevel(2.f);
-	InToggleTextOff->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "WallMenu_Off"));
+	InToggleTextOff->SetText(
+		FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", FString("WallMenu_Off")));
 	InToggleTextOff->SetCastShadow(false);
 	InToggleTextOff->SetHorizontalAlignment(EText3DHorizontalTextAlignment::Center);
 

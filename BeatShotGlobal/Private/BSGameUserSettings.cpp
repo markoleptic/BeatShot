@@ -24,10 +24,9 @@ ENUM_RANGE_BY_FIRST_AND_LAST(UDLSSMode, UDLSSMode::Off, UDLSSMode::UltraPerforma
 
 ENUM_RANGE_BY_FIRST_AND_LAST(UNISMode, UNISMode::Off, UNISMode::Custom);
 
-ENUM_RANGE_BY_FIRST_AND_LAST(UStreamlineReflexMode, UStreamlineReflexMode::Disabled,
-	UStreamlineReflexMode::EnabledPlusBoost);
+ENUM_RANGE_BY_FIRST_AND_LAST(EStreamlineReflexMode, EStreamlineReflexMode::Off, EStreamlineReflexMode::Boost);
 
-ENUM_RANGE_BY_FIRST_AND_LAST(UStreamlineDLSSGMode, UStreamlineDLSSGMode::Off, UStreamlineDLSSGMode::On);
+ENUM_RANGE_BY_FIRST_AND_LAST(EStreamlineDLSSGMode, EStreamlineDLSSGMode::Off, EStreamlineDLSSGMode::On4X);
 
 ENUM_RANGE_BY_FIRST_AND_LAST(EWindowMode::Type, EWindowMode::Type::Fullscreen, EWindowMode::Type::WindowedFullscreen);
 
@@ -212,10 +211,10 @@ void UBSGameUserSettings::SetToBSDefaults()
 	FrameRateLimitBackground = Constants::DefaultFrameRateLimitBackground;
 	DLSSEnabledMode = EDLSSEnabledMode::On;
 	NISEnabledMode = ENISEnabledMode::Off;
-	FrameGenerationEnabledMode = UStreamlineDLSSGMode::On;
+	FrameGenerationEnabledMode = EStreamlineDLSSGMode::Auto;
 	DLSSMode = UDLSSMode::Auto;
 	NISMode = UNISMode::Off;
-	StreamlineReflexMode = UStreamlineReflexMode::Enabled;
+	StreamlineReflexMode = EStreamlineReflexMode::Enabled;
 	bEnableRayReconstitution = true;
 	AntiAliasingMethod = AAM_TSR;
 	// bSoundControlBusMixLoaded = false;
@@ -289,8 +288,8 @@ void UBSGameUserSettings::LoadDLSSSettings()
 	}
 	else
 	{
-		UStreamlineLibraryDLSSG::SetDLSSGMode(UStreamlineDLSSGMode::Off);
-		FrameGenerationEnabledMode = UStreamlineDLSSGMode::Off;
+		UStreamlineLibraryDLSSG::SetDLSSGMode(EStreamlineDLSSGMode::Off);
+		FrameGenerationEnabledMode = EStreamlineDLSSGMode::Off;
 	}
 
 	// NIS
@@ -313,8 +312,8 @@ void UBSGameUserSettings::LoadDLSSSettings()
 	}
 	else
 	{
-		UStreamlineLibraryReflex::SetReflexMode(UStreamlineReflexMode::Disabled);
-		StreamlineReflexMode = UStreamlineReflexMode::Disabled;
+		UStreamlineLibraryReflex::SetReflexMode(EStreamlineReflexMode::Off);
+		StreamlineReflexMode = EStreamlineReflexMode::Off;
 	}
 
 	UE_LOG(LogBSGameUserSettings, Display, TEXT("DLSS Initialized"));
@@ -421,12 +420,12 @@ void UBSGameUserSettings::ValidateNvidiaSettings()
 			}
 			if (UStreamlineLibraryReflex::IsReflexSupported())
 			{
-				StreamlineReflexMode = UStreamlineReflexMode::Enabled;
+				StreamlineReflexMode = EStreamlineReflexMode::Enabled;
 			}
 			if (UStreamlineLibraryDLSSG::IsDLSSGSupported() && UStreamlineLibraryDLSSG::IsDLSSGModeSupported(
 				FrameGenerationEnabledMode))
 			{
-				FrameGenerationEnabledMode = UStreamlineDLSSGMode::On;
+				FrameGenerationEnabledMode = EStreamlineDLSSGMode::On2X;
 			}
 		}
 		else
@@ -438,7 +437,7 @@ void UBSGameUserSettings::ValidateNvidiaSettings()
 	else
 	{
 		DLSSMode = UDLSSMode::Off;
-		FrameGenerationEnabledMode = UStreamlineDLSSGMode::Off;
+		FrameGenerationEnabledMode = EStreamlineDLSSGMode::Off;
 	}
 
 	// NISEnabledMode and NISMode
@@ -458,13 +457,13 @@ void UBSGameUserSettings::ValidateNvidiaSettings()
 	if (!UStreamlineLibraryDLSSG::IsDLSSGSupported() || !UStreamlineLibraryDLSSG::IsDLSSGModeSupported(
 		FrameGenerationEnabledMode))
 	{
-		FrameGenerationEnabledMode = UStreamlineDLSSGMode::Off;
+		FrameGenerationEnabledMode = EStreamlineDLSSGMode::Off;
 	}
 
 	// Reflex
 	if (!UStreamlineLibraryReflex::IsReflexSupported())
 	{
-		StreamlineReflexMode = UStreamlineReflexMode::Disabled;
+		StreamlineReflexMode = EStreamlineReflexMode::Off;
 	}
 
 	if (DLSSEnabledMode == EDLSSEnabledMode::On && NISEnabledMode == ENISEnabledMode::On)
@@ -629,7 +628,7 @@ TMap<FString, uint8> UBSGameUserSettings::GetSupportedNvidiaSettingModes(
 		break;
 	case ENvidiaSettingType::FrameGenerationEnabledMode:
 		{
-			TArray<UStreamlineDLSSGMode> Modes = UStreamlineLibraryDLSSG::GetSupportedDLSSGModes();
+			TArray<EStreamlineDLSSGMode> Modes = UStreamlineLibraryDLSSG::GetSupportedDLSSGModes();
 			Out = VideoSettingEnumMap->GetNvidiaSettingModes(Modes);
 		}
 		break;
@@ -658,11 +657,11 @@ TMap<FString, uint8> UBSGameUserSettings::GetSupportedNvidiaSettingModes(
 		break;
 	case ENvidiaSettingType::StreamlineReflexMode:
 		{
-			TArray<UStreamlineReflexMode> Modes = TArray{UStreamlineReflexMode::Disabled};
+			TArray<EStreamlineReflexMode> Modes = TArray{EStreamlineReflexMode::Off};
 			if (UStreamlineLibraryReflex::IsReflexSupported())
 			{
-				Modes.Add(UStreamlineReflexMode::Enabled);
-				Modes.Add(UStreamlineReflexMode::EnabledPlusBoost);
+				Modes.Add(EStreamlineReflexMode::Enabled);
+				Modes.Add(EStreamlineReflexMode::Boost);
 			}
 			Out = VideoSettingEnumMap->GetNvidiaSettingModes(Modes);
 		}
@@ -897,7 +896,7 @@ void UBSGameUserSettings::SetNISEnabledMode(const uint8 InNISEnabledMode)
 
 void UBSGameUserSettings::SetFrameGenerationEnabledMode(const uint8 InFrameGenerationEnabledMode)
 {
-	FrameGenerationEnabledMode = static_cast<UStreamlineDLSSGMode>(InFrameGenerationEnabledMode);
+	FrameGenerationEnabledMode = static_cast<EStreamlineDLSSGMode>(InFrameGenerationEnabledMode);
 }
 
 void UBSGameUserSettings::SetDLSSMode(const uint8 InDLSSMode)
@@ -912,7 +911,7 @@ void UBSGameUserSettings::SetNISMode(const uint8 InNISMode)
 
 void UBSGameUserSettings::SetStreamlineReflexMode(const uint8 InStreamlineReflexMode)
 {
-	StreamlineReflexMode = static_cast<UStreamlineReflexMode>(InStreamlineReflexMode);
+	StreamlineReflexMode = static_cast<EStreamlineReflexMode>(InStreamlineReflexMode);
 }
 
 void UBSGameUserSettings::SetRayReconstitutionEnabled(const bool Enable)

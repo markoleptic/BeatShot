@@ -8,10 +8,10 @@
 
 class UVideoSettingEnumStringMap;
 enum class ENvidiaSettingType : uint8;
-enum class UStreamlineReflexMode : uint8;
+enum class EStreamlineReflexMode : uint8;
 enum class UNISMode : uint8;
 enum class UDLSSMode : uint8;
-enum class UStreamlineDLSSGMode : uint8;
+enum class EStreamlineDLSSGMode : uint8;
 enum class ENISEnabledMode : uint8;
 enum class EDLSSEnabledMode : uint8;
 class USoundControlBusMix;
@@ -293,7 +293,7 @@ private:
 
 	/** Nvidia Streamline Frame Generation Mode. */
 	UPROPERTY(Config)
-	UStreamlineDLSSGMode FrameGenerationEnabledMode;
+	EStreamlineDLSSGMode FrameGenerationEnabledMode;
 
 	/** Nvidia DLSS Mode or Super Resolution Mode. */
 	UPROPERTY(Config)
@@ -305,7 +305,7 @@ private:
 
 	/** Nvidia Streamline Reflex Mode. */
 	UPROPERTY(Config)
-	UStreamlineReflexMode StreamlineReflexMode;
+	EStreamlineReflexMode StreamlineReflexMode;
 
 	/** Nvidia Ray Reconstitution. */
 	UPROPERTY(Config)

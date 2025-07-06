@@ -31,10 +31,10 @@ public:
 	{
 	}
 
-	virtual uint32 GetTestFlags() const override
+	virtual EAutomationTestFlags GetTestFlags() const override
 	{
 		return EAutomationTestFlags::CommandletContext | EAutomationTestFlags::EditorContext |
-			EAutomationTestFlags::HighPriorityAndAbove | EAutomationTestFlags::EngineFilter;
+			EAutomationTestFlags_HighPriorityAndAbove | EAutomationTestFlags::EngineFilter;
 	}
 
 	virtual bool IsStressTest() const { return false; }

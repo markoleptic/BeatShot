@@ -31,11 +31,11 @@ void ULoginWidget::NativeConstruct()
 void ULoginWidget::ShowLoginScreen(const FString& Key)
 {
 	TextBlock_ContinueWithoutTitle->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets",
-		"Login_ContinueWithoutTitleTextLogin"));
+		FString("Login_ContinueWithoutTitleTextLogin")));
 	TextBlock_ContinueWithoutBody->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets",
-		"Login_ContinueWithoutBodyTextLogin"));
+		FString("Login_ContinueWithoutBodyTextLogin")));
 	Button_NoLoginCancel->SetButtonText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets",
-		"Login_ContinueWithoutCancelButtonTextLogin"));
+		FString("Login_ContinueWithoutCancelButtonTextLogin")));
 
 	if (!Key.IsEmpty())
 	{
