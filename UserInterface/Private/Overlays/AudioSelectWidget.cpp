@@ -214,8 +214,7 @@ void UAudioSelectWidget::OnButtonClicked_LoadFile()
 
 	if (Title.IsEmpty())
 	{
-		ShowSongPathErrorMessage();
-		return;
+		Title = Filename;
 	}
 
 	if (ComboBox_SongTitle->FindOptionIndex(Filename) == -1)
