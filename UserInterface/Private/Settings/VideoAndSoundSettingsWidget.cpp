@@ -892,9 +892,21 @@ FString UVideoAndSoundSettingsWidget::GetComboBoxEntryTooltipStringTableKey_DLSS
 	{
 		return "StreamlineDLSSGMode_Off";
 	}
-	if (EnumString.Contains("On"))
+	if (EnumString.Contains("Auto"))
 	{
-		return "StreamlineDLSSGMode_On";
+		return "StreamlineDLSSGMode_Auto";
+	}
+	if (EnumString.Contains("2X"))
+	{
+		return "StreamlineDLSSGMode_2X";
+	}
+	if (EnumString.Contains("3X"))
+	{
+		return "StreamlineDLSSGMode_3X";
+	}
+	if (EnumString.Contains("4X"))
+	{
+		return "StreamlineDLSSGMode_4X";
 	}
 	return FString();
 }
@@ -942,17 +954,20 @@ FString UVideoAndSoundSettingsWidget::GetComboBoxEntryTooltipStringTableKey_DLSS
 
 FString UVideoAndSoundSettingsWidget::GetComboBoxEntryTooltipStringTableKey_Reflex(const FString& EnumString)
 {
+	FString ReturnValue;
+
 	if (EnumString.Contains("Off"))
 	{
-		return "StreamlineReflexMode_Off";
+		ReturnValue = "StreamlineReflexMode_Off";
 	}
-	if (EnumString.Contains("Enabled"))
+	else if (EnumString.Contains("Enabled"))
 	{
-		if (EnumString.Contains("Boost"))
-		{
-			return "StreamlineReflexMode_Boost";
-		}
-		return "StreamlineReflexMode_Enabled";
+		ReturnValue = "StreamlineReflexMode_Enabled";
 	}
-	return FString();
+	else if (EnumString.Contains("Boost"))
+	{
+		ReturnValue = "StreamlineReflexMode_Boost";
+	}
+
+	return ReturnValue;
 }
