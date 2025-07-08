@@ -409,7 +409,6 @@ void UBSGameUserSettings::UpdateEffectiveFrameRateLimit()
 
 void UBSGameUserSettings::ValidateNvidiaSettings()
 {
-	// DLSSEnabledMode and DLSSMode
 	if (DLSSEnabledMode == EDLSSEnabledMode::On)
 	{
 		if (UDLSSLibrary::IsDLSSSupported())
@@ -418,24 +417,17 @@ void UBSGameUserSettings::ValidateNvidiaSettings()
 			{
 				DLSSMode = UDLSSMode::Off;
 			}
-			if (UStreamlineLibraryReflex::IsReflexSupported())
-			{
-				StreamlineReflexMode = EStreamlineReflexMode::Enabled;
-			}
-			if (UStreamlineLibraryDLSSG::IsDLSSGSupported() && UStreamlineLibraryDLSSG::IsDLSSGModeSupported(
-				FrameGenerationEnabledMode))
-			{
-				FrameGenerationEnabledMode = EStreamlineDLSSGMode::On2X;
-			}
 		}
 		else
 		{
 			DLSSEnabledMode = EDLSSEnabledMode::Off;
 			DLSSMode = UDLSSMode::Off;
+			FrameGenerationEnabledMode = EStreamlineDLSSGMode::Off;
 		}
 	}
 	else
 	{
+		DLSSEnabledMode = EDLSSEnabledMode::Off;
 		DLSSMode = UDLSSMode::Off;
 		FrameGenerationEnabledMode = EStreamlineDLSSGMode::Off;
 	}
