@@ -590,7 +590,7 @@ namespace Constants
 
 	/** base url. */
 #if UE_BUILD_DEVELOPMENT && !WITH_EDITOR
-	const FString OriginURL = TEXT("http://localhost:3000");
+	const FString OriginURL = TEXT("https://beatshot.gg");
 #else
 	const FString OriginURL = TEXT("https://beatshot.gg");
 #endif
