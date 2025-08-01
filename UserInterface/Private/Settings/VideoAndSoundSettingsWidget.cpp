@@ -668,6 +668,7 @@ void UVideoAndSoundSettingsWidget::HandleDLSSEnabledChanged(const bool bDLSSEnab
 		// Disable Settings that require DLSS to be off, or are forced to be on
 		ComboBoxOption_NIS_Mode->ComboBox->SetIsEnabled(false);
 		ComboBoxOption_Reflex->ComboBox->SetIsEnabled(false);
+		ComboBoxOption_Reflex->ComboBox->SetSelectedOption("StreamlineReflexMode_Enabled");
 
 		SliderTextBoxOption_NIS_Sharpness->SetValue(0.f);
 		SliderTextBoxOption_NIS_Sharpness->SetSliderAndTextBoxEnabledStates(false);
@@ -687,7 +688,7 @@ void UVideoAndSoundSettingsWidget::HandleDLSSEnabledChanged(const bool bDLSSEnab
 		SliderTextBoxOption_DLSS_Sharpness->SetSliderAndTextBoxEnabledStates(false);
 		SliderTextBoxOption_DLSS_Sharpness->SetValue(0.f);
 
-		// Enable Settings that are don't require DLSS to be on
+		// Enable Settings that don't require DLSS to be on
 		ComboBoxOption_Reflex->ComboBox->SetIsEnabled(true);
 
 		SliderTextBoxOption_ResolutionScale->SetSliderAndTextBoxEnabledStates(!bNISEnabled);
