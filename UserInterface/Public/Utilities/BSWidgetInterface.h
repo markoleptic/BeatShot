@@ -75,16 +75,13 @@ public:
 	/** Returns the String Table key for a specific ComboBox, not the cleanest code, but it works. */
 	virtual FString GetStringTableKeyFromComboBox(const UBSComboBoxString* ComboBoxString, const FString& EnumString);
 
-	/** Simple template function to get default class object from subclass. */
+	/** Simple template function to get a default class object from a subclass. */
 	template <typename T>
 	static const T* GetStyleCDO(const TSubclassOf<T> InSubclass)
 	{
 		if (InSubclass)
 		{
-			if (const T* Style = Cast<T>(InSubclass->ClassDefaultObject))
-			{
-				return Style;
-			}
+			return Cast<T>(InSubclass->GetDefaultObject());
 		}
 		return nullptr;
 	}
