@@ -8,12 +8,11 @@ public class UserInterface : ModuleRules
 	{
 		PublicDependencyModuleNames.AddRange([
 			"Core", "ApplicationCore", "CoreUObject", "Engine", "UMG", "Slate", "SlateCore", "WebBrowserWidget",
-			"WebBrowser", "BeatShotGlobal", "GameplayTags",
-			"InputCore", "CommonUI", "MoviePlayer"
+			"WebBrowser", "BeatShotGlobal", "GameplayTags", "InputCore", "CommonUI", "MoviePlayer"
 		]);
 
 		PrivateDependencyModuleNames.AddRange([
-			"ParallelcubeAudioAnalyzer", "ParallelcubeTaglib", "EnhancedInput"
+			"ParallelcubeAudioAnalyzer", "ParallelcubeTaglib", "EnhancedInput", "Charter"
 		]);
 
 		PublicIncludePaths.AddRange([
