@@ -7,6 +7,9 @@
 #include "ScoreViewerWidget.generated.h"
 
 
+class UVerticalBox;
+class UWidgetSwitcher;
+class UMenuButton;
 struct FHeatMapAxisLabelOptions;
 struct FHeatMapData;
 class UHeatMapWidget;
@@ -25,6 +28,27 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UHeatMapWidget* PlayFrequency;
+
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UWidgetSwitcher* Switcher;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UMenuButton* MenuButton_Overview;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UMenuButton* MenuButton_History;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UMenuButton* MenuButton_DefaultModes;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UMenuButton* MenuButton_CustomModes;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UVerticalBox* Box_Overview;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UVerticalBox* Box_History;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UVerticalBox* Box_DefaultModes;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UVerticalBox* Box_CustomModes;
 
 private:
 	TSharedPtr<FHeatMapData> PlayFrequencyData;

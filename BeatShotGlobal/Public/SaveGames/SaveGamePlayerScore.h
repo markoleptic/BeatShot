@@ -752,6 +752,10 @@ public:
 	/** @return a copy of PlayerScoreArray. */
 	TArray<FPlayerScore> GetPlayerScores() const;
 
+	const TArray<FPlayerScore>& GetPlayerScoresRef() const;
+
+	const TArray<TSharedPtr<FPlayerScore>>& GetPlayerScoresRefPtr() const;
+
 	/** @return a copy of player scores not saved to database. */
 	TArray<FPlayerScore> GetPlayerScores_UnsavedToDatabase() const;
 
@@ -834,6 +838,8 @@ private:
 	/** Map containing common score info for each unique defining config. */
 	UPROPERTY()
 	TMap<FBS_DefiningConfig, FCommonScoreInfo> CommonScoreInfo;
+
+	TArray<TSharedPtr<FPlayerScore>> PlayerScoreArrayPtr;
 
 	FNumberFormattingOptions PercentFormat;
 	FNumberFormattingOptions QTableFormat;

@@ -26,6 +26,16 @@ TArray<FPlayerScore> USaveGamePlayerScore::GetPlayerScores() const
 	return PlayerScoreArray;
 }
 
+const TArray<FPlayerScore>& USaveGamePlayerScore::GetPlayerScoresRef() const
+{
+	return PlayerScoreArray;
+}
+
+const TArray<TSharedPtr<FPlayerScore>>& USaveGamePlayerScore::GetPlayerScoresRefPtr() const
+{
+	return PlayerScoreArrayPtr;
+}
+
 TArray<FPlayerScore> USaveGamePlayerScore::GetPlayerScores_UnsavedToDatabase() const
 {
 	TArray<FPlayerScore> UnsavedScores;
