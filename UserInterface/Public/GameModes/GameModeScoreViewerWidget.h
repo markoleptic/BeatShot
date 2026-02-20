@@ -64,9 +64,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* TextBlock_AverageStreak;
 
-	UPROPERTY()
-	TSoftObjectPtr<USaveGamePlayerScore> SaveGamePlayerScore;
-
 	TMap<FBS_DefiningConfig, FCommonScoreInfo> CommonScoreInfoMap;
 
 	/** Times across all player scores. */
@@ -91,4 +88,11 @@ public:
 
 	TSharedPtr<FHeatMapData> LocationAccuracyData;
 	TSharedPtr<FHeatMapAxisLabelOptions> LocationAccuracyAxisData;
+
+private:
+	FText HandleGenericDateValueText(int32, int32);
+
+	FText HandleLocationAccuracyDisplayText(int32, int32);
+
+	FText HandleGenericDateXAxisFormatter(int32, float);
 };

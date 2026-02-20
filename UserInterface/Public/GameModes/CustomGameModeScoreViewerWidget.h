@@ -20,6 +20,8 @@ class USERINTERFACE_API UCustomGameModeScoreViewerWidget : public UUserWidget
 public:
 	void SetSaveGamePlayerScore(USaveGamePlayerScore* InSaveGamePlayerScore);
 
+	void SetActiveScores(const FString& CustomGameModeName, const FString& SongTitle);
+
 protected:
 	virtual void NativeConstruct() override;
 

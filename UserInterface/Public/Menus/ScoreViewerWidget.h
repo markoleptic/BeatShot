@@ -4,9 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "SaveGames/SaveGamePlayerScore.h"
 #include "ScoreViewerWidget.generated.h"
 
-
+class UTextBlock;
+struct FAxisLabelOptions;
+enum class EAxisType : uint8;
+struct FBarChartData;
 class UBSButton;
 class UCustomGameModeScoreViewerWidget;
 class UBarChartWidget;
@@ -18,7 +22,14 @@ class UMenuButton;
 struct FHeatMapAxisLabelOptions;
 struct FHeatMapData;
 class UHeatMapWidget;
-class USaveGamePlayerScore;
+
+struct FGameModePlayTime
+{
+	float PlayTime;
+	EGameModeType GameModeType;
+	FString CustomGameModeName;
+	EBaseGameMode BaseGameMode;
+};
 
 UCLASS()
 class USERINTERFACE_API UScoreViewerWidget : public UUserWidget
@@ -59,10 +70,67 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UHeatMapWidget* PlayFrequency;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UTextBlock* TextBlock_TotalTimeInAnyGameMode;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UTextBlock* TextBlock_MostPlayedDefaultMode;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UTextBlock* TextBlock_MostPlayedDefaultModeName;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UTextBlock* TextBlock_MostPlayedCustomMode;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UTextBlock* TextBlock_MostPlayedCustomModeName;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UTextBlock* TextBlock_TimePlayedForMostPlayedDefaultMode;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UTextBlock* TextBlock_TimePlayedForMostPlayedCustomMode;
+	UPROPERTY(EditDefaultsOnly)
+	TMap<EBaseGameMode, FText> BaseGameModeText;
+
 	void OnButtonClicked_BSButton(const UBSButton* Button);
 
 private:
+	FText HandleLocationAccuracyDisplayText(int32, int32);
+
+	FText HandleLocationAccuracyValueText(int32, int32, float);
+
+	FText HandleMostPlayedDefaultGameModesDisplayText(int32);
+
+	FText HandleMostPlayedDefaultGameModesValueText(int32, float);
+
+	FText HandleMostPlayedCustomGameModesDisplayText(int32);
+
+	FText HandleMostPlayedCustomGameModesValueText(int32, float);
+
+	FText HandleMostPlayedDefaultGameModesXAxisFormatter(int32, float);
+
+	FText HandleMostPlayedDefaultGameModesYAxisFormatter(int32, float);
+
+	FText HandleMostPlayedCustomGameModesXAxisFormatter(int32, float);
+
+	FText HandleMostPlayedCustomGameModesYAxisFormatter(int32, float);
+
+	FDateTime StartDate;
+
+	int32 StartDow;
+
+	const FTextFormat LocationAccuracyDisplayFormat = FTextFormat::FromString("{0}\n{1} {2}");
+
+	const FTextFormat LocationAccuracyValueFormat = FTextFormat::FromString("Total for week: {0} {1}");
+
 	TSharedPtr<FHeatMapData> PlayFrequencyData;
 
 	TSharedPtr<FHeatMapAxisLabelOptions> PlayFrequencyAxisData;
+
+	TSharedPtr<FBarChartData> MostPlayedDefaultGameModesData;
+
+	TSharedPtr<TMap<EAxisType, FAxisLabelOptions>> MostPlayedDefaultGameModesAxisData;
+
+	TSharedPtr<FBarChartData> MostPlayedCustomGameModesData;
+
+	TSharedPtr<TMap<EAxisType, FAxisLabelOptions>> MostPlayedCustomGameModesAxisData;
+
+	TArray<FGameModePlayTime> DefaultGameModePlayTime;
+
+	TArray<FGameModePlayTime> CustomGameModePlayTime;
 };

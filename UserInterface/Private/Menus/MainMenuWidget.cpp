@@ -8,6 +8,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Menus/GameModeMenuWidget.h"
 #include "Menus/ScoreBrowserWidget.h"
+#include "Menus/ScoreViewerWidget.h"
 #include "Overlays/FeedbackWidget.h"
 #include "Overlays/LoginWidget.h"
 #include "SaveGames/SaveGamePlayerSettings.h"
@@ -54,6 +55,8 @@ void UMainMenuWidget::NativeConstruct()
 
 	MenuButton_PatchNotes->SetActive();
 	MainMenuSwitcher->SetActiveWidget(MenuButton_PatchNotes->GetAssociatedWidget());
+
+	ScoreViewerWidget->LoadScores(LoadSaveGamePlayerScore(), true);
 }
 
 void UMainMenuWidget::NativePreConstruct()

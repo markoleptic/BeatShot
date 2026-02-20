@@ -21,6 +21,15 @@ USaveGamePlayerScore::USaveGamePlayerScore()
 	TrainingSamplesFormat.MinimumIntegralDigits = 1;
 }
 
+void USaveGamePlayerScore::HandePostLoad()
+{
+	PlayerScoreArrayPtr.Reserve(PlayerScoreArray.Num());
+	for (const auto& PlayerScore : PlayerScoreArray)
+	{
+		PlayerScoreArrayPtr.Add(MakeShareable(new FPlayerScore(PlayerScore)));
+	}
+}
+
 TArray<FPlayerScore> USaveGamePlayerScore::GetPlayerScores() const
 {
 	return PlayerScoreArray;

@@ -3,11 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BSPlayerScoreInterface.h"
 #include "BSPlayerSettingsInterface.h"
 #include "HttpRequestInterface.h"
 #include "Blueprint/UserWidget.h"
 #include "MainMenuWidget.generated.h"
 
+class UScoreViewerWidget;
 class UBSButton;
 class UMenuStyle;
 class UFeedbackWidget;
@@ -40,7 +42,7 @@ DECLARE_DELEGATE(FOnSteamLoginRequest);
 /** Widget that is the entry point into the game, holding most other widgets that aren't MenuWidgets. */
 UCLASS()
 class USERINTERFACE_API UMainMenuWidget : public UUserWidget, public IBSPlayerSettingsInterface,
-                                          public IHttpRequestInterface
+                                          public IHttpRequestInterface, public IBSPlayerScoreInterface
 {
 	GENERATED_BODY()
 
@@ -51,6 +53,8 @@ public:
 	USettingsMenuWidget* SettingsMenuWidget;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UScoreBrowserWidget* ScoresWidget;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UScoreViewerWidget* ScoreViewerWidget;
 
 	UFUNCTION()
 	void UpdateLoginState(const bool bSuccessfulLogin, const FString OptionalStringTableKey = "");

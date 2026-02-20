@@ -35,6 +35,12 @@ void UCustomGameModeScoreViewerWidget::SetSaveGamePlayerScore(USaveGamePlayerSco
 	}
 }
 
+void UCustomGameModeScoreViewerWidget::SetActiveScores(const FString& CustomGameModeName, const FString& SongTitle)
+{
+	GameModeScoreViewerWidget->ActiveScores = PlayerScoreByGameModeAndSong[CustomGameModeName][SongTitle];
+	GameModeScoreViewerWidget->UpdateActiveScores();
+}
+
 void UCustomGameModeScoreViewerWidget::NativeConstruct()
 {
 	Super::NativeConstruct();

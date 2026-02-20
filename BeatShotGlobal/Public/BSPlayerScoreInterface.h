@@ -67,4 +67,6 @@ public:
 	 *  @return the number of successful resets
 	 */
 	static int32 ResetQTable(const FBS_DefiningConfig& DefiningConfig);
+
+	static USaveGamePlayerScore* LoadSaveGamePlayerScore();
 };

@@ -7,7 +7,6 @@
 #include "SaveGames/SaveGamePlayerScore.h"
 #include "DefaultGameModeScoreViewerWidget.generated.h"
 
-class USaveGamePlayerScore;
 class UGameModeScoreViewerWidget;
 class UComboBoxWidget;
 
@@ -18,6 +17,8 @@ class USERINTERFACE_API UDefaultGameModeScoreViewerWidget : public UUserWidget
 
 public:
 	void SetSaveGamePlayerScore(USaveGamePlayerScore* InSaveGamePlayerScore);
+
+	void SetActiveScores(EBaseGameMode BaseGameMode, const FString& SongTitle, EGameModeDifficulty Difficulty);
 
 protected:
 	virtual void NativeConstruct() override;
@@ -40,6 +41,16 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UGameModeScoreViewerWidget* GameModeScoreViewerWidget;
 
-	TMap<FString, TMap<FString, TMap<EGameModeDifficulty, TArray<TSharedPtr<FPlayerScore>>>>>
+	UPROPERTY(EditDefaultsOnly)
+	TMap<EBaseGameMode, FText> BaseGameModeText;
+
+	UPROPERTY(EditDefaultsOnly)
+	TMap<EGameModeDifficulty, FText> GameModeDifficultyText;
+
+	EBaseGameMode FindBaseGameMode(const FString& InGameModeName);
+
+	EGameModeDifficulty FindGameModeDifficulty(const FString& InGameModeDifficulty);
+
+	TMap<EBaseGameMode, TMap<FString, TMap<EGameModeDifficulty, TArray<TSharedPtr<FPlayerScore>>>>>
 	PlayerScoreByGameModeSongAndDifficulty;
 };

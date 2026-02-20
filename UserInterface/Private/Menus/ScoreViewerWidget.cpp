@@ -9,6 +9,7 @@
 #include "GameModes/GameModeScoreViewerWidget.h"
 #include "SaveGames/SaveGamePlayerScore.h"
 #include "Utilities/Buttons/MenuButton.h"
+#include "Widgets/BarChartWidget.h"
 #include "Widgets/HeatMapWidget.h"
 
 namespace
@@ -49,7 +50,7 @@ void UScoreViewerWidget::NativeConstruct()
 
 	const FDateTime EndDate = FDateTime::Now();
 	const int32 TotalDays = FDateTime::DaysInYear(EndDate.GetYear());
-	const FDateTime StartDate = EndDate - FTimespan::FromDays(TotalDays) + FTimespan::FromDays(1);
+	StartDate = EndDate - FTimespan::FromDays(TotalDays) + FTimespan::FromDays(1);
 
 	TMap<int32, FText> DaysOfWeek = CreateDaysOfWeekMap(StartDate);
 	TMap<int32, FText> MonthsOfYear;
@@ -58,17 +59,16 @@ void UScoreViewerWidget::NativeConstruct()
 	PlayFrequencyData->Sections.Init({}, WeekCount);
 	for (auto& Week : PlayFrequencyData->Sections)
 	{
-		Week.Init(-1, 7);
+		Week.Init(-1.f, 7);
 	}
 
-	int32 StartDow = static_cast<int>(StartDate.GetDayOfWeek());
+	StartDow = static_cast<int>(StartDate.GetDayOfWeek());
 	for (int32 DayIndex = 0; DayIndex < TotalDays; DayIndex++)
 	{
 		FDateTime Date = StartDate + FTimespan::FromDays(DayIndex);
 		const int32 WeekIndex = (StartDow + DayIndex) / 7;
 		const int32 DayOfWeekIndex = static_cast<int>(Date.GetDayOfWeek());
-		PlayFrequencyData->Sections[WeekIndex][DayOfWeekIndex] = DayOfWeekIndex / 7.f;
-
+		PlayFrequencyData->Sections[WeekIndex][DayOfWeekIndex] = 0.f;
 		if (Date.GetDay() == 1)
 		{
 			MonthsOfYear.FindOrAdd(WeekIndex) = FText::FromString(Date.ToFormattedString(TEXT("%b")));
@@ -76,72 +76,57 @@ void UScoreViewerWidget::NativeConstruct()
 		}
 	}
 
-	PlayFrequencyAxisData->XLabelFormatter = [MonthsOfYear](const int32 WeekIndex)
+	PlayFrequencyAxisData->XLabelFormatter = TDelegate<FText(int32)>::CreateLambda([MonthsOfYear](const int32 WeekIndex)
 	{
 		return MonthsOfYear[WeekIndex];
-	};
-	PlayFrequencyAxisData->YLabelFormatter = [DaysOfWeek](const int32 DayOfWeekIndex)
+	});
+	PlayFrequencyAxisData->YLabelFormatter = TDelegate<FText(int32)>::CreateLambda(
+		[DaysOfWeek](const int32 DayOfWeekIndex)
+		{
+			return DaysOfWeek[DayOfWeekIndex];
+		});
+	PlayFrequency->SetData(PlayFrequencyData, PlayFrequencyAxisData,
+		TDelegate<FText(int32, int32)>::CreateUObject(this, &ThisClass::HandleLocationAccuracyDisplayText),
+		TDelegate<FText(int32, int32, float)>::CreateUObject(this, &ThisClass::HandleLocationAccuracyValueText));
+
+	MostPlayedDefaultGameModesData = MakeShared<FBarChartData>();
+	MostPlayedDefaultGameModesAxisData = MakeShared<TMap<EAxisType, FAxisLabelOptions>>();
 	{
-		return DaysOfWeek[DayOfWeekIndex];
-	};
+		FAxisLabelOptions XAxisLabelOptions;
+		XAxisLabelOptions.StartAtZero = false;
+		XAxisLabelOptions.Formatter = TDelegate<FText(int32, float)>::CreateUObject(this,
+			&ThisClass::HandleMostPlayedDefaultGameModesXAxisFormatter);
+		MostPlayedDefaultGameModesAxisData->Add({EAxisType::X, XAxisLabelOptions});
 
-	const FTextFormat Format = FTextFormat::FromString("{0}\n{1} {2}");
+		FAxisLabelOptions YAxisLabelOptions;
+		YAxisLabelOptions.StartAtZero = true;
+		YAxisLabelOptions.Formatter = TDelegate<FText(int32, float)>::CreateUObject(this,
+			&ThisClass::HandleMostPlayedDefaultGameModesYAxisFormatter);
+		MostPlayedDefaultGameModesAxisData->Add({EAxisType::Y, YAxisLabelOptions});
+	}
 
-	auto DisplayTextGetter = [this, Format, StartDate, StartDow](const int32 WeekIndex, const int32 DayOfWeekIndex)
+	MostPlayedCustomGameModesData = MakeShared<FBarChartData>();
+	MostPlayedCustomGameModesAxisData = MakeShared<TMap<EAxisType, FAxisLabelOptions>>();
 	{
-		const float Value = PlayFrequencyData->Sections[WeekIndex][DayOfWeekIndex];
-		const int32 DayIndex = WeekIndex * 7 + (DayOfWeekIndex - StartDow);
-		const FDateTime Date = StartDate + FTimespan::FromDays(DayIndex);
-		const FText DateText = FText::FromString(Date.ToFormattedString(TEXT("%Y-%m-%d")));
-		FNumberFormattingOptions NumberFormattingOptions;
-		FFormatOrderedArguments Args;
-		Args.Add(DateText);
-		if (Value < 60.f)
-		{
-			NumberFormattingOptions.SetMaximumFractionalDigits(1);
-			Args.Add(FText::AsNumber(Value, &NumberFormattingOptions));
-			Args.Add(FText::FromString("Minutes"));
-		}
-		else
-		{
-			NumberFormattingOptions.SetMaximumFractionalDigits(2);
-			Args.Add(FText::AsNumber(Value / 60.f, &NumberFormattingOptions));
-			Args.Add(FText::FromString("Hours"));
-		}
-		return FText::Format(Format, Args);
-	};
+		FAxisLabelOptions XAxisLabelOptions;
+		XAxisLabelOptions.StartAtZero = false;
+		XAxisLabelOptions.Formatter = TDelegate<FText(int32, float)>::CreateUObject(this,
+			&ThisClass::HandleMostPlayedCustomGameModesXAxisFormatter);
+		MostPlayedCustomGameModesAxisData->Add({EAxisType::X, XAxisLabelOptions});
 
-	const FTextFormat Format2 = FTextFormat::FromString("Total for week: {0} {1}");
+		FAxisLabelOptions YAxisLabelOptions;
+		YAxisLabelOptions.StartAtZero = true;
+		YAxisLabelOptions.Formatter = TDelegate<FText(int32, float)>::CreateUObject(this,
+			&ThisClass::HandleMostPlayedCustomGameModesYAxisFormatter);
+		MostPlayedCustomGameModesAxisData->Add({EAxisType::Y, YAxisLabelOptions});
+	}
 
-	auto ValueTextGetter = [this, Format2](const int32 WeekIndex, const int32 /*DayOfWeekIndex*/, const float /*Value*/)
-	{
-		float Total = 0.f;
-		for (const float CurrentValue : PlayFrequencyData->Sections[WeekIndex])
-		{
-			if (CurrentValue > 0.f)
-			{
-				Total += CurrentValue;
-			}
-		}
-		FNumberFormattingOptions NumberFormattingOptions;
-		FFormatOrderedArguments Args;
-		if (Total < 60.f)
-		{
-			NumberFormattingOptions.SetMaximumFractionalDigits(1);
-			Args.Add(FText::AsNumber(Total, &NumberFormattingOptions));
-			Args.Add(FText::FromString("Minutes"));
-		}
-		else
-		{
-			NumberFormattingOptions.SetMaximumFractionalDigits(2);
-			Args.Add(FText::AsNumber(Total / 60.f, &NumberFormattingOptions));
-			Args.Add(FText::FromString("Hours"));
-		}
-
-		return FText::Format(Format2, Args);
-	};
-
-	PlayFrequency->SetData(PlayFrequencyData, PlayFrequencyAxisData, DisplayTextGetter, ValueTextGetter);
+	MostPlayedDefaultGameModes->SetData(MostPlayedDefaultGameModesData, MostPlayedDefaultGameModesAxisData,
+		TDelegate<FText(int32)>::CreateUObject(this, &ThisClass::HandleMostPlayedDefaultGameModesDisplayText),
+		TDelegate<FText(int32, float)>::CreateUObject(this, &ThisClass::HandleMostPlayedDefaultGameModesValueText));
+	MostPlayedCustomGameModes->SetData(MostPlayedCustomGameModesData, MostPlayedCustomGameModesAxisData,
+		TDelegate<FText(int32)>::CreateUObject(this, &ThisClass::HandleMostPlayedCustomGameModesDisplayText),
+		TDelegate<FText(int32, float)>::CreateUObject(this, &ThisClass::HandleMostPlayedCustomGameModesValueText));
 
 	MenuButton_Overview->SetActive();
 	Switcher->SetActiveWidget(MenuButton_Overview->GetAssociatedWidget());
@@ -158,27 +143,92 @@ void UScoreViewerWidget::LoadScores(USaveGamePlayerScore* SaveGamePlayerScore, c
 	{
 		DefaultGameModeScoreViewerWidget->SetSaveGamePlayerScore(SaveGamePlayerScore);
 		CustomGameModeScoreViewerWidget->SetSaveGamePlayerScore(SaveGamePlayerScore);
+		FDateTime MostRecentTime = FDateTime::MinValue();
+		FPlayerScore MostRecentPlayerScore;
+		TMap<EBaseGameMode, FGameModePlayTime> PlayTimeByBaseGameMode;
+		TMap<FString, FGameModePlayTime> PlayTimeByCustomGameModeName;
+
+		for (const auto& PlayerScore : PlayerScoresRef)
+		{
+			FDateTime ParsedTime;
+			FDateTime::ParseIso8601(*PlayerScore.Time, ParsedTime);
+			if (ParsedTime > MostRecentTime)
+			{
+				MostRecentTime = ParsedTime;
+				MostRecentPlayerScore = PlayerScore;
+			}
+			if (ParsedTime >= StartDate)
+			{
+				const int32 DayIndex = (ParsedTime - StartDate).GetTotalDays();
+				const int32 WeekIndex = (StartDow + DayIndex) / 7;
+				const int32 DayOfWeekIndex = static_cast<int32>(ParsedTime.GetDayOfWeek());
+				PlayFrequencyData->Sections[WeekIndex][DayOfWeekIndex] += PlayerScore.SongLength;
+			}
+
+			if (PlayerScore.DefiningConfig.GameModeType == EGameModeType::Preset)
+			{
+				const auto& BaseGameMode = PlayerScore.DefiningConfig.BaseGameMode;
+				auto& Current = PlayTimeByBaseGameMode.FindOrAdd(BaseGameMode);
+				Current.BaseGameMode = BaseGameMode;
+				Current.GameModeType = PlayerScore.DefiningConfig.GameModeType;
+				Current.PlayTime += PlayerScore.SongLength;
+			}
+			else if (PlayerScore.DefiningConfig.GameModeType == EGameModeType::Custom)
+			{
+				const auto& CustomGameModeName = PlayerScore.DefiningConfig.CustomGameModeName;
+				auto& Current = PlayTimeByCustomGameModeName.FindOrAdd(CustomGameModeName);
+				Current.BaseGameMode = EBaseGameMode::None;
+				Current.GameModeType = PlayerScore.DefiningConfig.GameModeType;
+				Current.CustomGameModeName = CustomGameModeName;
+				Current.PlayTime += PlayerScore.SongLength;
+			}
+		}
+
+		DefaultGameModePlayTime.Empty(PlayTimeByBaseGameMode.Num());
+		for (const auto& [GameModeType, GameModePlayTime] : PlayTimeByBaseGameMode)
+		{
+			DefaultGameModePlayTime.Add(GameModePlayTime);
+		}
+
+		CustomGameModePlayTime.Empty(PlayTimeByCustomGameModeName.Num());
+		for (const auto& [CustomGameModeName, GameModePlayTime] : PlayTimeByCustomGameModeName)
+		{
+			CustomGameModePlayTime.Add(GameModePlayTime);
+		}
+
+		Algo::Sort(DefaultGameModePlayTime, [](const FGameModePlayTime& Left, const FGameModePlayTime& Right)
+		{
+			return Left.PlayTime > Right.PlayTime;
+		});
+		Algo::Sort(CustomGameModePlayTime, [](const FGameModePlayTime& Left, const FGameModePlayTime& Right)
+		{
+			return Left.PlayTime > Right.PlayTime;
+		});
+
+		MostPlayedDefaultGameModesData->Points.Empty(DefaultGameModePlayTime.Num());
+		for (const auto& GameModePlayTime : DefaultGameModePlayTime)
+		{
+			MostPlayedDefaultGameModesData->Points.Add(GameModePlayTime.PlayTime);
+		}
+		MostPlayedCustomGameModesData->Points.Empty(CustomGameModePlayTime.Num());
+		for (const auto& GameModePlayTime : CustomGameModePlayTime)
+		{
+			MostPlayedCustomGameModesData->Points.Add(GameModePlayTime.PlayTime);
+		}
+
 		if (SwitchToMostRecent)
 		{
-			FDateTime MostRecentTime = FDateTime::MinValue();
-			EGameModeType MostRecentGameModeType = EGameModeType::None;
-			for (const auto& PlayerScore : PlayerScoresRef)
+			if (MostRecentPlayerScore.DefiningConfig.GameModeType == EGameModeType::Preset)
 			{
-				FDateTime ParsedTime;
-				FDateTime::ParseIso8601(*PlayerScore.Time, ParsedTime);
-				if (ParsedTime > MostRecentTime)
-				{
-					MostRecentTime = ParsedTime;
-					MostRecentGameModeType = PlayerScore.DefiningConfig.GameModeType;
-				}
-			}
-			if (MostRecentGameModeType == EGameModeType::Preset)
-			{
+				DefaultGameModeScoreViewerWidget->SetActiveScores(MostRecentPlayerScore.DefiningConfig.BaseGameMode,
+					MostRecentPlayerScore.SongTitle, MostRecentPlayerScore.DefiningConfig.Difficulty);
 				MenuButton_DefaultModes->SetActive();
 				Switcher->SetActiveWidget(MenuButton_DefaultModes->GetAssociatedWidget());
 			}
-			else if (MostRecentGameModeType == EGameModeType::Custom)
+			else if (MostRecentPlayerScore.DefiningConfig.GameModeType == EGameModeType::Custom)
 			{
+				CustomGameModeScoreViewerWidget->SetActiveScores(
+					MostRecentPlayerScore.DefiningConfig.CustomGameModeName, MostRecentPlayerScore.SongTitle);
 				MenuButton_CustomModes->SetActive();
 				Switcher->SetActiveWidget(MenuButton_CustomModes->GetAssociatedWidget());
 			}
@@ -194,4 +244,113 @@ void UScoreViewerWidget::LoadScores(USaveGamePlayerScore* SaveGamePlayerScore, c
 void UScoreViewerWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 {
 	Switcher->SetActiveWidget(Cast<UMenuButton>(Button)->GetAssociatedWidget());
+}
+
+FText UScoreViewerWidget::HandleLocationAccuracyDisplayText(const int32 WeekIndex, const int32 DayOfWeekIndex)
+{
+	const float Value = PlayFrequencyData->Sections[WeekIndex][DayOfWeekIndex];
+	const int32 DayIndex = WeekIndex * 7 + (DayOfWeekIndex - StartDow);
+	const FDateTime Date = StartDate + FTimespan::FromDays(DayIndex);
+	const FText DateText = FText::FromString(Date.ToFormattedString(TEXT("%Y-%m-%d")));
+	FNumberFormattingOptions NumberFormattingOptions;
+	FFormatOrderedArguments Args;
+	Args.Add(DateText);
+	if (Value < 60.f)
+	{
+		NumberFormattingOptions.SetMaximumFractionalDigits(1);
+		Args.Add(FText::AsNumber(Value, &NumberFormattingOptions));
+		Args.Add(FText::FromString("Minutes"));
+	}
+	else
+	{
+		NumberFormattingOptions.SetMaximumFractionalDigits(2);
+		Args.Add(FText::AsNumber(Value / 60.f, &NumberFormattingOptions));
+		Args.Add(FText::FromString("Hours"));
+	}
+	return FText::Format(LocationAccuracyDisplayFormat, Args);
+}
+
+FText UScoreViewerWidget::HandleLocationAccuracyValueText(const int32 WeekIndex, int32, float)
+{
+	float Total = 0.f;
+	for (const float CurrentValue : PlayFrequencyData->Sections[WeekIndex])
+	{
+		if (CurrentValue > 0.f)
+		{
+			Total += CurrentValue;
+		}
+	}
+	FNumberFormattingOptions NumberFormattingOptions;
+	FFormatOrderedArguments Args;
+	if (Total < 60.f)
+	{
+		NumberFormattingOptions.SetMaximumFractionalDigits(1);
+		Args.Add(FText::AsNumber(Total, &NumberFormattingOptions));
+		Args.Add(FText::FromString("Minutes"));
+	}
+	else
+	{
+		NumberFormattingOptions.SetMaximumFractionalDigits(2);
+		Args.Add(FText::AsNumber(Total / 60.f, &NumberFormattingOptions));
+		Args.Add(FText::FromString("Hours"));
+	}
+
+	return FText::Format(LocationAccuracyValueFormat, Args);
+}
+
+FText UScoreViewerWidget::HandleMostPlayedDefaultGameModesDisplayText(const int32 Index)
+{
+	return BaseGameModeText[DefaultGameModePlayTime[Index].BaseGameMode];
+}
+
+FText UScoreViewerWidget::HandleMostPlayedDefaultGameModesValueText(int32, const float Value)
+{
+	FNumberFormattingOptions NumberFormattingOptions;
+	FFormatOrderedArguments Args;
+	if (Value < 60.f)
+	{
+		NumberFormattingOptions.SetMaximumFractionalDigits(1);
+		Args.Add(FText::AsNumber(Value, &NumberFormattingOptions));
+		Args.Add(FText::FromString("Minutes"));
+	}
+	else
+	{
+		NumberFormattingOptions.SetMaximumFractionalDigits(2);
+		Args.Add(FText::AsNumber(Value / 60.f, &NumberFormattingOptions));
+		Args.Add(FText::FromString("Hours"));
+	}
+
+	return FText::Format(LocationAccuracyValueFormat, Args);
+}
+
+FText UScoreViewerWidget::HandleMostPlayedCustomGameModesDisplayText(const int32 Index)
+{
+	return FText::FromString(DefaultGameModePlayTime[Index].CustomGameModeName);
+}
+
+FText UScoreViewerWidget::HandleMostPlayedCustomGameModesValueText(const int32 Index, const float Value)
+{
+	return HandleMostPlayedDefaultGameModesValueText(Index, Value);
+}
+
+FText UScoreViewerWidget::HandleMostPlayedDefaultGameModesXAxisFormatter(const int32 Index, float)
+{
+	return BaseGameModeText[DefaultGameModePlayTime[Index].BaseGameMode];
+}
+
+FText UScoreViewerWidget::HandleMostPlayedDefaultGameModesYAxisFormatter(int32, const float Value)
+{
+	FNumberFormattingOptions NumberFormattingOptions;
+	NumberFormattingOptions.SetMaximumFractionalDigits(1);
+	return FText::AsNumber(Value / 60.f, &NumberFormattingOptions);
+}
+
+FText UScoreViewerWidget::HandleMostPlayedCustomGameModesXAxisFormatter(const int32 Index, float)
+{
+	return FText::FromString(DefaultGameModePlayTime[Index].CustomGameModeName);
+}
+
+FText UScoreViewerWidget::HandleMostPlayedCustomGameModesYAxisFormatter(const int32 Index, const float Value)
+{
+	return HandleMostPlayedDefaultGameModesYAxisFormatter(Index, Value);
 }

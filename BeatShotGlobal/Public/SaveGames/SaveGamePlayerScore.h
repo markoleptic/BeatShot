@@ -749,6 +749,8 @@ class BEATSHOTGLOBAL_API USaveGamePlayerScore : public USaveGame
 public:
 	USaveGamePlayerScore();
 
+	void HandePostLoad();
+
 	/** @return a copy of PlayerScoreArray. */
 	TArray<FPlayerScore> GetPlayerScores() const;
 
