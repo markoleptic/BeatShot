@@ -19,10 +19,10 @@ void UFAQWidget::NativeConstruct()
 	MenuButton_AudioAnalyzer->OnBSButtonPressed.AddUObject(this, &ThisClass::OnButtonClicked_BSButton);
 
 	MenuButton_GameModes->SetActive();
-	FAQSwitcher->SetActiveWidget(MenuButton_GameModes->GetBox());
+	FAQSwitcher->SetActiveWidget(MenuButton_GameModes->GetAssociatedWidget());
 }
 
 void UFAQWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 {
-	FAQSwitcher->SetActiveWidget(Cast<UMenuButton>(Button)->GetBox());
+	FAQSwitcher->SetActiveWidget(Cast<UMenuButton>(Button)->GetAssociatedWidget());
 }

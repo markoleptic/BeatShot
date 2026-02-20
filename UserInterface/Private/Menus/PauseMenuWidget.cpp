@@ -71,9 +71,9 @@ void UPauseMenuWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 
 	if (const UMenuButton* MenuButton = Cast<UMenuButton>(Button))
 	{
-		if (MenuButton->GetBox())
+		if (const auto AssociatedWidget = MenuButton->GetAssociatedWidget())
 		{
-			PauseMenuSwitcher->SetActiveWidget(MenuButton->GetBox());
+			PauseMenuSwitcher->SetActiveWidget(AssociatedWidget);
 		}
 	}
 }

@@ -53,7 +53,7 @@ void UMainMenuWidget::NativeConstruct()
 	ScoresWidget->InitScoreBrowser(EScoreBrowserType::MainMenuScores);
 
 	MenuButton_PatchNotes->SetActive();
-	MainMenuSwitcher->SetActiveWidget(MenuButton_PatchNotes->GetBox());
+	MainMenuSwitcher->SetActiveWidget(MenuButton_PatchNotes->GetAssociatedWidget());
 }
 
 void UMainMenuWidget::NativePreConstruct()
@@ -132,9 +132,9 @@ void UMainMenuWidget::OnMenuButtonClicked_BSButton(const UBSButton* Button)
 	}
 
 	// Menu button
-	if (MenuButton->GetBox())
+	if (const auto AssociatedWidget = MenuButton->GetAssociatedWidget())
 	{
-		MainMenuSwitcher->SetActiveWidget(MenuButton->GetBox());
+		MainMenuSwitcher->SetActiveWidget(AssociatedWidget);
 	}
 
 	// Quit button
@@ -201,7 +201,7 @@ void UMainMenuWidget::UpdateLoginState(const bool bSuccessfulLogin, const FStrin
 		break;
 	case ELoginMethod::Steam:
 		TextBlock_SignInState->SetText(IBSWidgetInterface::GetWidgetTextFromKey("Login_SignedInSteam"));
-	// Only collapse login button if signed in through steam
+		// Only collapse login button if signed in through steam
 		Button_Login_Register->SetVisibility(ESlateVisibility::Collapsed);
 		break;
 	case ELoginMethod::Legacy:

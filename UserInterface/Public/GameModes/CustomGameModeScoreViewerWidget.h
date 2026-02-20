@@ -5,14 +5,15 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "SaveGames/SaveGamePlayerScore.h"
-#include "DefaultGameModeScoreViewerWidget.generated.h"
+#include "CustomGameModeScoreViewerWidget.generated.h"
 
-class USaveGamePlayerScore;
+
 class UGameModeScoreViewerWidget;
+class USaveGamePlayerScore;
 class UComboBoxWidget;
 
 UCLASS(BlueprintType)
-class USERINTERFACE_API UDefaultGameModeScoreViewerWidget : public UUserWidget
+class USERINTERFACE_API UCustomGameModeScoreViewerWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
@@ -28,18 +29,12 @@ protected:
 	UFUNCTION()
 	void OnSelectionChanged_Song(const TArray<FString>& ActiveSelections, ESelectInfo::Type SelectionType);
 
-	UFUNCTION()
-	void OnSelectionChanged_Difficulty(const TArray<FString>& ActiveSelections, ESelectInfo::Type SelectionType);
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxWidget* GameModeComboBoxWidget;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UComboBoxWidget* DifficultyComboBoxWidget;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxWidget* SongComboBoxWidget;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UGameModeScoreViewerWidget* GameModeScoreViewerWidget;
 
-	TMap<FString, TMap<FString, TMap<EGameModeDifficulty, TArray<TSharedPtr<FPlayerScore>>>>>
-	PlayerScoreByGameModeSongAndDifficulty;
+	TMap<FString, TMap<FString, TArray<TSharedPtr<FPlayerScore>>>> PlayerScoreByGameModeAndSong;
 };

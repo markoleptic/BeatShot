@@ -77,7 +77,7 @@ void UPostGameMenuWidget::SetScoresWidgetVisibility()
 	ScoresWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 
 	MenuButton_Scores->SetActive();
-	MenuSwitcher->SetActiveWidget(MenuButton_Scores->GetBox());
+	MenuSwitcher->SetActiveWidget(MenuButton_Scores->GetAssociatedWidget());
 }
 
 void UPostGameMenuWidget::OnButtonClicked_BSButton(const UBSButton* Button)
@@ -104,9 +104,9 @@ void UPostGameMenuWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 		ShowAudioFormatSelect();
 	}
 
-	if (MenuButton->GetBox())
+	if (MenuButton->GetAssociatedWidget())
 	{
-		MenuSwitcher->SetActiveWidget(MenuButton->GetBox());
+		MenuSwitcher->SetActiveWidget(MenuButton->GetAssociatedWidget());
 	}
 }
 

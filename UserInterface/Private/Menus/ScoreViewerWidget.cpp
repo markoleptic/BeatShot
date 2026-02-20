@@ -2,7 +2,13 @@
 
 
 #include "Menus/ScoreViewerWidget.h"
+#include "Components/VerticalBox.h"
+#include "Components/WidgetSwitcher.h"
+#include "GameModes/CustomGameModeScoreViewerWidget.h"
+#include "GameModes/DefaultGameModeScoreViewerWidget.h"
+#include "GameModes/GameModeScoreViewerWidget.h"
 #include "SaveGames/SaveGamePlayerScore.h"
+#include "Utilities/Buttons/MenuButton.h"
 #include "Widgets/HeatMapWidget.h"
 
 namespace
@@ -24,6 +30,16 @@ namespace
 void UScoreViewerWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+
+	MenuButton_Overview->OnBSButtonPressed.AddUObject(this, &ThisClass::OnButtonClicked_BSButton);
+	MenuButton_DefaultModes->OnBSButtonPressed.AddUObject(this, &ThisClass::OnButtonClicked_BSButton);
+	MenuButton_CustomModes->OnBSButtonPressed.AddUObject(this, &ThisClass::OnButtonClicked_BSButton);
+	MenuButton_History->OnBSButtonPressed.AddUObject(this, &ThisClass::OnButtonClicked_BSButton);
+
+	MenuButton_Overview->SetDefaults(Box_Overview, MenuButton_DefaultModes);
+	MenuButton_DefaultModes->SetDefaults(DefaultGameModeScoreViewerWidget, MenuButton_CustomModes);
+	MenuButton_CustomModes->SetDefaults(CustomGameModeScoreViewerWidget, MenuButton_History);
+	MenuButton_History->SetDefaults(Box_History, MenuButton_Overview);
 
 	PlayFrequencyData = MakeShared<FHeatMapData>();
 	PlayFrequencyData->Options.bDrawSectionIfValueLessThanZero = false;
@@ -126,9 +142,12 @@ void UScoreViewerWidget::NativeConstruct()
 	};
 
 	PlayFrequency->SetData(PlayFrequencyData, PlayFrequencyAxisData, DisplayTextGetter, ValueTextGetter);
+
+	MenuButton_Overview->SetActive();
+	Switcher->SetActiveWidget(MenuButton_Overview->GetAssociatedWidget());
 }
 
-void UScoreViewerWidget::LoadScores(USaveGamePlayerScore* SaveGamePlayerScore)
+void UScoreViewerWidget::LoadScores(USaveGamePlayerScore* SaveGamePlayerScore, const bool SwitchToMostRecent)
 {
 	const auto& PlayerScoresRef = SaveGamePlayerScore->GetPlayerScoresRef();
 	if (PlayerScoresRef.IsEmpty())
@@ -137,27 +156,42 @@ void UScoreViewerWidget::LoadScores(USaveGamePlayerScore* SaveGamePlayerScore)
 	}
 	else
 	{
-		int64 MinTimeDifference = FDateTime::MinValue().ToUnixTimestamp();
-		FPlayerScore MinDateScore = FPlayerScore();
-		for (const auto& PlayerScore : PlayerScoresRef)
+		DefaultGameModeScoreViewerWidget->SetSaveGamePlayerScore(SaveGamePlayerScore);
+		CustomGameModeScoreViewerWidget->SetSaveGamePlayerScore(SaveGamePlayerScore);
+		if (SwitchToMostRecent)
 		{
-			FDateTime ParsedTime;
-			FDateTime::ParseIso8601(*PlayerScore.Time, ParsedTime);
-			if (ParsedTime.ToUnixTimestamp() > MinTimeDifference)
+			FDateTime MostRecentTime = FDateTime::MinValue();
+			EGameModeType MostRecentGameModeType = EGameModeType::None;
+			for (const auto& PlayerScore : PlayerScoresRef)
 			{
-				MinTimeDifference = ParsedTime.ToUnixTimestamp();
-				MinDateScore = PlayerScore;
+				FDateTime ParsedTime;
+				FDateTime::ParseIso8601(*PlayerScore.Time, ParsedTime);
+				if (ParsedTime > MostRecentTime)
+				{
+					MostRecentTime = ParsedTime;
+					MostRecentGameModeType = PlayerScore.DefiningConfig.GameModeType;
+				}
 			}
-		}
-		if (MinDateScore.DefiningConfig.GameModeType == EGameModeType::Preset)
-		{
-			// TODO: Set current tab to default game modes
-			// TODO: Populate with MinDateScore
+			if (MostRecentGameModeType == EGameModeType::Preset)
+			{
+				MenuButton_DefaultModes->SetActive();
+				Switcher->SetActiveWidget(MenuButton_DefaultModes->GetAssociatedWidget());
+			}
+			else if (MostRecentGameModeType == EGameModeType::Custom)
+			{
+				MenuButton_CustomModes->SetActive();
+				Switcher->SetActiveWidget(MenuButton_CustomModes->GetAssociatedWidget());
+			}
 		}
 		else
 		{
-			// TODO: Set current tab to custom game modes
-			// TODO: Populate with MinDateScore
+			MenuButton_Overview->SetActive();
+			Switcher->SetActiveWidget(MenuButton_Overview->GetAssociatedWidget());
 		}
 	}
+}
+
+void UScoreViewerWidget::OnButtonClicked_BSButton(const UBSButton* Button)
+{
+	Switcher->SetActiveWidget(Cast<UMenuButton>(Button)->GetAssociatedWidget());
 }

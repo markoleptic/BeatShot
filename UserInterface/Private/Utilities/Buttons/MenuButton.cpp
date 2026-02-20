@@ -3,9 +3,9 @@
 
 #include "Utilities/Buttons/MenuButton.h"
 
-void UMenuButton::SetDefaults(UVerticalBox* BoxToShow, UMenuButton* NextButton)
+void UMenuButton::SetDefaults(UWidget* WidgetToShow, UMenuButton* NextButton)
 {
-	Box = BoxToShow;
+	AssociatedWidget = WidgetToShow;
 	Next = NextButton;
 	SetHasSetDefaults(true);
 }

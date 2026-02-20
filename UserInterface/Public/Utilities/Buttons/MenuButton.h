@@ -18,20 +18,15 @@ public:
 	virtual UMenuButton* GetNext() const override { return Cast<UMenuButton>(Next); }
 
 	/** Sets the vertical box to associate with this button. */
-	void SetDefaults(UVerticalBox* BoxToShow, UMenuButton* NextButton);
+	void SetDefaults(UWidget* WidgetToShow, UMenuButton* NextButton);
 
 	/** Returns the vertical box to associate with this button. */
-	UVerticalBox* GetBox() const
+	TObjectPtr<UWidget> GetAssociatedWidget() const
 	{
-		if (Box && Box.Get())
-		{
-			return Box.Get();
-		}
-		return nullptr;
+		return AssociatedWidget;
 	}
 
 protected:
-	/** The vertical box to associate with this button. */
 	UPROPERTY()
-	TObjectPtr<UVerticalBox> Box;
+	TObjectPtr<UWidget> AssociatedWidget;
 };

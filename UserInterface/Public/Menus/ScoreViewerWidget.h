@@ -7,6 +7,11 @@
 #include "ScoreViewerWidget.generated.h"
 
 
+class UBSButton;
+class UCustomGameModeScoreViewerWidget;
+class UBarChartWidget;
+class UDefaultGameModeScoreViewerWidget;
+class UGameModeScoreViewerWidget;
 class UVerticalBox;
 class UWidgetSwitcher;
 class UMenuButton;
@@ -24,10 +29,7 @@ protected:
 	virtual void NativeConstruct() override;
 
 public:
-	void LoadScores(USaveGamePlayerScore* SaveGamePlayerScore);
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UHeatMapWidget* PlayFrequency;
+	void LoadScores(USaveGamePlayerScore* SaveGamePlayerScore, bool SwitchToMostRecent);
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
@@ -44,11 +46,20 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UVerticalBox* Box_Overview;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UDefaultGameModeScoreViewerWidget* DefaultGameModeScoreViewerWidget;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UCustomGameModeScoreViewerWidget* CustomGameModeScoreViewerWidget;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UVerticalBox* Box_History;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UVerticalBox* Box_DefaultModes;
+	UBarChartWidget* MostPlayedDefaultGameModes;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UVerticalBox* Box_CustomModes;
+	UBarChartWidget* MostPlayedCustomGameModes;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UHeatMapWidget* PlayFrequency;
+
+	void OnButtonClicked_BSButton(const UBSButton* Button);
 
 private:
 	TSharedPtr<FHeatMapData> PlayFrequencyData;

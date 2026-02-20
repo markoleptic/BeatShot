@@ -4,17 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "BSGameModeConfig/DefiningConfig.h"
+#include "Common/HeatMapAxisLabelOptions.h"
+#include "SaveGames/SaveGamePlayerScore.h"
+#include "Slate/Heatmap.h"
+#include "Slate/LineChart.h"
 #include "GameModeScoreViewerWidget.generated.h"
 
-struct FCommonScoreInfo;
-struct FBS_DefiningConfig;
-struct FHeatMapAxisLabelOptions;
-struct FHeatMapData;
-struct FLineChartSeries;
-struct FAxisLabelOptions;
-enum class EAxisType;
-class USaveGamePlayerScore;
-struct FPlayerScore;
 class UTextBlock;
 class UHeatMapWidget;
 class ULineChartWidget;
@@ -25,24 +21,13 @@ class USERINTERFACE_API UGameModeScoreViewerWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
-public:
-	virtual void SetSaveGamePlayerScore(USaveGamePlayerScore* InSaveGamePlayerScore);
-
 protected:
 	virtual void NativeConstruct() override;
 
-	UFUNCTION()
-	void OnSelectionChanged_GameMode(const TArray<FString>& ActiveSelections, ESelectInfo::Type SelectionType);
-
-	UFUNCTION()
-	void OnSelectionChanged_Song(const TArray<FString>& ActiveSelections, ESelectInfo::Type SelectionType);
+public:
+	virtual void SetSaveGamePlayerScore(USaveGamePlayerScore* InSaveGamePlayerScore);
 
 	void UpdateActiveScores();
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UComboBoxWidget* GameModeComboBoxWidget;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UComboBoxWidget* SongComboBoxWidget;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	ULineChartWidget* ScoreVsTime;
@@ -69,8 +54,6 @@ protected:
 	UTextBlock* TextBlock_BestStreak;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UTextBlock* TextBlock_Title;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* TextBlock_AverageScore;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* TextBlock_AverageAccuracy;
@@ -85,8 +68,6 @@ protected:
 	TSoftObjectPtr<USaveGamePlayerScore> SaveGamePlayerScore;
 
 	TMap<FBS_DefiningConfig, FCommonScoreInfo> CommonScoreInfoMap;
-
-	TMap<FString, TMap<FString, TArray<TSharedPtr<FPlayerScore>>>> PlayerScoreByGameModeAndSong;
 
 	/** Times across all player scores. */
 	TMap<TSharedPtr<FPlayerScore>, FDateTime> TimesByPlayerScore;

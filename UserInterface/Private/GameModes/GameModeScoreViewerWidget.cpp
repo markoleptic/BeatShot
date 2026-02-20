@@ -16,37 +16,18 @@ namespace
 		static const FTextFormat Format = FTextFormat::FromString("{0}%");
 		return Format;
 	}
+
+	const FTextFormat& GetMillisecondFormat()
+	{
+		static const FTextFormat Format = FTextFormat::FromString("{0}ms");
+		return Format;
+	}
 }
 
 void UGameModeScoreViewerWidget::SetSaveGamePlayerScore(USaveGamePlayerScore* InSaveGamePlayerScore)
 {
 	SaveGamePlayerScore = InSaveGamePlayerScore;
-	PlayerScoreByGameModeAndSong.Empty();
 	CommonScoreInfoMap = InSaveGamePlayerScore->GetCommonScoreInfo();
-
-	TMap<TSharedPtr<FPlayerScore>, FDateTime> Times;
-	for (const auto& PlayerScore : SaveGamePlayerScore->GetPlayerScoresRefPtr())
-	{
-		if (PlayerScore->DefiningConfig.GameModeType == EGameModeType::Custom)
-		{
-			PlayerScoreByGameModeAndSong[PlayerScore->DefiningConfig.CustomGameModeName][PlayerScore->SongTitle].Add(
-				PlayerScore);
-			FDateTime DateTime;
-			FDateTime::ParseIso8601(*PlayerScore->Time, DateTime);
-			Times.Add(PlayerScore, DateTime);
-		}
-	}
-	for (const auto& [GameMode, PlayerScoresBySong] : PlayerScoreByGameModeAndSong)
-	{
-		for (const auto& [Song, PlayerScoresForSongs] : PlayerScoresBySong)
-		{
-			Algo::Sort(PlayerScoresForSongs,
-				[&](const TSharedPtr<FPlayerScore>& Left, const TSharedPtr<FPlayerScore>& Right)
-				{
-					return Times[Left] < Times[Right];
-				});
-		}
-	}
 }
 
 void UGameModeScoreViewerWidget::NativeConstruct()
@@ -172,7 +153,7 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 	LocationAccuracyAxisData = MakeShared<FHeatMapAxisLabelOptions>();
 	LocationAccuracyAxisData->XAxisLabelsDrawIndices = TSet{0, 1, 2, 3, 4};
 	LocationAccuracyAxisData->YAxisLabelsDrawIndices = TSet{0, 1, 2, 3, 4};
-	auto DisplayTextGetter = [this](const int32 XIndex, const int32 YIndex)
+	auto LocationAccuracyDisplayTextGetter = [this](const int32 XIndex, const int32 YIndex)
 	{
 		const float Value = CommonScoreInfoMap[ActiveScores[0]->DefiningConfig].AccuracyData.AccuracyRows[XIndex].
 			Accuracy[YIndex];
@@ -182,45 +163,86 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 		}
 		return FText::Format(GetPercentFormat(), Value);
 	};
-	auto ValueTextGetter = [this](int32, int32, float)
+	auto LocationAccuracyValueTextGetter = [this](int32, int32, float)
 	{
 		return FText();
 	};
 
-	ScoreVsTime->SetData(ScoreVsTimeData, ScoreVsTimeAxisData);
-	StreakVsTime->SetData(StreakVsTimeData, StreakVsTimeAxisData);
-	AverageReactionTime->SetData(AverageReactionTimeData, AverageReactionTimeAxisData);
-	AverageTargetsDestroyed->SetData(AverageTargetsDestroyedData, AverageTargetsDestroyedAxisData);
-	AccuracyVsTime->SetData(AccuracyVsTimeData, AccuracyVsTimeAxisData);
-	LocationAccuracy->SetData(LocationAccuracyData, LocationAccuracyAxisData, DisplayTextGetter, ValueTextGetter);
-
-	GameModeComboBoxWidget->ComboBox->OnSelectionChanged.AddUniqueDynamic(this,
-		&ThisClass::OnSelectionChanged_GameMode);
-	SongComboBoxWidget->ComboBox->OnSelectionChanged.AddUniqueDynamic(this, &ThisClass::OnSelectionChanged_Song);
-}
-
-void UGameModeScoreViewerWidget::OnSelectionChanged_GameMode(const TArray<FString>& ActiveSelections,
-	ESelectInfo::Type SelectionType)
-{
-	if (SelectionType == ESelectInfo::Type::Direct || ActiveSelections.IsEmpty())
+	auto ScoreVsTimeDisplayTextGetter = [this](const int32 XIndex, const int32)
 	{
-		return;
-	}
-	const FString SongTitle = SongComboBoxWidget->ComboBox->GetSelectedOptions()[0];
-	ActiveScores = PlayerScoreByGameModeAndSong[ActiveSelections[0]][SongTitle];
-	UpdateActiveScores();
-}
-
-void UGameModeScoreViewerWidget::OnSelectionChanged_Song(const TArray<FString>& ActiveSelections,
-	ESelectInfo::Type SelectionType)
-{
-	if (SelectionType == ESelectInfo::Type::Direct || ActiveSelections.IsEmpty())
+		return FText::FromString(
+			TimesByPlayerScore[ActiveScores[XIndex]].ToFormattedString(TEXT("%b %d, %Y, %I:%M %P")));
+	};
+	auto ScoreVsTimeValueTextGetter = [this](int32, int32, const float Value)
 	{
-		return;
-	}
-	const FString GameMode = GameModeComboBoxWidget->ComboBox->GetSelectedOptions()[0];
-	ActiveScores = PlayerScoreByGameModeAndSong[GameMode][ActiveSelections[0]];
-	UpdateActiveScores();
+		FNumberFormattingOptions NumberFormattingOptions;
+		NumberFormattingOptions.SetMaximumFractionalDigits(1);
+		return FText::AsNumber(Value, &NumberFormattingOptions);
+	};
+
+	auto StreakVsTimeDisplayTextGetter = [this](const int32 XIndex, const int32)
+	{
+		return FText::FromString(
+			TimesByPlayerScore[ActiveScores[XIndex]].ToFormattedString(TEXT("%b %d, %Y, %I:%M %P")));
+	};
+	auto StreakVsTimeValueTextGetter = [this](int32, int32, const float Value)
+	{
+		FNumberFormattingOptions NumberFormattingOptions;
+		NumberFormattingOptions.SetMaximumFractionalDigits(0);
+		return FText::AsNumber(Value, &NumberFormattingOptions);
+	};
+
+	auto AverageReactionTimeDisplayTextGetter = [this](const int32 XIndex, const int32)
+	{
+		return FText::FromString(
+			TimesByPlayerScore[ActiveScores[XIndex]].ToFormattedString(TEXT("%b %d, %Y, %I:%M %P")));
+	};
+	auto AverageReactionTimeValueTextGetter = [this](int32, int32, const float Value)
+	{
+		FNumberFormattingOptions NumberFormattingOptions;
+		NumberFormattingOptions.MaximumFractionalDigits = 0;
+		NumberFormattingOptions.MinimumFractionalDigits = 0;
+		return FText::Format(GetMillisecondFormat(), FText::AsNumber(Value, &NumberFormattingOptions));
+	};
+
+	auto AverageTargetsDestroyedDisplayTextGetter = [this](const int32 XIndex, const int32)
+	{
+		return FText::FromString(
+			TimesByPlayerScore[ActiveScores[XIndex]].ToFormattedString(TEXT("%b %d, %Y, %I:%M %P")));
+	};
+	auto AverageTargetsDestroyedValueTextGetter = [this](int32, int32, const float Value)
+	{
+		FNumberFormattingOptions NumberFormattingOptions;
+		NumberFormattingOptions.MaximumFractionalDigits = 1;
+		NumberFormattingOptions.MinimumFractionalDigits = 1;
+		return FText::Format(GetPercentFormat(), FText::AsNumber(Value * 100.f, &NumberFormattingOptions));
+	};
+
+	auto AccuracyVsTimeDisplayTextGetter = [this](const int32 XIndex, const int32)
+	{
+		return FText::FromString(
+			TimesByPlayerScore[ActiveScores[XIndex]].ToFormattedString(TEXT("%b %d, %Y, %I:%M %P")));
+	};
+	auto AccuracyVsTimeValueTextGetter = [this](int32, int32, const float Value)
+	{
+		FNumberFormattingOptions NumberFormattingOptions;
+		NumberFormattingOptions.MaximumFractionalDigits = 1;
+		NumberFormattingOptions.MinimumFractionalDigits = 1;
+		return FText::Format(GetPercentFormat(), FText::AsNumber(Value * 100.f, &NumberFormattingOptions));
+	};
+
+	ScoreVsTime->SetData(ScoreVsTimeData, ScoreVsTimeAxisData, ScoreVsTimeDisplayTextGetter,
+		ScoreVsTimeValueTextGetter);
+	StreakVsTime->SetData(StreakVsTimeData, StreakVsTimeAxisData, StreakVsTimeDisplayTextGetter,
+		StreakVsTimeValueTextGetter);
+	AverageReactionTime->SetData(AverageReactionTimeData, AverageReactionTimeAxisData,
+		AverageReactionTimeDisplayTextGetter, AverageReactionTimeValueTextGetter);
+	AverageTargetsDestroyed->SetData(AverageTargetsDestroyedData, AverageTargetsDestroyedAxisData,
+		AverageTargetsDestroyedDisplayTextGetter, AverageTargetsDestroyedValueTextGetter);
+	AccuracyVsTime->SetData(AccuracyVsTimeData, AccuracyVsTimeAxisData, AccuracyVsTimeDisplayTextGetter,
+		AccuracyVsTimeValueTextGetter);
+	LocationAccuracy->SetData(LocationAccuracyData, LocationAccuracyAxisData, LocationAccuracyDisplayTextGetter,
+		LocationAccuracyValueTextGetter);
 }
 
 void UGameModeScoreViewerWidget::UpdateActiveScores()
@@ -302,21 +324,21 @@ void UGameModeScoreViewerWidget::UpdateActiveScores()
 	}
 	ScoreVsTimeData->Empty(1);
 	ScoreVsTimeData->Add(ScoreVsTimeLineChartSeries);
-	ScoreVsTime->SetData(ScoreVsTimeData, ScoreVsTimeAxisData);
+	ScoreVsTime->Redraw();
 
 	StreakVsTimeData->Empty(1);
 	StreakVsTimeData->Add(StreakVsTimeLineChartSeries);
-	StreakVsTime->SetData(StreakVsTimeData, StreakVsTimeAxisData);
+	StreakVsTime->Redraw();
 
 	AverageReactionTimeData->Empty(1);
 	AverageReactionTimeData->Add(AverageReactionTimeLineChartSeries);
-	AverageReactionTime->SetData(AverageReactionTimeData, AverageReactionTimeAxisData);
+	AverageReactionTime->Redraw();
 
 	AverageTargetsDestroyedData->Empty(1);
 	AverageTargetsDestroyedData->Add(AverageTargetsDestroyedLineChartSeries);
-	AverageTargetsDestroyed->SetData(AverageTargetsDestroyedData, AverageTargetsDestroyedAxisData);
+	AverageTargetsDestroyed->Redraw();
 
 	AccuracyVsTimeData->Empty(1);
 	AccuracyVsTimeData->Add(AccuracyVsTimeLineChartSeries);
-	AccuracyVsTime->SetData(AccuracyVsTimeData, AccuracyVsTimeAxisData);
+	AccuracyVsTime->Redraw();
 }
