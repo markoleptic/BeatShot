@@ -43,7 +43,8 @@ void UScoreViewerWidget::NativeConstruct()
 
 	PlayFrequencyData = MakeShared<FHeatMapData>();
 	PlayFrequencyData->Options.bDrawSectionIfValueLessThanZero = false;
-
+	PlayFrequencyData->Options.bUseCustomTwoColorInterpolation = true;
+	PlayFrequencyData->Options.Padding = {10.f, 10.f, 10.f, 10.f};
 	PlayFrequencyAxisData = MakeShared<FHeatMapAxisLabelOptions>();
 	PlayFrequencyAxisData->YAxisLabelsDrawIndices = TSet{0, 1, 2, 3, 4, 5, 6};
 
