@@ -31,7 +31,6 @@ namespace
 void UScoreViewerWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-
 	MenuButton_Overview->OnBSButtonPressed.AddUObject(this, &ThisClass::OnButtonClicked_BSButton);
 	MenuButton_DefaultModes->OnBSButtonPressed.AddUObject(this, &ThisClass::OnButtonClicked_BSButton);
 	MenuButton_CustomModes->OnBSButtonPressed.AddUObject(this, &ThisClass::OnButtonClicked_BSButton);

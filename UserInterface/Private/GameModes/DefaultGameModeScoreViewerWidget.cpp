@@ -61,9 +61,7 @@ void UDefaultGameModeScoreViewerWidget::SetActiveScores(const EBaseGameMode Base
 	GameModeComboBoxWidget->ComboBox->SetSelectedOption(BaseGameModeText[BaseGameMode].ToString());
 	SongComboBoxWidget->ComboBox->SetSelectedOption(SongTitle);
 	DifficultyComboBoxWidget->ComboBox->SetSelectedOption(GameModeDifficultyText[Difficulty].ToString());
-	GameModeScoreViewerWidget->ActiveScores = PlayerScoreByGameModeSongAndDifficulty[BaseGameMode][SongTitle][
-		Difficulty];
-	GameModeScoreViewerWidget->UpdateActiveScores();
+	FilterActiveScores();
 }
 
 void UDefaultGameModeScoreViewerWidget::NativeConstruct()
@@ -84,12 +82,8 @@ void UDefaultGameModeScoreViewerWidget::OnSelectionChanged_GameMode(const TArray
 	{
 		return;
 	}
-	const EBaseGameMode GameMode = FindBaseGameMode(ActiveSelections[0]);
-	const FString SongTitle = SongComboBoxWidget->ComboBox->GetSelectedOption();
-	const EGameModeDifficulty Difficulty = FindGameModeDifficulty(
-		DifficultyComboBoxWidget->ComboBox->GetSelectedOption());
-	GameModeScoreViewerWidget->ActiveScores = PlayerScoreByGameModeSongAndDifficulty[GameMode][SongTitle][Difficulty];
-	GameModeScoreViewerWidget->UpdateActiveScores();
+
+	FilterActiveScores();
 }
 
 void UDefaultGameModeScoreViewerWidget::OnSelectionChanged_Song(const TArray<FString>& ActiveSelections,
@@ -99,12 +93,8 @@ void UDefaultGameModeScoreViewerWidget::OnSelectionChanged_Song(const TArray<FSt
 	{
 		return;
 	}
-	const EBaseGameMode GameMode = FindBaseGameMode(GameModeComboBoxWidget->ComboBox->GetSelectedOption());
-	const FString SongTitle = ActiveSelections[0];
-	const EGameModeDifficulty Difficulty = FindGameModeDifficulty(
-		DifficultyComboBoxWidget->ComboBox->GetSelectedOption());
-	GameModeScoreViewerWidget->ActiveScores = PlayerScoreByGameModeSongAndDifficulty[GameMode][SongTitle][Difficulty];
-	GameModeScoreViewerWidget->UpdateActiveScores();
+
+	FilterActiveScores();
 }
 
 void UDefaultGameModeScoreViewerWidget::OnSelectionChanged_Difficulty(const TArray<FString>& ActiveSelections,
@@ -114,11 +104,8 @@ void UDefaultGameModeScoreViewerWidget::OnSelectionChanged_Difficulty(const TArr
 	{
 		return;
 	}
-	const EBaseGameMode GameMode = FindBaseGameMode(GameModeComboBoxWidget->ComboBox->GetSelectedOption());
-	const FString SongTitle = SongComboBoxWidget->ComboBox->GetSelectedOption();
-	const EGameModeDifficulty Difficulty = FindGameModeDifficulty(ActiveSelections[0]);
-	GameModeScoreViewerWidget->ActiveScores = PlayerScoreByGameModeSongAndDifficulty[GameMode][SongTitle][Difficulty];
-	GameModeScoreViewerWidget->UpdateActiveScores();
+
+	FilterActiveScores();
 }
 
 EBaseGameMode UDefaultGameModeScoreViewerWidget::FindBaseGameMode(const FString& InGameModeName)
@@ -143,4 +130,86 @@ EGameModeDifficulty UDefaultGameModeScoreViewerWidget::FindGameModeDifficulty(co
 		}
 	}
 	return EGameModeDifficulty::None;
+}
+
+void UDefaultGameModeScoreViewerWidget::FilterActiveScores()
+{
+	const EBaseGameMode CurrentGameMode = FindBaseGameMode(GameModeComboBoxWidget->ComboBox->GetSelectedOption());
+	FString CurrentSongTitle = SongComboBoxWidget->ComboBox->GetSelectedOption();
+	EGameModeDifficulty CurrentDifficulty = FindGameModeDifficulty(
+		DifficultyComboBoxWidget->ComboBox->GetSelectedOption());
+	TSet<FString> SongOptions;
+	TSet<FString> DifficultyOptions;
+
+	bool HasSongTitle = false;
+	bool HasDifficulty = false;
+
+	for (const auto& [GameMode, PlayerScoresBySong] : PlayerScoreByGameModeSongAndDifficulty)
+	{
+		if (GameMode == CurrentGameMode)
+		{
+			for (const auto& [Song, PlayerScoresForSongs] : PlayerScoresBySong)
+			{
+				SongOptions.Add(Song);
+				if (CurrentSongTitle == Song)
+				{
+					HasSongTitle = true;
+					for (const auto& [Difficulty, PlayerScoresForDifficulty] : PlayerScoresForSongs)
+					{
+						if (CurrentDifficulty == Difficulty)
+						{
+							HasDifficulty = true;
+						}
+						DifficultyOptions.Add(GameModeDifficultyText[Difficulty].ToString());
+					}
+				}
+			}
+			break;
+		}
+	}
+
+	TArray<FString> SongOptionsArray = SongOptions.Array();
+	SongComboBoxWidget->ComboBox->ClearOptions();
+	SongComboBoxWidget->SortAndAddOptions(SongOptionsArray);
+	if (!HasSongTitle)
+	{
+		if (SongOptionsArray.IsEmpty())
+		{
+			CurrentSongTitle.Reset();
+		}
+		else
+		{
+			CurrentSongTitle = SongOptionsArray[0];
+		}
+	}
+	SongComboBoxWidget->ComboBox->SetSelectedIndex(
+		FMath::Max(SongComboBoxWidget->ComboBox->GetIndexOfOption(CurrentSongTitle), 0));
+
+	TArray<FString> DifficultyOptionsArray = DifficultyOptions.Array();
+	DifficultyComboBoxWidget->ComboBox->ClearOptions();
+	DifficultyComboBoxWidget->SortAndAddOptions(DifficultyOptionsArray);
+	DifficultyComboBoxWidget->ComboBox->SetSelectedIndex(FMath::Max(
+		DifficultyComboBoxWidget->ComboBox->GetIndexOfOption(GameModeDifficultyText[CurrentDifficulty].ToString()), 0));
+	if (!HasDifficulty)
+	{
+		if (DifficultyOptionsArray.IsEmpty())
+		{
+			CurrentDifficulty = EGameModeDifficulty::None;
+		}
+		else
+		{
+			CurrentDifficulty = FindGameModeDifficulty(DifficultyOptionsArray[0]);
+		}
+	}
+
+	if (!CurrentSongTitle.IsEmpty() && CurrentDifficulty != EGameModeDifficulty::None)
+	{
+		GameModeScoreViewerWidget->ActiveScores = PlayerScoreByGameModeSongAndDifficulty[CurrentGameMode][
+			CurrentSongTitle][CurrentDifficulty];
+	}
+	else
+	{
+		GameModeScoreViewerWidget->ActiveScores = {};
+	}
+	GameModeScoreViewerWidget->UpdateActiveScores();
 }

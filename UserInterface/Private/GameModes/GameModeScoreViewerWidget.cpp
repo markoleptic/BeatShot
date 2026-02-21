@@ -33,15 +33,31 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	auto GenericDateFormatter = TDelegate<FText(int32, float)>::CreateUObject(this,
-		&ThisClass::HandleGenericDateXAxisFormatter);
+	const auto ShortDateXAxisFormatter = TDelegate<FText(int32, float)>::CreateUObject(this,
+		&ThisClass::HandleShortDateXAxisFormatter);
+	const auto ZeroDecimalFormatter = TDelegate<FText(int32, float)>::CreateLambda([](int32, const float Value)
+	{
+		FNumberFormattingOptions NumberFormattingOptions;
+		NumberFormattingOptions.MaximumFractionalDigits = 0;
+		NumberFormattingOptions.MinimumFractionalDigits = 0;
+		return FText::AsNumber(Value, &NumberFormattingOptions);
+	});
+
+	const auto ZeroDecimalTimesOneHundredFormatter = TDelegate<FText(int32, float)>::CreateLambda(
+		[](int32, const float Value)
+		{
+			FNumberFormattingOptions NumberFormattingOptions;
+			NumberFormattingOptions.MaximumFractionalDigits = 0;
+			NumberFormattingOptions.MinimumFractionalDigits = 0;
+			return FText::AsNumber(Value * 100.f, &NumberFormattingOptions);
+		});
 
 	ScoreVsTimeData = MakeShared<TArray<FLineChartSeries>>();
 	ScoreVsTimeAxisData = MakeShared<TMap<EAxisType, FAxisLabelOptions>>();
 	{
 		FAxisLabelOptions XAxisLabelOptions;
 		XAxisLabelOptions.StartAtZero = false;
-		XAxisLabelOptions.Formatter = GenericDateFormatter;
+		XAxisLabelOptions.Formatter = ShortDateXAxisFormatter;
 		ScoreVsTimeAxisData->Add({EAxisType::X, XAxisLabelOptions});
 
 		FAxisLabelOptions YAxisLabelOptions;
@@ -60,17 +76,12 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 	{
 		FAxisLabelOptions XAxisLabelOptions;
 		XAxisLabelOptions.StartAtZero = false;
-		XAxisLabelOptions.Formatter = GenericDateFormatter;
+		XAxisLabelOptions.Formatter = ShortDateXAxisFormatter;
 		StreakVsTimeAxisData->Add({EAxisType::X, XAxisLabelOptions});
 
 		FAxisLabelOptions YAxisLabelOptions;
 		YAxisLabelOptions.StartAtZero = true;
-		YAxisLabelOptions.Formatter = TDelegate<FText(int32, float)>::CreateLambda([](int32, const float Value)
-		{
-			FNumberFormattingOptions NumberFormattingOptions;
-			NumberFormattingOptions.SetMaximumFractionalDigits(0);
-			return FText::AsNumber(Value, &NumberFormattingOptions);
-		});
+		YAxisLabelOptions.Formatter = ZeroDecimalFormatter;
 		StreakVsTimeAxisData->Add({EAxisType::Y, YAxisLabelOptions});
 	}
 
@@ -79,18 +90,12 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 	{
 		FAxisLabelOptions XAxisLabelOptions;
 		XAxisLabelOptions.StartAtZero = false;
-		XAxisLabelOptions.Formatter = GenericDateFormatter;
+		XAxisLabelOptions.Formatter = ShortDateXAxisFormatter;
 		AverageTargetsDestroyedAxisData->Add({EAxisType::X, XAxisLabelOptions});
 
 		FAxisLabelOptions YAxisLabelOptions;
 		YAxisLabelOptions.StartAtZero = true;
-		YAxisLabelOptions.Formatter = TDelegate<FText(int32, float)>::CreateLambda([](int32, const float Value)
-		{
-			FNumberFormattingOptions NumberFormattingOptions;
-			NumberFormattingOptions.MaximumFractionalDigits = 1;
-			NumberFormattingOptions.MinimumFractionalDigits = 1;
-			return FText::Format(GetPercentFormat(), FText::AsNumber(Value * 100.f, &NumberFormattingOptions));
-		});
+		YAxisLabelOptions.Formatter = ZeroDecimalTimesOneHundredFormatter;
 		AverageTargetsDestroyedAxisData->Add({EAxisType::Y, YAxisLabelOptions});
 	}
 
@@ -99,18 +104,12 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 	{
 		FAxisLabelOptions XAxisLabelOptions;
 		XAxisLabelOptions.StartAtZero = false;
-		XAxisLabelOptions.Formatter = GenericDateFormatter;
+		XAxisLabelOptions.Formatter = ShortDateXAxisFormatter;
 		AverageReactionTimeAxisData->Add({EAxisType::X, XAxisLabelOptions});
 
 		FAxisLabelOptions YAxisLabelOptions;
 		YAxisLabelOptions.StartAtZero = true;
-		YAxisLabelOptions.Formatter = TDelegate<FText(int32, float)>::CreateLambda([](int32, const float Value)
-		{
-			FNumberFormattingOptions NumberFormattingOptions;
-			NumberFormattingOptions.MaximumFractionalDigits = 0;
-			NumberFormattingOptions.MinimumFractionalDigits = 0;
-			return FText::AsNumber(Value, &NumberFormattingOptions);
-		});
+		YAxisLabelOptions.Formatter = ZeroDecimalFormatter;
 		AverageReactionTimeAxisData->Add({EAxisType::Y, YAxisLabelOptions});
 	}
 
@@ -119,18 +118,12 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 	{
 		FAxisLabelOptions XAxisLabelOptions;
 		XAxisLabelOptions.StartAtZero = false;
-		XAxisLabelOptions.Formatter = GenericDateFormatter;
+		XAxisLabelOptions.Formatter = ShortDateXAxisFormatter;
 		AccuracyVsTimeAxisData->Add({EAxisType::X, XAxisLabelOptions});
 
 		FAxisLabelOptions YAxisLabelOptions;
 		YAxisLabelOptions.StartAtZero = true;
-		YAxisLabelOptions.Formatter = TDelegate<FText(int32, float)>::CreateLambda([](int32, const float Value)
-		{
-			FNumberFormattingOptions NumberFormattingOptions;
-			NumberFormattingOptions.MaximumFractionalDigits = 1;
-			NumberFormattingOptions.MinimumFractionalDigits = 1;
-			return FText::Format(GetPercentFormat(), FText::AsNumber(Value * 100.f, &NumberFormattingOptions));
-		});
+		YAxisLabelOptions.Formatter = ZeroDecimalTimesOneHundredFormatter;
 		AccuracyVsTimeAxisData->Add({EAxisType::Y, YAxisLabelOptions});
 	}
 
@@ -140,12 +133,13 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 	LocationAccuracyAxisData = MakeShared<FHeatMapAxisLabelOptions>();
 	LocationAccuracyAxisData->XAxisLabelsDrawIndices = TSet{0, 1, 2, 3, 4};
 	LocationAccuracyAxisData->YAxisLabelsDrawIndices = TSet{0, 1, 2, 3, 4};
-	auto LocationAccuracyValueTextGetter = TDelegate<FText(int32, int32, float)>::CreateLambda([](int32, int32, float)
-	{
-		return FText();
-	});
+	const auto LocationAccuracyValueTextGetter = TDelegate<FText(int32, int32, float)>::CreateLambda(
+		[](int32, int32, float)
+		{
+			return FText();
+		});
 
-	auto ScoreVsTimeValueTextGetter = TDelegate<FText(int32, int32, float)>::CreateLambda(
+	const auto ScoreVsTimeValueTextGetter = TDelegate<FText(int32, int32, float)>::CreateLambda(
 		[](int32, int32, const float Value)
 		{
 			FNumberFormattingOptions NumberFormattingOptions;
@@ -153,7 +147,7 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 			return FText::AsNumber(Value, &NumberFormattingOptions);
 		});
 
-	auto StreakVsTimeValueTextGetter = TDelegate<FText(int32, int32, float)>::CreateLambda(
+	const auto StreakVsTimeValueTextGetter = TDelegate<FText(int32, int32, float)>::CreateLambda(
 		[](int32, int32, const float Value)
 		{
 			FNumberFormattingOptions NumberFormattingOptions;
@@ -161,7 +155,7 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 			return FText::AsNumber(Value, &NumberFormattingOptions);
 		});
 
-	auto AverageReactionTimeValueTextGetter = TDelegate<FText(int32, int32, float)>::CreateLambda(
+	const auto AverageReactionTimeValueTextGetter = TDelegate<FText(int32, int32, float)>::CreateLambda(
 		[](int32, int32, const float Value)
 		{
 			FNumberFormattingOptions NumberFormattingOptions;
@@ -170,7 +164,7 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 			return FText::Format(GetMillisecondFormat(), FText::AsNumber(Value, &NumberFormattingOptions));
 		});
 
-	auto GenericPercentValueTextDelegate = TDelegate<FText(int32, int32, float)>::CreateLambda(
+	const auto GenericPercentValueTextDelegate = TDelegate<FText(int32, int32, float)>::CreateLambda(
 		[](int32, int32, const float Value)
 		{
 			FNumberFormattingOptions NumberFormattingOptions;
@@ -180,7 +174,7 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 		});
 
 
-	auto GenericDateValueTextDelegate = TDelegate<FText(int32, int32)>::CreateUObject(this,
+	const auto GenericDateValueTextDelegate = TDelegate<FText(int32, int32)>::CreateUObject(this,
 		&ThisClass::HandleGenericDateValueText);
 
 	ScoreVsTime->SetData(ScoreVsTimeData, ScoreVsTimeAxisData, GenericDateValueTextDelegate,
@@ -312,7 +306,7 @@ FText UGameModeScoreViewerWidget::HandleLocationAccuracyDisplayText(const int32 
 	return FText::Format(GetPercentFormat(), Value);
 }
 
-FText UGameModeScoreViewerWidget::HandleGenericDateXAxisFormatter(const int32 XIndex, float)
+FText UGameModeScoreViewerWidget::HandleShortDateXAxisFormatter(const int32 XIndex, float)
 {
 	return FText::FromString(TimesByPlayerScore[ActiveScores[XIndex]].ToFormattedString(TEXT("%b %d")));
 }

@@ -51,6 +51,8 @@ protected:
 
 	EGameModeDifficulty FindGameModeDifficulty(const FString& InGameModeDifficulty);
 
+	void FilterActiveScores();
+
 	TMap<EBaseGameMode, TMap<FString, TMap<EGameModeDifficulty, TArray<TSharedPtr<FPlayerScore>>>>>
 	PlayerScoreByGameModeSongAndDifficulty;
 };

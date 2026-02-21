@@ -37,8 +37,9 @@ void UCustomGameModeScoreViewerWidget::SetSaveGamePlayerScore(USaveGamePlayerSco
 
 void UCustomGameModeScoreViewerWidget::SetActiveScores(const FString& CustomGameModeName, const FString& SongTitle)
 {
-	GameModeScoreViewerWidget->ActiveScores = PlayerScoreByGameModeAndSong[CustomGameModeName][SongTitle];
-	GameModeScoreViewerWidget->UpdateActiveScores();
+	GameModeComboBoxWidget->ComboBox->SetSelectedOption(CustomGameModeName);
+	SongComboBoxWidget->ComboBox->SetSelectedOption(SongTitle);
+	FilterActiveScores();
 }
 
 void UCustomGameModeScoreViewerWidget::NativeConstruct()
@@ -71,5 +72,55 @@ void UCustomGameModeScoreViewerWidget::OnSelectionChanged_Song(const TArray<FStr
 	}
 	const FString GameMode = GameModeComboBoxWidget->ComboBox->GetSelectedOptions()[0];
 	GameModeScoreViewerWidget->ActiveScores = PlayerScoreByGameModeAndSong[GameMode][ActiveSelections[0]];
+	GameModeScoreViewerWidget->UpdateActiveScores();
+}
+
+void UCustomGameModeScoreViewerWidget::FilterActiveScores()
+{
+	const FString CurrentGameMode = GameModeComboBoxWidget->ComboBox->GetSelectedOption();
+	FString CurrentSongTitle = SongComboBoxWidget->ComboBox->GetSelectedOption();
+	TSet<FString> SongOptions;
+	bool HasSongTitle = false;
+
+	for (const auto& [GameMode, PlayerScoresBySong] : PlayerScoreByGameModeAndSong)
+	{
+		if (CurrentGameMode == GameMode)
+		{
+			for (const auto& [Song, PlayerScoresForSongs] : PlayerScoresBySong)
+			{
+				if (Song == CurrentSongTitle)
+				{
+					SongOptions.Add(Song);
+					HasSongTitle = true;
+				}
+			}
+		}
+	}
+
+	TArray<FString> SongOptionsArray = SongOptions.Array();
+	SongComboBoxWidget->ComboBox->ClearOptions();
+	SongComboBoxWidget->SortAndAddOptions(SongOptionsArray);
+	if (!HasSongTitle)
+	{
+		if (SongOptionsArray.IsEmpty())
+		{
+			CurrentSongTitle.Reset();
+		}
+		else
+		{
+			CurrentSongTitle = SongOptionsArray[0];
+		}
+	}
+	SongComboBoxWidget->ComboBox->SetSelectedIndex(
+		FMath::Max(SongComboBoxWidget->ComboBox->GetIndexOfOption(CurrentSongTitle), 0));
+
+	if (!CurrentSongTitle.IsEmpty())
+	{
+		GameModeScoreViewerWidget->ActiveScores = PlayerScoreByGameModeAndSong[CurrentGameMode][CurrentSongTitle];
+	}
+	else
+	{
+		GameModeScoreViewerWidget->ActiveScores = {};
+	}
 	GameModeScoreViewerWidget->UpdateActiveScores();
 }

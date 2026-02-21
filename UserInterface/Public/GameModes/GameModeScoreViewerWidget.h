@@ -94,5 +94,5 @@ private:
 
 	FText HandleLocationAccuracyDisplayText(int32, int32);
 
-	FText HandleGenericDateXAxisFormatter(int32, float);
+	FText HandleShortDateXAxisFormatter(int32, float);
 };

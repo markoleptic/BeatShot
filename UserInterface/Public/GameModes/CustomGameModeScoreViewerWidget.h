@@ -38,5 +38,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UGameModeScoreViewerWidget* GameModeScoreViewerWidget;
 
+	void FilterActiveScores();
+
 	TMap<FString, TMap<FString, TArray<TSharedPtr<FPlayerScore>>>> PlayerScoreByGameModeAndSong;
 };
