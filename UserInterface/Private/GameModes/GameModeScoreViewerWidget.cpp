@@ -109,7 +109,7 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 
 		FAxisLabelOptions YAxisLabelOptions;
 		YAxisLabelOptions.StartAtZero = true;
-		YAxisLabelOptions.Formatter = ZeroDecimalFormatter;
+		YAxisLabelOptions.Formatter = ZeroDecimalTimesOneHundredFormatter;
 		AverageReactionTimeAxisData->Add({EAxisType::Y, YAxisLabelOptions});
 	}
 
@@ -129,7 +129,7 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 
 
 	LocationAccuracyData = MakeShared<FHeatMapData>();
-	LocationAccuracyData->Options.bDrawSectionIfValueLessThanZero = false;
+	LocationAccuracyData->Options.bDrawSectionIfValueLessThanZero = true;
 	LocationAccuracyAxisData = MakeShared<FHeatMapAxisLabelOptions>();
 	LocationAccuracyAxisData->XAxisLabelsDrawIndices = TSet{0, 1, 2, 3, 4};
 	LocationAccuracyAxisData->YAxisLabelsDrawIndices = TSet{0, 1, 2, 3, 4};
@@ -161,7 +161,7 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 			FNumberFormattingOptions NumberFormattingOptions;
 			NumberFormattingOptions.MaximumFractionalDigits = 0;
 			NumberFormattingOptions.MinimumFractionalDigits = 0;
-			return FText::Format(GetMillisecondFormat(), FText::AsNumber(Value, &NumberFormattingOptions));
+			return FText::Format(GetMillisecondFormat(), FText::AsNumber(Value * 100.f, &NumberFormattingOptions));
 		});
 
 	const auto GenericPercentValueTextDelegate = TDelegate<FText(int32, int32, float)>::CreateLambda(
@@ -215,6 +215,9 @@ void UGameModeScoreViewerWidget::UpdateDataVisualization()
 
 		AccuracyVsTimeData->Empty();
 		AccuracyVsTime->Redraw();
+
+		LocationAccuracyData->Sections.Empty();
+		LocationAccuracy->Redraw();
 	}
 	else
 	{
@@ -313,6 +316,23 @@ void UGameModeScoreViewerWidget::UpdateDataVisualization()
 		AccuracyVsTimeData->Empty(1);
 		AccuracyVsTimeData->Add(AccuracyVsTimeLineChartSeries);
 		AccuracyVsTime->Redraw();
+
+		LocationAccuracyData->Sections.Empty();
+		if (CommonScoreInfoMap.Contains(ActiveScores[0]->DefiningConfig))
+		{
+			const auto& AccuracyRows = CommonScoreInfoMap[ActiveScores[0]->DefiningConfig].AccuracyData.AccuracyRows;
+			LocationAccuracyData->Sections.Init({}, AccuracyRows.Num());
+			for (int i = 0; i < AccuracyRows.Num(); i++)
+			{
+				const auto& AccuracyRow = AccuracyRows[i];
+				LocationAccuracyData->Sections[i].Reserve(AccuracyRow.Size);
+				for (const float Accuracy : AccuracyRow.Accuracy)
+				{
+					LocationAccuracyData->Sections[i].Add(Accuracy);
+				}
+			}
+		}
+		LocationAccuracy->Redraw();
 	}
 }
 
@@ -349,7 +369,7 @@ FText UGameModeScoreViewerWidget::HandleLocationAccuracyDisplayText(const int32 
 			{
 				return FText::FromString("No target has spawned here.");
 			}
-			return FText::Format(GetPercentFormat(), Value);
+			return FText::Format(GetPercentFormat(), Value * 100.f);
 		}
 	}
 	return {};
