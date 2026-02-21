@@ -10,7 +10,7 @@ TArray<FPlayerScore> IBSPlayerScoreInterface::LoadPlayerScores()
 	if (USaveGamePlayerScore* SaveGamePlayerScore = SaveLoadCommon::LoadFromSlot<USaveGamePlayerScore>(
 		TEXT("ScoreSlot"), 1))
 	{
-		SaveGamePlayerScore->HandePostLoad();
+		SaveGamePlayerScore->BuildRuntimeData();
 		return SaveGamePlayerScore->GetPlayerScores();
 	}
 	return TArray<FPlayerScore>();
@@ -21,7 +21,7 @@ TArray<FPlayerScore> IBSPlayerScoreInterface::LoadPlayerScores_UnsavedToDatabase
 	if (USaveGamePlayerScore* SaveGamePlayerScore = SaveLoadCommon::LoadFromSlot<USaveGamePlayerScore>(
 		TEXT("ScoreSlot"), 1))
 	{
-		SaveGamePlayerScore->HandePostLoad();
+		SaveGamePlayerScore->BuildRuntimeData();
 		return SaveGamePlayerScore->GetPlayerScores_UnsavedToDatabase();
 	}
 	return TArray<FPlayerScore>();
@@ -32,8 +32,9 @@ void IBSPlayerScoreInterface::SetAllPlayerScoresSavedToDatabase()
 	if (USaveGamePlayerScore* SaveGamePlayerScore = SaveLoadCommon::LoadFromSlot<USaveGamePlayerScore>(
 		TEXT("ScoreSlot"), 1))
 	{
-		SaveGamePlayerScore->HandePostLoad();
+		SaveGamePlayerScore->BuildRuntimeData();
 		SaveGamePlayerScore->SetAllScoresSavedToDatabase();
+		SaveGamePlayerScore->CommitRuntimeData();
 		SaveLoadCommon::SaveToSlot(SaveGamePlayerScore, TEXT("ScoreSlot"), 1);
 	}
 }
@@ -55,8 +56,9 @@ void IBSPlayerScoreInterface::SavePlayerScoreInstance(const FPlayerScore& Player
 	if (USaveGamePlayerScore* SaveGamePlayerScore = SaveLoadCommon::LoadFromSlot<USaveGamePlayerScore>(
 		TEXT("ScoreSlot"), 1))
 	{
-		SaveGamePlayerScore->HandePostLoad();
+		SaveGamePlayerScore->BuildRuntimeData();
 		SaveGamePlayerScore->AddPlayerScoreInstance(PlayerScoreToSave);
+		SaveGamePlayerScore->CommitRuntimeData();
 		SaveLoadCommon::SaveToSlot(SaveGamePlayerScore, TEXT("ScoreSlot"), 1);
 	}
 }
@@ -71,7 +73,7 @@ FCommonScoreInfo IBSPlayerScoreInterface::FindOrAddCommonScoreInfo(const FBS_Def
 	if (USaveGamePlayerScore* SaveGamePlayerScore = SaveLoadCommon::LoadFromSlot<USaveGamePlayerScore>(
 		TEXT("ScoreSlot"), 1))
 	{
-		SaveGamePlayerScore->HandePostLoad();
+		SaveGamePlayerScore->BuildRuntimeData();
 		SaveGamePlayerScore->FindOrAddCommonScoreInfo(DefiningConfig, CommonScoreInfo);
 	}
 	return CommonScoreInfo;
@@ -83,8 +85,9 @@ void IBSPlayerScoreInterface::SaveCommonScoreInfo(const FBS_DefiningConfig& Defi
 	if (USaveGamePlayerScore* SaveGamePlayerScore = SaveLoadCommon::LoadFromSlot<USaveGamePlayerScore>(
 		TEXT("ScoreSlot"), 1))
 	{
-		SaveGamePlayerScore->HandePostLoad();
+		SaveGamePlayerScore->BuildRuntimeData();
 		SaveGamePlayerScore->SaveCommonScoreInfo(DefiningConfig, CommonScoreInfoToSave);
+		SaveGamePlayerScore->CommitRuntimeData();
 		SaveLoadCommon::SaveToSlot(SaveGamePlayerScore, TEXT("ScoreSlot"), 1);
 	}
 }
@@ -94,8 +97,9 @@ int32 IBSPlayerScoreInterface::RemoveCommonScoreInfo(const FBS_DefiningConfig& D
 	if (USaveGamePlayerScore* SaveGamePlayerScore = SaveLoadCommon::LoadFromSlot<USaveGamePlayerScore>(
 		TEXT("ScoreSlot"), 1))
 	{
-		SaveGamePlayerScore->HandePostLoad();
+		SaveGamePlayerScore->BuildRuntimeData();
 		const int32 NumRemoved = SaveGamePlayerScore->RemoveCommonScoreInfo(DefiningConfig);
+		SaveGamePlayerScore->CommitRuntimeData();
 		if (SaveLoadCommon::SaveToSlot(SaveGamePlayerScore, TEXT("ScoreSlot"), 1))
 		{
 			return NumRemoved;
@@ -109,8 +113,9 @@ int32 IBSPlayerScoreInterface::ResetQTable(const FBS_DefiningConfig& DefiningCon
 	if (USaveGamePlayerScore* SaveGamePlayerScore = SaveLoadCommon::LoadFromSlot<USaveGamePlayerScore>(
 		TEXT("ScoreSlot"), 1))
 	{
-		SaveGamePlayerScore->HandePostLoad();
+		SaveGamePlayerScore->BuildRuntimeData();
 		const int32 NumCleared = SaveGamePlayerScore->ResetQTable(DefiningConfig);
+		SaveGamePlayerScore->CommitRuntimeData();
 		if (SaveLoadCommon::SaveToSlot(SaveGamePlayerScore, TEXT("ScoreSlot"), 1))
 		{
 			return NumCleared;
@@ -125,7 +130,7 @@ USaveGamePlayerScore* IBSPlayerScoreInterface::LoadSaveGamePlayerScore()
 		USaveGamePlayerScore>(TEXT("ScoreSlot"), 1);
 	if (SaveGamePlayerScore)
 	{
-		SaveGamePlayerScore->HandePostLoad();
+		SaveGamePlayerScore->BuildRuntimeData();
 	}
 	return SaveGamePlayerScore;
 }

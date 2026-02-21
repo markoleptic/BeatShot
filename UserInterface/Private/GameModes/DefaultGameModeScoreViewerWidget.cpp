@@ -2,16 +2,32 @@
 
 
 #include "GameModes/DefaultGameModeScoreViewerWidget.h"
+#include "Components/TextBlock.h"
+#include "Components/VerticalBox.h"
 #include "GameModes/GameModeScoreViewerWidget.h"
 #include "MenuOptions/ComboBoxWidget.h"
 #include "SaveGames/SaveGamePlayerScore.h"
 
 void UDefaultGameModeScoreViewerWidget::SetSaveGamePlayerScore(USaveGamePlayerScore* InSaveGamePlayerScore)
 {
+	SaveGamePlayerScore = InSaveGamePlayerScore;
 	GameModeScoreViewerWidget->SetSaveGamePlayerScore(InSaveGamePlayerScore);
+	RepopulatePlayerScoreByGameModeSongAndDifficulty();
+}
+
+void UDefaultGameModeScoreViewerWidget::SetActiveScores(const EBaseGameMode BaseGameMode, const FString& SongTitle,
+	const EGameModeDifficulty Difficulty)
+{
+	GameModeComboBoxWidget->ComboBox->SetSelectedOption(BaseGameModeText[BaseGameMode].ToString());
+	FilterActiveScores(BaseGameMode, SongTitle, Difficulty);
+}
+
+void UDefaultGameModeScoreViewerWidget::RepopulatePlayerScoreByGameModeSongAndDifficulty()
+{
 	PlayerScoreByGameModeSongAndDifficulty.Empty();
 
-	for (const auto& PlayerScore : InSaveGamePlayerScore->GetPlayerScoresRefPtr())
+	TMap<TSharedPtr<FPlayerScore>, FDateTime> TimesByPlayerScore;
+	for (const auto& PlayerScore : SaveGamePlayerScore->GetPlayerScoresPtr())
 	{
 		if (PlayerScore->DefiningConfig.GameModeType == EGameModeType::Preset)
 		{
@@ -20,48 +36,42 @@ void UDefaultGameModeScoreViewerWidget::SetSaveGamePlayerScore(USaveGamePlayerSc
 				                                       PlayerScore->DefiningConfig.Difficulty).Add(PlayerScore);
 			FDateTime DateTime;
 			FDateTime::ParseIso8601(*PlayerScore->Time, DateTime);
-			GameModeScoreViewerWidget->TimesByPlayerScore.Add(PlayerScore, DateTime);
+			TimesByPlayerScore.Add(PlayerScore, DateTime);
 		}
 	}
+
 	TSet<FString> GameModeOptions;
-	TSet<FString> SongOptions;
-	TSet<FString> DifficultyOptions;
 	for (const auto& [GameMode, PlayerScoresBySong] : PlayerScoreByGameModeSongAndDifficulty)
 	{
 		GameModeOptions.Add(BaseGameModeText[GameMode].ToString());
 		for (const auto& [Song, PlayerScoresForSongs] : PlayerScoresBySong)
 		{
-			SongOptions.Add(Song);
 			for (const auto& [Difficulty, PlayerScoresForDifficulty] : PlayerScoresForSongs)
 			{
-				DifficultyOptions.Add(GameModeDifficultyText[Difficulty].ToString());
 				Algo::Sort(PlayerScoresForDifficulty,
 					[&](const TSharedPtr<FPlayerScore>& Left, const TSharedPtr<FPlayerScore>& Right)
 					{
-						return GameModeScoreViewerWidget->TimesByPlayerScore[Left] < GameModeScoreViewerWidget->
-							TimesByPlayerScore[Right];
+						return TimesByPlayerScore[Left] < TimesByPlayerScore[Right];
 					});
 			}
 		}
 	}
-	TArray<FString> GameModeOptionsArray = GameModeOptions.Array();
-	GameModeComboBoxWidget->ComboBox->ClearOptions();
-	GameModeComboBoxWidget->SortAndAddOptions(GameModeOptionsArray);
-	TArray<FString> SongOptionsArray = SongOptions.Array();
-	SongComboBoxWidget->ComboBox->ClearOptions();
-	SongComboBoxWidget->SortAndAddOptions(SongOptionsArray);
-	TArray<FString> DifficultyOptionsArray = DifficultyOptions.Array();
-	DifficultyComboBoxWidget->ComboBox->ClearOptions();
-	DifficultyComboBoxWidget->SortAndAddOptions(DifficultyOptionsArray);
-}
+	GameModeScoreViewerWidget->SetTimesByPlayerScore(MoveTemp(TimesByPlayerScore));
 
-void UDefaultGameModeScoreViewerWidget::SetActiveScores(const EBaseGameMode BaseGameMode, const FString& SongTitle,
-	const EGameModeDifficulty Difficulty)
-{
-	GameModeComboBoxWidget->ComboBox->SetSelectedOption(BaseGameModeText[BaseGameMode].ToString());
-	SongComboBoxWidget->ComboBox->SetSelectedOption(SongTitle);
-	DifficultyComboBoxWidget->ComboBox->SetSelectedOption(GameModeDifficultyText[Difficulty].ToString());
-	FilterActiveScores();
+	GameModeComboBoxWidget->ComboBox->ClearOptions();
+	TArray<FString> GameModeOptionsArray = GameModeOptions.Array();
+	GameModeComboBoxWidget->SortAndAddOptions(GameModeOptionsArray);
+
+	if (!PlayerScoreByGameModeSongAndDifficulty.IsEmpty())
+	{
+		MainBox->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		TextBlock_NoScores->SetVisibility(ESlateVisibility::Collapsed);
+	}
+	else
+	{
+		MainBox->SetVisibility(ESlateVisibility::Collapsed);
+		TextBlock_NoScores->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	}
 }
 
 void UDefaultGameModeScoreViewerWidget::NativeConstruct()
@@ -76,36 +86,45 @@ void UDefaultGameModeScoreViewerWidget::NativeConstruct()
 }
 
 void UDefaultGameModeScoreViewerWidget::OnSelectionChanged_GameMode(const TArray<FString>& ActiveSelections,
-	ESelectInfo::Type SelectionType)
+	const ESelectInfo::Type SelectionType)
 {
 	if (SelectionType == ESelectInfo::Type::Direct || ActiveSelections.IsEmpty())
 	{
 		return;
 	}
-
-	FilterActiveScores();
+	const EBaseGameMode CurrentGameMode = FindBaseGameMode(GameModeComboBoxWidget->ComboBox->GetSelectedOption());
+	const FString CurrentSongTitle = SongComboBoxWidget->ComboBox->GetSelectedOption();
+	const EGameModeDifficulty CurrentDifficulty = FindGameModeDifficulty(
+		DifficultyComboBoxWidget->ComboBox->GetSelectedOption());
+	FilterActiveScores(CurrentGameMode, CurrentSongTitle, CurrentDifficulty);
 }
 
 void UDefaultGameModeScoreViewerWidget::OnSelectionChanged_Song(const TArray<FString>& ActiveSelections,
-	ESelectInfo::Type SelectionType)
+	const ESelectInfo::Type SelectionType)
 {
 	if (SelectionType == ESelectInfo::Type::Direct || ActiveSelections.IsEmpty())
 	{
 		return;
 	}
-
-	FilterActiveScores();
+	const EBaseGameMode CurrentGameMode = FindBaseGameMode(GameModeComboBoxWidget->ComboBox->GetSelectedOption());
+	const FString CurrentSongTitle = SongComboBoxWidget->ComboBox->GetSelectedOption();
+	const EGameModeDifficulty CurrentDifficulty = FindGameModeDifficulty(
+		DifficultyComboBoxWidget->ComboBox->GetSelectedOption());
+	FilterActiveScores(CurrentGameMode, CurrentSongTitle, CurrentDifficulty);
 }
 
 void UDefaultGameModeScoreViewerWidget::OnSelectionChanged_Difficulty(const TArray<FString>& ActiveSelections,
-	ESelectInfo::Type SelectionType)
+	const ESelectInfo::Type SelectionType)
 {
 	if (SelectionType == ESelectInfo::Type::Direct || ActiveSelections.IsEmpty())
 	{
 		return;
 	}
-
-	FilterActiveScores();
+	const EBaseGameMode CurrentGameMode = FindBaseGameMode(GameModeComboBoxWidget->ComboBox->GetSelectedOption());
+	const FString CurrentSongTitle = SongComboBoxWidget->ComboBox->GetSelectedOption();
+	const EGameModeDifficulty CurrentDifficulty = FindGameModeDifficulty(
+		DifficultyComboBoxWidget->ComboBox->GetSelectedOption());
+	FilterActiveScores(CurrentGameMode, CurrentSongTitle, CurrentDifficulty);
 }
 
 EBaseGameMode UDefaultGameModeScoreViewerWidget::FindBaseGameMode(const FString& InGameModeName)
@@ -132,84 +151,72 @@ EGameModeDifficulty UDefaultGameModeScoreViewerWidget::FindGameModeDifficulty(co
 	return EGameModeDifficulty::None;
 }
 
-void UDefaultGameModeScoreViewerWidget::FilterActiveScores()
+void UDefaultGameModeScoreViewerWidget::FilterActiveScores(const EBaseGameMode CurrentBaseGameMode,
+	const FString& CurrentSongTitle, const EGameModeDifficulty CurrentDifficulty)
 {
-	const EBaseGameMode CurrentGameMode = FindBaseGameMode(GameModeComboBoxWidget->ComboBox->GetSelectedOption());
-	FString CurrentSongTitle = SongComboBoxWidget->ComboBox->GetSelectedOption();
-	EGameModeDifficulty CurrentDifficulty = FindGameModeDifficulty(
-		DifficultyComboBoxWidget->ComboBox->GetSelectedOption());
 	TSet<FString> SongOptions;
 	TSet<FString> DifficultyOptions;
 
 	bool HasSongTitle = false;
 	bool HasDifficulty = false;
 
-	for (const auto& [GameMode, PlayerScoresBySong] : PlayerScoreByGameModeSongAndDifficulty)
+	FString CurrentSongTitleOverride = CurrentSongTitle;
+	EGameModeDifficulty CurrentDifficultyOverride = CurrentDifficulty;
+
+	if (PlayerScoreByGameModeSongAndDifficulty.Contains(CurrentBaseGameMode))
 	{
-		if (GameMode == CurrentGameMode)
+		for (const auto& [Song, PlayerScoresForSongs] : PlayerScoreByGameModeSongAndDifficulty[CurrentBaseGameMode])
 		{
-			for (const auto& [Song, PlayerScoresForSongs] : PlayerScoresBySong)
+			SongOptions.Add(Song);
+			if (CurrentSongTitle == Song)
 			{
-				SongOptions.Add(Song);
-				if (CurrentSongTitle == Song)
+				HasSongTitle = true;
+				for (const auto& [Difficulty, PlayerScoresForDifficulty] : PlayerScoresForSongs)
 				{
-					HasSongTitle = true;
-					for (const auto& [Difficulty, PlayerScoresForDifficulty] : PlayerScoresForSongs)
+					if (CurrentDifficulty == Difficulty)
 					{
-						if (CurrentDifficulty == Difficulty)
-						{
-							HasDifficulty = true;
-						}
-						DifficultyOptions.Add(GameModeDifficultyText[Difficulty].ToString());
+						HasDifficulty = true;
 					}
+					DifficultyOptions.Add(GameModeDifficultyText[Difficulty].ToString());
 				}
 			}
-			break;
 		}
 	}
 
 	TArray<FString> SongOptionsArray = SongOptions.Array();
-	SongComboBoxWidget->ComboBox->ClearOptions();
-	SongComboBoxWidget->SortAndAddOptions(SongOptionsArray);
 	if (!HasSongTitle)
 	{
-		if (SongOptionsArray.IsEmpty())
-		{
-			CurrentSongTitle.Reset();
-		}
-		else
-		{
-			CurrentSongTitle = SongOptionsArray[0];
-		}
+		CurrentSongTitleOverride = SongOptionsArray.IsEmpty() ? FString{} : SongOptionsArray[0];
 	}
-	SongComboBoxWidget->ComboBox->SetSelectedIndex(
-		FMath::Max(SongComboBoxWidget->ComboBox->GetIndexOfOption(CurrentSongTitle), 0));
+	const int32 SongOptionIndex = SongComboBoxWidget->ComboBox->GetIndexOfOption(CurrentSongTitleOverride);
+	SongComboBoxWidget->ComboBox->ClearOptions();
+	SongComboBoxWidget->SortAndAddOptions(SongOptionsArray);
+	SongComboBoxWidget->ComboBox->SetSelectedIndex(FMath::Max(SongOptionIndex, 0));
 
 	TArray<FString> DifficultyOptionsArray = DifficultyOptions.Array();
-	DifficultyComboBoxWidget->ComboBox->ClearOptions();
-	DifficultyComboBoxWidget->SortAndAddOptions(DifficultyOptionsArray);
-	DifficultyComboBoxWidget->ComboBox->SetSelectedIndex(FMath::Max(
-		DifficultyComboBoxWidget->ComboBox->GetIndexOfOption(GameModeDifficultyText[CurrentDifficulty].ToString()), 0));
 	if (!HasDifficulty)
 	{
-		if (DifficultyOptionsArray.IsEmpty())
-		{
-			CurrentDifficulty = EGameModeDifficulty::None;
-		}
-		else
-		{
-			CurrentDifficulty = FindGameModeDifficulty(DifficultyOptionsArray[0]);
-		}
+		CurrentDifficultyOverride = DifficultyOptionsArray.IsEmpty()
+			? EGameModeDifficulty::None
+			: FindGameModeDifficulty(DifficultyOptionsArray[0]);
 	}
+	const int32 DifficultyOptionIndex = CurrentDifficultyOverride == EGameModeDifficulty::None
+		? 0
+		: DifficultyComboBoxWidget->ComboBox->GetIndexOfOption(
+			GameModeDifficultyText[CurrentDifficultyOverride].ToString());
+	DifficultyComboBoxWidget->ComboBox->ClearOptions();
+	DifficultyComboBoxWidget->SortAndAddOptions(DifficultyOptionsArray);
+	DifficultyComboBoxWidget->ComboBox->SetSelectedIndex(FMath::Max(DifficultyOptionIndex, 0));
 
-	if (!CurrentSongTitle.IsEmpty() && CurrentDifficulty != EGameModeDifficulty::None)
+	if (CurrentBaseGameMode != EBaseGameMode::None && !CurrentSongTitleOverride.IsEmpty() && CurrentDifficultyOverride
+		!= EGameModeDifficulty::None)
 	{
-		GameModeScoreViewerWidget->ActiveScores = PlayerScoreByGameModeSongAndDifficulty[CurrentGameMode][
-			CurrentSongTitle][CurrentDifficulty];
+		GameModeScoreViewerWidget->SetActiveScores(
+			PlayerScoreByGameModeSongAndDifficulty[CurrentBaseGameMode][CurrentSongTitleOverride][
+				CurrentDifficultyOverride]);
 	}
 	else
 	{
-		GameModeScoreViewerWidget->ActiveScores = {};
+		GameModeScoreViewerWidget->SetActiveScores({});
 	}
-	GameModeScoreViewerWidget->UpdateActiveScores();
 }

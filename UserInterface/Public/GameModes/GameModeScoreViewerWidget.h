@@ -11,6 +11,7 @@
 #include "Slate/LineChart.h"
 #include "GameModeScoreViewerWidget.generated.h"
 
+class UVerticalBox;
 class UTextBlock;
 class UHeatMapWidget;
 class ULineChartWidget;
@@ -25,10 +26,16 @@ protected:
 	virtual void NativeConstruct() override;
 
 public:
-	virtual void SetSaveGamePlayerScore(USaveGamePlayerScore* InSaveGamePlayerScore);
+	/** Updates the */
+	void SetSaveGamePlayerScore(USaveGamePlayerScore* InSaveGamePlayerScore);
 
-	void UpdateActiveScores();
+	void UpdateDataVisualization();
 
+	void SetTimesByPlayerScore(TMap<TSharedPtr<FPlayerScore>, FDateTime>&& InTimesByPlayerScore);
+
+	void SetActiveScores(const TArray<TSharedPtr<FPlayerScore>>& InActiveScores);
+
+protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	ULineChartWidget* ScoreVsTime;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
@@ -64,6 +71,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* TextBlock_AverageStreak;
 
+private:
 	TMap<FBS_DefiningConfig, FCommonScoreInfo> CommonScoreInfoMap;
 
 	/** Times across all player scores. */
@@ -89,7 +97,6 @@ public:
 	TSharedPtr<FHeatMapData> LocationAccuracyData;
 	TSharedPtr<FHeatMapAxisLabelOptions> LocationAccuracyAxisData;
 
-private:
 	FText HandleGenericDateValueText(int32, int32);
 
 	FText HandleLocationAccuracyDisplayText(int32, int32);

@@ -7,6 +7,8 @@
 #include "SaveGames/SaveGamePlayerScore.h"
 #include "DefaultGameModeScoreViewerWidget.generated.h"
 
+class UTextBlock;
+class UVerticalBox;
 class UGameModeScoreViewerWidget;
 class UComboBoxWidget;
 
@@ -16,9 +18,17 @@ class USERINTERFACE_API UDefaultGameModeScoreViewerWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
+	/** Adds a reference to the save game and calls @link RepopulatePlayerScoreByGameModeSongAndDifficulty. */
 	void SetSaveGamePlayerScore(USaveGamePlayerScore* InSaveGamePlayerScore);
 
+	/** Filters the active scores based on @param BaseGameMode @param SongTitle @param Difficulty . Always updates the
+	 *  song and difficulty combo boxes and all data visualizations. */
 	void SetActiveScores(EBaseGameMode BaseGameMode, const FString& SongTitle, EGameModeDifficulty Difficulty);
+
+	/** Repopulates all default game mode player scores from the save game. Updates the time for each player score and
+	 *  repopulates the game mode combo box. If there are no scores, the main box is hidden and the no scores message
+	 *  is shown. */
+	void RepopulatePlayerScoreByGameModeSongAndDifficulty();
 
 protected:
 	virtual void NativeConstruct() override;
@@ -32,6 +42,17 @@ protected:
 	UFUNCTION()
 	void OnSelectionChanged_Difficulty(const TArray<FString>& ActiveSelections, ESelectInfo::Type SelectionType);
 
+	EBaseGameMode FindBaseGameMode(const FString& InGameModeName);
+
+	EGameModeDifficulty FindGameModeDifficulty(const FString& InGameModeDifficulty);
+
+	void FilterActiveScores(EBaseGameMode CurrentBaseGameMode, const FString& CurrentSongTitle,
+		EGameModeDifficulty CurrentDifficulty);
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UVerticalBox* MainBox;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UTextBlock* TextBlock_NoScores;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxWidget* GameModeComboBoxWidget;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
@@ -40,18 +61,13 @@ protected:
 	UComboBoxWidget* SongComboBoxWidget;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UGameModeScoreViewerWidget* GameModeScoreViewerWidget;
-
 	UPROPERTY(EditDefaultsOnly)
 	TMap<EBaseGameMode, FText> BaseGameModeText;
-
 	UPROPERTY(EditDefaultsOnly)
 	TMap<EGameModeDifficulty, FText> GameModeDifficultyText;
 
-	EBaseGameMode FindBaseGameMode(const FString& InGameModeName);
-
-	EGameModeDifficulty FindGameModeDifficulty(const FString& InGameModeDifficulty);
-
-	void FilterActiveScores();
+	UPROPERTY()
+	USaveGamePlayerScore* SaveGamePlayerScore;
 
 	TMap<EBaseGameMode, TMap<FString, TMap<EGameModeDifficulty, TArray<TSharedPtr<FPlayerScore>>>>>
 	PlayerScoreByGameModeSongAndDifficulty;

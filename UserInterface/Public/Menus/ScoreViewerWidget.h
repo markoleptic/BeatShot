@@ -40,7 +40,7 @@ protected:
 	virtual void NativeConstruct() override;
 
 public:
-	void LoadScores(USaveGamePlayerScore* SaveGamePlayerScore, bool SwitchToMostRecent);
+	void LoadScores(USaveGamePlayerScore* InSaveGamePlayerScore, bool SwitchToMostRecent);
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
@@ -62,6 +62,8 @@ protected:
 	UCustomGameModeScoreViewerWidget* CustomGameModeScoreViewerWidget;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UVerticalBox* Box_History;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UVerticalBox* Box_NoScores;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UBarChartWidget* MostPlayedDefaultGameModes;
@@ -109,6 +111,9 @@ private:
 	FText HandleMostPlayedCustomGameModesXAxisFormatter(int32, float);
 
 	FText HandleMostPlayedCustomGameModesYAxisFormatter(int32, float);
+
+	UPROPERTY()
+	USaveGamePlayerScore* SaveGamePlayerScore;
 
 	FDateTime StartDate;
 

@@ -2,15 +2,30 @@
 
 
 #include "GameModes/CustomGameModeScoreViewerWidget.h"
+#include "Components/TextBlock.h"
+#include "Components/VerticalBox.h"
 #include "GameModes/GameModeScoreViewerWidget.h"
 #include "MenuOptions/ComboBoxWidget.h"
 
 void UCustomGameModeScoreViewerWidget::SetSaveGamePlayerScore(USaveGamePlayerScore* InSaveGamePlayerScore)
 {
+	SaveGamePlayerScore = InSaveGamePlayerScore;
 	GameModeScoreViewerWidget->SetSaveGamePlayerScore(InSaveGamePlayerScore);
+	RepopulatePlayerScoreByGameModeAndSong();
+}
+
+void UCustomGameModeScoreViewerWidget::SetActiveScores(const FString& CustomGameModeName, const FString& SongTitle)
+{
+	GameModeComboBoxWidget->ComboBox->SetSelectedOption(CustomGameModeName);
+	FilterActiveScores(CustomGameModeName, SongTitle);
+}
+
+void UCustomGameModeScoreViewerWidget::RepopulatePlayerScoreByGameModeAndSong()
+{
 	PlayerScoreByGameModeAndSong.Empty();
 
-	for (const auto& PlayerScore : InSaveGamePlayerScore->GetPlayerScoresRefPtr())
+	TMap<TSharedPtr<FPlayerScore>, FDateTime> TimesByPlayerScore;
+	for (const auto& PlayerScore : SaveGamePlayerScore->GetPlayerScoresPtr())
 	{
 		if (PlayerScore->DefiningConfig.GameModeType == EGameModeType::Custom)
 		{
@@ -18,28 +33,39 @@ void UCustomGameModeScoreViewerWidget::SetSaveGamePlayerScore(USaveGamePlayerSco
 				PlayerScore);
 			FDateTime DateTime;
 			FDateTime::ParseIso8601(*PlayerScore->Time, DateTime);
-			GameModeScoreViewerWidget->TimesByPlayerScore.Add(PlayerScore, DateTime);
+			TimesByPlayerScore.Add(PlayerScore, DateTime);
 		}
 	}
+
+	TSet<FString> GameModeOptions;
 	for (const auto& [GameMode, PlayerScoresBySong] : PlayerScoreByGameModeAndSong)
 	{
+		GameModeOptions.Add(GameMode);
 		for (const auto& [Song, PlayerScoresForSongs] : PlayerScoresBySong)
 		{
 			Algo::Sort(PlayerScoresForSongs,
 				[&](const TSharedPtr<FPlayerScore>& Left, const TSharedPtr<FPlayerScore>& Right)
 				{
-					return GameModeScoreViewerWidget->TimesByPlayerScore[Left] < GameModeScoreViewerWidget->
-						TimesByPlayerScore[Right];
+					return TimesByPlayerScore[Left] < TimesByPlayerScore[Right];
 				});
 		}
 	}
-}
+	GameModeScoreViewerWidget->SetTimesByPlayerScore(MoveTemp(TimesByPlayerScore));
 
-void UCustomGameModeScoreViewerWidget::SetActiveScores(const FString& CustomGameModeName, const FString& SongTitle)
-{
-	GameModeComboBoxWidget->ComboBox->SetSelectedOption(CustomGameModeName);
-	SongComboBoxWidget->ComboBox->SetSelectedOption(SongTitle);
-	FilterActiveScores();
+	GameModeComboBoxWidget->ComboBox->ClearOptions();
+	TArray<FString> GameModeOptionsArray = GameModeOptions.Array();
+	GameModeComboBoxWidget->SortAndAddOptions(GameModeOptionsArray);
+
+	if (!PlayerScoreByGameModeAndSong.IsEmpty())
+	{
+		MainBox->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		TextBlock_NoScores->SetVisibility(ESlateVisibility::Collapsed);
+	}
+	else
+	{
+		MainBox->SetVisibility(ESlateVisibility::Collapsed);
+		TextBlock_NoScores->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	}
 }
 
 void UCustomGameModeScoreViewerWidget::NativeConstruct()
@@ -52,75 +78,71 @@ void UCustomGameModeScoreViewerWidget::NativeConstruct()
 }
 
 void UCustomGameModeScoreViewerWidget::OnSelectionChanged_GameMode(const TArray<FString>& ActiveSelections,
-	ESelectInfo::Type SelectionType)
+	const ESelectInfo::Type SelectionType)
 {
 	if (SelectionType == ESelectInfo::Type::Direct || ActiveSelections.IsEmpty())
 	{
 		return;
 	}
-	const FString SongTitle = SongComboBoxWidget->ComboBox->GetSelectedOptions()[0];
-	GameModeScoreViewerWidget->ActiveScores = PlayerScoreByGameModeAndSong[ActiveSelections[0]][SongTitle];
-	GameModeScoreViewerWidget->UpdateActiveScores();
+	FilterActiveScores(ActiveSelections[0], SongComboBoxWidget->ComboBox->GetSelectedOption());
 }
 
 void UCustomGameModeScoreViewerWidget::OnSelectionChanged_Song(const TArray<FString>& ActiveSelections,
-	ESelectInfo::Type SelectionType)
+	const ESelectInfo::Type SelectionType)
 {
 	if (SelectionType == ESelectInfo::Type::Direct || ActiveSelections.IsEmpty())
 	{
 		return;
 	}
-	const FString GameMode = GameModeComboBoxWidget->ComboBox->GetSelectedOptions()[0];
-	GameModeScoreViewerWidget->ActiveScores = PlayerScoreByGameModeAndSong[GameMode][ActiveSelections[0]];
-	GameModeScoreViewerWidget->UpdateActiveScores();
+	const FString CurrentCustomGameModeName = GameModeComboBoxWidget->ComboBox->GetSelectedOptions()[0];
+	GameModeScoreViewerWidget->SetActiveScores(
+		PlayerScoreByGameModeAndSong[CurrentCustomGameModeName][ActiveSelections[0]]);
 }
 
-void UCustomGameModeScoreViewerWidget::FilterActiveScores()
+void UCustomGameModeScoreViewerWidget::FilterActiveScores(const FString& CurrentCustomGameModeName,
+	const FString& CurrentSongTitle)
 {
-	const FString CurrentGameMode = GameModeComboBoxWidget->ComboBox->GetSelectedOption();
-	FString CurrentSongTitle = SongComboBoxWidget->ComboBox->GetSelectedOption();
 	TSet<FString> SongOptions;
 	bool HasSongTitle = false;
 
-	for (const auto& [GameMode, PlayerScoresBySong] : PlayerScoreByGameModeAndSong)
+	FString CurrentSongTitleOverride = CurrentSongTitle;
+
+	if (PlayerScoreByGameModeAndSong.Contains(CurrentCustomGameModeName))
 	{
-		if (CurrentGameMode == GameMode)
+		for (const auto& [Song, PlayerScoresForSongs] : PlayerScoreByGameModeAndSong[CurrentSongTitle])
 		{
-			for (const auto& [Song, PlayerScoresForSongs] : PlayerScoresBySong)
+			if (Song == CurrentSongTitle)
 			{
-				if (Song == CurrentSongTitle)
-				{
-					SongOptions.Add(Song);
-					HasSongTitle = true;
-				}
+				SongOptions.Add(Song);
+				HasSongTitle = true;
 			}
 		}
 	}
 
-	TArray<FString> SongOptionsArray = SongOptions.Array();
 	SongComboBoxWidget->ComboBox->ClearOptions();
+	TArray<FString> SongOptionsArray = SongOptions.Array();
 	SongComboBoxWidget->SortAndAddOptions(SongOptionsArray);
 	if (!HasSongTitle)
 	{
 		if (SongOptionsArray.IsEmpty())
 		{
-			CurrentSongTitle.Reset();
+			CurrentSongTitleOverride.Reset();
 		}
 		else
 		{
-			CurrentSongTitle = SongOptionsArray[0];
+			CurrentSongTitleOverride = SongOptionsArray[0];
 		}
 	}
 	SongComboBoxWidget->ComboBox->SetSelectedIndex(
-		FMath::Max(SongComboBoxWidget->ComboBox->GetIndexOfOption(CurrentSongTitle), 0));
+		FMath::Max(SongComboBoxWidget->ComboBox->GetIndexOfOption(CurrentSongTitleOverride), 0));
 
-	if (!CurrentSongTitle.IsEmpty())
+	if (!CurrentCustomGameModeName.IsEmpty() && !CurrentSongTitleOverride.IsEmpty())
 	{
-		GameModeScoreViewerWidget->ActiveScores = PlayerScoreByGameModeAndSong[CurrentGameMode][CurrentSongTitle];
+		GameModeScoreViewerWidget->SetActiveScores(
+			PlayerScoreByGameModeAndSong[CurrentCustomGameModeName][CurrentSongTitleOverride]);
 	}
 	else
 	{
-		GameModeScoreViewerWidget->ActiveScores = {};
+		GameModeScoreViewerWidget->SetActiveScores({});
 	}
-	GameModeScoreViewerWidget->UpdateActiveScores();
 }

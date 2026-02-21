@@ -303,7 +303,7 @@ struct BEATSHOTGLOBAL_API FAccuracyData
 
 private:
 	/** Returns the starting index values for each step inside the AverageUsingUnderflow main for loop,
-	 *  based on the number or rows or columns of the smaller matrix to convert from. */
+	 *  based on the number of rows or columns of the smaller matrix to convert from. */
 	static TArray<int32> GetStartUnderflowArray(const int32 NumRowsOrCols)
 	{
 		TArray<int32> Start;
@@ -319,7 +319,7 @@ private:
 	}
 
 	/** Returns the end index values for each step inside the AverageUsingUnderflow main for loop,
-	 *  based on the number or rows or columns of the smaller matrix to convert from. */
+	 *  based on the number of rows or columns of the smaller matrix to convert from. */
 	static TArray<int32> GetEndUnderflowArray(const int32 NumRowsOrCols)
 	{
 		TArray<int32> End;
@@ -749,14 +749,14 @@ class BEATSHOTGLOBAL_API USaveGamePlayerScore : public USaveGame
 public:
 	USaveGamePlayerScore();
 
-	void HandePostLoad();
+	void BuildRuntimeData();
+
+	void CommitRuntimeData();
 
 	/** @return a copy of PlayerScoreArray. */
 	TArray<FPlayerScore> GetPlayerScores() const;
 
-	const TArray<FPlayerScore>& GetPlayerScoresRef() const;
-
-	const TArray<TSharedPtr<FPlayerScore>>& GetPlayerScoresRefPtr() const;
+	const TArray<TSharedPtr<FPlayerScore>>& GetPlayerScoresPtr() const;
 
 	/** @return a copy of player scores not saved to database. */
 	TArray<FPlayerScore> GetPlayerScores_UnsavedToDatabase() const;
@@ -771,6 +771,9 @@ public:
 
 	/** @return a copy of CommonScoreInfo. */
 	TMap<FBS_DefiningConfig, FCommonScoreInfo> GetCommonScoreInfo() const;
+
+	/** @return a copy of CommonScoreInfo. */
+	TSharedPtr<TMap<FBS_DefiningConfig, FCommonScoreInfo>> GetCommonScoreInfoPtr() const;
 
 	/** Finds or Adds an entry to CommonScoreInfo map for the given Defining Config.
 	 *  @param InDefiningConfig key used to find the CommonScoreInfo
@@ -837,11 +840,13 @@ private:
 	UPROPERTY()
 	TArray<FPlayerScore> PlayerScoreArray;
 
+	TArray<TSharedPtr<FPlayerScore>> PlayerScoreArrayPtr;
+
 	/** Map containing common score info for each unique defining config. */
 	UPROPERTY()
 	TMap<FBS_DefiningConfig, FCommonScoreInfo> CommonScoreInfo;
 
-	TArray<TSharedPtr<FPlayerScore>> PlayerScoreArrayPtr;
+	TSharedPtr<TMap<FBS_DefiningConfig, FCommonScoreInfo>> CommonScoreInfoPtr;
 
 	FNumberFormattingOptions PercentFormat;
 	FNumberFormattingOptions QTableFormat;

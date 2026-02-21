@@ -21,26 +21,43 @@ USaveGamePlayerScore::USaveGamePlayerScore()
 	TrainingSamplesFormat.MinimumIntegralDigits = 1;
 }
 
-void USaveGamePlayerScore::HandePostLoad()
+void USaveGamePlayerScore::BuildRuntimeData()
 {
+	PlayerScoreArrayPtr.Empty();
 	PlayerScoreArrayPtr.Reserve(PlayerScoreArray.Num());
 	for (const auto& PlayerScore : PlayerScoreArray)
 	{
-		PlayerScoreArrayPtr.Add(MakeShareable(new FPlayerScore(PlayerScore)));
+		PlayerScoreArrayPtr.Add(MakeShared<FPlayerScore>(PlayerScore));
+	}
+	CommonScoreInfoPtr = MakeShared<TMap<FBS_DefiningConfig, FCommonScoreInfo>>(CommonScoreInfo);
+}
+
+void USaveGamePlayerScore::CommitRuntimeData()
+{
+	PlayerScoreArray.Empty();
+	for (const TSharedPtr<FPlayerScore>& Ptr : PlayerScoreArrayPtr)
+	{
+		PlayerScoreArray.Add(*Ptr);
+	}
+
+	CommonScoreInfo.Empty();
+	for (const auto& [Key, Value] : *CommonScoreInfoPtr)
+	{
+		CommonScoreInfo.Add(Key, Value);
 	}
 }
 
 TArray<FPlayerScore> USaveGamePlayerScore::GetPlayerScores() const
 {
-	return PlayerScoreArray;
+	TArray<FPlayerScore> Temp;
+	for (const TSharedPtr<FPlayerScore>& Ptr : PlayerScoreArrayPtr)
+	{
+		Temp.Add(*Ptr);
+	}
+	return Temp;
 }
 
-const TArray<FPlayerScore>& USaveGamePlayerScore::GetPlayerScoresRef() const
-{
-	return PlayerScoreArray;
-}
-
-const TArray<TSharedPtr<FPlayerScore>>& USaveGamePlayerScore::GetPlayerScoresRefPtr() const
+const TArray<TSharedPtr<FPlayerScore>>& USaveGamePlayerScore::GetPlayerScoresPtr() const
 {
 	return PlayerScoreArrayPtr;
 }
@@ -48,11 +65,11 @@ const TArray<TSharedPtr<FPlayerScore>>& USaveGamePlayerScore::GetPlayerScoresRef
 TArray<FPlayerScore> USaveGamePlayerScore::GetPlayerScores_UnsavedToDatabase() const
 {
 	TArray<FPlayerScore> UnsavedScores;
-	for (const FPlayerScore& Score : PlayerScoreArray)
+	for (const TSharedPtr<FPlayerScore>& Score : PlayerScoreArrayPtr)
 	{
-		if (!Score.bSavedToDatabase)
+		if (!Score->bSavedToDatabase)
 		{
-			UnsavedScores.Add(Score);
+			UnsavedScores.Add(*Score);
 		}
 	}
 	return UnsavedScores;
@@ -62,7 +79,7 @@ void USaveGamePlayerScore::AddPlayerScoreInstance(const FPlayerScore& InPlayerSc
 {
 	if (!ContainsExistingTime(InPlayerScore))
 	{
-		PlayerScoreArray.Add(InPlayerScore);
+		PlayerScoreArrayPtr.Add(MakeShared<FPlayerScore>(InPlayerScore));
 	}
 	else
 	{
@@ -72,18 +89,19 @@ void USaveGamePlayerScore::AddPlayerScoreInstance(const FPlayerScore& InPlayerSc
 
 void USaveGamePlayerScore::SetAllScoresSavedToDatabase()
 {
-	for (FPlayerScore& Score : PlayerScoreArray)
+	for (const TSharedPtr<FPlayerScore>& Score : PlayerScoreArrayPtr)
 	{
-		Score.bSavedToDatabase = true;
+		Score->bSavedToDatabase = true;
 	}
 }
 
 bool USaveGamePlayerScore::ContainsExistingTime(const FPlayerScore& InPlayerScore)
 {
-	const FPlayerScore* Found = PlayerScoreArray.FindByPredicate([&InPlayerScore](const FPlayerScore& CompareScore)
-	{
-		return InPlayerScore.Time.Equals(CompareScore.Time);
-	});
+	const TSharedPtr<FPlayerScore>* Found = PlayerScoreArrayPtr.FindByPredicate(
+		[&InPlayerScore](const TSharedPtr<FPlayerScore>& CompareScore)
+		{
+			return InPlayerScore.Time.Equals(CompareScore->Time);
+		});
 	return Found ? true : false;
 }
 
@@ -92,16 +110,21 @@ TMap<FBS_DefiningConfig, FCommonScoreInfo> USaveGamePlayerScore::GetCommonScoreI
 	return CommonScoreInfo;
 }
 
+TSharedPtr<TMap<FBS_DefiningConfig, FCommonScoreInfo>> USaveGamePlayerScore::GetCommonScoreInfoPtr() const
+{
+	return CommonScoreInfoPtr;
+}
+
 void USaveGamePlayerScore::FindOrAddCommonScoreInfo(const FBS_DefiningConfig& InDefiningConfig,
 	FCommonScoreInfo& OutCommonScoreInfo)
 {
-	OutCommonScoreInfo = CommonScoreInfo.FindOrAdd(InDefiningConfig);
+	OutCommonScoreInfo = CommonScoreInfoPtr->FindOrAdd(InDefiningConfig);
 }
 
 void USaveGamePlayerScore::SaveCommonScoreInfo(const FBS_DefiningConfig& InDefiningConfig,
 	const FCommonScoreInfo& InCommonScoreInfo)
 {
-	CommonScoreInfo.FindOrAdd(InDefiningConfig) = InCommonScoreInfo;
+	CommonScoreInfoPtr->FindOrAdd(InDefiningConfig) = InCommonScoreInfo;
 
 #if !UE_BUILD_SHIPPING
 	if (InCommonScoreInfo.NumQTableRows != 0 && InCommonScoreInfo.QTable.Num() > 0)
@@ -115,7 +138,7 @@ void USaveGamePlayerScore::SaveCommonScoreInfo(const FBS_DefiningConfig& InDefin
 
 int32 USaveGamePlayerScore::ResetQTable(const FBS_DefiningConfig& InDefiningConfig)
 {
-	FCommonScoreInfo* Found = CommonScoreInfo.Find(InDefiningConfig);
+	FCommonScoreInfo* Found = CommonScoreInfoPtr->Find(InDefiningConfig);
 
 	if (!Found)
 	{
@@ -128,20 +151,20 @@ int32 USaveGamePlayerScore::ResetQTable(const FBS_DefiningConfig& InDefiningConf
 
 int32 USaveGamePlayerScore::RemoveCommonScoreInfo(const FBS_DefiningConfig& InDefiningConfig)
 {
-	return CommonScoreInfo.Remove(InDefiningConfig);
+	return CommonScoreInfoPtr->Remove(InDefiningConfig);
 }
 
 int32 USaveGamePlayerScore::RemoveAllCustomGameModeCommonScoreInfo()
 {
 	int32 NumRemoved = 0;
-	TMap<FBS_DefiningConfig, FCommonScoreInfo> FilteredMap = CommonScoreInfo.FilterByPredicate(
+	TMap<FBS_DefiningConfig, FCommonScoreInfo> FilteredMap = CommonScoreInfoPtr->FilterByPredicate(
 		[](const TPair<FBS_DefiningConfig, FCommonScoreInfo>& Pair)
 		{
 			return Pair.Key.GameModeType == EGameModeType::Custom;
 		});
 	for (const TPair<FBS_DefiningConfig, FCommonScoreInfo>& Pair : FilteredMap)
 	{
-		NumRemoved += CommonScoreInfo.Remove(Pair.Key);
+		NumRemoved += CommonScoreInfoPtr->Remove(Pair.Key);
 	}
 	return NumRemoved;
 }

@@ -192,121 +192,174 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 		LocationAccuracyValueTextGetter);
 }
 
-void UGameModeScoreViewerWidget::UpdateActiveScores()
+void UGameModeScoreViewerWidget::UpdateDataVisualization()
 {
-	float BestScore = 0.0f;
-	float BestAccuracy = 0.0f;
-	int BestStreak = 0;
-	float BestReactionTime = 0.0f;
-	float BestTargetsDestroyed = 0.f;
-	for (const auto& PlayerScore : ActiveScores)
+	if (ActiveScores.IsEmpty())
 	{
-		BestScore = FMath::Max(BestScore, PlayerScore->Score);
-		BestAccuracy = FMath::Max(BestAccuracy, PlayerScore->Accuracy);
-		BestStreak = FMath::Max(BestStreak, PlayerScore->Streak);
-		BestReactionTime = FMath::Min(BestReactionTime, PlayerScore->AvgTimeOffset);
-		BestTargetsDestroyed = FMath::Max(BestTargetsDestroyed, PlayerScore->Completion);
+		TextBlock_BestScore->SetText(FText());
+		TextBlock_BestReactionTime->SetText(FText());
+		TextBlock_BestStreak->SetText(FText());
+		TextBlock_BestAccuracy->SetText(FText());
+		TextBlock_BestTargetsDestroyed->SetText(FText());
+		ScoreVsTimeData->Empty();
+		ScoreVsTime->Redraw();
+
+		StreakVsTimeData->Empty();
+		StreakVsTime->Redraw();
+
+		AverageReactionTimeData->Empty();
+		AverageReactionTime->Redraw();
+
+		AverageTargetsDestroyedData->Empty();
+		AverageTargetsDestroyed->Redraw();
+
+		AccuracyVsTimeData->Empty();
+		AccuracyVsTime->Redraw();
 	}
-
-	FNumberFormattingOptions NumberFormattingOptions;
-	NumberFormattingOptions.MaximumFractionalDigits = 0;
-	NumberFormattingOptions.MinimumFractionalDigits = 0;
-	TextBlock_BestScore->SetText(FText::AsNumber(BestScore, &NumberFormattingOptions));
-	TextBlock_BestReactionTime->SetText(FText::AsNumber(BestReactionTime, &NumberFormattingOptions));
-	TextBlock_BestStreak->SetText(FText::AsNumber(BestStreak, &NumberFormattingOptions));
-	NumberFormattingOptions.MaximumFractionalDigits = 1;
-	NumberFormattingOptions.MinimumFractionalDigits = 1;
-	const FTextFormat& PercentFormat = GetPercentFormat();
-	TextBlock_BestAccuracy->SetText(FText::Format(PercentFormat,
-		FText::AsNumber(BestAccuracy * 100.f, &NumberFormattingOptions)));
-	TextBlock_BestTargetsDestroyed->SetText(FText::Format(PercentFormat,
-		FText::AsNumber(BestTargetsDestroyed * 100.f, &NumberFormattingOptions)));
-
-
-	float TotalScore = 0.0f;
-	float TotalAccuracy = 0.0f;
-	int TotalStreak = 0;
-	float TotalReactionTime = 0.0f;
-	int TotalTargetsDestroyed = 0;
-	for (const auto& PlayerScore : ActiveScores)
+	else
 	{
-		TotalScore += PlayerScore->Score;
-		TotalAccuracy += PlayerScore->Accuracy;
-		TotalStreak += PlayerScore->Streak;
-		TotalReactionTime += PlayerScore->AvgTimeOffset;
-		TotalTargetsDestroyed += PlayerScore->Completion;
+		float BestScore = 0.0f;
+		float BestAccuracy = 0.0f;
+		int BestStreak = 0;
+		float BestReactionTime = 0.0f;
+		float BestTargetsDestroyed = 0.f;
+		for (const auto& PlayerScore : ActiveScores)
+		{
+			BestScore = FMath::Max(BestScore, PlayerScore->Score);
+			BestAccuracy = FMath::Max(BestAccuracy, PlayerScore->Accuracy);
+			BestStreak = FMath::Max(BestStreak, PlayerScore->Streak);
+			BestReactionTime = FMath::Min(BestReactionTime, PlayerScore->AvgTimeOffset);
+			BestTargetsDestroyed = FMath::Max(BestTargetsDestroyed, PlayerScore->Completion);
+		}
+
+		FNumberFormattingOptions NumberFormattingOptions;
+		NumberFormattingOptions.MaximumFractionalDigits = 0;
+		NumberFormattingOptions.MinimumFractionalDigits = 0;
+		TextBlock_BestScore->SetText(FText::AsNumber(BestScore, &NumberFormattingOptions));
+		TextBlock_BestReactionTime->SetText(FText::AsNumber(BestReactionTime, &NumberFormattingOptions));
+		TextBlock_BestStreak->SetText(FText::AsNumber(BestStreak, &NumberFormattingOptions));
+		NumberFormattingOptions.MaximumFractionalDigits = 1;
+		NumberFormattingOptions.MinimumFractionalDigits = 1;
+		const FTextFormat& PercentFormat = GetPercentFormat();
+		TextBlock_BestAccuracy->SetText(FText::Format(PercentFormat,
+			FText::AsNumber(BestAccuracy * 100.f, &NumberFormattingOptions)));
+		TextBlock_BestTargetsDestroyed->SetText(FText::Format(PercentFormat,
+			FText::AsNumber(BestTargetsDestroyed * 100.f, &NumberFormattingOptions)));
+
+
+		float TotalScore = 0.0f;
+		float TotalAccuracy = 0.0f;
+		int TotalStreak = 0;
+		float TotalReactionTime = 0.0f;
+		int TotalTargetsDestroyed = 0;
+		for (const auto& PlayerScore : ActiveScores)
+		{
+			TotalScore += PlayerScore->Score;
+			TotalAccuracy += PlayerScore->Accuracy;
+			TotalStreak += PlayerScore->Streak;
+			TotalReactionTime += PlayerScore->AvgTimeOffset;
+			TotalTargetsDestroyed += PlayerScore->Completion;
+		}
+		const float AverageScore = TotalScore / ActiveScores.Num();
+		const float AverageAccuracy = TotalAccuracy / ActiveScores.Num();
+		const int AverageStreak = FMath::FloorToInt(static_cast<float>(TotalStreak) / ActiveScores.Num());
+		const float AvgReactionTime = TotalReactionTime / ActiveScores.Num();
+		const int AvgTargetsDestroyed = FMath::FloorToInt(
+			static_cast<float>(TotalTargetsDestroyed) / ActiveScores.Num());
+
+		NumberFormattingOptions.MaximumFractionalDigits = 0;
+		NumberFormattingOptions.MinimumFractionalDigits = 0;
+		TextBlock_AverageScore->SetText(FText::AsNumber(AverageScore, &NumberFormattingOptions));
+		TextBlock_AverageReactionTime->SetText(FText::AsNumber(AvgReactionTime, &NumberFormattingOptions));
+		TextBlock_AverageStreak->SetText(FText::AsNumber(AverageStreak, &NumberFormattingOptions));
+		NumberFormattingOptions.MaximumFractionalDigits = 1;
+		NumberFormattingOptions.MinimumFractionalDigits = 1;
+		TextBlock_AverageAccuracy->SetText(FText::Format(PercentFormat,
+			FText::AsNumber(AverageAccuracy * 100.f, &NumberFormattingOptions)));
+		TextBlock_AverageTargetsDestroyed->SetText(FText::Format(PercentFormat,
+			FText::AsNumber(AvgTargetsDestroyed * 100.f, &NumberFormattingOptions)));
+
+		FLineChartSeries ScoreVsTimeLineChartSeries;
+		FLineChartSeries StreakVsTimeLineChartSeries;
+		FLineChartSeries AverageTargetsDestroyedLineChartSeries;
+		FLineChartSeries AverageReactionTimeLineChartSeries;
+		FLineChartSeries AccuracyVsTimeLineChartSeries;
+		float Index = 0;
+		for (const auto& PlayerScore : ActiveScores)
+		{
+			ScoreVsTimeLineChartSeries.Points.Add({Index, PlayerScore->Score});
+			StreakVsTimeLineChartSeries.Points.Add({Index, static_cast<float>(PlayerScore->Streak)});
+			AverageReactionTimeLineChartSeries.Points.Add({Index, PlayerScore->AvgTimeOffset});
+			AverageTargetsDestroyedLineChartSeries.Points.Add({Index, PlayerScore->Completion});
+			AccuracyVsTimeLineChartSeries.Points.Add({Index, PlayerScore->Accuracy});
+			Index++;
+		}
+		ScoreVsTimeData->Empty(1);
+		ScoreVsTimeData->Add(ScoreVsTimeLineChartSeries);
+		ScoreVsTime->Redraw();
+
+		StreakVsTimeData->Empty(1);
+		StreakVsTimeData->Add(StreakVsTimeLineChartSeries);
+		StreakVsTime->Redraw();
+
+		AverageReactionTimeData->Empty(1);
+		AverageReactionTimeData->Add(AverageReactionTimeLineChartSeries);
+		AverageReactionTime->Redraw();
+
+		AverageTargetsDestroyedData->Empty(1);
+		AverageTargetsDestroyedData->Add(AverageTargetsDestroyedLineChartSeries);
+		AverageTargetsDestroyed->Redraw();
+
+		AccuracyVsTimeData->Empty(1);
+		AccuracyVsTimeData->Add(AccuracyVsTimeLineChartSeries);
+		AccuracyVsTime->Redraw();
 	}
-	const float AverageScore = TotalScore / ActiveScores.Num();
-	const float AverageAccuracy = TotalAccuracy / ActiveScores.Num();
-	const int AverageStreak = FMath::FloorToInt(static_cast<float>(TotalStreak) / ActiveScores.Num());
-	const float AvgReactionTime = TotalReactionTime / ActiveScores.Num();
-	const int AvgTargetsDestroyed = FMath::FloorToInt(static_cast<float>(TotalTargetsDestroyed) / ActiveScores.Num());
+}
 
-	NumberFormattingOptions.MaximumFractionalDigits = 0;
-	NumberFormattingOptions.MinimumFractionalDigits = 0;
-	TextBlock_AverageScore->SetText(FText::AsNumber(AverageScore, &NumberFormattingOptions));
-	TextBlock_AverageReactionTime->SetText(FText::AsNumber(AvgReactionTime, &NumberFormattingOptions));
-	TextBlock_AverageStreak->SetText(FText::AsNumber(AverageStreak, &NumberFormattingOptions));
-	NumberFormattingOptions.MaximumFractionalDigits = 1;
-	NumberFormattingOptions.MinimumFractionalDigits = 1;
-	TextBlock_AverageAccuracy->SetText(FText::Format(PercentFormat,
-		FText::AsNumber(AverageAccuracy * 100.f, &NumberFormattingOptions)));
-	TextBlock_AverageTargetsDestroyed->SetText(FText::Format(PercentFormat,
-		FText::AsNumber(AvgTargetsDestroyed * 100.f, &NumberFormattingOptions)));
+void UGameModeScoreViewerWidget::SetTimesByPlayerScore(TMap<TSharedPtr<FPlayerScore>, FDateTime>&& InTimesByPlayerScore)
+{
+	TimesByPlayerScore = MoveTemp(InTimesByPlayerScore);
+}
 
-	FLineChartSeries ScoreVsTimeLineChartSeries;
-	FLineChartSeries StreakVsTimeLineChartSeries;
-	FLineChartSeries AverageTargetsDestroyedLineChartSeries;
-	FLineChartSeries AverageReactionTimeLineChartSeries;
-	FLineChartSeries AccuracyVsTimeLineChartSeries;
-	float Index = 0;
-	for (const auto& PlayerScore : ActiveScores)
-	{
-		ScoreVsTimeLineChartSeries.Points.Add({Index, PlayerScore->Score});
-		StreakVsTimeLineChartSeries.Points.Add({Index, static_cast<float>(PlayerScore->Streak)});
-		AverageReactionTimeLineChartSeries.Points.Add({Index, PlayerScore->AvgTimeOffset});
-		AverageTargetsDestroyedLineChartSeries.Points.Add({Index, PlayerScore->Completion});
-		AccuracyVsTimeLineChartSeries.Points.Add({Index, PlayerScore->Accuracy});
-		Index++;
-	}
-	ScoreVsTimeData->Empty(1);
-	ScoreVsTimeData->Add(ScoreVsTimeLineChartSeries);
-	ScoreVsTime->Redraw();
-
-	StreakVsTimeData->Empty(1);
-	StreakVsTimeData->Add(StreakVsTimeLineChartSeries);
-	StreakVsTime->Redraw();
-
-	AverageReactionTimeData->Empty(1);
-	AverageReactionTimeData->Add(AverageReactionTimeLineChartSeries);
-	AverageReactionTime->Redraw();
-
-	AverageTargetsDestroyedData->Empty(1);
-	AverageTargetsDestroyedData->Add(AverageTargetsDestroyedLineChartSeries);
-	AverageTargetsDestroyed->Redraw();
-
-	AccuracyVsTimeData->Empty(1);
-	AccuracyVsTimeData->Add(AccuracyVsTimeLineChartSeries);
-	AccuracyVsTime->Redraw();
+void UGameModeScoreViewerWidget::SetActiveScores(const TArray<TSharedPtr<FPlayerScore>>& InActiveScores)
+{
+	ActiveScores = InActiveScores;
+	UpdateDataVisualization();
 }
 
 FText UGameModeScoreViewerWidget::HandleGenericDateValueText(const int32 XIndex, const int32 YIndex)
 {
-	return FText::FromString(TimesByPlayerScore[ActiveScores[XIndex]].ToFormattedString(TEXT("%b %d, %Y, %I:%M %P")));
+	if (ActiveScores.IsValidIndex(XIndex) && TimesByPlayerScore.Contains(ActiveScores[XIndex]))
+	{
+		return FText::FromString(
+			TimesByPlayerScore[ActiveScores[XIndex]].ToFormattedString(TEXT("%b %d, %Y, %I:%M %P")));
+	}
+	return {};
 }
 
 FText UGameModeScoreViewerWidget::HandleLocationAccuracyDisplayText(const int32 XIndex, const int32 YIndex)
 {
-	const float Value = CommonScoreInfoMap[ActiveScores[0]->DefiningConfig].AccuracyData.AccuracyRows[XIndex].Accuracy[
-		YIndex];
-	if (Value < 0.f)
+	if (!ActiveScores.IsEmpty() && TimesByPlayerScore.Contains(ActiveScores[0]))
 	{
-		return FText::FromString("No target has spawned here.");
+		const auto& AccuracyRows = CommonScoreInfoMap[ActiveScores[0]->DefiningConfig].AccuracyData.AccuracyRows;
+		if (AccuracyRows.IsValidIndex(XIndex) && AccuracyRows[XIndex].Accuracy.IsValidIndex(YIndex))
+		{
+			const float Value = AccuracyRows[XIndex].Accuracy[YIndex];
+			if (Value < 0.f)
+			{
+				return FText::FromString("No target has spawned here.");
+			}
+			return FText::Format(GetPercentFormat(), Value);
+		}
 	}
-	return FText::Format(GetPercentFormat(), Value);
+	return {};
 }
 
 FText UGameModeScoreViewerWidget::HandleShortDateXAxisFormatter(const int32 XIndex, float)
 {
-	return FText::FromString(TimesByPlayerScore[ActiveScores[XIndex]].ToFormattedString(TEXT("%b %d")));
+	if (ActiveScores.IsValidIndex(XIndex) && TimesByPlayerScore.Contains(ActiveScores[XIndex]))
+	{
+		return FText::FromString(TimesByPlayerScore[ActiveScores[XIndex]].ToFormattedString(TEXT("%b %d")));
+	}
+	return {};
 }
