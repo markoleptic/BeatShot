@@ -113,9 +113,9 @@ void UCustomGameModeScoreViewerWidget::FilterActiveScores(const FString& Current
 		{
 			if (Song == CurrentSongTitle)
 			{
-				SongOptions.Add(Song);
 				HasSongTitle = true;
 			}
+			SongOptions.Add(Song);
 		}
 	}
 

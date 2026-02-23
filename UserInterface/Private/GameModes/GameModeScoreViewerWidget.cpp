@@ -225,21 +225,22 @@ void UGameModeScoreViewerWidget::UpdateDataVisualization()
 		float BestAccuracy = 0.0f;
 		int BestStreak = 0;
 		float BestReactionTime = 0.0f;
-		float BestTargetsDestroyed = 0.f;
+		float BestCompletion = 0.f;
 		for (const auto& PlayerScore : ActiveScores)
 		{
 			BestScore = FMath::Max(BestScore, PlayerScore->Score);
 			BestAccuracy = FMath::Max(BestAccuracy, PlayerScore->Accuracy);
 			BestStreak = FMath::Max(BestStreak, PlayerScore->Streak);
 			BestReactionTime = FMath::Min(BestReactionTime, PlayerScore->AvgTimeOffset);
-			BestTargetsDestroyed = FMath::Max(BestTargetsDestroyed, PlayerScore->Completion);
+			BestCompletion = FMath::Max(BestCompletion, PlayerScore->Completion);
 		}
 
 		FNumberFormattingOptions NumberFormattingOptions;
 		NumberFormattingOptions.MaximumFractionalDigits = 0;
 		NumberFormattingOptions.MinimumFractionalDigits = 0;
 		TextBlock_BestScore->SetText(FText::AsNumber(BestScore, &NumberFormattingOptions));
-		TextBlock_BestReactionTime->SetText(FText::AsNumber(BestReactionTime, &NumberFormattingOptions));
+		TextBlock_BestReactionTime->SetText(FText::Format(GetMillisecondFormat(),
+			FText::AsNumber(BestReactionTime, &NumberFormattingOptions)));
 		TextBlock_BestStreak->SetText(FText::AsNumber(BestStreak, &NumberFormattingOptions));
 		NumberFormattingOptions.MaximumFractionalDigits = 1;
 		NumberFormattingOptions.MinimumFractionalDigits = 1;
@@ -247,40 +248,40 @@ void UGameModeScoreViewerWidget::UpdateDataVisualization()
 		TextBlock_BestAccuracy->SetText(FText::Format(PercentFormat,
 			FText::AsNumber(BestAccuracy * 100.f, &NumberFormattingOptions)));
 		TextBlock_BestTargetsDestroyed->SetText(FText::Format(PercentFormat,
-			FText::AsNumber(BestTargetsDestroyed * 100.f, &NumberFormattingOptions)));
+			FText::AsNumber(BestCompletion * 100.f, &NumberFormattingOptions)));
 
 
 		float TotalScore = 0.0f;
 		float TotalAccuracy = 0.0f;
 		int TotalStreak = 0;
 		float TotalReactionTime = 0.0f;
-		int TotalTargetsDestroyed = 0;
+		float TotalCompletion = 0.0f;
 		for (const auto& PlayerScore : ActiveScores)
 		{
 			TotalScore += PlayerScore->Score;
 			TotalAccuracy += PlayerScore->Accuracy;
 			TotalStreak += PlayerScore->Streak;
 			TotalReactionTime += PlayerScore->AvgTimeOffset;
-			TotalTargetsDestroyed += PlayerScore->Completion;
+			TotalCompletion += PlayerScore->Completion;
 		}
 		const float AverageScore = TotalScore / ActiveScores.Num();
-		const float AverageAccuracy = TotalAccuracy / ActiveScores.Num();
+		const float AverageAccuracy = TotalAccuracy / ActiveScores.Num() * 100.f;
 		const int AverageStreak = FMath::FloorToInt(static_cast<float>(TotalStreak) / ActiveScores.Num());
-		const float AvgReactionTime = TotalReactionTime / ActiveScores.Num();
-		const int AvgTargetsDestroyed = FMath::FloorToInt(
-			static_cast<float>(TotalTargetsDestroyed) / ActiveScores.Num());
+		const float AvgReactionTime = TotalReactionTime * 100.f / ActiveScores.Num();
+		const int AvgTargetsDestroyed = TotalCompletion * 100.f / ActiveScores.Num();
 
 		NumberFormattingOptions.MaximumFractionalDigits = 0;
 		NumberFormattingOptions.MinimumFractionalDigits = 0;
 		TextBlock_AverageScore->SetText(FText::AsNumber(AverageScore, &NumberFormattingOptions));
-		TextBlock_AverageReactionTime->SetText(FText::AsNumber(AvgReactionTime, &NumberFormattingOptions));
+		TextBlock_AverageReactionTime->SetText(FText::Format(GetMillisecondFormat(),
+			FText::AsNumber(AvgReactionTime, &NumberFormattingOptions)));
 		TextBlock_AverageStreak->SetText(FText::AsNumber(AverageStreak, &NumberFormattingOptions));
 		NumberFormattingOptions.MaximumFractionalDigits = 1;
 		NumberFormattingOptions.MinimumFractionalDigits = 1;
 		TextBlock_AverageAccuracy->SetText(FText::Format(PercentFormat,
-			FText::AsNumber(AverageAccuracy * 100.f, &NumberFormattingOptions)));
+			FText::AsNumber(AverageAccuracy, &NumberFormattingOptions)));
 		TextBlock_AverageTargetsDestroyed->SetText(FText::Format(PercentFormat,
-			FText::AsNumber(AvgTargetsDestroyed * 100.f, &NumberFormattingOptions)));
+			FText::AsNumber(AvgTargetsDestroyed, &NumberFormattingOptions)));
 
 		FLineChartSeries ScoreVsTimeLineChartSeries;
 		FLineChartSeries StreakVsTimeLineChartSeries;

@@ -182,14 +182,14 @@ void UDefaultGameModeScoreViewerWidget::FilterActiveScores(const EBaseGameMode C
 			if (CurrentSongTitle == Song)
 			{
 				HasSongTitle = true;
-				for (const auto& [Difficulty, PlayerScoresForDifficulty] : PlayerScoresForSongs)
+			}
+			for (const auto& [Difficulty, PlayerScoresForDifficulty] : PlayerScoresForSongs)
+			{
+				if (CurrentDifficulty == Difficulty)
 				{
-					if (CurrentDifficulty == Difficulty)
-					{
-						HasDifficulty = true;
-					}
-					DifficultyOptions.Add(DifficultyText[Difficulty].ToString());
+					HasDifficulty = true;
 				}
+				DifficultyOptions.Add(DifficultyText[Difficulty].ToString());
 			}
 		}
 	}
