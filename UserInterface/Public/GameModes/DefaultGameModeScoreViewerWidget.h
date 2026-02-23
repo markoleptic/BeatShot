@@ -18,7 +18,7 @@ class USERINTERFACE_API UDefaultGameModeScoreViewerWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	/** Adds a reference to the save game and calls @link RepopulatePlayerScoreByGameModeSongAndDifficulty. */
+	/** Adds a reference to the save game and calls @link RepopulatePlayerScoreByGameModeSongAndDifficulty \endlink . */
 	void SetSaveGamePlayerScore(USaveGamePlayerScore* InSaveGamePlayerScore);
 
 	/** Filters the active scores based on @param BaseGameMode @param SongTitle @param Difficulty . Always updates the
@@ -29,6 +29,10 @@ public:
 	 *  repopulates the game mode combo box. If there are no scores, the main box is hidden and the no scores message
 	 *  is shown. */
 	void RepopulatePlayerScoreByGameModeSongAndDifficulty();
+
+	void SetBaseGameModeText(const TMap<EBaseGameMode, FText>& InBaseGameModeText);
+
+	void SetDifficultyText(const TMap<EGameModeDifficulty, FText>& InGameModeDifficultyText);
 
 protected:
 	virtual void NativeConstruct() override;
@@ -61,13 +65,13 @@ protected:
 	UComboBoxWidget* SongComboBoxWidget;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UGameModeScoreViewerWidget* GameModeScoreViewerWidget;
-	UPROPERTY(EditDefaultsOnly)
-	TMap<EBaseGameMode, FText> BaseGameModeText;
-	UPROPERTY(EditDefaultsOnly)
-	TMap<EGameModeDifficulty, FText> GameModeDifficultyText;
 
 	UPROPERTY()
 	USaveGamePlayerScore* SaveGamePlayerScore;
+
+	TMap<EBaseGameMode, FText> BaseGameModeText;
+
+	TMap<EGameModeDifficulty, FText> DifficultyText;
 
 	TMap<EBaseGameMode, TMap<FString, TMap<EGameModeDifficulty, TArray<TSharedPtr<FPlayerScore>>>>>
 	PlayerScoreByGameModeSongAndDifficulty;

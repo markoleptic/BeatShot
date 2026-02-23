@@ -74,6 +74,17 @@ void UDefaultGameModeScoreViewerWidget::RepopulatePlayerScoreByGameModeSongAndDi
 	}
 }
 
+void UDefaultGameModeScoreViewerWidget::SetBaseGameModeText(const TMap<EBaseGameMode, FText>& InBaseGameModeText)
+{
+	BaseGameModeText = InBaseGameModeText;
+}
+
+void UDefaultGameModeScoreViewerWidget::SetDifficultyText(
+	const TMap<EGameModeDifficulty, FText>& InGameModeDifficultyText)
+{
+	DifficultyText = InGameModeDifficultyText;
+}
+
 void UDefaultGameModeScoreViewerWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
@@ -141,7 +152,7 @@ EBaseGameMode UDefaultGameModeScoreViewerWidget::FindBaseGameMode(const FString&
 
 EGameModeDifficulty UDefaultGameModeScoreViewerWidget::FindGameModeDifficulty(const FString& InGameModeDifficulty)
 {
-	for (const auto& [Difficulty, Text] : GameModeDifficultyText)
+	for (const auto& [Difficulty, Text] : DifficultyText)
 	{
 		if (Text.ToString() == InGameModeDifficulty)
 		{
@@ -177,7 +188,7 @@ void UDefaultGameModeScoreViewerWidget::FilterActiveScores(const EBaseGameMode C
 					{
 						HasDifficulty = true;
 					}
-					DifficultyOptions.Add(GameModeDifficultyText[Difficulty].ToString());
+					DifficultyOptions.Add(DifficultyText[Difficulty].ToString());
 				}
 			}
 		}
@@ -202,8 +213,7 @@ void UDefaultGameModeScoreViewerWidget::FilterActiveScores(const EBaseGameMode C
 	}
 	const int32 DifficultyOptionIndex = CurrentDifficultyOverride == EGameModeDifficulty::None
 		? 0
-		: DifficultyComboBoxWidget->ComboBox->GetIndexOfOption(
-			GameModeDifficultyText[CurrentDifficultyOverride].ToString());
+		: DifficultyComboBoxWidget->ComboBox->GetIndexOfOption(DifficultyText[CurrentDifficultyOverride].ToString());
 	DifficultyComboBoxWidget->ComboBox->ClearOptions();
 	DifficultyComboBoxWidget->SortAndAddOptions(DifficultyOptionsArray);
 	DifficultyComboBoxWidget->ComboBox->SetSelectedIndex(FMath::Max(DifficultyOptionIndex, 0));

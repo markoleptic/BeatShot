@@ -369,7 +369,10 @@ FText UGameModeScoreViewerWidget::HandleLocationAccuracyDisplayText(const int32 
 			{
 				return FText::FromString("No target has spawned here.");
 			}
-			return FText::Format(GetPercentFormat(), Value * 100.f);
+			FNumberFormattingOptions NumberFormattingOptions;
+			NumberFormattingOptions.MaximumFractionalDigits = 0;
+			NumberFormattingOptions.MinimumFractionalDigits = 0;
+			return FText::Format(GetPercentFormat(), FText::AsNumber(Value * 100.f, &NumberFormattingOptions));
 		}
 	}
 	return {};

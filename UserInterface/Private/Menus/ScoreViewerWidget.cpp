@@ -7,6 +7,7 @@
 #include "GameModes/CustomGameModeScoreViewerWidget.h"
 #include "GameModes/DefaultGameModeScoreViewerWidget.h"
 #include "GameModes/GameModeScoreViewerWidget.h"
+#include "GameModes/ScoreTable.h"
 #include "SaveGames/SaveGamePlayerScore.h"
 #include "Utilities/Buttons/MenuButton.h"
 #include "Widgets/BarChartWidget.h"
@@ -31,6 +32,13 @@ namespace
 void UScoreViewerWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+
+	ScoreTable->SetBaseGameModeText(BaseGameModeText);
+	ScoreTable->SetDifficultyText(DifficultyText);
+
+	DefaultGameModeScoreViewerWidget->SetBaseGameModeText(BaseGameModeText);
+	DefaultGameModeScoreViewerWidget->SetDifficultyText(DifficultyText);
+
 	MenuButton_Overview->OnBSButtonPressed.AddUObject(this, &ThisClass::OnButtonClicked_BSButton);
 	MenuButton_DefaultModes->OnBSButtonPressed.AddUObject(this, &ThisClass::OnButtonClicked_BSButton);
 	MenuButton_CustomModes->OnBSButtonPressed.AddUObject(this, &ThisClass::OnButtonClicked_BSButton);
@@ -86,8 +94,8 @@ void UScoreViewerWidget::NativeConstruct()
 			return DaysOfWeek[DayOfWeekIndex];
 		});
 	PlayFrequency->SetData(PlayFrequencyData, PlayFrequencyAxisData,
-		TDelegate<FText(int32, int32)>::CreateUObject(this, &ThisClass::HandleLocationAccuracyDisplayText),
-		TDelegate<FText(int32, int32, float)>::CreateUObject(this, &ThisClass::HandleLocationAccuracyValueText));
+		TDelegate<FText(int32, int32)>::CreateUObject(this, &ThisClass::HandlePlayFrequencyDisplayText),
+		TDelegate<FText(int32, int32, float)>::CreateUObject(this, &ThisClass::HandlePlayFrequencyValueText));
 
 	MostPlayedDefaultGameModesData = MakeShared<FBarChartData>();
 	MostPlayedDefaultGameModesAxisData = MakeShared<TMap<EAxisType, FAxisLabelOptions>>();
@@ -137,6 +145,7 @@ void UScoreViewerWidget::LoadScores(USaveGamePlayerScore* InSaveGamePlayerScore,
 	SaveGamePlayerScore = InSaveGamePlayerScore;
 	DefaultGameModeScoreViewerWidget->SetSaveGamePlayerScore(SaveGamePlayerScore);
 	CustomGameModeScoreViewerWidget->SetSaveGamePlayerScore(SaveGamePlayerScore);
+	ScoreTable->SetListItems(SaveGamePlayerScore->GetPlayerScoresPtr());
 
 	const auto& PlayerScoresPtr = SaveGamePlayerScore->GetPlayerScoresPtr();
 	if (PlayerScoresPtr.IsEmpty())
@@ -283,7 +292,7 @@ void UScoreViewerWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 	Switcher->SetActiveWidget(Cast<UMenuButton>(Button)->GetAssociatedWidget());
 }
 
-FText UScoreViewerWidget::HandleLocationAccuracyDisplayText(const int32 WeekIndex, const int32 DayOfWeekIndex)
+FText UScoreViewerWidget::HandlePlayFrequencyDisplayText(const int32 WeekIndex, const int32 DayOfWeekIndex)
 {
 	const float Value = PlayFrequencyData->Sections[WeekIndex][DayOfWeekIndex];
 	const int32 DayIndex = WeekIndex * 7 + (DayOfWeekIndex - StartDow);
@@ -307,7 +316,7 @@ FText UScoreViewerWidget::HandleLocationAccuracyDisplayText(const int32 WeekInde
 	return FText::Format(LocationAccuracyDisplayFormat, Args);
 }
 
-FText UScoreViewerWidget::HandleLocationAccuracyValueText(const int32 WeekIndex, int32, float)
+FText UScoreViewerWidget::HandlePlayFrequencyValueText(const int32 WeekIndex, int32, float)
 {
 	float Total = 0.f;
 	for (const float CurrentValue : PlayFrequencyData->Sections[WeekIndex])

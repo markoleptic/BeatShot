@@ -7,6 +7,7 @@
 #include "SaveGames/SaveGamePlayerScore.h"
 #include "ScoreViewerWidget.generated.h"
 
+class UScoreTable;
 class UTextBlock;
 struct FAxisLabelOptions;
 enum class EAxisType : uint8;
@@ -61,6 +62,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UCustomGameModeScoreViewerWidget* CustomGameModeScoreViewerWidget;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UScoreTable* ScoreTable;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UVerticalBox* Box_History;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UVerticalBox* Box_NoScores;
@@ -86,15 +89,18 @@ protected:
 	UTextBlock* TextBlock_TimePlayedForMostPlayedDefaultMode;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* TextBlock_TimePlayedForMostPlayedCustomMode;
+
 	UPROPERTY(EditDefaultsOnly)
 	TMap<EBaseGameMode, FText> BaseGameModeText;
+	UPROPERTY(EditDefaultsOnly)
+	TMap<EGameModeDifficulty, FText> DifficultyText;
 
 	void OnButtonClicked_BSButton(const UBSButton* Button);
 
 private:
-	FText HandleLocationAccuracyDisplayText(int32, int32);
+	FText HandlePlayFrequencyDisplayText(int32, int32);
 
-	FText HandleLocationAccuracyValueText(int32, int32, float);
+	FText HandlePlayFrequencyValueText(int32, int32, float);
 
 	FText HandleMostPlayedDefaultGameModesDisplayText(int32);
 
