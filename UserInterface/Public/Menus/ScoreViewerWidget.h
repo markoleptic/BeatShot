@@ -77,16 +77,24 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* TextBlock_TotalTimeInAnyGameMode;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UTextBlock* TextBlock_MostPlayedDefaultModeLabel;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* TextBlock_MostPlayedDefaultMode;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UTextBlock* TextBlock_MostPlayedDefaultModeName;
+	UTextBlock* TextBlock_MostPlayedCustomModeLabel;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* TextBlock_MostPlayedCustomMode;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UTextBlock* TextBlock_MostPlayedCustomModeName;
+	UTextBlock* TextBlock_TimePlayedForMostPlayedDefaultModeLabel;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* TextBlock_TimePlayedForMostPlayedDefaultMode;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UTextBlock* TextBlock_TimePlayedForMostPlayedCustomModeLabel;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* TextBlock_TimePlayedForMostPlayedCustomMode;
 
@@ -98,6 +106,9 @@ protected:
 	void OnButtonClicked_BSButton(const UBSButton* Button);
 
 private:
+	void UpdateTimeStatistics(const TMap<EBaseGameMode, FGameModePlayTime>& PlayTimeByBaseGameMode,
+		const TMap<FString, FGameModePlayTime>& PlayTimeByCustomGameModeName, float TotalTimeInAnyGameMode);
+
 	FText HandlePlayFrequencyDisplayText(int32, int32);
 
 	FText HandlePlayFrequencyValueText(int32, int32, float);
@@ -118,6 +129,8 @@ private:
 
 	FText HandleMostPlayedCustomGameModesYAxisFormatter(int32, float);
 
+	FText FormatTime(float Minutes);
+
 	UPROPERTY()
 	USaveGamePlayerScore* SaveGamePlayerScore;
 
@@ -125,9 +138,13 @@ private:
 
 	int32 StartDow;
 
-	const FTextFormat LocationAccuracyDisplayFormat = FTextFormat::FromString("{0}\n{1} {2}");
+	const FTextFormat PlayFrequencyDisplayFormat = FTextFormat::FromString("{0}\n{1}");
 
-	const FTextFormat LocationAccuracyValueFormat = FTextFormat::FromString("Total for week: {0} {1}");
+	const FTextFormat PlayFrequencyValueFormat = FTextFormat::FromString("Total for week: {0}");
+
+	const FTextFormat SpaceSeparatedFormat = FTextFormat::FromString("{0} {1}");
+
+	const FTextFormat TimeForFormat = FTextFormat::FromString("Time for {0}:");
 
 	TSharedPtr<FHeatMapData> PlayFrequencyData;
 
