@@ -17,21 +17,20 @@ class BEATSHOT_API UBeamVisualizerDefinition : public UBSVisualizerDefinition
 	GENERATED_BODY()
 
 public:
+	// @formatter:off
+	
 	/** The class of the Visualizer Light to spawn, if any. */
-	UPROPERTY(EditAnywhere,
-		BlueprintReadOnly,
-		Category = "Spawning",
-		meta=(DisplayPriority=-1298, EditCondition= "
-			VisualizerLightSpawningMethod != EVisualizerLightSpawningMethod::AddExistingLightsFromLevel"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning", meta=(DisplayPriority=-1298,
+		EditCondition= "VisualizerLightSpawningMethod != EVisualizerLightSpawningMethod::AddExistingLightsFromLevel"))
 	TSubclassOf<AActor> VisualizerLightClass;
 
 	/** Array of Visualizer Lights that have already been placed in a level. */
-	UPROPERTY(EditAnywhere,
-		BlueprintReadOnly,
-		Category = "Spawning",
-		meta=(DisplayName="Existing Lights from Level", DisplayPriority=-1297, EditCondition= "
-			VisualizerLightSpawningMethod == EVisualizerLightSpawningMethod::AddExistingLightsFromLevel"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning", meta=(DisplayName="Existing Lights from Level",
+		DisplayPriority=-1297,
+		EditCondition= "VisualizerLightSpawningMethod == EVisualizerLightSpawningMethod::AddExistingLightsFromLevel"))
 	TArray<TSoftObjectPtr<AActor>> VisualizerLightsFromLevel;
+
+	// @formatter:on
 
 	/** Whether override each child light's light colors with BeamLightColors, vs use the light color from each child
 	 *  light. */
