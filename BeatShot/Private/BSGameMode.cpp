@@ -578,7 +578,7 @@ void ABSGameMode::LoadMatchingPlayerScores()
 		const TArray<FPlayerScore> PlayerScores = CurrentPlayerScore.Key->LoadPlayerScores().FilterByPredicate(
 			[&](const FPlayerScore& PlayerScore)
 			{
-				if (PlayerScore == CurrentPlayerScore.Value)
+				if (PlayerScore.HasMatchingDefiningConfigAndSong(CurrentPlayerScore.Value))
 				{
 					return true;
 				}

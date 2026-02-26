@@ -43,7 +43,7 @@ TArray<FPlayerScore> IBSPlayerScoreInterface::GetMatchingPlayerScores(const FPla
 {
 	return LoadPlayerScores().FilterByPredicate([&PlayerScore](const FPlayerScore& ComparePlayerScore)
 	{
-		if (ComparePlayerScore == PlayerScore)
+		if (ComparePlayerScore.HasMatchingDefiningConfigAndSong(PlayerScore))
 		{
 			return true;
 		}

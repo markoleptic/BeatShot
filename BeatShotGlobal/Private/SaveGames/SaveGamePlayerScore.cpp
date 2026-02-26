@@ -93,7 +93,6 @@ void USaveGamePlayerScore::DeletePlayerScores(const TArray<TSharedPtr<FPlayerSco
 	{
 		PlayerScoreArrayPtr.Remove(Score);
 	}
-
 }
 
 void USaveGamePlayerScore::SetAllScoresSavedToDatabase()

@@ -698,7 +698,7 @@ struct BEATSHOTGLOBAL_API FPlayerScore
 		return true;
 	}
 
-	FORCEINLINE bool operator==(const FPlayerScore& Other) const
+	FORCEINLINE bool HasMatchingDefiningConfigAndSong(const FPlayerScore& Other) const
 	{
 		if (DefiningConfig == Other.DefiningConfig && SongTitle.Equals(Other.SongTitle))
 		{
