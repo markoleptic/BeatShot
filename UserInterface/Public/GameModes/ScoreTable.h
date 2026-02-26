@@ -26,6 +26,10 @@ public:
 
 	virtual void ReleaseSlateResources(bool bReleaseChildren) override;
 
+	TArray<TSharedPtr<FPlayerScore>> GetSelectedItems() const;
+
+	TDelegate<void(bool)> OnSelectionChangedDelegate;
+
 private:
 	TSharedRef<ITableRow> OnGenerateRow(TSharedPtr<FPlayerScore> Item, const TSharedRef<STableViewBase>& OwnerTable);
 
@@ -36,6 +40,8 @@ private:
 	EColumnSortMode::Type GetSortModeForColumn(const FName InColumnId) const;
 
 	void SortItems();
+
+	void OnSelectionChanged(TSharedPtr<FPlayerScore> Selection, ESelectInfo::Type SelectInfo);
 
 	SHeaderRow::FColumn::FArguments MakeColumn(const FName& InColumnName);
 

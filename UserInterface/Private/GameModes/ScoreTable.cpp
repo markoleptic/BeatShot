@@ -78,7 +78,8 @@ TSharedRef<SWidget> UScoreTable::RebuildWidget()
 		.ListItemsSource(&ListItems)
 		.OnGenerateRow_UObject(this, &UScoreTable::OnGenerateRow)
 		.SelectionMode(ESelectionMode::Type::Multi)
-		.HeaderRow(Header);
+		.HeaderRow(Header)
+		.OnSelectionChanged_UObject(this, &UScoreTable::OnSelectionChanged);
 
 	return SlateWidget.ToSharedRef();
 }
@@ -193,6 +194,11 @@ void UScoreTable::ReleaseSlateResources(bool bReleaseChildren)
 	{
 		SlateWidget.Reset();
 	}
+}
+
+TArray<TSharedPtr<FPlayerScore>> UScoreTable::GetSelectedItems() const
+{
+	return SlateWidget ? SlateWidget->GetSelectedItems() : TArray<TSharedPtr<FPlayerScore>>();
 }
 
 TSharedRef<ITableRow> UScoreTable::OnGenerateRow(TSharedPtr<FPlayerScore> Item,
@@ -358,6 +364,11 @@ void UScoreTable::SortItems()
 
 		return false;
 	});
+}
+
+void UScoreTable::OnSelectionChanged(TSharedPtr<FPlayerScore>, ESelectInfo::Type)
+{
+	OnSelectionChangedDelegate.ExecuteIfBound(!SlateWidget->GetSelectedItems().IsEmpty());
 }
 
 SHeaderRow::FColumn::FArguments UScoreTable::MakeColumn(const FName& InColumnName)

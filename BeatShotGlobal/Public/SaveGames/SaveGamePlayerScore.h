@@ -416,19 +416,19 @@ private:
 		TArray<float> Temp;
 
 		TArray<int32> YIndices = SpawnAreaSize.Y == 2
-			? TArray{0, 4}
-			: SpawnAreaSize.Y == 3
-			? TArray{0, 2, 4}
-			: SpawnAreaSize.Y == 4
-			? TArray{0, 1, 3, 4}
-			: TArray<int32>();
+		                         ? TArray{0, 4}
+		                         : SpawnAreaSize.Y == 3
+		                         ? TArray{0, 2, 4}
+		                         : SpawnAreaSize.Y == 4
+		                         ? TArray{0, 1, 3, 4}
+		                         : TArray<int32>();
 		TArray<int32> ZIndices = SpawnAreaSize.Z == 2
-			? TArray{0, 4}
-			: SpawnAreaSize.Z == 3
-			? TArray{0, 2, 4}
-			: SpawnAreaSize.Z == 4
-			? TArray{0, 1, 3, 4}
-			: TArray<int32>();
+		                         ? TArray{0, 4}
+		                         : SpawnAreaSize.Z == 3
+		                         ? TArray{0, 2, 4}
+		                         : SpawnAreaSize.Z == 4
+		                         ? TArray{0, 1, 3, 4}
+		                         : TArray<int32>();
 
 		TArray<FIntPoint> Combined = TArray<FIntPoint>();
 
@@ -442,8 +442,12 @@ private:
 
 		for (int i = 0; i < Combined.Num(); i++)
 		{
-			UE_LOG(LogTemp, Display, TEXT("ZIndex: %d YIndex: %d Value: %f"), Combined[i].X, Combined[i].Y,
-				AccuracyRows[Combined[i].X].Accuracy[Combined[i].Y]);
+			UE_LOG(LogTemp,
+			       Display,
+			       TEXT("ZIndex: %d YIndex: %d Value: %f"),
+			       Combined[i].X,
+			       Combined[i].Y,
+			       AccuracyRows[Combined[i].X].Accuracy[Combined[i].Y]);
 			const float Value = AccuracyRows[Combined[i].X].Accuracy[Combined[i].Y];
 			Temp.Add(Value);
 		}
@@ -455,8 +459,8 @@ private:
 	{
 		for (int i = 0; i < 5; i++)
 		{
-			AccuracyRows[RowIndex].Accuracy[i] = (AccuracyRows[RowIndex - 1].Accuracy[i] + AccuracyRows[RowIndex + 1].
-				Accuracy[i]) / 2.f;
+			AccuracyRows[RowIndex].Accuracy[i] =
+				(AccuracyRows[RowIndex - 1].Accuracy[i] + AccuracyRows[RowIndex + 1].Accuracy[i]) / 2.f;
 		}
 	}
 
@@ -465,8 +469,8 @@ private:
 	{
 		for (int i = 0; i < 5; i++)
 		{
-			AccuracyRows[i].Accuracy[ColIndex] = (AccuracyRows[i].Accuracy[ColIndex - 1] + AccuracyRows[i].Accuracy[
-				ColIndex + 1]) / 2.f;
+			AccuracyRows[i].Accuracy[ColIndex] =
+				(AccuracyRows[i].Accuracy[ColIndex - 1] + AccuracyRows[i].Accuracy[ColIndex + 1]) / 2.f;
 		}
 	}
 
@@ -485,13 +489,13 @@ private:
 	{
 		if (bChangeRowValue)
 		{
-			AccuracyRows[RowIndex].Accuracy[ColIndex] = (AccuracyRows[RowIndex + 1].Accuracy[ColIndex] + AccuracyRows[
-				RowIndex - 1].Accuracy[ColIndex]) / 2.f;
+			AccuracyRows[RowIndex].Accuracy[ColIndex] =
+				(AccuracyRows[RowIndex + 1].Accuracy[ColIndex] + AccuracyRows[RowIndex - 1].Accuracy[ColIndex]) / 2.f;
 		}
 		else
 		{
-			AccuracyRows[RowIndex].Accuracy[ColIndex] = (AccuracyRows[RowIndex].Accuracy[ColIndex + 1] + AccuracyRows[
-				RowIndex].Accuracy[ColIndex - 1]) / 2.f;
+			AccuracyRows[RowIndex].Accuracy[ColIndex] =
+				(AccuracyRows[RowIndex].Accuracy[ColIndex + 1] + AccuracyRows[RowIndex].Accuracy[ColIndex - 1]) / 2.f;
 		}
 	}
 };
@@ -525,7 +529,7 @@ struct BEATSHOTGLOBAL_API FCommonScoreInfo
 	FCommonScoreInfo()
 	{
 		AccuracyData = FAccuracyData(Constants::DefaultNumberOfAccuracyDataRows,
-			Constants::DefaultNumberOfAccuracyDataColumns);
+		                             Constants::DefaultNumberOfAccuracyDataColumns);
 		QTable = TArray<float>();
 		QTable.Init(0.f, Constants::DefaultQTableSize);
 		TrainingSamples = TArray<int32>();
@@ -542,8 +546,11 @@ struct BEATSHOTGLOBAL_API FCommonScoreInfo
 	}
 
 	/** Sets the value of the QTable with InQTable. */
-	void UpdateQTable(const TArray<float>& InQTable, const int32 InNumQTableRows, const int32 InNumQTableColumns,
-		const TArray<int32>& InUpdatedTrainingSamples, const int32 InUpdatedTotalTrainingSamples)
+	void UpdateQTable(const TArray<float>& InQTable,
+	                  const int32 InNumQTableRows,
+	                  const int32 InNumQTableColumns,
+	                  const TArray<int32>& InUpdatedTrainingSamples,
+	                  const int32 InUpdatedTotalTrainingSamples)
 	{
 		QTable = InQTable;
 		NumQTableRows = InNumQTableRows;
@@ -766,6 +773,8 @@ public:
 	 */
 	void AddPlayerScoreInstance(const FPlayerScore& InPlayerScore);
 
+	void DeletePlayerScores(const TArray<TSharedPtr<FPlayerScore>>& ScoresToDelete);
+
 	/** Modifies score instances in PlayerScoreArray. */
 	void SetAllScoresSavedToDatabase();
 
@@ -810,16 +819,18 @@ public:
 	 * 	@param InCommonScoreInfo CommonScoreInfo to print out
 	 * 	@param Options number formatting options
 	 */
-	static void PrintQTable(const FBS_DefiningConfig& InDefiningConfig, const FCommonScoreInfo& InCommonScoreInfo,
-		const FNumberFormattingOptions& Options);
+	static void PrintQTable(const FBS_DefiningConfig& InDefiningConfig,
+	                        const FCommonScoreInfo& InCommonScoreInfo,
+	                        const FNumberFormattingOptions& Options);
 
 	/** Prints 5x5 accuracy to log/console.
 	 *  @param InDefiningConfig defining config
 	 * 	@param InCommonScoreInfo CommonScoreInfo to print out
 	 * 	@param Options number formatting options
 	 */
-	static void PrintAccuracy(const FBS_DefiningConfig& InDefiningConfig, const FCommonScoreInfo& InCommonScoreInfo,
-		const FNumberFormattingOptions& Options);
+	static void PrintAccuracy(const FBS_DefiningConfig& InDefiningConfig,
+	                          const FCommonScoreInfo& InCommonScoreInfo,
+	                          const FNumberFormattingOptions& Options);
 
 	/** Prints full TrainingSamples array to log/console.
 	 *  @param InDefiningConfig defining config
@@ -827,7 +838,8 @@ public:
 	 * 	@param Options number formatting options
 	 */
 	static void PrintTrainingSamples(const FBS_DefiningConfig& InDefiningConfig,
-		const FCommonScoreInfo& InCommonScoreInfo, const FNumberFormattingOptions& Options);
+	                                 const FCommonScoreInfo& InCommonScoreInfo,
+	                                 const FNumberFormattingOptions& Options);
 
 private:
 	/**

@@ -98,16 +98,24 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* TextBlock_TimePlayedForMostPlayedCustomMode;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UBSButton* BSButton_DeleteSelectedScores;
+
 	UPROPERTY(EditDefaultsOnly)
 	TMap<EBaseGameMode, FText> BaseGameModeText;
 	UPROPERTY(EditDefaultsOnly)
 	TMap<EGameModeDifficulty, FText> DifficultyText;
 
-	void OnButtonClicked_BSButton(const UBSButton* Button);
-
 private:
+	void OnButtonClicked_MenuButton(const UBSButton* Button);
+
+	void OnButtonClicked_DeleteSelectedScoresButton(const UBSButton* Button);
+
 	void UpdateTimeStatistics(const TMap<EBaseGameMode, FGameModePlayTime>& PlayTimeByBaseGameMode,
-		const TMap<FString, FGameModePlayTime>& PlayTimeByCustomGameModeName, float TotalTimeInAnyGameMode);
+	                          const TMap<FString, FGameModePlayTime>& PlayTimeByCustomGameModeName,
+	                          float TotalTimeInAnyGameMode);
+
+	void OnSelectionChanged_ScoreTable(bool HasSelection);
 
 	FText HandlePlayFrequencyDisplayText(int32, int32);
 
