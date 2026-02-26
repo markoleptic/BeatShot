@@ -13,8 +13,11 @@ class FTargetManagerTestWithWorld : public FTargetManagerTestBase
 	using Super = ::FTargetManagerTestBase;
 
 public:
-	FTargetManagerTestWithWorld(const FString& InName, const bool bInComplexTask): Super(InName, bInComplexTask),
-		World(nullptr), InitialFrameCounter(0), TargetSpawnParamsExecutionTime(0.0f), TargetManager(nullptr),
+	FTargetManagerTestWithWorld(const FString& InName, const bool bInComplexTask) : Super(InName, bInComplexTask),
+		World(nullptr),
+		InitialFrameCounter(0),
+		TargetSpawnParamsExecutionTime(0.0f),
+		TargetManager(nullptr),
 		GameModeDataAsset(nullptr)
 	{
 	}
@@ -66,8 +69,9 @@ protected:
 	 *  Mutable so that it can be set during GetTests. */
 	mutable UBSGameModeDataAsset* GameModeDataAsset;
 
-	const FTransform TargetManagerTransform = FTransform(FRotator(), Constants::DefaultTargetManagerLocation,
-		FVector(1.f));
+	const FTransform TargetManagerTransform = FTransform(FRotator(),
+	                                                     Constants::DefaultTargetManagerLocation,
+	                                                     FVector(1.f));
 
 	/** Map to pull game mode configs from during tests. */
 	mutable TMap<FString, FBSConfig> TestMap;

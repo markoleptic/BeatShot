@@ -14,7 +14,7 @@ class BEATSHOT_API UBSAbilitySystemGlobals : public UAbilitySystemGlobals
 
 public:
 	virtual void PushCurrentAppliedGE(const FGameplayEffectSpec* Spec,
-		UAbilitySystemComponent* AbilitySystemComponent) override;
+	                                  UAbilitySystemComponent* AbilitySystemComponent) override;
 	virtual void SetCurrentAppliedGE(const FGameplayEffectSpec* Spec) override;
 	virtual void PopCurrentAppliedGE() override;
 	const FGameplayEffectSpec* GetCurrentAppliedGE();

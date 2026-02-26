@@ -37,8 +37,9 @@ enum class ETargetDistributionPolicy : uint8
 	Grid UMETA(DisplayName="Grid"),
 };
 
-ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDistributionPolicy, ETargetDistributionPolicy::HeadshotHeightOnly,
-	ETargetDistributionPolicy::Grid);
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDistributionPolicy,
+                             ETargetDistributionPolicy::HeadshotHeightOnly,
+                             ETargetDistributionPolicy::Grid);
 
 
 /** Which direction to move a target in. */
@@ -58,8 +59,9 @@ enum class EMovingTargetDirectionMode : uint8
 	ForwardOnly UMETA(DisplayName="Forward Only"),
 };
 
-ENUM_RANGE_BY_FIRST_AND_LAST(EMovingTargetDirectionMode, EMovingTargetDirectionMode::None,
-	EMovingTargetDirectionMode::ForwardOnly);
+ENUM_RANGE_BY_FIRST_AND_LAST(EMovingTargetDirectionMode,
+                             EMovingTargetDirectionMode::None,
+                             EMovingTargetDirectionMode::ForwardOnly);
 
 /** A direction that a target moves. */
 UENUM(BlueprintType)
@@ -94,10 +96,12 @@ enum class EConsecutiveTargetScalePolicy : uint8
 	Random UMETA(DisplayName="Random"),
 	/** The starting scale/size of the target will gradually shrink from max to min target scale, based on consecutive
 	 *  targets hit. */
-	SkillBased UMETA(DisplayName="Skill-Based")};
+	SkillBased UMETA(DisplayName="Skill-Based")
+};
 
-ENUM_RANGE_BY_FIRST_AND_LAST(EConsecutiveTargetScalePolicy, EConsecutiveTargetScalePolicy::Static,
-	EConsecutiveTargetScalePolicy::SkillBased);
+ENUM_RANGE_BY_FIRST_AND_LAST(EConsecutiveTargetScalePolicy,
+                             EConsecutiveTargetScalePolicy::Static,
+                             EConsecutiveTargetScalePolicy::SkillBased);
 
 
 /** How the player damages the target and receives score. */
@@ -129,8 +133,9 @@ enum class ETargetSpawningPolicy : uint8
 	RuntimeOnly UMETA(DisplayName="Runtime Only"),
 };
 
-ENUM_RANGE_BY_FIRST_AND_LAST(ETargetSpawningPolicy, ETargetSpawningPolicy::UpfrontOnly,
-	ETargetSpawningPolicy::RuntimeOnly);
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetSpawningPolicy,
+                             ETargetSpawningPolicy::UpfrontOnly,
+                             ETargetSpawningPolicy::RuntimeOnly);
 
 
 /** Where to spawn targets if Runtime Spawning. */
@@ -153,7 +158,8 @@ enum class ERuntimeTargetSpawningLocationSelectionMode : uint8
 };
 
 ENUM_RANGE_BY_FIRST_AND_LAST(ERuntimeTargetSpawningLocationSelectionMode,
-	ERuntimeTargetSpawningLocationSelectionMode::Random, ERuntimeTargetSpawningLocationSelectionMode::NearbyGridBlock);
+                             ERuntimeTargetSpawningLocationSelectionMode::Random,
+                             ERuntimeTargetSpawningLocationSelectionMode::NearbyGridBlock);
 
 
 /** How to choose the target(s) to activate. */
@@ -167,8 +173,9 @@ enum class ETargetActivationSelectionPolicy : uint8
 	Random UMETA(DisplayName="Random"),
 };
 
-ENUM_RANGE_BY_FIRST_AND_LAST(ETargetActivationSelectionPolicy, ETargetActivationSelectionPolicy::Bordering,
-	ETargetActivationSelectionPolicy::Random);
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetActivationSelectionPolicy,
+                             ETargetActivationSelectionPolicy::Bordering,
+                             ETargetActivationSelectionPolicy::Random);
 
 
 /** Specifies the method to remove targets from recent memory, allowing targets to spawn in that location again. */
@@ -186,8 +193,9 @@ enum class ERecentTargetMemoryPolicy : uint8
 	NumTargetsBased UMETA(DisplayName="Num Targets Based"),
 };
 
-ENUM_RANGE_BY_FIRST_AND_LAST(ERecentTargetMemoryPolicy, ERecentTargetMemoryPolicy::None,
-	ERecentTargetMemoryPolicy::NumTargetsBased);
+ENUM_RANGE_BY_FIRST_AND_LAST(ERecentTargetMemoryPolicy,
+                             ERecentTargetMemoryPolicy::None,
+                             ERecentTargetMemoryPolicy::NumTargetsBased);
 
 
 /** What the target does when it is spawned. */
@@ -203,8 +211,9 @@ enum class ETargetSpawnResponse : uint8
 	AddImmunity UMETA(DisplayName="Add Immunity"),
 };
 
-ENUM_RANGE_BY_FIRST_AND_LAST(ETargetSpawnResponse, ETargetSpawnResponse::ChangeDirection,
-	ETargetSpawnResponse::AddImmunity);
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetSpawnResponse,
+                             ETargetSpawnResponse::ChangeDirection,
+                             ETargetSpawnResponse::AddImmunity);
 
 
 /** What the target does when it is activated. */
@@ -230,8 +239,9 @@ enum class ETargetActivationResponse : uint8
 	ApplyLifetimeTargetScaling UMETA(DisplayName="Apply Lifetime Target Scaling"),
 };
 
-ENUM_RANGE_BY_FIRST_AND_LAST(ETargetActivationResponse, ETargetActivationResponse::RemoveImmunity,
-	ETargetActivationResponse::ApplyLifetimeTargetScaling);
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetActivationResponse,
+                             ETargetActivationResponse::RemoveImmunity,
+                             ETargetActivationResponse::ApplyLifetimeTargetScaling);
 
 
 /** Each represents one way that a target can be deactivated. */
@@ -251,8 +261,9 @@ enum class ETargetDeactivationCondition : uint8
 	OnSpecificHealthLost UMETA(DisplayName="On Specific Health Lost"),
 };
 
-ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDeactivationCondition, ETargetDeactivationCondition::OnAnyExternalDamageTaken,
-	ETargetDeactivationCondition::OnSpecificHealthLost);
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDeactivationCondition,
+                             ETargetDeactivationCondition::OnAnyExternalDamageTaken,
+                             ETargetDeactivationCondition::OnSpecificHealthLost);
 
 
 /** What the target does when it is deactivated. */
@@ -294,8 +305,9 @@ enum class ETargetDeactivationResponse : uint8
 	Reactivate UMETA(DisplayName="Reactivate"),
 };
 
-ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDeactivationResponse, ETargetDeactivationResponse::RemoveImmunity,
-	ETargetDeactivationResponse::Reactivate);
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDeactivationResponse,
+                             ETargetDeactivationResponse::RemoveImmunity,
+                             ETargetDeactivationResponse::Reactivate);
 
 
 /** Each represents one way that a target can be destroyed. */
@@ -316,8 +328,9 @@ enum class ETargetDestructionCondition : uint8
 	OnDeactivation UMETA(DisplayName="On Deactivation")
 };
 
-ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDestructionCondition, ETargetDestructionCondition::OnExpiration,
-	ETargetDestructionCondition::OnDeactivation);
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDestructionCondition,
+                             ETargetDestructionCondition::OnExpiration,
+                             ETargetDestructionCondition::OnDeactivation);
 
 
 USTRUCT(BlueprintType)

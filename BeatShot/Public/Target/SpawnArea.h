@@ -229,7 +229,8 @@ public:
 
 	/** Returns an array of indices that border the index when looking at the array like a 2D grid. */
 	static TMap<EAdjacentDirection, int32> CreateAdjacentIndices(const EGridIndexType InGridIndexType,
-		const int32 InIndex, const int32 InWidth);
+	                                                             const int32 InIndex,
+	                                                             const int32 InWidth);
 
 	/** Returns the corresponding index type depending on the InIndex, InSize, and InWidth. */
 	static EGridIndexType FindIndexType(const int32 InIndex, const int32 InSize, const int32 InWidth);
@@ -278,9 +279,9 @@ public:
 		{
 			return true;
 		}
-		if ((Other.BottomLeftVertex.Y >= BottomLeftVertex.Y) && (Other.BottomLeftVertex.Z >= BottomLeftVertex.Z) &&
-			(Other.BottomLeftVertex.Y < TopRightVertex.Y - 0.01) && (Other.BottomLeftVertex.Z < TopRightVertex.Z -
-				0.01))
+		if ((Other.BottomLeftVertex.Y >= BottomLeftVertex.Y) && (Other.BottomLeftVertex.Z >= BottomLeftVertex.Z) && (
+			    Other.BottomLeftVertex.Y < TopRightVertex.Y - 0.01) && (
+			    Other.BottomLeftVertex.Z < TopRightVertex.Z - 0.01))
 		{
 			return true;
 		}
@@ -306,9 +307,9 @@ public:
 		{
 			return true;
 		}
-		if ((Other->BottomLeftVertex.Y >= BottomLeftVertex.Y) && (Other->BottomLeftVertex.Z >= BottomLeftVertex.Z)
-			&& (Other->BottomLeftVertex.Y < TopRightVertex.Y - 0.01) && (Other->BottomLeftVertex.Z < TopRightVertex.
-				Z - 0.01))
+		if ((Other->BottomLeftVertex.Y >= BottomLeftVertex.Y) && (Other->BottomLeftVertex.Z >= BottomLeftVertex.Z) && (
+			    Other->BottomLeftVertex.Y < TopRightVertex.Y - 0.01) && (
+			    Other->BottomLeftVertex.Z < TopRightVertex.Z - 0.01))
 		{
 			return true;
 		}

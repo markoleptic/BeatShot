@@ -9,8 +9,11 @@
 class UBSRecoilComponent;
 class UBSGameplayAbility;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FPerformWeaponTraceDelegate, const bool, bSuccess, const FHitResult&,
-	HitResult);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FPerformWeaponTraceDelegate,
+                                             const bool,
+                                             bSuccess,
+                                             const FHitResult&,
+                                             HitResult);
 
 UCLASS()
 class BEATSHOT_API UBSAT_PerformWeaponTraceSingle : public UAbilityTask
@@ -37,10 +40,12 @@ public:
 	 * @param TaskInstanceName Task instance name
 	 * @param TraceDistance How far to trace the line forward
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Ability|Tasks",
+	UFUNCTION(BlueprintCallable,
+		Category = "Ability|Tasks",
 		meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "TRUE"))
 	static UBSAT_PerformWeaponTraceSingle* PerformWeaponTraceSingle(UBSGameplayAbility* OwningAbility,
-		const FName TaskInstanceName, const float TraceDistance);
+	                                                                const FName TaskInstanceName,
+	                                                                const float TraceDistance);
 
 	/** Performs actual LineTraceSingleByChannel, returning true on success. */
 	bool LineTraceSingle(FHitResult& HitResult) const;

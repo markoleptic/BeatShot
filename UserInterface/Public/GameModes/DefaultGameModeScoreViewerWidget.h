@@ -50,8 +50,9 @@ protected:
 
 	EGameModeDifficulty FindGameModeDifficulty(const FString& InGameModeDifficulty);
 
-	void FilterActiveScores(EBaseGameMode CurrentBaseGameMode, const FString& CurrentSongTitle,
-		EGameModeDifficulty CurrentDifficulty);
+	void FilterActiveScores(EBaseGameMode CurrentBaseGameMode,
+	                        const FString& CurrentSongTitle,
+	                        EGameModeDifficulty CurrentDifficulty);
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UVerticalBox* MainBox;

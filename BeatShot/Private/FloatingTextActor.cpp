@@ -69,11 +69,15 @@ FTransform AFloatingTextActor::GetTextTransform(const FTransform& InTargetTransf
 	bDisplayBelow = !bDisplayAbove;
 	if (bDisplayAbove)
 	{
-		return FTransform(FVector(InTargetTransform.GetLocation().X, InTargetTransform.GetLocation().Y,
-			InTargetTransform.GetLocation().Z + Constants::SphereTargetRadius * InTargetTransform.GetScale3D().Z));
+		return FTransform(FVector(InTargetTransform.GetLocation().X,
+		                          InTargetTransform.GetLocation().Y,
+		                          InTargetTransform.GetLocation().Z + Constants::SphereTargetRadius * InTargetTransform.
+		                          GetScale3D().Z));
 	}
-	return FTransform(FVector(InTargetTransform.GetLocation().X, InTargetTransform.GetLocation().Y,
-		InTargetTransform.GetLocation().Z - Constants::SphereTargetRadius * InTargetTransform.GetScale3D().Z));
+	return FTransform(FVector(InTargetTransform.GetLocation().X,
+	                          InTargetTransform.GetLocation().Y,
+	                          InTargetTransform.GetLocation().Z - Constants::SphereTargetRadius * InTargetTransform.
+	                          GetScale3D().Z));
 }
 
 void AFloatingTextActor::OnCombatTextFadeOutCompleted()

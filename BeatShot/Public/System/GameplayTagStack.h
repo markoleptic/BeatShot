@@ -80,7 +80,8 @@ struct FGameplayTagStackContainer : public FFastArraySerializer
 	bool NetDeltaSerialize(FNetDeltaSerializeInfo& DeltaParms)
 	{
 		return FFastArraySerializer::FastArrayDeltaSerialize<FGameplayTagStack, FGameplayTagStackContainer>(Stacks,
-			DeltaParms, *this);
+			DeltaParms,
+			*this);
 	}
 
 private:

@@ -64,7 +64,10 @@ namespace DirectionTypes
 {
 	/** Cardinal direction Index types that are valid to use when searching for GridBlocks. */
 	inline const TSet GridBlock = {
-		EAdjacentDirection::Left, EAdjacentDirection::Right, EAdjacentDirection::Up, EAdjacentDirection::Down
+		EAdjacentDirection::Left,
+		EAdjacentDirection::Right,
+		EAdjacentDirection::Up,
+		EAdjacentDirection::Down
 	};
 
 	/** Up-Down only index types. */
@@ -75,8 +78,13 @@ namespace DirectionTypes
 
 	/** All index types. */
 	inline const TSet All = {
-		EAdjacentDirection::UpLeft, EAdjacentDirection::UpRight, EAdjacentDirection::DownLeft,
-		EAdjacentDirection::DownRight, EAdjacentDirection::Left, EAdjacentDirection::Right, EAdjacentDirection::Up,
+		EAdjacentDirection::UpLeft,
+		EAdjacentDirection::UpRight,
+		EAdjacentDirection::DownLeft,
+		EAdjacentDirection::DownRight,
+		EAdjacentDirection::Left,
+		EAdjacentDirection::Right,
+		EAdjacentDirection::Up,
 		EAdjacentDirection::Down
 	};
 }
@@ -116,17 +124,19 @@ struct FAreaKey
 	}
 
 	FAreaKey(const FVector& InBotLeft, const FIntVector3& InInc) : Vertex_BottomLeft(InBotLeft),
-	                                                               Vertex_TopRight(InBotLeft + FVector(0.f, InInc.Y,
-		                                                               InInc.Z))
+	                                                               Vertex_TopRight(
+		                                                               InBotLeft + FVector(0.f, InInc.Y, InInc.Z))
 	{
 	}
 
 	bool operator==(const FAreaKey& Other) const
 	{
 		return FMath::IsNearlyEqual(Vertex_BottomLeft.Y, Other.Vertex_BottomLeft.Y, 0.01f) &&
-			FMath::IsNearlyEqual(Vertex_BottomLeft.Z, Other.Vertex_BottomLeft.Z, 0.01f) &&
-			FMath::IsNearlyEqual(Vertex_TopRight.Y, Other.Vertex_TopRight.Y, 0.01f) && FMath::IsNearlyEqual(
-				Vertex_TopRight.Z, Other.Vertex_TopRight.Z, 0.01f);
+		       FMath::IsNearlyEqual(Vertex_BottomLeft.Z, Other.Vertex_BottomLeft.Z, 0.01f) &&
+		       FMath::IsNearlyEqual(Vertex_TopRight.Y, Other.Vertex_TopRight.Y, 0.01f) && FMath::IsNearlyEqual(
+			       Vertex_TopRight.Z,
+			       Other.Vertex_TopRight.Z,
+			       0.01f);
 	}
 
 	friend FORCEINLINE uint32 GetTypeHash(const FAreaKey& AreaKey)
@@ -150,7 +160,8 @@ struct FTargetSpawnParams
 	FTargetSpawnParams() = default;
 
 	FTargetSpawnParams(const FVector& InLoc, const FVector& InScale, const int32 InIndex) : Location(InLoc),
-		Scale(InScale), SpawnAreaIndex(InIndex)
+		Scale(InScale),
+		SpawnAreaIndex(InIndex)
 	{
 	}
 

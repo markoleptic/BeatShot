@@ -15,12 +15,15 @@ namespace SaveLoadCommon
 	bool SaveToSlot(T* SaveGameClass, const FString& InSlotName, const int32 InSlotIndex);
 }
 
-template bool SaveLoadCommon::SaveToSlot(USaveGameCustomGameMode* SaveGameClass, const FString& InSlotName,
-	const int32 InSlotIndex);
-template bool SaveLoadCommon::SaveToSlot(USaveGamePlayerSettings* SaveGameClass, const FString& InSlotName,
-	const int32 InSlotIndex);
-template bool SaveLoadCommon::SaveToSlot(USaveGamePlayerScore* SaveGameClass, const FString& InSlotName,
-	const int32 InSlotIndex);
+template bool SaveLoadCommon::SaveToSlot(USaveGameCustomGameMode* SaveGameClass,
+                                         const FString& InSlotName,
+                                         const int32 InSlotIndex);
+template bool SaveLoadCommon::SaveToSlot(USaveGamePlayerSettings* SaveGameClass,
+                                         const FString& InSlotName,
+                                         const int32 InSlotIndex);
+template bool SaveLoadCommon::SaveToSlot(USaveGamePlayerScore* SaveGameClass,
+                                         const FString& InSlotName,
+                                         const int32 InSlotIndex);
 
 template <>
 USaveGameCustomGameMode* SaveLoadCommon::LoadFromSlot(const FString& InSlotName, const int32 InSlotIndex);

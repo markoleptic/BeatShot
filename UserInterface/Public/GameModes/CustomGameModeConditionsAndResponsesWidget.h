@@ -31,23 +31,23 @@ protected:
 
 	UFUNCTION()
 	void OnSelectionChanged_TargetSpawnResponses(const TArray<FString>& Selected,
-		const ESelectInfo::Type SelectionType);
+	                                             const ESelectInfo::Type SelectionType);
 
 	UFUNCTION()
 	void OnSelectionChanged_TargetActivationResponses(const TArray<FString>& Selected,
-		const ESelectInfo::Type SelectionType);
+	                                                  const ESelectInfo::Type SelectionType);
 
 	UFUNCTION()
 	void OnSelectionChanged_TargetDeactivationConditions(const TArray<FString>& Selected,
-		const ESelectInfo::Type SelectionType);
+	                                                     const ESelectInfo::Type SelectionType);
 
 	UFUNCTION()
 	void OnSelectionChanged_TargetDeactivationResponses(const TArray<FString>& Selected,
-		const ESelectInfo::Type SelectionType);
+	                                                    const ESelectInfo::Type SelectionType);
 
 	UFUNCTION()
 	void OnSelectionChanged_TargetDestructionConditions(const TArray<FString>& Selected,
-		const ESelectInfo::Type SelectionType);
+	                                                    const ESelectInfo::Type SelectionType);
 
 	FString GetComboBoxEntryTooltipStringTableKey_TargetSpawnResponses(const FString& EnumString);
 

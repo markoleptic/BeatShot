@@ -30,10 +30,11 @@ void UAudioAnalyzerSettingsWidget::NativeConstruct()
 
 	SliderTextBoxOption_TimeWindow->SetValues(0, 1.f, 0.01f);
 	SliderTextBoxOption_TimeWindow->OnSliderTextBoxValueChanged.AddUObject(this,
-		&ThisClass::OnSliderTextBoxValueChanged);
+	                                                                       &ThisClass::OnSliderTextBoxValueChanged);
 
 	ComboBoxOption_NumBandChannels->ComboBox->OnSelectionChanged.AddDynamic(this,
-		&ThisClass::OnSelectionChanged_NumBandChannels);
+	                                                                        &ThisClass::
+	                                                                        OnSelectionChanged_NumBandChannels);
 
 	SavedTextWidget->SetSavedText(GetWidgetTextFromKey("SM_Saved_AudioAnalyzer"));
 
@@ -78,8 +79,10 @@ void UAudioAnalyzerSettingsWidget::NativeConstruct()
 	PopulateAASettings();
 }
 
-void UAudioAnalyzerSettingsWidget::OnChannelValueCommitted(const UBandChannelWidget* BandChannel, const int32 Index,
-	const float NewValue, const bool bIsMinValue)
+void UAudioAnalyzerSettingsWidget::OnChannelValueCommitted(const UBandChannelWidget* BandChannel,
+                                                           const int32 Index,
+                                                           const float NewValue,
+                                                           const bool bIsMinValue)
 {
 	if (bIsMinValue)
 	{
@@ -91,8 +94,9 @@ void UAudioAnalyzerSettingsWidget::OnChannelValueCommitted(const UBandChannelWid
 	}
 }
 
-void UAudioAnalyzerSettingsWidget::OnBandThresholdChanged(const UBandThresholdWidget* BandThreshold, const int32 Index,
-	const float NewValue)
+void UAudioAnalyzerSettingsWidget::OnBandThresholdChanged(const UBandThresholdWidget* BandThreshold,
+                                                          const int32 Index,
+                                                          const float NewValue)
 {
 	NewAASettings.BandLimitsThreshold[Index] = NewValue;
 }
@@ -106,7 +110,7 @@ void UAudioAnalyzerSettingsWidget::OnSliderTextBoxValueChanged(USingleRangeInput
 }
 
 void UAudioAnalyzerSettingsWidget::OnSelectionChanged_NumBandChannels(const TArray<FString>& SelectedOptions,
-	ESelectInfo::Type SelectionType)
+                                                                      ESelectInfo::Type SelectionType)
 {
 	if (SelectionType == ESelectInfo::Type::Direct)
 	{
@@ -280,7 +284,8 @@ void UAudioAnalyzerSettingsWidget::ShowBandLimitErrorMessage()
 {
 	PopupMessageWidget = CreateWidget<UPopupMessageWidget>(GetWorld(), PopupMessageClass);
 	TArray<UBSButton*> Buttons = PopupMessageWidget->InitPopup(GetWidgetTextFromKey("G_Error"),
-		GetWidgetTextFromKey("AA_BandLimitThresholdError"), 1);
+	                                                           GetWidgetTextFromKey("AA_BandLimitThresholdError"),
+	                                                           1);
 
 	if (Buttons[0])
 	{

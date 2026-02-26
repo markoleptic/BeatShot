@@ -31,8 +31,12 @@ protected:
 	TObjectPtr<const UBSAttributeSetBase> AttributeSetBase;
 
 	/** Callback function for when the owner's AttributeSetBase OnHealthChanged delegate is broadcast. */
-	void OnHealthAttributeChanged(AActor* EffectInstigator, AActor* EffectCauser, const FGameplayEffectSpec* EffectSpec,
-		float EffectMagnitude, float OldValue, float NewValue);
+	void OnHealthAttributeChanged(AActor* EffectInstigator,
+	                              AActor* EffectCauser,
+	                              const FGameplayEffectSpec* EffectSpec,
+	                              float EffectMagnitude,
+	                              float OldValue,
+	                              float NewValue);
 
 	/** Callback function for when the owner's AttributeSetBase OnDamageTaken delegate is broadcast. */
 	void OnDamageTaken(const FDamageEventData& DamageEvent);

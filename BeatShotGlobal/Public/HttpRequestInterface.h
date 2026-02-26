@@ -19,7 +19,7 @@ struct FBSHttpResponse
 	bool OK;
 	FOnHttpResponseReceived OnHttpResponseReceived;
 
-	FBSHttpResponse(): HttpStatus(0), bConnectedSuccessfully(false), OK(false)
+	FBSHttpResponse() : HttpStatus(0), bConnectedSuccessfully(false), OK(false)
 	{
 	}
 };
@@ -43,7 +43,7 @@ struct FDeleteScoresResponse : public FBSHttpResponse
 
 	int32 NumRemoved;
 
-	FDeleteScoresResponse(): NumRemoved(0)
+	FDeleteScoresResponse() : NumRemoved(0)
 	{
 	}
 };
@@ -137,7 +137,7 @@ struct FSteamAuthTicketResponse : public FBSHttpResponse
 	UPROPERTY()
 	FString ErrorDesc;
 
-	FSteamAuthTicketResponse(): VacBanned(false), PublisherBanned(false)
+	FSteamAuthTicketResponse() : VacBanned(false), PublisherBanned(false)
 	{
 	}
 };
@@ -220,7 +220,7 @@ public:
 	 *  @param AccessTokenResponse struct containing callback delegate and response info
 	 */
 	static void RequestAccessToken(const FString RefreshToken,
-		TSharedPtr<FAccessTokenResponse, ESPMode::ThreadSafe> AccessTokenResponse);
+	                               TSharedPtr<FAccessTokenResponse, ESPMode::ThreadSafe> AccessTokenResponse);
 
 	/** Sends a POST login request to BeatShot website given a LoginPayload. Executes delegate in struct on completion.
 	 *
@@ -228,7 +228,7 @@ public:
 	 *  @param LoginResponse struct containing callback delegate and response info
 	 */
 	static void LoginUser(const FLoginPayload LoginPayload,
-		TSharedPtr<FLoginResponse, ESPMode::ThreadSafe> LoginResponse);
+	                      TSharedPtr<FLoginResponse, ESPMode::ThreadSafe> LoginResponse);
 
 	/** Converts ScoresToPost to a JSON string and sends an http POST request to BeatShot website given a valid
 	 *  access token. Executes delegate in struct on completion.
@@ -238,8 +238,10 @@ public:
 	 *  @param AccessToken access token obtained using refresh token
 	 *  @param PostScoresResponse struct containing callback delegate and response info
 	 */
-	static void PostPlayerScores(const TArray<FPlayerScore> ScoresToPost, const FString UserID,
-		const FString AccessToken, TSharedPtr<FBSHttpResponse, ESPMode::ThreadSafe> PostScoresResponse);
+	static void PostPlayerScores(const TArray<FPlayerScore> ScoresToPost,
+	                             const FString UserID,
+	                             const FString AccessToken,
+	                             TSharedPtr<FBSHttpResponse, ESPMode::ThreadSafe> PostScoresResponse);
 
 	/** Makes a POST request to BeatShot website which emails the feedback. Executes supplied OnPostFeedbackResponse.
 	 *
@@ -247,7 +249,7 @@ public:
 	 *  @param FeedbackResponse struct containing callback delegate and response info
 	 */
 	static void PostFeedback(const FJsonFeedback InFeedback,
-		TSharedPtr<FBSHttpResponse, ESPMode::ThreadSafe> FeedbackResponse);
+	                         TSharedPtr<FBSHttpResponse, ESPMode::ThreadSafe> FeedbackResponse);
 
 	/** Makes a DELETE request to BeatShot website which deletes all scores matching the CustomGameModeName and userID.
 	 *
@@ -256,8 +258,10 @@ public:
 	 *  @param AccessToken access token obtained using refresh token
 	 *  @param DeleteScoresResponse struct containing callback delegate and response info
 	 */
-	static void DeleteScores(const FString CustomGameModeName, const FString UserID, const FString AccessToken,
-		TSharedPtr<FDeleteScoresResponse, ESPMode::ThreadSafe> DeleteScoresResponse);
+	static void DeleteScores(const FString CustomGameModeName,
+	                         const FString UserID,
+	                         const FString AccessToken,
+	                         TSharedPtr<FDeleteScoresResponse, ESPMode::ThreadSafe> DeleteScoresResponse);
 
 	/** Makes a GET request to BeatShot website that uses the AuthenticateUserTicket request from the
 	 *  ISteamUserAuthInterface. Executes supplied OnTicketWebApiResponse.
@@ -266,5 +270,6 @@ public:
 	 *  @param SteamAuthTicketResponse struct containing callback delegate and response info
 	 */
 	static void AuthenticateSteamUser(const FString AuthTicket,
-		TSharedPtr<FSteamAuthTicketResponse, ESPMode::ThreadSafe> SteamAuthTicketResponse);
+	                                  TSharedPtr<FSteamAuthTicketResponse, ESPMode::ThreadSafe>
+	                                  SteamAuthTicketResponse);
 };

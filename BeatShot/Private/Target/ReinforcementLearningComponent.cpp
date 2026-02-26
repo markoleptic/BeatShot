@@ -79,25 +79,30 @@ void UReinforcementLearningComponent::Init(const FRLAgentParams& AgentParams)
 #if !UE_BUILD_SHIPPING
 		if (bPrintDebug_QTableInit)
 		{
-			UE_LOG(LogTargetManager, Display, TEXT("Index %d has %d SpawnAreas associated with it."), Mapping.Key,
-				Mapping.Value.MappedIndices.Num());
+			UE_LOG(LogTargetManager,
+			       Display,
+			       TEXT("Index %d has %d SpawnAreas associated with it."),
+			       Mapping.Key,
+			       Mapping.Value.MappedIndices.Num());
 		}
 #endif
 	}
 
 	// Use existing QTable if possible
 	if (AgentParams.ScoreInfo.NumQTableRows == QTable.numRows() && AgentParams.ScoreInfo.NumQTableColumns == QTable.
-		numCols())
+	    numCols())
 	{
 		if (QTable.size() == AgentParams.ScoreInfo.QTable.Num())
 		{
-			QTable = GetNdArrayFromTArray<float>(AgentParams.ScoreInfo.QTable, AgentParams.ScoreInfo.NumQTableRows,
-				AgentParams.ScoreInfo.NumQTableColumns);
+			QTable = GetNdArrayFromTArray<float>(AgentParams.ScoreInfo.QTable,
+			                                     AgentParams.ScoreInfo.NumQTableRows,
+			                                     AgentParams.ScoreInfo.NumQTableColumns);
 		}
 		if (TrainingSamples.size() == AgentParams.ScoreInfo.TrainingSamples.Num())
 		{
 			TrainingSamples = GetNdArrayFromTArray<int32>(AgentParams.ScoreInfo.TrainingSamples,
-				AgentParams.ScoreInfo.NumQTableRows, AgentParams.ScoreInfo.NumQTableColumns);
+			                                              AgentParams.ScoreInfo.NumQTableRows,
+			                                              AgentParams.ScoreInfo.NumQTableColumns);
 		}
 	}
 
@@ -107,12 +112,21 @@ void UReinforcementLearningComponent::Init(const FRLAgentParams& AgentParams)
 #if !UE_BUILD_SHIPPING
 	if (bPrintDebug_QTableInit)
 	{
-		UE_LOG(LogTargetManager, Display, TEXT("Unique Indices across entire mapping: %d Input Size: %d"),
-			QTableToSpawnAreaIndexMap.Num(), AgentParams.SpawnAreaSize.Z * AgentParams.SpawnAreaSize.Y);
-		UE_LOG(LogTargetManager, Display, TEXT("In QTable Size: %d  Actual QTable Size: %d"),
-			AgentParams.ScoreInfo.QTable.Num(), QTable.size());
-		UE_LOG(LogTargetManager, Display, TEXT("SpawnAreasRows: %d SpawnAreasColumns: %d"), AgentParams.SpawnAreaSize.Z,
-			AgentParams.SpawnAreaSize.Y);
+		UE_LOG(LogTargetManager,
+		       Display,
+		       TEXT("Unique Indices across entire mapping: %d Input Size: %d"),
+		       QTableToSpawnAreaIndexMap.Num(),
+		       AgentParams.SpawnAreaSize.Z * AgentParams.SpawnAreaSize.Y);
+		UE_LOG(LogTargetManager,
+		       Display,
+		       TEXT("In QTable Size: %d  Actual QTable Size: %d"),
+		       AgentParams.ScoreInfo.QTable.Num(),
+		       QTable.size());
+		UE_LOG(LogTargetManager,
+		       Display,
+		       TEXT("SpawnAreasRows: %d SpawnAreasColumns: %d"),
+		       AgentParams.SpawnAreaSize.Z,
+		       AgentParams.SpawnAreaSize.Y);
 		UE_LOG(LogTargetManager, Display, TEXT("QTableRows: %d QTableColumns: %d"), M, N);
 		UE_LOG(LogTargetManager, Display, TEXT("QTable Training Samples: %lld"), TotalTrainingSamples);
 	}
@@ -140,15 +154,18 @@ void UReinforcementLearningComponent::Clear()
 // Main QTable functions
 
 void UReinforcementLearningComponent::AddToActiveTargetPairs(const int32 SpawnAreaIndex_First,
-	const int32 SpawnAreaIndex_Second)
+                                                             const int32 SpawnAreaIndex_Second)
 {
 	ActiveTargetPairs.Emplace(SpawnAreaIndex_First, SpawnAreaIndex_Second);
 
 #if !UE_BUILD_SHIPPING
 	if (bPrintDebug_ActiveTargetPairs)
 	{
-		UE_LOG(LogTargetManager, Display, TEXT("Added [%d, %d] to Active Target Pairs"), SpawnAreaIndex_First,
-			SpawnAreaIndex_Second);
+		UE_LOG(LogTargetManager,
+		       Display,
+		       TEXT("Added [%d, %d] to Active Target Pairs"),
+		       SpawnAreaIndex_First,
+		       SpawnAreaIndex_Second);
 	}
 #endif
 }
@@ -191,11 +208,11 @@ void UReinforcementLearningComponent::ClearCachedTargetPairs()
 }
 
 int32 UReinforcementLearningComponent::ChooseNextActionIndex(const int32 PreviousSpawnAreaIndex,
-	const TArray<int32>& SpawnAreaIndices) const
+                                                             const TArray<int32>& SpawnAreaIndices) const
 {
 	// Only Exploration and ActiveAgent Reinforcement Learning Modes should choose spawn locations
 	if (SpawnAreaIndices.IsEmpty() || ReinforcementLearningMode == EReinforcementLearningMode::None ||
-		ReinforcementLearningMode == EReinforcementLearningMode::Training)
+	    ReinforcementLearningMode == EReinforcementLearningMode::Training)
 	{
 		return INDEX_NONE;
 	}
@@ -208,8 +225,9 @@ int32 UReinforcementLearningComponent::ChooseNextActionIndex(const int32 Previou
 #if !UE_BUILD_SHIPPING
 			if (bPrintDebug_ChooseActionIndex)
 			{
-				UE_LOG(LogTargetManager, Display,
-					TEXT("No acceptable index range found, falling back to choosing random action"));
+				UE_LOG(LogTargetManager,
+				       Display,
+				       TEXT("No acceptable index range found, falling back to choosing random action"));
 			}
 #endif
 			return ChooseRandomActionIndex(SpawnAreaIndices);
@@ -225,15 +243,16 @@ int32 UReinforcementLearningComponent::ChooseRandomActionIndex(const TArray<int3
 }
 
 int32 UReinforcementLearningComponent::ChooseBestActionIndex(const int32 PreviousSpawnAreaIndex,
-	const TArray<int32>& SpawnAreaIndices) const
+                                                             const TArray<int32>& SpawnAreaIndices) const
 {
 	int32 ReturnIndex = INDEX_NONE;
 	int32 NumFiltersRequired = 0;
 	int32 NumCurrentIndexChoices = 0;
 
 	const TArray<int32> MaxIndices = (PreviousSpawnAreaIndex == INDEX_NONE)
-		? GetIndices_MaximizeFirst()
-		: GetIndices_MaximizeSecond(GetIndex_FromSpawnArea_ToQTable(PreviousSpawnAreaIndex));
+	                                 ? GetIndices_MaximizeFirst()
+	                                 : GetIndices_MaximizeSecond(
+		                                 GetIndex_FromSpawnArea_ToQTable(PreviousSpawnAreaIndex));
 
 	for (const int32 Index : MaxIndices)
 	{
@@ -291,7 +310,7 @@ void UReinforcementLearningComponent::UpdateQTable(FQTableUpdateParams& UpdatePa
 
 	// Q value for starting at State 2 and taking the Max Action (State 2, Action 2)
 	const float Target = UpdateParams.TargetPair.GetReward() + Gamma * QTable(UpdateParams.StateIndex_2,
-		UpdateParams.ActionIndex_2);
+	                                                                          UpdateParams.ActionIndex_2);
 
 	// Q Table update function
 	const float NewValue = QTable(UpdateParams.StateIndex, UpdateParams.ActionIndex) + Alpha * (Target - Predict);
@@ -307,10 +326,15 @@ void UReinforcementLearningComponent::UpdateQTable(FQTableUpdateParams& UpdatePa
 #if !UE_BUILD_SHIPPING
 	if (bPrintDebug_QTableUpdate)
 	{
-		UE_LOG(LogTargetManager, Display,
-			TEXT("QTable Value for TargetPair [%d, %d] & QTableIndex [%d, %d]: Old: %f New: %f"),
-			UpdateParams.TargetPair.First, UpdateParams.TargetPair.Second, UpdateParams.StateIndex,
-			UpdateParams.ActionIndex, OldValue, NewValue);
+		UE_LOG(LogTargetManager,
+		       Display,
+		       TEXT("QTable Value for TargetPair [%d, %d] & QTableIndex [%d, %d]: Old: %f New: %f"),
+		       UpdateParams.TargetPair.First,
+		       UpdateParams.TargetPair.Second,
+		       UpdateParams.StateIndex,
+		       UpdateParams.ActionIndex,
+		       OldValue,
+		       NewValue);
 	}
 	UpdateQTableWidget();
 #endif
@@ -546,8 +570,10 @@ void UReinforcementLearningComponent::PrintMaxAverageIndices() const
 	UE_LOG(LogTargetManager, Display, TEXT("%s"), *Row4);
 }
 
-void UReinforcementLearningComponent::PrintGetMaxIndex(const int32 PreviousIndex, const float MaxValue,
-	const nc::NdArray<float>& PreviousRow, const nc::NdArray<unsigned>& ReverseSortedIndices) const
+void UReinforcementLearningComponent::PrintGetMaxIndex(const int32 PreviousIndex,
+                                                       const float MaxValue,
+                                                       const nc::NdArray<float>& PreviousRow,
+                                                       const nc::NdArray<unsigned>& ReverseSortedIndices) const
 {
 	FString String;
 	for (const float Value : PreviousRow)
@@ -576,8 +602,12 @@ void UReinforcementLearningComponent::PrintGetMaxIndex(const int32 PreviousIndex
 			break; // Stop when values are no longer the maximum
 		}
 	}
-	UE_LOG(LogTargetManager, Display, TEXT("Max Value for Row Index %d: %s, Max Indices: %s"), PreviousIndex,
-		*FString("  " + FText::AsNumber(MaxValue, &FloatFormatting).ToString() + " "), *String);
+	UE_LOG(LogTargetManager,
+	       Display,
+	       TEXT("Max Value for Row Index %d: %s, Max Indices: %s"),
+	       PreviousIndex,
+	       *FString("  " + FText::AsNumber(MaxValue, &FloatFormatting).ToString() + " "),
+	       *String);
 }
 
 #endif

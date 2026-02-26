@@ -109,8 +109,10 @@ struct FTargetDamageEvent
 	void SetTargetData(const float InCurrentDeactivationHealthThreshold, const TArray<ETargetDamageType>& InTypes);
 
 	/** Called by the TargetManager to set data that only it will have access to. */
-	void SetTargetManagerData(const bool bDeactivate, const bool bDestroy, const int32 InStreak,
-		const float InTotalPossibleTrackingDamage);
+	void SetTargetManagerData(const bool bDeactivate,
+	                          const bool bDestroy,
+	                          const int32 InStreak,
+	                          const float InTotalPossibleTrackingDamage);
 
 	FORCEINLINE bool operator ==(const FTargetDamageEvent& Other) const
 	{
@@ -321,8 +323,9 @@ public:
 
 	/** Play the explosion effect at the location of target, scaled to size with the color of the target when
 	 *  it was destroyed. */
-	void PlayExplosionEffect(const FVector& ExplosionLocation, const float SphereRadius,
-		const FLinearColor& InColorWhenDestroyed) const;
+	void PlayExplosionEffect(const FVector& ExplosionLocation,
+	                         const float SphereRadius,
+	                         const FLinearColor& InColorWhenDestroyed) const;
 
 	/** Returns the color the target be after SpawnBeatDelay seconds have passed. */
 	UFUNCTION(BlueprintPure)

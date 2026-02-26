@@ -69,8 +69,10 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FOnGameModeBreakingChange, const bool bIsGam
 /** The base widget for selecting or customizing a game mode. The custom portion is split into multiple
  *  SettingsCategoryWidgets. Includes a default game modes section. */
 UCLASS()
-class USERINTERFACE_API UGameModeMenuWidget : public UUserWidget, public IHttpRequestInterface,
-                                              public IBSGameModeInterface, public IBSWidgetInterface
+class USERINTERFACE_API UGameModeMenuWidget : public UUserWidget,
+                                              public IHttpRequestInterface,
+                                              public IBSGameModeInterface,
+                                              public IBSWidgetInterface
 {
 	GENERATED_BODY()
 

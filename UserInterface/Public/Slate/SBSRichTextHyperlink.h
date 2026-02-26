@@ -14,9 +14,15 @@ class SBSRichTextHyperlink : public SButton
 public:
 	SLATE_BEGIN_ARGS(SBSRichTextHyperlink) : _Text(),
 	                                         _Style(&FCoreStyle::Get().GetWidgetStyle<FHyperlinkStyle>("Hyperlink")),
-	                                         _TextStyle(nullptr), _UnderlineStyle(nullptr), _Padding(), _OnNavigate(),
-	                                         _TextShapingMethod(), _TextFlowDirection(), _HighlightColor(),
-	                                         _HighlightShape(), _HighlightText()
+	                                         _TextStyle(nullptr),
+	                                         _UnderlineStyle(nullptr),
+	                                         _Padding(),
+	                                         _OnNavigate(),
+	                                         _TextShapingMethod(),
+	                                         _TextFlowDirection(),
+	                                         _HighlightColor(),
+	                                         _HighlightShape(),
+	                                         _HighlightText()
 		{
 		}
 
@@ -58,8 +64,8 @@ public:
 		SButton::Construct(
 			SButton::FArguments().ContentPadding(Padding).ButtonStyle(this->ButtonStyle).
 			                      OnClicked(this, &SBSRichTextHyperlink::Hyperlink_OnClicked).
-			                      OnHovered(this, &SBSRichTextHyperlink::Hyperlink_OnHovered).OnUnhovered(this,
-				                      &SBSRichTextHyperlink::Hyperlink_OnUnhovered).
+			                      OnHovered(this, &SBSRichTextHyperlink::Hyperlink_OnHovered).
+			                      OnUnhovered(this, &SBSRichTextHyperlink::Hyperlink_OnUnhovered).
 			                      ForegroundColor(FSlateColor::UseForeground()).
 			                      TextShapingMethod(InArgs._TextShapingMethod).TextFlowDirection(
 				                      InArgs._TextFlowDirection)[TextBlock.ToSharedRef()]);

@@ -21,11 +21,13 @@ struct FSpreadWidgetState
 	FString SubWidgetTooltipKey;
 	FSpreadWidgetState() = default;
 
-	FSpreadWidgetState(const EMenuOptionEnabledState MenuState, const EMenuOptionEnabledState SubWidgetState,
-		const FString& MenuKey, const FString& SubWidgetKey) : MenuOptionEnabledState(MenuState),
-		                                                       SubWidgetEnabledState(SubWidgetState),
-		                                                       MenuOptionTooltipKey(MenuKey),
-		                                                       SubWidgetTooltipKey(SubWidgetKey)
+	FSpreadWidgetState(const EMenuOptionEnabledState MenuState,
+	                   const EMenuOptionEnabledState SubWidgetState,
+	                   const FString& MenuKey,
+	                   const FString& SubWidgetKey) : MenuOptionEnabledState(MenuState),
+	                                                  SubWidgetEnabledState(SubWidgetState),
+	                                                  MenuOptionTooltipKey(MenuKey),
+	                                                  SubWidgetTooltipKey(SubWidgetKey)
 	{
 	}
 
@@ -56,8 +58,10 @@ protected:
 
 	void UpdateSpread();
 
-	void UpdateSpreadWidgetState(UDualRangeInputWidget* Widget, const bool bTracking, const bool bHeadShotHeightOnly,
-		const bool bGrid);
+	void UpdateSpreadWidgetState(UDualRangeInputWidget* Widget,
+	                             const bool bTracking,
+	                             const bool bHeadShotHeightOnly,
+	                             const bool bGrid);
 
 	void UpdateDependentOption_BoundsScalingPolicy();
 
@@ -67,7 +71,7 @@ protected:
 
 	UFUNCTION()
 	void OnSelectionChanged_TargetDistributionPolicy(const TArray<FString>& Selected,
-		const ESelectInfo::Type SelectionType);
+	                                                 const ESelectInfo::Type SelectionType);
 
 	FString GetComboBoxEntryTooltipStringTableKey_TargetDistributionPolicy(const FString& EnumString);
 

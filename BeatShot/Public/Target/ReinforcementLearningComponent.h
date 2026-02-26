@@ -30,12 +30,13 @@ private:
 	float Reward;
 
 public:
-	FTargetPair(): First(-1), Second(-1), Reward(0.f)
+	FTargetPair() : First(-1), Second(-1), Reward(0.f)
 	{
 	}
 
 	FTargetPair(const int32 PreviousPointIndex, const int32 CurrentPointIndex) : First(PreviousPointIndex),
-		Second(CurrentPointIndex), Reward(0.f)
+		Second(CurrentPointIndex),
+		Reward(0.f)
 	{
 	}
 
@@ -75,13 +76,19 @@ struct FQTableUpdateParams
 	/** The QTable column index for the index of maximum reward, starting from State_Index_2. */
 	int32 ActionIndex_2;
 
-	FQTableUpdateParams() : TargetPair(FTargetPair()), StateIndex(-1), ActionIndex(-1), StateIndex_2(-1),
+	FQTableUpdateParams() : TargetPair(FTargetPair()),
+	                        StateIndex(-1),
+	                        ActionIndex(-1),
+	                        StateIndex_2(-1),
 	                        ActionIndex_2(-1)
 	{
 	}
 
-	explicit FQTableUpdateParams(const FTargetPair& InTargetPair) : TargetPair(InTargetPair), StateIndex(-1),
-	                                                                ActionIndex(-1), StateIndex_2(-1), ActionIndex_2(-1)
+	explicit FQTableUpdateParams(const FTargetPair& InTargetPair) : TargetPair(InTargetPair),
+	                                                                StateIndex(-1),
+	                                                                ActionIndex(-1),
+	                                                                StateIndex_2(-1),
+	                                                                ActionIndex_2(-1)
 	{
 	}
 };
@@ -135,9 +142,11 @@ struct FRLAgentParams
 	{
 	}
 
-	FRLAgentParams(const FBS_AIConfig& InAIConfig, const FCommonScoreInfo& InScoreInfo,
-		const FIntVector3& InSpawnAreaSize) : AIConfig(InAIConfig), ScoreInfo(InScoreInfo),
-		                                      SpawnAreaSize(InSpawnAreaSize)
+	FRLAgentParams(const FBS_AIConfig& InAIConfig,
+	               const FCommonScoreInfo& InScoreInfo,
+	               const FIntVector3& InSpawnAreaSize) : AIConfig(InAIConfig),
+	                                                     ScoreInfo(InScoreInfo),
+	                                                     SpawnAreaSize(InSpawnAreaSize)
 	{
 	}
 };
@@ -301,8 +310,10 @@ public:
 	/** Prints the MaxIndices and MaxValues corresponding to the choices the component currently has. */
 	void PrintMaxAverageIndices() const;
 
-	void PrintGetMaxIndex(const int32 PreviousIndex, const float MaxValue, const nc::NdArray<float>& PreviousRow,
-		const nc::NdArray<unsigned>& ReverseSortedIndices) const;
+	void PrintGetMaxIndex(const int32 PreviousIndex,
+	                      const float MaxValue,
+	                      const nc::NdArray<float>& PreviousRow,
+	                      const nc::NdArray<unsigned>& ReverseSortedIndices) const;
 
 	/** Delegate that broadcasts when the QTable is updated. Used to broadcast to widgets. */
 	FOnQTableUpdate OnQTableUpdate;

@@ -52,24 +52,39 @@ template <typename ItemType>
 class SBSTableRow : public ITableRow, public SBorder
 {
 	static_assert(TIsValidListItem<ItemType>::Value,
-		"Item type T must be UObjectBase*, TObjectPtr<>, TWeakObjectPtr<>, TSharedRef<>, or TSharedPtr<>.");
+	              "Item type T must be UObjectBase*, TObjectPtr<>, TWeakObjectPtr<>, TSharedRef<>, or TSharedPtr<>.");
 
 public:
 	/** Delegate signature for querying whether this FDragDropEvent will be handled by the drop target of type
 	 *  ItemType. */
-	DECLARE_DELEGATE_RetVal_ThreeParams(TOptional<EItemDropZone>, FOnCanAcceptDrop, const FDragDropEvent&,
-		EItemDropZone, ItemType);
+	DECLARE_DELEGATE_RetVal_ThreeParams(TOptional<EItemDropZone>,
+	                                    FOnCanAcceptDrop,
+	                                    const FDragDropEvent&,
+	                                    EItemDropZone,
+	                                    ItemType);
 	/** Delegate signature for handling the drop of FDragDropEvent onto target of type ItemType. */
 	DECLARE_DELEGATE_RetVal_ThreeParams(FReply, FOnAcceptDrop, const FDragDropEvent&, EItemDropZone, ItemType);
 	/** Delegate signature for painting drop indicators. */
-	DECLARE_DELEGATE_RetVal_EightParams(int32, FOnPaintDropIndicator, EItemDropZone, const FPaintArgs&,
-		const FGeometry&, const FSlateRect&, FSlateWindowElementList&, int32, const FWidgetStyle&, bool);
+	DECLARE_DELEGATE_RetVal_EightParams(int32,
+	                                    FOnPaintDropIndicator,
+	                                    EItemDropZone,
+	                                    const FPaintArgs&,
+	                                    const FGeometry&,
+	                                    const FSlateRect&,
+	                                    FSlateWindowElementList&,
+	                                    int32,
+	                                    const FWidgetStyle&,
+	                                    bool);
 
 public:
 	SLATE_BEGIN_ARGS(SBSTableRow< ItemType >) :
 			_Style(&FCoreStyle::Get().GetWidgetStyle<FTableRowStyle>("TableView.Row")),
-			_ExpanderStyleSet(&FCoreStyle::Get()), _Padding(FMargin(0)), _ShowSelection(true), _ShowWires(false),
-			_bAllowPreselectedItemActivation(false), _SignalSelectionMode(ETableRowSignalSelectionMode::Deferred),
+			_ExpanderStyleSet(&FCoreStyle::Get()),
+			_Padding(FMargin(0)),
+			_ShowSelection(true),
+			_ShowWires(false),
+			_bAllowPreselectedItemActivation(false),
+			_SignalSelectionMode(ETableRowSignalSelectionMode::Deferred),
 			_Content()
 		{
 		}
@@ -126,7 +141,7 @@ public:
 	 * @param InArgs The declaration data for this widget
 	 */
 	void Construct(const typename SBSTableRow<ItemType>::FArguments& InArgs,
-		const TSharedRef<STableViewBase>& InOwnerTableView)
+	               const TSharedRef<STableViewBase>& InOwnerTableView)
 	{
 		/** Note: Please initialize any state in ConstructInternal, not here. This is because SBSTableRow derivatives
 		 *  call ConstructInternal directly to avoid constructing children. **/
@@ -136,8 +151,9 @@ public:
 		ConstructChildren(InOwnerTableView->TableViewMode, InArgs._Padding, InArgs._Content.Widget);
 	}
 
-	virtual void ConstructChildren(ETableViewMode::Type InOwnerTableMode, const TAttribute<FMargin>& InPadding,
-		const TSharedRef<SWidget>& InContent)
+	virtual void ConstructChildren(ETableViewMode::Type InOwnerTableMode,
+	                               const TAttribute<FMargin>& InPadding,
+	                               const TSharedRef<SWidget>& InContent)
 	{
 		this->Content = InContent;
 		InnerContentSlot = nullptr;
@@ -288,9 +304,13 @@ public:
 		};
 	}
 
-	virtual int32 OnPaint(const FPaintArgs& Args, const FGeometry& AllottedGeometry, const FSlateRect& MyCullingRect,
-		FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle,
-		bool bParentEnabled) const override
+	virtual int32 OnPaint(const FPaintArgs& Args,
+	                      const FGeometry& AllottedGeometry,
+	                      const FSlateRect& MyCullingRect,
+	                      FSlateWindowElementList& OutDrawElements,
+	                      int32 LayerId,
+	                      const FWidgetStyle& InWidgetStyle,
+	                      bool bParentEnabled) const override
 	{
 		TSharedRef<ITypedTableView<ItemType>> OwnerTable = OwnerTablePtr.Pin().ToSharedRef();
 		const bool bIsActive = OwnerTable->AsWidget()->HasKeyboardFocus();
@@ -298,37 +318,63 @@ public:
 		if (const ItemType* MyItemPtr = GetItemForThis(OwnerTable))
 		{
 			if (bIsActive && OwnerTable->Private_UsesSelectorFocus() && OwnerTable->
-				Private_HasSelectorFocus(*MyItemPtr))
+			    Private_HasSelectorFocus(*MyItemPtr))
 			{
-				FSlateDrawElement::MakeBox(OutDrawElements, LayerId, AllottedGeometry.ToPaintGeometry(),
-					&Style->SelectorFocusedBrush, ESlateDrawEffect::None,
-					Style->SelectorFocusedBrush.GetTint(InWidgetStyle) * InWidgetStyle.GetColorAndOpacityTint());
+				FSlateDrawElement::MakeBox(OutDrawElements,
+				                           LayerId,
+				                           AllottedGeometry.ToPaintGeometry(),
+				                           &Style->SelectorFocusedBrush,
+				                           ESlateDrawEffect::None,
+				                           Style->SelectorFocusedBrush.GetTint(InWidgetStyle) * InWidgetStyle.
+				                           GetColorAndOpacityTint());
 			}
 		}
 
-		LayerId = SBorder::OnPaint(Args, AllottedGeometry, MyCullingRect, OutDrawElements, LayerId, InWidgetStyle,
-			bParentEnabled);
+		LayerId = SBorder::OnPaint(Args,
+		                           AllottedGeometry,
+		                           MyCullingRect,
+		                           OutDrawElements,
+		                           LayerId,
+		                           InWidgetStyle,
+		                           bParentEnabled);
 
 		if (ItemDropZone.IsSet())
 		{
 			if (PaintDropIndicatorEvent.IsBound())
 			{
-				LayerId = PaintDropIndicatorEvent.Execute(ItemDropZone.GetValue(), Args, AllottedGeometry,
-					MyCullingRect, OutDrawElements, LayerId, InWidgetStyle, bParentEnabled);
+				LayerId = PaintDropIndicatorEvent.Execute(ItemDropZone.GetValue(),
+				                                          Args,
+				                                          AllottedGeometry,
+				                                          MyCullingRect,
+				                                          OutDrawElements,
+				                                          LayerId,
+				                                          InWidgetStyle,
+				                                          bParentEnabled);
 			}
 			else
 			{
-				OnPaintDropIndicator(ItemDropZone.GetValue(), Args, AllottedGeometry, MyCullingRect, OutDrawElements,
-					LayerId, InWidgetStyle, bParentEnabled);
+				OnPaintDropIndicator(ItemDropZone.GetValue(),
+				                     Args,
+				                     AllottedGeometry,
+				                     MyCullingRect,
+				                     OutDrawElements,
+				                     LayerId,
+				                     InWidgetStyle,
+				                     bParentEnabled);
 			}
 		}
 
 		return LayerId;
 	}
 
-	virtual int32 OnPaintDropIndicator(EItemDropZone InItemDropZone, const FPaintArgs& Args,
-		const FGeometry& AllottedGeometry, const FSlateRect& MyCullingRect, FSlateWindowElementList& OutDrawElements,
-		int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const
+	virtual int32 OnPaintDropIndicator(EItemDropZone InItemDropZone,
+	                                   const FPaintArgs& Args,
+	                                   const FGeometry& AllottedGeometry,
+	                                   const FSlateRect& MyCullingRect,
+	                                   FSlateWindowElementList& OutDrawElements,
+	                                   int32 LayerId,
+	                                   const FWidgetStyle& InWidgetStyle,
+	                                   bool bParentEnabled) const
 	{
 		TSharedRef<ITypedTableView<ItemType>> OwnerTable = OwnerTablePtr.Pin().ToSharedRef();
 
@@ -337,9 +383,13 @@ public:
 
 		if (OwnerTable->Private_GetOrientation() == Orient_Vertical)
 		{
-			FSlateDrawElement::MakeBox(OutDrawElements, LayerId++, AllottedGeometry.ToPaintGeometry(),
-				DropIndicatorBrush, ESlateDrawEffect::None,
-				DropIndicatorBrush->GetTint(InWidgetStyle) * InWidgetStyle.GetColorAndOpacityTint());
+			FSlateDrawElement::MakeBox(OutDrawElements,
+			                           LayerId++,
+			                           AllottedGeometry.ToPaintGeometry(),
+			                           DropIndicatorBrush,
+			                           ESlateDrawEffect::None,
+			                           DropIndicatorBrush->GetTint(InWidgetStyle) * InWidgetStyle.
+			                           GetColorAndOpacityTint());
 		}
 		else
 		{
@@ -350,12 +400,18 @@ public:
 			FSlateLayoutTransform RotatedTransform(Pivot - RotatedLocalSize * 0.5f);
 			// Make the box centered to the alloted geometry, so that it can be rotated around the center.
 
-			FSlateDrawElement::MakeRotatedBox(OutDrawElements, LayerId++,
-				AllottedGeometry.ToPaintGeometry(RotatedLocalSize, RotatedTransform), DropIndicatorBrush,
-				ESlateDrawEffect::None, -UE_HALF_PI, // 90 deg CCW
-				RotatedLocalSize * 0.5f, // Relative center to the flipped
-				FSlateDrawElement::RelativeToElement,
-				DropIndicatorBrush->GetTint(InWidgetStyle) * InWidgetStyle.GetColorAndOpacityTint());
+			FSlateDrawElement::MakeRotatedBox(OutDrawElements,
+			                                  LayerId++,
+			                                  AllottedGeometry.ToPaintGeometry(RotatedLocalSize, RotatedTransform),
+			                                  DropIndicatorBrush,
+			                                  ESlateDrawEffect::None,
+			                                  -UE_HALF_PI,
+			                                  // 90 deg CCW
+			                                  RotatedLocalSize * 0.5f,
+			                                  // Relative center to the flipped
+			                                  FSlateDrawElement::RelativeToElement,
+			                                  DropIndicatorBrush->GetTint(InWidgetStyle) * InWidgetStyle.
+			                                  GetColorAndOpacityTint());
 		}
 
 		return LayerId;
@@ -414,7 +470,7 @@ public:
 					const int32 NumSelectedItems = OwnerTable->GetSelectedItems().Num();
 					const bool bIsSelected = OwnerTable->Private_IsItemSelected(MyItem);
 					const bool bCanSelectMoreItems = (GetMaxNumSelectedItems() == -1) || NumSelectedItems <
-						GetMaxNumSelectedItems();
+					                                 GetMaxNumSelectedItems();
 					const bool bCanUnselectMoreItems = CanSelectNone() || NumSelectedItems > 1;
 					bool bSignalSelectionChanged = false;
 
@@ -470,7 +526,8 @@ public:
 					}
 
 					return FReply::Handled().DetectDrag(SharedThis(this), EKeys::LeftMouseButton).SetUserFocus(
-						OwnerTable->AsWidget(), EFocusCause::Mouse).CaptureMouse(SharedThis(this));
+						OwnerTable->AsWidget(),
+						EFocusCause::Mouse).CaptureMouse(SharedThis(this));
 				}
 			}
 		}
@@ -523,7 +580,7 @@ public:
 					case ESelectionMode::Multi:
 						{
 							if (!bChangedSelectionOnMouseDown && !MouseEvent.IsControlDown() && !MouseEvent.
-								IsShiftDown())
+							    IsShiftDown())
 							{
 								if (const ItemType* MyItemPtr = GetItemForThis(OwnerTable))
 								{
@@ -555,7 +612,7 @@ public:
 				}
 
 				if (bChangedSelectionOnMouseDown && !bDragWasDetected && (SignalSelectionMode ==
-					ETableRowSignalSelectionMode::Deferred))
+				                                                          ETableRowSignalSelectionMode::Deferred))
 				{
 					OwnerTable->Private_SignalSelectionChanged(ESelectInfo::OnMouseClick);
 				}
@@ -564,7 +621,7 @@ public:
 			}
 		}
 		else if (MouseEvent.GetEffectingButton() == EKeys::RightMouseButton && !OwnerTableViewBase->
-			IsRightClickScrolling())
+		         IsRightClickScrolling())
 		{
 			// Handle selection of items when releasing the right mouse button, but only if the user isn't actively
 			// scrolling the view by holding down the right mouse button.
@@ -707,8 +764,8 @@ public:
 	EItemDropZone ZoneFromPointerPosition(FVector2D LocalPointerPos, FVector2D LocalSize, EOrientation Orientation)
 	{
 		const FVector2D::FReal PointerPos = Orientation == EOrientation::Orient_Horizontal
-			? LocalPointerPos.X
-			: LocalPointerPos.Y;
+		                                    ? LocalPointerPos.X
+		                                    : LocalPointerPos.Y;
 		const FVector2D::FReal Size = Orientation == EOrientation::Orient_Horizontal ? LocalSize.X : LocalSize.Y;
 
 		const FVector2D::FReal ZoneBoundarySu = FMath::Clamp(Size * 0.25f, 3.0f, 10.0f);
@@ -732,7 +789,9 @@ public:
 		{
 			const TSharedRef<ITypedTableView<ItemType>> OwnerTable = OwnerTablePtr.Pin().ToSharedRef();
 			const FVector2D LocalPointerPos = MyGeometry.AbsoluteToLocal(DragDropEvent.GetScreenSpacePosition());
-			const EItemDropZone ItemHoverZone = ZoneFromPointerPosition(LocalPointerPos, MyGeometry.GetLocalSize(),
+			const EItemDropZone ItemHoverZone = ZoneFromPointerPosition(
+				LocalPointerPos,
+				MyGeometry.GetLocalSize(),
 				OwnerTable->Private_GetOrientation());
 
 			ItemDropZone = [ItemHoverZone, DragDropEvent, this]()
@@ -772,12 +831,16 @@ public:
 					const FVector2D LocalPointerPos = MyGeometry.
 						AbsoluteToLocal(DragDropEvent.GetScreenSpacePosition());
 					const EItemDropZone HoveredZone = ZoneFromPointerPosition(LocalPointerPos,
-						MyGeometry.GetLocalSize(), OwnerTable->Private_GetOrientation());
+					                                                          MyGeometry.GetLocalSize(),
+					                                                          OwnerTable->Private_GetOrientation());
 
 					// The row gets final say over which zone to drop onto regardless of physical location.
 					const TOptional<EItemDropZone> ReportedZone = OnCanAcceptDrop.IsBound()
-						? OnCanAcceptDrop.Execute(DragDropEvent, HoveredZone, *MyItemPtr)
-						: HoveredZone;
+					                                              ? OnCanAcceptDrop.Execute(
+						                                              DragDropEvent,
+						                                              HoveredZone,
+						                                              *MyItemPtr)
+					                                              : HoveredZone;
 
 					if (ReportedZone.IsSet())
 					{
@@ -978,18 +1041,18 @@ public:
 				if (bIsActive)
 				{
 					return IsHovered()
-						? (bEvenEntryIndex
-							? &Style->EvenRowBackgroundHoveredBrush
-							: &Style->OddRowBackgroundHoveredBrush)
-						: &Style->ActiveHighlightedBrush;
+					       ? (bEvenEntryIndex
+					          ? &Style->EvenRowBackgroundHoveredBrush
+					          : &Style->OddRowBackgroundHoveredBrush)
+					       : &Style->ActiveHighlightedBrush;
 				}
 				else
 				{
 					return IsHovered()
-						? (bEvenEntryIndex
-							? &Style->EvenRowBackgroundHoveredBrush
-							: &Style->OddRowBackgroundHoveredBrush)
-						: &Style->InactiveHighlightedBrush;
+					       ? (bEvenEntryIndex
+					          ? &Style->EvenRowBackgroundHoveredBrush
+					          : &Style->OddRowBackgroundHoveredBrush)
+					       : &Style->InactiveHighlightedBrush;
 				}
 			}
 			else if (bItemHasChildren && Style->bUseParentRowBrush && GetIndentLevel() == 0)
@@ -1002,14 +1065,14 @@ public:
 				if (bEvenEntryIndex)
 				{
 					return (IsHovered() && bAllowSelection)
-						? &Style->EvenRowBackgroundHoveredBrush
-						: &Style->EvenRowBackgroundBrush;
+					       ? &Style->EvenRowBackgroundHoveredBrush
+					       : &Style->EvenRowBackgroundBrush;
 				}
 				else
 				{
 					return (IsHovered() && bAllowSelection)
-						? &Style->OddRowBackgroundHoveredBrush
-						: &Style->OddRowBackgroundBrush;
+					       ? &Style->OddRowBackgroundHoveredBrush
+					       : &Style->OddRowBackgroundBrush;
 				}
 			}
 		}
@@ -1173,8 +1236,9 @@ protected:
 		else
 		{
 			checkf(OwnerTable->Private_IsPendingRefresh(),
-				TEXT( "We were unable to find the item for this widget.  If it was removed from the source collection, "
-					"the list should be pending a refresh." ));
+			       TEXT(
+				       "We were unable to find the item for this widget.  If it was removed from the source collection, "
+				       "the list should be pending a refresh." ));
 		}
 
 		return nullptr;

@@ -25,9 +25,16 @@
 
 DEFINE_LOG_CATEGORY(LogBSGameMode);
 
-ABSGameMode::ABSGameMode(): AATracker(nullptr), AAPlayer(nullptr), TrackGunAbilitySet(nullptr), AudioImporter(nullptr),
-                            AudioCapturer(nullptr), bLastTargetOnSet(false), bShouldTick(false), Elapsed(0),
-                            MaxScorePerTarget(0), TimePlayedGameMode(0)
+ABSGameMode::ABSGameMode() : AATracker(nullptr),
+                             AAPlayer(nullptr),
+                             TrackGunAbilitySet(nullptr),
+                             AudioImporter(nullptr),
+                             AudioCapturer(nullptr),
+                             bLastTargetOnSet(false),
+                             bShouldTick(false),
+                             Elapsed(0),
+                             MaxScorePerTarget(0),
+                             TimePlayedGameMode(0)
 {
 	PrimaryActorTick.bCanEverTick = true;
 	AudioComponent = CreateDefaultSubobject<UAudioComponent>("Audio Component");
@@ -93,8 +100,9 @@ ACharacter* ABSGameMode::SpawnPlayer(APlayerController* PlayerController)
 	return SpawnedCharacter;
 }
 
-void ABSGameMode::HandleAudioImporterResult(URuntimeAudioImporterLibrary* Importer, UImportedSoundWave* SoundWave,
-	ERuntimeImportStatus Status)
+void ABSGameMode::HandleAudioImporterResult(URuntimeAudioImporterLibrary* Importer,
+                                            UImportedSoundWave* SoundWave,
+                                            ERuntimeImportStatus Status)
 {
 	if (Status == ERuntimeImportStatus::SuccessfulImport)
 	{
@@ -140,8 +148,10 @@ void ABSGameMode::InitializeGameMode(const TSharedPtr<FBSConfig>& InConfig)
 
 	if (!TargetManager)
 	{
-		TargetManager = GetWorld()->SpawnActor<ATargetManager>(TargetManagerClass, FVector::Zero(),
-			FRotator::ZeroRotator, SpawnParameters);
+		TargetManager = GetWorld()->SpawnActor<ATargetManager>(TargetManagerClass,
+		                                                       FVector::Zero(),
+		                                                       FRotator::ZeroRotator,
+		                                                       SpawnParameters);
 		TargetManager->OnTargetActivated.AddUObject(this, &ABSGameMode::UpdateTargetsSpawned);
 		TargetManager->PostTargetDamageEvent.AddUObject(this, &ABSGameMode::HandlePostTargetDamageEvent);
 	}
@@ -168,7 +178,7 @@ void ABSGameMode::InitializeGameMode(const TSharedPtr<FBSConfig>& InConfig)
 
 		ASC->SetNumericAttributeBase(Set->GetHitDamageAttribute(), BSConfig->TargetConfig.BasePlayerHitDamage);
 		ASC->SetNumericAttributeBase(Set->GetTrackingDamageAttribute(),
-			BSConfig->TargetConfig.BasePlayerTrackingDamage);
+		                             BSConfig->TargetConfig.BasePlayerTrackingDamage);
 
 		if (BSConfig->TargetConfig.TargetDamageType == ETargetDamageType::Tracking)
 		{
@@ -180,7 +190,8 @@ void ABSGameMode::InitializeGameMode(const TSharedPtr<FBSConfig>& InConfig)
 			if (UBSGA_TrackGun* TrackAbility = Cast<UBSGA_TrackGun>(TrackGunSpec->GetPrimaryInstance()))
 			{
 				TrackAbility->OnPlayerStopTrackingTarget.AddUniqueDynamic(TargetManager.Get(),
-					&ATargetManager::HandlePlayerStopTrackingTarget);
+				                                                          &ATargetManager::
+				                                                          HandlePlayerStopTrackingTarget);
 				ASC->MarkAbilitySpecDirty(*TrackGunSpec);
 			}
 		}
@@ -224,8 +235,10 @@ void ABSGameMode::StartGameModeTimers()
 	else
 	{
 		GameModeLengthTimerDelegate.BindUObject(this, &ABSGameMode::EndGameMode, true, ETransitionState::None);
-		GetWorldTimerManager().SetTimer(GameModeLengthTimer, GameModeLengthTimerDelegate,
-			BSConfig->AudioConfig.SongLength, false);
+		GetWorldTimerManager().SetTimer(GameModeLengthTimer,
+		                                GameModeLengthTimerDelegate,
+		                                BSConfig->AudioConfig.SongLength,
+		                                false);
 	}
 	GetWorldTimerManager().SetTimer(OnSecondPassedTimer, this, &ABSGameMode::HandleSecondPassed, 1.f, true);
 }
@@ -334,8 +347,11 @@ void ABSGameMode::EndGameMode(const bool bSaveScores, const ETransitionState Tra
 
 	if (TransitionState == ETransitionState::QuitToMainMenu && !Controllers.IsEmpty())
 	{
-		GetWorldTimerManager().SetTimer(GoToMainMenuTimer, this, &ABSGameMode::GoToMainMenu,
-			Controllers[0]->ScreenFadeWidgetAnimationDuration, false);
+		GetWorldTimerManager().SetTimer(GoToMainMenuTimer,
+		                                this,
+		                                &ABSGameMode::GoToMainMenu,
+		                                Controllers[0]->ScreenFadeWidgetAnimationDuration,
+		                                false);
 	}
 }
 
@@ -369,8 +385,10 @@ void ABSGameMode::StartAAManagerPlayback()
 				AudioComponent->Play();
 				UE_LOG(LogBSGameMode, Display, TEXT("Now Playing AudioComponent"));
 			};
-			GetWorldTimerManager().SetTimer(PlayerDelayTimer, HandleTimerFinished, BSConfig->AudioConfig.PlayerDelay,
-				false);
+			GetWorldTimerManager().SetTimer(PlayerDelayTimer,
+			                                HandleTimerFinished,
+			                                BSConfig->AudioConfig.PlayerDelay,
+			                                false);
 		}
 		else
 		{
@@ -453,7 +471,7 @@ bool ABSGameMode::InitializeAudioManagers()
 	case EAudioFormat::Capture:
 		{
 			AATracker->SetDefaultDevicesCapturerAudio(*BSConfig->AudioConfig.InAudioDevice,
-				*GameUserSettings->GetAudioOutputDeviceId());
+			                                          *GameUserSettings->GetAudioOutputDeviceId());
 			if (!AATracker->InitCapturerAudioEx(48000, EAA_AudioDepth::B_16, EAA_AudioFormat::Signed_Int, 1.f, false))
 			{
 				return false;
@@ -470,7 +488,7 @@ bool ABSGameMode::InitializeAudioManagers()
 	case EAudioFormat::Loopback:
 		{
 			AATracker->SetDefaultDevicesCapturerAudio(*BSConfig->AudioConfig.InAudioDevice,
-				*GameUserSettings->GetAudioOutputDeviceId());
+			                                          *GameUserSettings->GetAudioOutputDeviceId());
 			AATracker->SetDefaultDeviceLoopbackAudio(*GameUserSettings->GetAudioOutputDeviceId());
 			if (!AATracker->InitLoopbackAudio())
 			{
@@ -489,10 +507,21 @@ bool ABSGameMode::InitializeAudioManagers()
 		break;
 	}
 
-	AATracker->InitBeatTrackingConfigWLimits(EAA_ChannelSelectionMode::All_in_one, 0, AASettings.BandLimits,
-		AASettings.TimeWindow, 10 / AASettings.TimeWindow, false, 100, 2.1);
-	AATracker->InitSpectrumConfigWLimits(EAA_ChannelSelectionMode::All_in_one, -1, AASettings.BandLimits,
-		AASettings.TimeWindow, 10 / AASettings.TimeWindow, true, AASettings.NumBandChannels);
+	AATracker->InitBeatTrackingConfigWLimits(EAA_ChannelSelectionMode::All_in_one,
+	                                         0,
+	                                         AASettings.BandLimits,
+	                                         AASettings.TimeWindow,
+	                                         10 / AASettings.TimeWindow,
+	                                         false,
+	                                         100,
+	                                         2.1);
+	AATracker->InitSpectrumConfigWLimits(EAA_ChannelSelectionMode::All_in_one,
+	                                     -1,
+	                                     AASettings.BandLimits,
+	                                     AASettings.TimeWindow,
+	                                     10 / AASettings.TimeWindow,
+	                                     true,
+	                                     AASettings.NumBandChannels);
 
 	AATracker->SetPlaybackVolume(0.0);
 
@@ -504,10 +533,21 @@ bool ABSGameMode::InitializeAudioManagers()
 		{
 			return false;
 		}
-		AAPlayer->InitBeatTrackingConfigWLimits(EAA_ChannelSelectionMode::All_in_one, 0, AASettings.BandLimits,
-			AASettings.TimeWindow, AASettings.HistorySize, false, 100, 2.1);
-		AAPlayer->InitSpectrumConfigWLimits(EAA_ChannelSelectionMode::All_in_one, -1, AASettings.BandLimits,
-			AASettings.TimeWindow, 10 / AASettings.TimeWindow, true, AASettings.NumBandChannels);
+		AAPlayer->InitBeatTrackingConfigWLimits(EAA_ChannelSelectionMode::All_in_one,
+		                                        0,
+		                                        AASettings.BandLimits,
+		                                        AASettings.TimeWindow,
+		                                        AASettings.HistorySize,
+		                                        false,
+		                                        100,
+		                                        2.1);
+		AAPlayer->InitSpectrumConfigWLimits(EAA_ChannelSelectionMode::All_in_one,
+		                                    -1,
+		                                    AASettings.BandLimits,
+		                                    AASettings.TimeWindow,
+		                                    10 / AASettings.TimeWindow,
+		                                    true,
+		                                    AASettings.NumBandChannels);
 		AAPlayer->SetPlaybackVolume(0.0);
 	}
 
@@ -518,8 +558,11 @@ void ABSGameMode::OnTick_AudioAnalyzers(const float DeltaSeconds)
 {
 	Elapsed += DeltaSeconds;
 
-	AATracker->GetBeatTrackingWLimitsWThreshold(Beats, SpectrumValues, BpmCurrent, BpmTotal,
-		AASettings.BandLimitsThreshold);
+	AATracker->GetBeatTrackingWLimitsWThreshold(Beats,
+	                                            SpectrumValues,
+	                                            BpmCurrent,
+	                                            BpmTotal,
+	                                            AASettings.BandLimitsThreshold);
 	for (const bool Beat : Beats)
 	{
 		SpawnNewTarget(Beat);
@@ -527,8 +570,11 @@ void ABSGameMode::OnTick_AudioAnalyzers(const float DeltaSeconds)
 
 	if (AAPlayer)
 	{
-		AAPlayer->GetBeatTrackingWLimitsWThreshold(Beats, SpectrumValues, BpmCurrent, BpmTotal,
-			AASettings.BandLimitsThreshold);
+		AAPlayer->GetBeatTrackingWLimitsWThreshold(Beats,
+		                                           SpectrumValues,
+		                                           BpmCurrent,
+		                                           BpmTotal,
+		                                           AASettings.BandLimitsThreshold);
 		AAPlayer->GetBeatTrackingAverageAndVariance(SpectrumVariance, VisualizerManager->AvgSpectrumValues);
 	}
 	else
@@ -564,7 +610,7 @@ void ABSGameMode::LoadMatchingPlayerScores()
 	else
 	{
 		MaxScorePerTarget = 100000.f / ((BSConfig->AudioConfig.SongLength - 1.f) / BSConfig->TargetConfig.
-			TargetSpawnCD);
+		                                TargetSpawnCD);
 	}
 
 	for (auto& CurrentPlayerScore : CurrentPlayerScores)
@@ -637,13 +683,15 @@ void ABSGameMode::HandleScoreSaving(const bool bExternalSaveScores, const bool b
 				GI->GetSteamManager()->UpdateStat_NumGamesPlayed(
 					CurrentPlayerScore.Value.DefiningConfig.GameModeType == EGameModeType::Custom
 					? EBaseGameMode::None
-					: CurrentPlayerScore.Value.DefiningConfig.BaseGameMode, 1);
+					: CurrentPlayerScore.Value.DefiningConfig.BaseGameMode,
+					1);
 			}
 #else // !UE_BUILD_SHIPPING
 			GI->GetSteamManager()->UpdateStat_NumGamesPlayed(
 				CurrentPlayerScore.Value.DefiningConfig.GameModeType == EGameModeType::Custom
 				? EBaseGameMode::None
-				: CurrentPlayerScore.Value.DefiningConfig.BaseGameMode, 1);
+				: CurrentPlayerScore.Value.DefiningConfig.BaseGameMode,
+				1);
 #endif // UE_BUILD_SHIPPING
 
 			// Save common score info and completed scores locally
@@ -739,8 +787,9 @@ void ABSGameMode::HandlePostTargetDamageEvent(const FTargetDamageEvent& Event)
 	case ETargetDamageType::Combined:
 	case ETargetDamageType::None:
 		{
-			UE_LOG(LogBSGameMode, Warning,
-				TEXT("TargetDamageType of Combined/None received in OnPostTargetDamageEvent."));
+			UE_LOG(LogBSGameMode,
+			       Warning,
+			       TEXT("TargetDamageType of Combined/None received in OnPostTargetDamageEvent."));
 		}
 		return;
 	case ETargetDamageType::Self:
@@ -782,8 +831,10 @@ void ABSGameMode::UpdateShotsFired(ABSPlayerController* Controller)
 	}
 }
 
-void ABSGameMode::UpdateStreak(ABSPlayerController* Controller, FPlayerScore& InScore, const int32 Streak,
-	const FTransform& Transform) const
+void ABSGameMode::UpdateStreak(ABSPlayerController* Controller,
+                               FPlayerScore& InScore,
+                               const int32 Streak,
+                               const FTransform& Transform) const
 {
 	if (Streak > InScore.Streak)
 	{

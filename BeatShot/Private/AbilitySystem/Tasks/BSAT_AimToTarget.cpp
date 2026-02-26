@@ -7,13 +7,16 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Target/Target.h"
 
-UBSAT_AimToTarget::UBSAT_AimToTarget(): Camera(nullptr)
+UBSAT_AimToTarget::UBSAT_AimToTarget() : Camera(nullptr)
 {
 	bTickingTask = true;
 }
 
-UBSAT_AimToTarget* UBSAT_AimToTarget::AimToTarget(UBSGameplayAbility* OwningAbility, FName TaskInstanceName,
-	UCurveFloat* RotationCurve, ATarget* TargetToDestroy, float TimelinePlaybackRate)
+UBSAT_AimToTarget* UBSAT_AimToTarget::AimToTarget(UBSGameplayAbility* OwningAbility,
+                                                  FName TaskInstanceName,
+                                                  UCurveFloat* RotationCurve,
+                                                  ATarget* TargetToDestroy,
+                                                  float TimelinePlaybackRate)
 {
 	UBSAT_AimToTarget* MyObj = NewAbilityTask<UBSAT_AimToTarget>(OwningAbility, TaskInstanceName);
 
@@ -89,7 +92,11 @@ void UBSAT_AimToTarget::OnTimelineTick(const float Alpha) const
 	const FVector Loc = Camera->GetComponentLocation();
 	const FRotator Rot = Controller->GetControlRotation();
 	Controller->SetControlRotation(UKismetMathLibrary::RLerp(Rot,
-		UKismetMathLibrary::FindLookAtRotation(Loc, Target->GetActorLocation()), Alpha, true));
+	                                                         UKismetMathLibrary::FindLookAtRotation(
+		                                                         Loc,
+		                                                         Target->GetActorLocation()),
+	                                                         Alpha,
+	                                                         true));
 }
 
 void UBSAT_AimToTarget::OnTimelineCompleted()

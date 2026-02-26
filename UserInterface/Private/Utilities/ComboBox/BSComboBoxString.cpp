@@ -66,8 +66,10 @@ void UBSComboBoxString::PostLoad()
 	}
 }
 
-void UBSComboBoxString::InitializeComboBoxEntry(const UBSComboBoxEntry* Entry, const FText& EntryText,
-	const bool bShowTooltipIcon, const FText& TooltipText)
+void UBSComboBoxString::InitializeComboBoxEntry(const UBSComboBoxEntry* Entry,
+                                                const FText& EntryText,
+                                                const bool bShowTooltipIcon,
+                                                const FText& TooltipText)
 {
 	Entry->SetEntryText(EntryText);
 	Entry->SetAlwaysHideTooltipIcon(!bShowTooltipIcon);
@@ -186,7 +188,7 @@ TSharedRef<SWidget> UBSComboBoxString::HandleGenerateWidget(TSharedPtr<FString> 
 }
 
 void UBSComboBoxString::HandleSelectionChanged(const TArray<TSharedPtr<FString>>& Items,
-	const ESelectInfo::Type SelectionType)
+                                               const ESelectInfo::Type SelectionType)
 {
 	CurrentlySelectedOptionPointers = Items;
 
@@ -282,7 +284,7 @@ TSharedRef<SWidget> UBSComboBoxString::RebuildWidget()
 		.HasDownArrow(HasDownArrow)
 		.EnableGamepadNavigationMode(EnableGamepadNavigationMode)
 		.OnGenerateWidget(BIND_UOBJECT_DELEGATE(SBSComboBox<TSharedPtr<FString>>::FOnGenerateWidget,
-			HandleGenerateWidget))
+		                                        HandleGenerateWidget))
 		.OnMultiSelectionChanged(BIND_UOBJECT_DELEGATE(FOnMultiSelectionChanged, HandleSelectionChanged))
 		.OnComboBoxOpening(BIND_UOBJECT_DELEGATE(FOnComboBoxOpening, HandleOpening))
 		.IsFocusable(bIsFocusable)

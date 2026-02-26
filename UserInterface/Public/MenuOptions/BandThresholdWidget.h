@@ -7,8 +7,10 @@
 #include "BandThresholdWidget.generated.h"
 
 class UBandThresholdWidget;
-DECLARE_DELEGATE_ThreeParams(FOnThresholdValueCommitted, const UBandThresholdWidget* BandThreshold, const int32 Index,
-	const float NewValue);
+DECLARE_DELEGATE_ThreeParams(FOnThresholdValueCommitted,
+                             const UBandThresholdWidget* BandThreshold,
+                             const int32 Index,
+                             const float NewValue);
 
 class UBorder;
 class USlider;

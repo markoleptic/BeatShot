@@ -22,7 +22,7 @@ public:
 
 	/** Sets the values of bSimulatePlayerDestroying and DestroyChance. */
 	void SetSimulatePlayerDestroyingTargets(const bool bInSimulatePlayerDestroyingTargets,
-		const float InDestroyChance = 1.f);
+	                                        const float InDestroyChance = 1.f);
 
 	/** Whether to tell spawned targets to artificially destroy themselves early, simulating a player destroying it. */
 	bool bSimulatePlayerDestroyingTargets = false;

@@ -37,23 +37,24 @@ protected:
 
 	/** Updates options that depend on the value selection of bEnableReinforcementLearning. */
 	void UpdateDependentOptions_EnableAI(const bool bInEnableReinforcementLearning,
-		const EReinforcementLearningHyperParameterMode HyperParameterMode);
+	                                     const EReinforcementLearningHyperParameterMode HyperParameterMode);
 
 	/** Updates options that depend on the value selection of HyperParameterMode. */
 	void UpdateDependentOptions_HyperParameterMode(const bool bInEnableReinforcementLearning,
-		const EReinforcementLearningHyperParameterMode HyperParameterMode);
+	                                               const EReinforcementLearningHyperParameterMode HyperParameterMode);
 
 	UFUNCTION()
 	void OnCheckStateChanged_EnableAI(const bool bChecked);
 
 	void OnSliderTextBoxValueChanged(USingleRangeInputWidget* Widget, const float Value);
 
-	void OnSliderTextBoxCheckBoxOptionChanged(UToggleableSingleRangeInputWidget* Widget, const bool bChecked,
-		const float Value);
+	void OnSliderTextBoxCheckBoxOptionChanged(UToggleableSingleRangeInputWidget* Widget,
+	                                          const bool bChecked,
+	                                          const float Value);
 
 	UFUNCTION()
 	void OnSelectionChanged_RecentTargetMemoryPolicy(const TArray<FString>& Selected,
-		const ESelectInfo::Type SelectionType);
+	                                                 const ESelectInfo::Type SelectionType);
 
 	UFUNCTION()
 	void OnSelectionChanged_DamageType(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);

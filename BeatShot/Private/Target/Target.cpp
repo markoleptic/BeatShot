@@ -51,14 +51,16 @@ FTargetDamageEvent::FTargetDamageEvent(const FDamageEventData& InData, const flo
 }
 
 void FTargetDamageEvent::SetTargetData(const float InCurrentDeactivationHealthThreshold,
-	const TArray<ETargetDamageType>& InTypes)
+                                       const TArray<ETargetDamageType>& InTypes)
 {
 	CurrentDeactivationHealthThreshold = InCurrentDeactivationHealthThreshold;
 	VulnerableToDamageTypes = InTypes;
 }
 
-void FTargetDamageEvent::SetTargetManagerData(const bool bDeactivate, const bool bDestroy, const int32 InStreak,
-	const float InTotalPossibleTrackingDamage)
+void FTargetDamageEvent::SetTargetManagerData(const bool bDeactivate,
+                                              const bool bDestroy,
+                                              const int32 InStreak,
+                                              const float InTotalPossibleTrackingDamage)
 {
 	bWillDeactivate = bDeactivate;
 	bWillDestroy = bDestroy;
@@ -214,12 +216,15 @@ void ATarget::PostInitializeComponents()
 		{
 		case ETargetDamageType::None:
 		case ETargetDamageType::Hit:
-			ActiveGE_TrackingImmunity = ASC->ApplyGameplayEffectToSelf(GE_TrackingImmunity.GetDefaultObject(), 1.f,
-				GetAbilitySystemComponent()->MakeEffectContext());
+			ActiveGE_TrackingImmunity = ASC->ApplyGameplayEffectToSelf(GE_TrackingImmunity.GetDefaultObject(),
+			                                                           1.f,
+			                                                           GetAbilitySystemComponent()->
+			                                                           MakeEffectContext());
 			break;
 		case ETargetDamageType::Tracking:
-			ActiveGE_HitImmunity = ASC->ApplyGameplayEffectToSelf(GE_HitImmunity.GetDefaultObject(), 1.f,
-				GetAbilitySystemComponent()->MakeEffectContext());
+			ActiveGE_HitImmunity = ASC->ApplyGameplayEffectToSelf(GE_HitImmunity.GetDefaultObject(),
+			                                                      1.f,
+			                                                      GetAbilitySystemComponent()->MakeEffectContext());
 			break;
 		case ETargetDamageType::Combined:
 		case ETargetDamageType::Self:
@@ -249,8 +254,8 @@ void ATarget::PostInitializeComponents()
 		{
 			ProjectileMovementComponent->OnProjectileBounce.AddDynamic(this, &ATarget::OnProjectileBounce);
 			if (Config.MovingTargetDirectionMode == EMovingTargetDirectionMode::HorizontalOnly || Config.
-				MovingTargetDirectionMode == EMovingTargetDirectionMode::VerticalOnly || Config.
-				MovingTargetDirectionMode == EMovingTargetDirectionMode::AlternateHorizontalVertical)
+			    MovingTargetDirectionMode == EMovingTargetDirectionMode::VerticalOnly || Config.
+			    MovingTargetDirectionMode == EMovingTargetDirectionMode::AlternateHorizontalVertical)
 			{
 				ProjectileMovementComponent->bConstrainToPlane = true;
 				ProjectileMovementComponent->SetPlaneConstraintNormal(FVector(1.f, 0.f, 0.f));
@@ -361,7 +366,8 @@ void ATarget::ApplyImmunityEffect()
 	}
 
 	const FActiveGameplayEffectHandle Handle = Comp->ApplyGameplayEffectToSelf(GE_TargetImmunity.GetDefaultObject(),
-		1.f, Comp->MakeEffectContext());
+	                                                                           1.f,
+	                                                                           Comp->MakeEffectContext());
 	if (Handle.WasSuccessfullyApplied())
 	{
 		ActiveGE_TargetImmunity = Handle;
@@ -432,8 +438,9 @@ void ATarget::DamageSelf(const bool bTreatAsExternalDamage)
 	{
 		FGameplayEffectContextHandle EffectContextHandle = Comp->MakeEffectContext();
 		EffectContextHandle.Get()->AddInstigator(this, this);
-		const FGameplayEffectSpecHandle Handle = Comp->MakeOutgoingSpec(GE_ExpirationHealthPenalty, 1.f,
-			EffectContextHandle);
+		const FGameplayEffectSpecHandle Handle = Comp->MakeOutgoingSpec(GE_ExpirationHealthPenalty,
+		                                                                1.f,
+		                                                                EffectContextHandle);
 		FGameplayEffectSpec* Spec = Handle.Data.Get();
 		if (bTreatAsExternalDamage)
 		{
@@ -559,8 +566,10 @@ void ATarget::InterpStartToPeak(const float Alpha)
 	if (bApplyLifetimeTargetScaling)
 	{
 		SetTargetScale(FVector(UKismetMathLibrary::Lerp(GetTargetScale_Deactivation().X,
-			GetTargetScale_Deactivation().X * Config.LifetimeTargetScaleMultiplier,
-			StartToPeakTimeline.GetPlaybackPosition() * Config.SpawnBeatDelay / Config.TargetMaxLifeSpan)));
+		                                                GetTargetScale_Deactivation().X * Config.
+		                                                LifetimeTargetScaleMultiplier,
+		                                                StartToPeakTimeline.GetPlaybackPosition() * Config.
+		                                                SpawnBeatDelay / Config.TargetMaxLifeSpan)));
 	}
 }
 
@@ -570,18 +579,22 @@ void ATarget::InterpPeakToEnd(const float Alpha)
 	if (bApplyLifetimeTargetScaling)
 	{
 		SetTargetScale(FVector(UKismetMathLibrary::Lerp(GetTargetScale_Deactivation().X,
-			GetTargetScale_Deactivation().X * Config.LifetimeTargetScaleMultiplier,
-			(PeakToEndTimeline.GetPlaybackPosition() * (Config.TargetMaxLifeSpan - Config.SpawnBeatDelay) + Config.
-				SpawnBeatDelay) / Config.TargetMaxLifeSpan)));
+		                                                GetTargetScale_Deactivation().X * Config.
+		                                                LifetimeTargetScaleMultiplier,
+		                                                (PeakToEndTimeline.GetPlaybackPosition() * (
+			                                                 Config.TargetMaxLifeSpan - Config.SpawnBeatDelay) + Config.
+		                                                 SpawnBeatDelay) / Config.TargetMaxLifeSpan)));
 	}
 }
 
 void ATarget::InterpShrinkQuickAndGrowSlow(const float Alpha)
 {
-	SetTargetScale(FVector(UKismetMathLibrary::Lerp(Constants::MinShrinkTargetScale, GetTargetScale_Activation().X,
-		Alpha)));
-	const FLinearColor Color = UKismetMathLibrary::LinearColorLerp(ColorWhenDamageTaken, Config.InactiveTargetColor,
-		ShrinkQuickAndGrowSlowTimeline.GetPlaybackPosition());
+	SetTargetScale(
+		FVector(UKismetMathLibrary::Lerp(Constants::MinShrinkTargetScale, GetTargetScale_Activation().X, Alpha)));
+	const FLinearColor Color = UKismetMathLibrary::LinearColorLerp(ColorWhenDamageTaken,
+	                                                               Config.InactiveTargetColor,
+	                                                               ShrinkQuickAndGrowSlowTimeline.
+	                                                               GetPlaybackPosition());
 	SetTargetColor(Color);
 }
 
@@ -647,7 +660,7 @@ void ATarget::SetTargetSpeed(const float NewMovingTargetSpeed) const
 	{
 		FVector DirectionUnitVector;
 		if (ProjectileMovementComponent->Velocity.IsNearlyZero() || FMath::IsNearlyZero(
-			ProjectileMovementComponent->InitialSpeed))
+			    ProjectileMovementComponent->InitialSpeed))
 		{
 			DirectionUnitVector = FVector::ZeroVector;
 		}
@@ -664,8 +677,8 @@ void ATarget::SetTargetScale(const FVector& NewScale) const
 {
 	// Cap target scale at MaxValue_TargetScale
 	CapsuleComponent->SetRelativeScale3D(NewScale.X < Constants::MaxValue_TargetScale
-		? NewScale
-		: FVector(Constants::MaxValue_TargetScale));
+	                                     ? NewScale
+	                                     : FVector(Constants::MaxValue_TargetScale));
 }
 
 void ATarget::SetTargetDamageType(const ETargetDamageType& InType)
@@ -673,8 +686,9 @@ void ATarget::SetTargetDamageType(const ETargetDamageType& InType)
 	TargetDamageType = InType;
 }
 
-void ATarget::PlayExplosionEffect(const FVector& ExplosionLocation, const float SphereRadius,
-	const FLinearColor& InColorWhenDestroyed) const
+void ATarget::PlayExplosionEffect(const FVector& ExplosionLocation,
+                                  const float SphereRadius,
+                                  const FLinearColor& InColorWhenDestroyed) const
 {
 #if !UE_BUILD_SHIPPING
 	if (GIsAutomationTesting)
@@ -685,7 +699,8 @@ void ATarget::PlayExplosionEffect(const FVector& ExplosionLocation, const float 
 	if (TargetExplosion && Config.TargetDamageType == ETargetDamageType::Hit)
 	{
 		if (UNiagaraComponent* ExplosionComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(),
-			TargetExplosion, ExplosionLocation))
+			TargetExplosion,
+			ExplosionLocation))
 		{
 			ExplosionComp->SetFloatParameter(TargetExplosionSphereRadiusParameterName, SphereRadius);
 			ExplosionComp->SetColorParameter(TargetExplosionColorParameterName, InColorWhenDestroyed);

@@ -41,14 +41,22 @@ class USERINTERFACE_API IBSWidgetInterface
 
 public:
 	/** Clamps NewTextValue, updates associated Slider value while rounding to the GridSnapSize. */
-	static float OnEditableTextBoxChanged(const FText& NewTextValue, UEditableTextBox* TextBoxToChange,
-		USlider* SliderToChange, float GridSnapSize, float Min, float Max);
+	static float OnEditableTextBoxChanged(const FText& NewTextValue,
+	                                      UEditableTextBox* TextBoxToChange,
+	                                      USlider* SliderToChange,
+	                                      float GridSnapSize,
+	                                      float Min,
+	                                      float Max);
 
 	/** Updates associated TextBoxToChange with result of rounding to the GridSnapSize. */
 	static float OnSliderChanged(float NewValue, UEditableTextBox* TextBoxToChange, float GridSnapSize);
 
-	static void SetSliderAndEditableTextBoxValues(float NewValue, UEditableTextBox* TextBoxToChange,
-		USlider* SliderToChange, float GridSnapSize, float Min, float Max);
+	static void SetSliderAndEditableTextBoxValues(float NewValue,
+	                                              UEditableTextBox* TextBoxToChange,
+	                                              USlider* SliderToChange,
+	                                              float GridSnapSize,
+	                                              float Min,
+	                                              float Max);
 
 	/** Returns TooltipWidget. */
 	static UTooltipWidget* GetTooltipWidget();
@@ -70,7 +78,7 @@ public:
 	/** Returns the widget used for a selected ComboBox entry. Must override ConstructComboBoxEntryWidget. */
 	UFUNCTION()
 	virtual UWidget* OnSelectionChanged_GenerateMultiSelectionItem(const UBSComboBoxString* ComboBoxString,
-		const TArray<FString>& SelectedOptions);
+	                                                               const TArray<FString>& SelectedOptions);
 
 	/** Returns the String Table key for a specific ComboBox, not the cleanest code, but it works. */
 	virtual FString GetStringTableKeyFromComboBox(const UBSComboBoxString* ComboBoxString, const FString& EnumString);

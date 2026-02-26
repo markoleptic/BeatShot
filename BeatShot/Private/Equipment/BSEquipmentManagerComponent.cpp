@@ -95,7 +95,8 @@ UBSAbilitySystemComponent* FBSEquipmentList::GetAbilitySystemComponent() const
 /* ------------------------------------ */
 
 UBSEquipmentManagerComponent::UBSEquipmentManagerComponent(const FObjectInitializer& ObjectInitializer) :
-	Super(ObjectInitializer), EquipmentList(this)
+	Super(ObjectInitializer),
+	EquipmentList(this)
 {
 	PrimaryComponentTick.bCanEverTick = false;
 	SetIsReplicatedByDefault(true);
@@ -143,8 +144,9 @@ void UBSEquipmentManagerComponent::UnequipItem(UBSEquipmentInstance* ItemInstanc
 	}
 }
 
-bool UBSEquipmentManagerComponent::ReplicateSubobjects(UActorChannel* Channel, FOutBunch* Bunch,
-	FReplicationFlags* RepFlags)
+bool UBSEquipmentManagerComponent::ReplicateSubobjects(UActorChannel* Channel,
+                                                       FOutBunch* Bunch,
+                                                       FReplicationFlags* RepFlags)
 {
 	bool WroteSomething = Super::ReplicateSubobjects(Channel, Bunch, RepFlags);
 

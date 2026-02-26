@@ -26,7 +26,8 @@ enum class EBSAnimStateType : uint8
 {
 	Normal UMETA(DisplayName="Normal"),
 	Start UMETA(DisplayName="Start"),
-	Stop UMETA(DisplayName="Stop")};
+	Stop UMETA(DisplayName="Stop")
+};
 
 ENUM_RANGE_BY_FIRST_AND_LAST(EBSAnimStateType, EBSAnimStateType::Normal, EBSAnimStateType::Stop);
 
@@ -65,8 +66,12 @@ struct FBSIdleAnimSet
 {
 	GENERATED_BODY()
 
-	FBSIdleAnimSet(): Idle(nullptr), CrouchIdle(nullptr), CrouchIdleStart(nullptr), CrouchIdleStop(nullptr),
-	                  LeftHandPoseOverride(nullptr), ArmIdlePoseOverride(nullptr)
+	FBSIdleAnimSet() : Idle(nullptr),
+	                   CrouchIdle(nullptr),
+	                   CrouchIdleStart(nullptr),
+	                   CrouchIdleStop(nullptr),
+	                   LeftHandPoseOverride(nullptr),
+	                   ArmIdlePoseOverride(nullptr)
 	{
 	}
 
@@ -94,8 +99,10 @@ struct FBSAimingAnimSet
 {
 	GENERATED_BODY()
 
-	FBSAimingAnimSet(): IdleAimOffset(nullptr), RelaxedAimOffset(nullptr), HipFireOverridePose(nullptr),
-	                    HipFireCrouchOverridePose(nullptr)
+	FBSAimingAnimSet() : IdleAimOffset(nullptr),
+	                     RelaxedAimOffset(nullptr),
+	                     HipFireOverridePose(nullptr),
+	                     HipFireCrouchOverridePose(nullptr)
 	{
 	}
 
@@ -117,8 +124,12 @@ struct FBSJumpingAnimSet
 {
 	GENERATED_BODY()
 
-	FBSJumpingAnimSet(): JumpStart(nullptr), JumpFallLoop(nullptr), JumpFallLand(nullptr), JumpApex(nullptr),
-	                     JumpStartLoop(nullptr), JumpRecoveryAdditive(nullptr)
+	FBSJumpingAnimSet() : JumpStart(nullptr),
+	                      JumpFallLoop(nullptr),
+	                      JumpFallLand(nullptr),
+	                      JumpApex(nullptr),
+	                      JumpStartLoop(nullptr),
+	                      JumpRecoveryAdditive(nullptr)
 	{
 	}
 
@@ -166,6 +177,7 @@ public:
 	TArray<UAnimSequence*> IdleBreaks;
 
 	UFUNCTION(BlueprintPure, BlueprintCallable, Category = "BeatShot|Animation")
-	UAnimSequence* FindAnimSequence(const EBSAnimMovementMode MovementMode, const EBSAnimStateType StateType,
-		const EBSAnimCardinal AnimCardinal) const;
+	UAnimSequence* FindAnimSequence(const EBSAnimMovementMode MovementMode,
+	                                const EBSAnimStateType StateType,
+	                                const EBSAnimCardinal AnimCardinal) const;
 };

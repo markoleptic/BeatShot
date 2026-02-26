@@ -54,7 +54,7 @@ public:
 	 *  @param CommonScoreInfoToSave CommonScoreInfo to save
 	 */
 	static void SaveCommonScoreInfo(const FBS_DefiningConfig& DefiningConfig,
-		const FCommonScoreInfo& CommonScoreInfoToSave);
+	                                const FCommonScoreInfo& CommonScoreInfoToSave);
 
 	/** Removes a DefiningConfig CommonScoreInfo pair and saves to slot.
 	 *  @param DefiningConfig defining config to use to search for CommonScoreInfo

@@ -44,10 +44,10 @@ void UCustomGameModeScoreViewerWidget::RepopulatePlayerScoreByGameModeAndSong()
 		for (const auto& [Song, PlayerScoresForSongs] : PlayerScoresBySong)
 		{
 			Algo::Sort(PlayerScoresForSongs,
-				[&](const TSharedPtr<FPlayerScore>& Left, const TSharedPtr<FPlayerScore>& Right)
-				{
-					return TimesByPlayerScore[Left] < TimesByPlayerScore[Right];
-				});
+			           [&](const TSharedPtr<FPlayerScore>& Left, const TSharedPtr<FPlayerScore>& Right)
+			           {
+				           return TimesByPlayerScore[Left] < TimesByPlayerScore[Right];
+			           });
 		}
 	}
 	GameModeScoreViewerWidget->SetTimesByPlayerScore(MoveTemp(TimesByPlayerScore));
@@ -73,12 +73,12 @@ void UCustomGameModeScoreViewerWidget::NativeConstruct()
 	Super::NativeConstruct();
 
 	GameModeComboBoxWidget->ComboBox->OnSelectionChanged.AddUniqueDynamic(this,
-		&ThisClass::OnSelectionChanged_GameMode);
+	                                                                      &ThisClass::OnSelectionChanged_GameMode);
 	SongComboBoxWidget->ComboBox->OnSelectionChanged.AddUniqueDynamic(this, &ThisClass::OnSelectionChanged_Song);
 }
 
 void UCustomGameModeScoreViewerWidget::OnSelectionChanged_GameMode(const TArray<FString>& ActiveSelections,
-	const ESelectInfo::Type SelectionType)
+                                                                   const ESelectInfo::Type SelectionType)
 {
 	if (SelectionType == ESelectInfo::Type::Direct || ActiveSelections.IsEmpty())
 	{
@@ -88,7 +88,7 @@ void UCustomGameModeScoreViewerWidget::OnSelectionChanged_GameMode(const TArray<
 }
 
 void UCustomGameModeScoreViewerWidget::OnSelectionChanged_Song(const TArray<FString>& ActiveSelections,
-	const ESelectInfo::Type SelectionType)
+                                                               const ESelectInfo::Type SelectionType)
 {
 	if (SelectionType == ESelectInfo::Type::Direct || ActiveSelections.IsEmpty())
 	{
@@ -100,7 +100,7 @@ void UCustomGameModeScoreViewerWidget::OnSelectionChanged_Song(const TArray<FStr
 }
 
 void UCustomGameModeScoreViewerWidget::FilterActiveScores(const FString& CurrentCustomGameModeName,
-	const FString& CurrentSongTitle)
+                                                          const FString& CurrentSongTitle)
 {
 	TSet<FString> SongOptions;
 	bool HasSongTitle = false;

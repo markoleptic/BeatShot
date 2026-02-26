@@ -71,12 +71,18 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	TMap<FName, FText> HeaderColumnText = {
-		{SPlayerScoreRow::DateColumnName, FText()}, {SPlayerScoreRow::GameModeColumnName, FText()},
-		{SPlayerScoreRow::DifficultyColumnName, FText()}, {SPlayerScoreRow::SongColumnName, FText()},
-		{SPlayerScoreRow::ScoreColumnName, FText()}, {SPlayerScoreRow::AccuracyColumnName, FText()},
-		{SPlayerScoreRow::CompletionColumnName, FText()}, {SPlayerScoreRow::StreakColumnName, FText()},
-		{SPlayerScoreRow::ShotsFiredColumnName, FText()}, {SPlayerScoreRow::TargetsHitColumnName, FText()},
-		{SPlayerScoreRow::TargetsSpawnedColumnName, FText()}, {SPlayerScoreRow::ReactionTimeColumnName, FText()},
+		{SPlayerScoreRow::DateColumnName, FText()},
+		{SPlayerScoreRow::GameModeColumnName, FText()},
+		{SPlayerScoreRow::DifficultyColumnName, FText()},
+		{SPlayerScoreRow::SongColumnName, FText()},
+		{SPlayerScoreRow::ScoreColumnName, FText()},
+		{SPlayerScoreRow::AccuracyColumnName, FText()},
+		{SPlayerScoreRow::CompletionColumnName, FText()},
+		{SPlayerScoreRow::StreakColumnName, FText()},
+		{SPlayerScoreRow::ShotsFiredColumnName, FText()},
+		{SPlayerScoreRow::TargetsHitColumnName, FText()},
+		{SPlayerScoreRow::TargetsSpawnedColumnName, FText()},
+		{SPlayerScoreRow::ReactionTimeColumnName, FText()},
 	};
 
 	EColumnSortMode::Type PrimarySortMode = EColumnSortMode::Ascending;

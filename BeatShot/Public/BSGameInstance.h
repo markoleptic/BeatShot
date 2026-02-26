@@ -24,8 +24,10 @@ class USteamManager;
 
 /** Base GameInstance for this game. */
 UCLASS()
-class BEATSHOT_API UBSGameInstance : public UGameInstance, public IBSPlayerSettingsInterface,
-                                     public IHttpRequestInterface, public IBSPlayerScoreInterface
+class BEATSHOT_API UBSGameInstance : public UGameInstance,
+                                     public IBSPlayerSettingsInterface,
+                                     public IHttpRequestInterface,
+                                     public IBSPlayerScoreInterface
 {
 	GENERATED_BODY()
 
@@ -34,10 +36,10 @@ class BEATSHOT_API UBSGameInstance : public UGameInstance, public IBSPlayerSetti
 #if WITH_EDITOR
 	/** Called as soon as the game mode is spawned, prior to creating the local players. */
 	virtual FGameInstancePIEResult PostCreateGameModeForPIE(const FGameInstancePIEParameters& Params,
-		AGameModeBase* GameMode) override;
+	                                                        AGameModeBase* GameMode) override;
 	/** Called to actually start the game when doing Play/Simulate In Editor. */
 	virtual FGameInstancePIEResult StartPlayInEditorGameInstance(ULocalPlayer* LocalPlayer,
-		const FGameInstancePIEParameters& Params) override;
+	                                                             const FGameInstancePIEParameters& Params) override;
 #else
 	void OnPreLoadMapWithContext(const FWorldContext& InWorldContext, const FString& MapName);
 #endif WITH_EDITOR
@@ -82,8 +84,9 @@ public:
 	void SetTimeOfDayManager(const TObjectPtr<ATimeOfDayManager>& InManager) { TimeOfDayManager = InManager; }
 
 	/** Handles saving scores to database, called by BSGameMode. */
-	void SavePlayerScoresToDatabase(ABSPlayerController* PlayerController, bool bWasValidToSave,
-		bool bQuitToDesktopAfterSave) const;
+	void SavePlayerScoresToDatabase(ABSPlayerController* PlayerController,
+	                                bool bWasValidToSave,
+	                                bool bQuitToDesktopAfterSave) const;
 
 	/** Sets the loading screen state to fading out and updates the loading screen audio component state. */
 	void RemoveLoadingScreen();
@@ -101,7 +104,8 @@ public:
 	 *  called any time an updater broadcasts their delegate. */
 	template <typename UserClass, typename StructType>
 	void RegisterPlayerSettingsSubscriber(UserClass* InUserObject,
-		typename TMemFunPtrType<false, UserClass, void (const StructType&)>::Type InFunc);
+	                                      typename TMemFunPtrType<false, UserClass, void (const StructType&)>::Type
+	                                      InFunc);
 
 protected:
 	void SetBSConfig(const FBSConfig& InConfig);
@@ -179,7 +183,8 @@ void UBSGameInstance::RegisterPlayerSettingsUpdaters(TMulticastDelegate<void(con
 
 template <typename UserClass, typename StructType>
 void UBSGameInstance::RegisterPlayerSettingsSubscriber(UserClass* InUserObject,
-	typename TMemFunPtrType<false, UserClass, void (const StructType&)>::Type InFunc)
+                                                       typename TMemFunPtrType<
+	                                                       false, UserClass, void (const StructType&)>::Type InFunc)
 {
 	if constexpr (std::is_same_v<StructType, FPlayerSettings_Game>)
 	{

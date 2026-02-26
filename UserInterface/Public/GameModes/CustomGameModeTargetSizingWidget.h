@@ -38,12 +38,14 @@ protected:
 
 	void OnSliderTextBoxValueChanged(USingleRangeInputWidget* Widget, const float Value);
 
-	void OnMinMaxMenuOptionChanged(UDualRangeInputWidget* Widget, const bool bChecked, const float MinOrConstant,
-		const float Max);
+	void OnMinMaxMenuOptionChanged(UDualRangeInputWidget* Widget,
+	                               const bool bChecked,
+	                               const float MinOrConstant,
+	                               const float Max);
 
 	UFUNCTION()
 	void OnSelectionChanged_ConsecutiveTargetScalePolicy(const TArray<FString>& Selected,
-		const ESelectInfo::Type SelectionType);
+	                                                     const ESelectInfo::Type SelectionType);
 
 	FString GetComboBoxEntryTooltipStringTableKey_ConsecutiveTargetScalePolicy(const FString& EnumString);
 

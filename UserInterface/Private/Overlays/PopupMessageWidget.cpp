@@ -12,8 +12,9 @@ void UPopupMessageWidget::NativeConstruct()
 	Super::NativeConstruct();
 }
 
-TArray<UBSButton*> UPopupMessageWidget::InitPopup(const FText& TitleInput, const FText& MessageInput,
-	const int32 NumButtons)
+TArray<UBSButton*> UPopupMessageWidget::InitPopup(const FText& TitleInput,
+                                                  const FText& MessageInput,
+                                                  const int32 NumButtons)
 {
 	TArray<UBSButton*> Buttons;
 	TextBlock_Title->SetText(TitleInput);

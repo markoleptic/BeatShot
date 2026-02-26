@@ -27,8 +27,9 @@ enum class EBSAbilityActivationPolicy : uint8
 	SpammableTriggered UMETA(DisplayName="SpammableTriggered"),
 };
 
-ENUM_RANGE_BY_FIRST_AND_LAST(EBSAbilityActivationPolicy, EBSAbilityActivationPolicy::OnInputTriggered,
-	EBSAbilityActivationPolicy::SpammableTriggered);
+ENUM_RANGE_BY_FIRST_AND_LAST(EBSAbilityActivationPolicy,
+                             EBSAbilityActivationPolicy::OnInputTriggered,
+                             EBSAbilityActivationPolicy::SpammableTriggered);
 
 /** Defines how an ability activates in relation to other abilities. */
 UENUM(BlueprintType)
@@ -45,8 +46,9 @@ enum class EBSAbilityActivationGroup : uint8
 	Max UMETA(Hidden)
 };
 
-ENUM_RANGE_BY_FIRST_AND_LAST(EBSAbilityActivationGroup, EBSAbilityActivationGroup::Independent,
-	EBSAbilityActivationGroup::Max);
+ENUM_RANGE_BY_FIRST_AND_LAST(EBSAbilityActivationGroup,
+                             EBSAbilityActivationGroup::Independent,
+                             EBSAbilityActivationGroup::Max);
 
 /** Base GameplayAbility used for this game. */
 UCLASS()
@@ -86,8 +88,13 @@ public:
 	EBSAbilityActivationGroup GetActivationGroup() const { return ActivationGroup; }
 
 protected:
-	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
-		const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
-	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
-		const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
+	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle,
+	                             const FGameplayAbilityActorInfo* ActorInfo,
+	                             const FGameplayAbilityActivationInfo ActivationInfo,
+	                             const FGameplayEventData* TriggerEventData) override;
+	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle,
+	                        const FGameplayAbilityActorInfo* ActorInfo,
+	                        const FGameplayAbilityActivationInfo ActivationInfo,
+	                        bool bReplicateEndAbility,
+	                        bool bWasCancelled) override;
 };

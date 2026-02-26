@@ -3,8 +3,9 @@
 
 #include "Utilities/Buttons/ScalabilitySettingButton.h"
 
-void UScalabilitySettingButton::SetDefaults(const EVideoSettingType InVideoSettingType, const uint8 VideoSettingQuality,
-	UBSButton* NextButton)
+void UScalabilitySettingButton::SetDefaults(const EVideoSettingType InVideoSettingType,
+                                            const uint8 VideoSettingQuality,
+                                            UBSButton* NextButton)
 {
 	SettingType = InVideoSettingType;
 	Quality = VideoSettingQuality;

@@ -281,8 +281,9 @@ void UMenuOptionWidget::AddGameModeCategoryTagWidgets(TArray<UGameModeCategoryTa
 	}
 }
 
-void UMenuOptionWidget::UpdateDynamicTooltipIcon(const int32 Hash, const bool bValidated,
-	const FValidationCheckData& Data)
+void UMenuOptionWidget::UpdateDynamicTooltipIcon(const int32 Hash,
+                                                 const bool bValidated,
+                                                 const FValidationCheckData& Data)
 {
 	const TObjectPtr<UTooltipIcon>* TooltipIconPtr = DynamicTooltipIcons.Find(Hash);
 	TObjectPtr<UTooltipIcon> TooltipIcon = TooltipIconPtr ? TooltipIconPtr->Get() : nullptr;

@@ -88,8 +88,9 @@ void UQTableWidget::InitQTable2(const int32 Rows, const int32 Columns, const TAr
 
 FLinearColor UQTableWidget::InterpColor(const float Value) const
 {
-	return UKismetMathLibrary::LinearColorLerp(FLinearColor(FColor::Red), FLinearColor(FColor::Green),
-		UKismetMathLibrary::MapRangeClamped(Value, MinValue, MaxValue, 0, 1));
+	return UKismetMathLibrary::LinearColorLerp(FLinearColor(FColor::Red),
+	                                           FLinearColor(FColor::Green),
+	                                           UKismetMathLibrary::MapRangeClamped(Value, MinValue, MaxValue, 0, 1));
 }
 
 void UQTableWidget::UpdateExtrema(const TArray<float>& QTable)

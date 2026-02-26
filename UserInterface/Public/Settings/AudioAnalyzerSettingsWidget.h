@@ -80,8 +80,10 @@ protected:
 	FPlayerSettings_AudioAnalyzer NewAASettings;
 
 	UFUNCTION()
-	void OnChannelValueCommitted(const UBandChannelWidget* BandChannel, const int32 Index, const float NewValue,
-		const bool bIsMinValue);
+	void OnChannelValueCommitted(const UBandChannelWidget* BandChannel,
+	                             const int32 Index,
+	                             const float NewValue,
+	                             const bool bIsMinValue);
 	UFUNCTION()
 	void OnBandThresholdChanged(const UBandThresholdWidget* BandThreshold, const int32 Index, const float NewValue);
 

@@ -33,8 +33,9 @@ enum class EMenuOptionEnabledState : uint8
 	Disabled UMETA(DisplayName="Disabled"),
 };
 
-ENUM_RANGE_BY_FIRST_AND_LAST(EMenuOptionEnabledState, EMenuOptionEnabledState::Enabled,
-	EMenuOptionEnabledState::Disabled);
+ENUM_RANGE_BY_FIRST_AND_LAST(EMenuOptionEnabledState,
+                             EMenuOptionEnabledState::Enabled,
+                             EMenuOptionEnabledState::Disabled);
 
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnLockStateChanged, UMenuOptionWidget*, const bool);
 

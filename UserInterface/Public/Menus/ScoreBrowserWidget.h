@@ -30,7 +30,8 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FOnURLChangedResult, const bool bSuccess);
 
 /** Container that wraps around WebBrowserWidget providing additional functionality. */
 UCLASS()
-class USERINTERFACE_API UScoreBrowserWidget : public UUserWidget, public IBSPlayerScoreInterface,
+class USERINTERFACE_API UScoreBrowserWidget : public UUserWidget,
+                                              public IBSPlayerScoreInterface,
                                               public IHttpRequestInterface
 {
 	GENERATED_BODY()

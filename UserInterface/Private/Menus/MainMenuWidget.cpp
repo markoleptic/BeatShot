@@ -26,10 +26,12 @@ void UMainMenuWidget::NativeConstruct()
 	ScoresWidget->OnURLChangedResult.AddUObject(this, &UMainMenuWidget::OnURLChangedResult_ScoresWidget);
 	LoginWidget->OnLoginButtonClicked.AddUObject(this, &UMainMenuWidget::OnButtonClicked_Login);
 
-	LoginWidget->OnExitAnimationCompletedDelegate.AddUObject(this, &ThisClass::OnWidgetExitAnimationCompleted,
-		Button_Login_Register);
-	FeedbackWidget->OnExitAnimationCompletedDelegate.AddUObject(this, &ThisClass::OnWidgetExitAnimationCompleted,
-		Button_Feedback);
+	LoginWidget->OnExitAnimationCompletedDelegate.AddUObject(this,
+	                                                         &ThisClass::OnWidgetExitAnimationCompleted,
+	                                                         Button_Login_Register);
+	FeedbackWidget->OnExitAnimationCompletedDelegate.AddUObject(this,
+	                                                            &ThisClass::OnWidgetExitAnimationCompleted,
+	                                                            Button_Feedback);
 
 	LoginWidget->Button_RetrySteamLogin->OnBSButtonPressed.AddUObject(this, &ThisClass::OnButtonClicked_BSButton);
 	Button_Login_Register->OnBSButtonPressed.AddUObject(this, &ThisClass::OnButtonClicked_BSButton);
@@ -143,8 +145,10 @@ void UMainMenuWidget::OnMenuButtonClicked_BSButton(const UBSButton* Button)
 	// Quit button
 	if (Button == MenuButton_Quit)
 	{
-		UKismetSystemLibrary::QuitGame(GetWorld(), UGameplayStatics::GetPlayerController(GetWorld(), 0),
-			EQuitPreference::Quit, false);
+		UKismetSystemLibrary::QuitGame(GetWorld(),
+		                               UGameplayStatics::GetPlayerController(GetWorld(), 0),
+		                               EQuitPreference::Quit,
+		                               false);
 	}
 }
 

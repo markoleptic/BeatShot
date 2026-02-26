@@ -26,8 +26,10 @@ class UWidgetAnimation;
 /** Widget that prompts user to choose an audio input type and gather info about the audio configuration to be used for
  *  the game mode. */
 UCLASS()
-class USERINTERFACE_API UAudioSelectWidget : public UUserWidget, public IBSPlayerSettingsInterface,
-                                             public IBSWidgetInterface, public IBSPlayerScoreInterface
+class USERINTERFACE_API UAudioSelectWidget : public UUserWidget,
+                                             public IBSPlayerSettingsInterface,
+                                             public IBSWidgetInterface,
+                                             public IBSPlayerScoreInterface
 {
 	GENERATED_BODY()
 
@@ -129,9 +131,15 @@ private:
 	/** Opens file dialog for song selection. */
 	bool OpenFileDialog(TArray<FString>& OutFileNames);
 
-	bool FileDialogShared(bool bSave, const void* ParentWindowHandle, const FString& DialogTitle,
-		const FString& DefaultPath, const FString& DefaultFile, const FString& FileTypes, uint32 Flags,
-		TArray<FString>& OutFilenames, int32& OutFilterIndex);
+	bool FileDialogShared(bool bSave,
+	                      const void* ParentWindowHandle,
+	                      const FString& DialogTitle,
+	                      const FString& DefaultPath,
+	                      const FString& DefaultFile,
+	                      const FString& FileTypes,
+	                      uint32 Flags,
+	                      TArray<FString>& OutFilenames,
+	                      int32& OutFilterIndex);
 
 	FWidgetAnimationDynamicEvent FadeOutDelegate;
 

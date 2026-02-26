@@ -18,7 +18,7 @@ struct BEATSHOTGLOBAL_API FEnumStringPair
 	UPROPERTY(BlueprintReadOnly, VisibleDefaultsOnly, meta = (NoResetToDefault))
 	uint8 Index;
 
-	FEnumStringPair(): Index(MAX_uint8)
+	FEnumStringPair() : Index(MAX_uint8)
 	{
 	}
 
@@ -49,7 +49,7 @@ struct BEATSHOTGLOBAL_API FEnumStringMapping
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, meta = (TitleProperty="{DisplayName}"))
 	TMap<uint8, FEnumStringPair> EnumStringPairs;
 
-	FEnumStringMapping(): Enum(nullptr)
+	FEnumStringMapping() : Enum(nullptr)
 	{
 	}
 

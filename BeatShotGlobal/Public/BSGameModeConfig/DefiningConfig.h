@@ -78,8 +78,10 @@ struct BEATSHOTGLOBAL_API FBS_DefiningConfig
 		Difficulty = EGameModeDifficulty::None;
 	}
 
-	FBS_DefiningConfig(const EGameModeType InGameModeType, const EBaseGameMode InBaseGameMode,
-		const FString& InCustomGameModeName, const EGameModeDifficulty InGameModeDifficulty)
+	FBS_DefiningConfig(const EGameModeType InGameModeType,
+	                   const EBaseGameMode InBaseGameMode,
+	                   const FString& InCustomGameModeName,
+	                   const EGameModeDifficulty InGameModeDifficulty)
 	{
 		GameModeType = InGameModeType;
 		BaseGameMode = InBaseGameMode;
@@ -116,7 +118,9 @@ struct BEATSHOTGLOBAL_API FBS_DefiningConfig
 
 	friend FORCEINLINE uint32 GetTypeHash(const FBS_DefiningConfig& Config)
 	{
-		return HashCombine(GetTypeHash(Config.GameModeType), HashCombine(GetTypeHash(Config.BaseGameMode),
-			HashCombine(GetTypeHash(Config.CustomGameModeName), GetTypeHash(Config.Difficulty))));
+		return HashCombine(GetTypeHash(Config.GameModeType),
+		                   HashCombine(GetTypeHash(Config.BaseGameMode),
+		                               HashCombine(GetTypeHash(Config.CustomGameModeName),
+		                                           GetTypeHash(Config.Difficulty))));
 	}
 };

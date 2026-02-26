@@ -32,8 +32,10 @@ void UColorSelectWidget::SetStyling()
 	if (MenuOptionStyle)
 	{
 		const FMargin NewMargin(0.f,
-			MenuOptionStyle->Padding_DescriptionText.Top + MenuOptionStyle->Padding_LeftBox.Top, 0.f,
-			MenuOptionStyle->Padding_DescriptionText.Bottom + MenuOptionStyle->Padding_LeftBox.Bottom);
+		                        MenuOptionStyle->Padding_DescriptionText.Top + MenuOptionStyle->Padding_LeftBox.Top,
+		                        0.f,
+		                        MenuOptionStyle->Padding_DescriptionText.Bottom + MenuOptionStyle->Padding_LeftBox.
+		                        Bottom);
 		if (ColorAValue)
 		{
 			ColorAValue->WidgetStyle.SetFont(MenuOptionStyle->Font_EditableTextBesideSlider);
@@ -122,7 +124,12 @@ void UColorSelectWidget::InitializeColor(const FLinearColor& NewColor)
 
 void UColorSelectWidget::OnColorAValueChange(const FText& NewValue, ETextCommit::Type CommitType)
 {
-	const float SnappedValue = IBSWidgetInterface::OnEditableTextBoxChanged(NewValue, ColorAValue, ColorASlider, 1, 0,
+	const float SnappedValue = IBSWidgetInterface::OnEditableTextBoxChanged(
+		NewValue,
+		ColorAValue,
+		ColorASlider,
+		1,
+		0,
 		100);
 	Color.A = FMath::GridSnap(SnappedValue / 100, 0.01);
 	ColorPreview->SetColorAndOpacity(Color);
@@ -135,7 +142,12 @@ void UColorSelectWidget::OnColorAValueChange(const FText& NewValue, ETextCommit:
 
 void UColorSelectWidget::OnColorRValueChange(const FText& NewValue, ETextCommit::Type CommitType)
 {
-	const float SnappedValue = IBSWidgetInterface::OnEditableTextBoxChanged(NewValue, ColorRValue, ColorRSlider, 1, 0,
+	const float SnappedValue = IBSWidgetInterface::OnEditableTextBoxChanged(
+		NewValue,
+		ColorRValue,
+		ColorRSlider,
+		1,
+		0,
 		255);
 	Color.R = SnappedValue / 255;
 	ColorPreview->SetColorAndOpacity(Color);
@@ -148,7 +160,12 @@ void UColorSelectWidget::OnColorRValueChange(const FText& NewValue, ETextCommit:
 
 void UColorSelectWidget::OnColorGValueChange(const FText& NewValue, ETextCommit::Type CommitType)
 {
-	const float SnappedValue = IBSWidgetInterface::OnEditableTextBoxChanged(NewValue, ColorGValue, ColorGSlider, 1, 0,
+	const float SnappedValue = IBSWidgetInterface::OnEditableTextBoxChanged(
+		NewValue,
+		ColorGValue,
+		ColorGSlider,
+		1,
+		0,
 		255);
 	Color.G = SnappedValue / 255;
 	ColorPreview->SetColorAndOpacity(Color);
@@ -161,7 +178,12 @@ void UColorSelectWidget::OnColorGValueChange(const FText& NewValue, ETextCommit:
 
 void UColorSelectWidget::OnColorBValueChange(const FText& NewValue, ETextCommit::Type CommitType)
 {
-	const float SnappedValue = IBSWidgetInterface::OnEditableTextBoxChanged(NewValue, ColorBValue, ColorBSlider, 1, 0,
+	const float SnappedValue = IBSWidgetInterface::OnEditableTextBoxChanged(
+		NewValue,
+		ColorBValue,
+		ColorBSlider,
+		1,
+		0,
 		255);
 	Color.B = SnappedValue / 255;
 	ColorPreview->SetColorAndOpacity(Color);

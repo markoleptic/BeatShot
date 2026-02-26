@@ -112,8 +112,9 @@ public:
 
 	/** Grants the ability set to the specified ability system component. The returned handles can be used later
 	 *  to take away anything that was granted. */
-	void GiveToAbilitySystem(UBSAbilitySystemComponent* ASC, FBSGrantedAbilitySet* OutGrantedHandles,
-		UObject* SourceObject = nullptr) const;
+	void GiveToAbilitySystem(UBSAbilitySystemComponent* ASC,
+	                         FBSGrantedAbilitySet* OutGrantedHandles,
+	                         UObject* SourceObject = nullptr) const;
 
 protected:
 	/** Gameplay abilities to grant when this ability set is granted. */

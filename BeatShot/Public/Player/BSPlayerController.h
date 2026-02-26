@@ -33,8 +33,10 @@ DECLARE_DELEGATE(FOnScreenFadeToBlackFinish);
 /** Base PlayerController class for this game. Responsible for adding any main widget from the UserInterface module
  *  to the viewport (MainMenuWidget, PauseMenu, PostGameModeMenu), and several other overlay widgets. */
 UCLASS()
-class BEATSHOT_API ABSPlayerController : public APlayerController, public IHttpRequestInterface,
-                                         public IBSPlayerSettingsInterface, public IBSPlayerScoreInterface
+class BEATSHOT_API ABSPlayerController : public APlayerController,
+                                         public IHttpRequestInterface,
+                                         public IBSPlayerSettingsInterface,
+                                         public IBSPlayerScoreInterface
 {
 	GENERATED_BODY()
 
@@ -121,8 +123,10 @@ public:
 
 	/** Shows the RLAgent widget, creating it if it does not exist. Binds the provided delegate to the
 	 *  widget's UpdatePanel function. */
-	void ShowQTableWidget(FOnQTableUpdate& OnQTableUpdate, const int32 Rows, const int32 Columns,
-		const TArray<float>& QTable);
+	void ShowQTableWidget(FOnQTableUpdate& OnQTableUpdate,
+	                      const int32 Rows,
+	                      const int32 Columns,
+	                      const TArray<float>& QTable);
 
 	/** Hides and destroys the RLAgent widget, if it exists. */
 	void HideQTableWidget();

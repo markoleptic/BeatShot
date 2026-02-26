@@ -88,12 +88,13 @@ bool FBSGrantedAbilitySet::IsEmpty() const
 /* -- BS Ability Set -- */
 /* -------------------- */
 
-UBSAbilitySet::UBSAbilitySet(const FObjectInitializer& ObjectInitializer): Super(ObjectInitializer)
+UBSAbilitySet::UBSAbilitySet(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 }
 
-void UBSAbilitySet::GiveToAbilitySystem(UBSAbilitySystemComponent* ASC, FBSGrantedAbilitySet* OutGrantedHandles,
-	UObject* SourceObject) const
+void UBSAbilitySet::GiveToAbilitySystem(UBSAbilitySystemComponent* ASC,
+                                        FBSGrantedAbilitySet* OutGrantedHandles,
+                                        UObject* SourceObject) const
 {
 	check(ASC);
 
@@ -110,8 +111,11 @@ void UBSAbilitySet::GiveToAbilitySystem(UBSAbilitySystemComponent* ASC, FBSGrant
 
 		if (!IsValid(AbilityToGrant.Ability))
 		{
-			UE_LOG(LogTemp, Error, TEXT("GrantedGameplayAbilities[%d] on ability set [%s] is not valid."), AbilityIndex,
-				*GetNameSafe(this));
+			UE_LOG(LogTemp,
+			       Error,
+			       TEXT("GrantedGameplayAbilities[%d] on ability set [%s] is not valid."),
+			       AbilityIndex,
+			       *GetNameSafe(this));
 			continue;
 		}
 
@@ -135,14 +139,18 @@ void UBSAbilitySet::GiveToAbilitySystem(UBSAbilitySystemComponent* ASC, FBSGrant
 
 		if (!IsValid(EffectToGrant.GameplayEffect))
 		{
-			UE_LOG(LogTemp, Error, TEXT("GrantedGameplayEffects[%d] on ability set [%s] is not valid"), EffectIndex,
-				*GetNameSafe(this));
+			UE_LOG(LogTemp,
+			       Error,
+			       TEXT("GrantedGameplayEffects[%d] on ability set [%s] is not valid"),
+			       EffectIndex,
+			       *GetNameSafe(this));
 			continue;
 		}
 
 		const UGameplayEffect* GameplayEffect = EffectToGrant.GameplayEffect->GetDefaultObject<UGameplayEffect>();
 		const FActiveGameplayEffectHandle GameplayEffectHandle = ASC->ApplyGameplayEffectToSelf(GameplayEffect,
-			EffectToGrant.EffectLevel, ASC->MakeEffectContext());
+			EffectToGrant.EffectLevel,
+			ASC->MakeEffectContext());
 		if (OutGrantedHandles && GameplayEffectHandle.IsValid())
 		{
 			OutGrantedHandles->AddGameplayEffectHandle(GameplayEffectHandle);
@@ -156,8 +164,11 @@ void UBSAbilitySet::GiveToAbilitySystem(UBSAbilitySystemComponent* ASC, FBSGrant
 
 		if (!IsValid(SetToGrant.AttributeSet))
 		{
-			UE_LOG(LogTemp, Error, TEXT("GrantedAttributes[%d] on ability set [%s] is not valid"), SetIndex,
-				*GetNameSafe(this));
+			UE_LOG(LogTemp,
+			       Error,
+			       TEXT("GrantedAttributes[%d] on ability set [%s] is not valid"),
+			       SetIndex,
+			       *GetNameSafe(this));
 			continue;
 		}
 

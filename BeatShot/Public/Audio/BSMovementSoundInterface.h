@@ -21,7 +21,14 @@ class BEATSHOT_API IBSMovementSoundInterface
 public:
 	/** Plays a movement sound. */
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void PlayMovementSound(const FName Bone, const FGameplayTag MotionEffect, USceneComponent* StaticMeshComponent,
-		const FVector LocationOffset, const FRotator RotationOffset, const UAnimSequenceBase* AnimationSequence,
-		const FHitResult HitResult, FGameplayTagContainer Context, float AudioVolume = 1, float AudioPitch = 1);
+	void PlayMovementSound(const FName Bone,
+	                       const FGameplayTag MotionEffect,
+	                       USceneComponent* StaticMeshComponent,
+	                       const FVector LocationOffset,
+	                       const FRotator RotationOffset,
+	                       const UAnimSequenceBase* AnimationSequence,
+	                       const FHitResult HitResult,
+	                       FGameplayTagContainer Context,
+	                       float AudioVolume = 1,
+	                       float AudioPitch = 1);
 };

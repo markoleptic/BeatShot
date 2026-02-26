@@ -31,11 +31,11 @@ void ULoginWidget::NativeConstruct()
 void ULoginWidget::ShowLoginScreen(const FString& Key)
 {
 	TextBlock_ContinueWithoutTitle->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets",
-		FString("Login_ContinueWithoutTitleTextLogin")));
+	                                                               FString("Login_ContinueWithoutTitleTextLogin")));
 	TextBlock_ContinueWithoutBody->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets",
-		FString("Login_ContinueWithoutBodyTextLogin")));
+	                                                              FString("Login_ContinueWithoutBodyTextLogin")));
 	Button_NoLoginCancel->SetButtonText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets",
-		FString("Login_ContinueWithoutCancelButtonTextLogin")));
+	                                                           FString("Login_ContinueWithoutCancelButtonTextLogin")));
 
 	if (!Key.IsEmpty())
 	{
@@ -174,13 +174,15 @@ void ULoginWidget::LoginButtonClicked()
 		"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?");
 	if (FRegexMatcher EmailMatch(EmailPattern, Value_UsernameEmail->GetText().ToString()); EmailMatch.FindNext())
 	{
-		OnLoginButtonClicked.Broadcast(FLoginPayload("", Value_UsernameEmail->GetText().ToString(),
-			Value_Password->GetText().ToString()));
+		OnLoginButtonClicked.Broadcast(FLoginPayload("",
+		                                             Value_UsernameEmail->GetText().ToString(),
+		                                             Value_Password->GetText().ToString()));
 	}
 	else
 	{
-		OnLoginButtonClicked.Broadcast(FLoginPayload(Value_UsernameEmail->GetText().ToString(), "",
-			Value_Password->GetText().ToString()));
+		OnLoginButtonClicked.Broadcast(FLoginPayload(Value_UsernameEmail->GetText().ToString(),
+		                                             "",
+		                                             Value_Password->GetText().ToString()));
 	}
 
 	PlayFadeOutLogin();

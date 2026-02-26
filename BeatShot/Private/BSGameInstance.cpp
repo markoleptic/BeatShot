@@ -40,7 +40,7 @@ void UBSGameInstance::Init()
 
 #if WITH_EDITOR
 FGameInstancePIEResult UBSGameInstance::PostCreateGameModeForPIE(const FGameInstancePIEParameters& Params,
-	AGameModeBase* GameMode)
+                                                                 AGameModeBase* GameMode)
 {
 	FGameInstancePIEResult Result = Super::PostCreateGameModeForPIE(Params, GameMode);
 	UBSGameUserSettings::Get()->Initialize(WorldContext->World());
@@ -49,7 +49,7 @@ FGameInstancePIEResult UBSGameInstance::PostCreateGameModeForPIE(const FGameInst
 }
 
 FGameInstancePIEResult UBSGameInstance::StartPlayInEditorGameInstance(ULocalPlayer* LocalPlayer,
-	const FGameInstancePIEParameters& Params)
+                                                                      const FGameInstancePIEParameters& Params)
 {
 	UTooltipWidget::InitializeTooltipWidget(TooltipClass);
 	return Super::StartPlayInEditorGameInstance(LocalPlayer, Params);
@@ -179,8 +179,10 @@ void UBSGameInstance::HandleGameModeTransition(const FGameModeTransitionState& N
 			// Can exit immediately if not saving scores, otherwise SavePlayerScoresToDatabase will handle it
 			if (!NewGameModeTransitionState.bSaveCurrentScores)
 			{
-				UKismetSystemLibrary::QuitGame(GetWorld(), GetFirstLocalPlayerController(GetWorld()),
-					EQuitPreference::Quit, false);
+				UKismetSystemLibrary::QuitGame(GetWorld(),
+				                               GetFirstLocalPlayerController(GetWorld()),
+				                               EQuitPreference::Quit,
+				                               false);
 			}
 		}
 		break;
@@ -212,8 +214,14 @@ void UBSGameInstance::InitializeAudioComponent(const UWorld* World)
 	}
 	if (LoadingScreenSound)
 	{
-		LoadingScreenAudioComponent = UGameplayStatics::CreateSound2D(World, LoadingScreenSound, 1, 1, 0, nullptr, true,
-			true);
+		LoadingScreenAudioComponent = UGameplayStatics::CreateSound2D(World,
+		                                                              LoadingScreenSound,
+		                                                              1,
+		                                                              1,
+		                                                              0,
+		                                                              nullptr,
+		                                                              true,
+		                                                              true);
 	}
 }
 
@@ -249,8 +257,9 @@ void UBSGameInstance::SetLoadingScreenAudioComponentState(const float FadeTarget
 	}
 }
 
-void UBSGameInstance::SavePlayerScoresToDatabase(ABSPlayerController* PlayerController, const bool bWasValidToSave,
-	const bool bQuitToDesktopAfterSave) const
+void UBSGameInstance::SavePlayerScoresToDatabase(ABSPlayerController* PlayerController,
+                                                 const bool bWasValidToSave,
+                                                 const bool bQuitToDesktopAfterSave) const
 {
 	const FPlayerSettings_User PlayerSettings = PlayerController->GetPlayerSettings().User;
 	// If game mode encountered a reason not to save to database
@@ -259,8 +268,10 @@ void UBSGameInstance::SavePlayerScoresToDatabase(ABSPlayerController* PlayerCont
 		PlayerController->OnPostScoresResponseReceived("SBW_DidNotSaveScores");
 		if (bQuitToDesktopAfterSave)
 		{
-			UKismetSystemLibrary::QuitGame(GetWorld(), GetFirstLocalPlayerController(GetWorld()), EQuitPreference::Quit,
-				false);
+			UKismetSystemLibrary::QuitGame(GetWorld(),
+			                               GetFirstLocalPlayerController(GetWorld()),
+			                               EQuitPreference::Quit,
+			                               false);
 		}
 		return;
 	}
@@ -270,8 +281,10 @@ void UBSGameInstance::SavePlayerScoresToDatabase(ABSPlayerController* PlayerCont
 	{
 		if (bQuitToDesktopAfterSave)
 		{
-			UKismetSystemLibrary::QuitGame(GetWorld(), GetFirstLocalPlayerController(GetWorld()), EQuitPreference::Quit,
-				false);
+			UKismetSystemLibrary::QuitGame(GetWorld(),
+			                               GetFirstLocalPlayerController(GetWorld()),
+			                               EQuitPreference::Quit,
+			                               false);
 		}
 		PlayerController->OnPostScoresResponseReceived("SBW_NoAccount");
 		return;
@@ -307,8 +320,10 @@ void UBSGameInstance::SavePlayerScoresToDatabase(ABSPlayerController* PlayerCont
 							}
 						}
 					});
-				PostPlayerScores(LoadPlayerScores_UnsavedToDatabase(), UserID, AccessTokenResponse->AccessToken,
-					PostScoresResponse);
+				PostPlayerScores(LoadPlayerScores_UnsavedToDatabase(),
+				                 UserID,
+				                 AccessTokenResponse->AccessToken,
+				                 PostScoresResponse);
 			}
 			else // Unsuccessful access token retrieval
 			{

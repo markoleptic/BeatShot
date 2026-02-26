@@ -30,18 +30,20 @@ protected:
 
 	/** Updates options that depend on TargetActivationResponses (and ConstantActivationTargetVelocity). */
 	void UpdateDependentOptions_ActivationResponses(const TArray<ETargetActivationResponse>& Responses,
-		const bool bConstant);
+	                                                const bool bConstant);
 
 	/** Updates options that depend on TargetDeactivationResponses (and ConstantDeactivatedTargetVelocity). */
 	void UpdateDependentOptions_DeactivationResponses(const TArray<ETargetDeactivationResponse>& Responses,
-		const bool bConstant);
+	                                                  const bool bConstant);
 
 	UFUNCTION()
 	void OnSelectionChanged_MovingTargetDirectionMode(const TArray<FString>& Selected,
-		const ESelectInfo::Type SelectionType);
+	                                                  const ESelectInfo::Type SelectionType);
 
-	void OnMinMaxMenuOptionChanged(UDualRangeInputWidget* Widget, const bool bChecked, const float MinOrConstant,
-		const float Max);
+	void OnMinMaxMenuOptionChanged(UDualRangeInputWidget* Widget,
+	                               const bool bChecked,
+	                               const float MinOrConstant,
+	                               const float Max);
 
 	FString GetComboBoxEntryTooltipStringTableKey_MovingTargetDirectionMode(const FString& EnumString);
 

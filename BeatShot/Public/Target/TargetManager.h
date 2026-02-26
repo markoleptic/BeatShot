@@ -25,7 +25,10 @@ static constexpr int32 DefaultMinToActivate_MinClamp = 1;
 static constexpr int32 MaxToActivate_MinClamp = 1;
 
 static const TArray AnyDirectionModeMultipliers = {
-	FVector(0, -1, -1), FVector(0, 1, -1), FVector(0, -1, 1), FVector(0, 1, 1)
+	FVector(0, -1, -1),
+	FVector(0, 1, -1),
+	FVector(0, -1, 1),
+	FVector(0, 1, 1)
 };
 
 /** Class responsible for spawning and managing targets for all game modes. */
@@ -118,8 +121,9 @@ protected:
 
 public:
 	/** Initializes  */
-	void Init(const TSharedPtr<FBSConfig>& InConfig, const FCommonScoreInfo& InCommonScoreInfo,
-		const FPlayerSettings_Game& InPlayerSettings);
+	void Init(const TSharedPtr<FBSConfig>& InConfig,
+	          const FCommonScoreInfo& InCommonScoreInfo,
+	          const FPlayerSettings_Game& InPlayerSettings);
 
 	/** Resets all state and destroys all actors. Calls clear on Components who also manage state. */
 	void Clear();
@@ -158,8 +162,9 @@ protected:
 	virtual void DeactivateTarget(ATarget* InTarget, const bool bExpired, const bool bOutOfHealth) const;
 
 	/** Returns true if the target should be deactivated based on TargetDeactivationConditions. */
-	bool ShouldDeactivateTarget(const bool bExpired, const float CurrentHealth,
-		const float DeactivationThreshold) const;
+	bool ShouldDeactivateTarget(const bool bExpired,
+	                            const float CurrentHealth,
+	                            const float DeactivationThreshold) const;
 
 	/** Returns true if the target should be destroyed based on TargetDestructionConditions. */
 	bool ShouldDestroyTarget(const bool bExpired, const bool bOutOfHealth) const;
@@ -213,22 +218,27 @@ protected:
 
 	/** Static function that returns the absolute minimum and maximum corners of the spawn volume, based on the
 	 *  Static Extents and SpawnBox origin. */
-	static FExtrema GenerateStaticExtrema(const FBSConfig* InCfg, const FVector& InOrigin,
-		const FVector& InStaticExtents);
+	static FExtrema GenerateStaticExtrema(const FBSConfig* InCfg,
+	                                      const FVector& InOrigin,
+	                                      const FVector& InStaticExtents);
 
 	/** Static function that returns the location to place the SpawnVolume based on the Factor if dynamic or the
 	 *  StaticExtents otherwise. X and Y will be the same as the SpawnBox's location. */
-	static FVector GenerateSpawnVolumeLocation(const FBSConfig* InCfg, const FVector& InOrigin,
-		const FVector& InSpawnVolumeExtents);
+	static FVector GenerateSpawnVolumeLocation(const FBSConfig* InCfg,
+	                                           const FVector& InOrigin,
+	                                           const FVector& InSpawnVolumeExtents);
 
 	/** Static function that returns the extents to apply to the SpawnVolume based on the Factor if dynamic or the
 	 *  StaticExtents otherwise. X and Y will be the same as the SpawnBox's extents. */
-	static FVector GenerateSpawnVolumeExtents(const FBSConfig* InCfg, const FVector& InSpawnBoxExtents,
-		const FVector& InStaticExtents, const float Factor = 1.f);
+	static FVector GenerateSpawnVolumeExtents(const FBSConfig* InCfg,
+	                                          const FVector& InSpawnBoxExtents,
+	                                          const FVector& InStaticExtents,
+	                                          const float Factor = 1.f);
 
 	/** Static function that returns the max extrema the SpawnVolume will ever be. Not used currently. */
-	static FExtrema GenerateMaxSpawnVolumeExtrema(const FBSConfig* InCfg, const FVector& InOrigin,
-		const FVector& InStaticExtents);
+	static FExtrema GenerateMaxSpawnVolumeExtrema(const FBSConfig* InCfg,
+	                                              const FVector& InOrigin,
+	                                              const FVector& InStaticExtents);
 
 	/** Returns SpawnVolume's Location. */
 	FVector GetSpawnVolumeLocation() const;

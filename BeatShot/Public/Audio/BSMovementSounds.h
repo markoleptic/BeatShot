@@ -25,7 +25,8 @@ struct FBSFootstepSoundKey
 	}
 
 	FBSFootstepSoundKey(const FGameplayTag& InEffectTag, const FGameplayTagContainer& InContext) :
-		EffectTag(InEffectTag), Context(InContext)
+		EffectTag(InEffectTag),
+		Context(InContext)
 	{
 	}
 
@@ -76,8 +77,9 @@ class BEATSHOT_API UBSMovementSounds : public UDataAsset
 public:
 	virtual void PostLoad() override;
 
-	void GetFootstepSounds(const FGameplayTag Effect, const FGameplayTagContainer& Context,
-		TArray<TObjectPtr<USoundBase>>& Sounds) const;
+	void GetFootstepSounds(const FGameplayTag Effect,
+	                       const FGameplayTagContainer& Context,
+	                       TArray<TObjectPtr<USoundBase>>& Sounds) const;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)

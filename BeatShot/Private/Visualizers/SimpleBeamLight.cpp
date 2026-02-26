@@ -203,8 +203,11 @@ void ASimpleBeamLight::OnNiagaraBeamFinished(UNiagaraComponent* NiagaraComponent
 
 void ASimpleBeamLight::LineTraceFromSpotlightHead(const FVector& EndLocation, FHitResult& OutHitResult) const
 {
-	GetWorld()->LineTraceSingleByChannel(OutHitResult, SpotlightHead->GetComponentLocation(),
-		EndLocation * FVector(999999999), ECC_Camera, FCollisionQueryParams::DefaultQueryParam);
+	GetWorld()->LineTraceSingleByChannel(OutHitResult,
+	                                     SpotlightHead->GetComponentLocation(),
+	                                     EndLocation * FVector(999999999),
+	                                     ECC_Camera,
+	                                     FCollisionQueryParams::DefaultQueryParam);
 }
 
 void ASimpleBeamLight::UpdateBeamEndLightTransform(const FHitResult& HitResult) const
@@ -216,7 +219,7 @@ void ASimpleBeamLight::UpdateBeamEndLightTransform(const FHitResult& HitResult) 
 }
 
 void ASimpleBeamLight::UpdateSpotlightHeadAndLimbRotation(const FVector& HitLocation,
-	const FVector& SpotlightHeadLocation) const
+                                                          const FVector& SpotlightHeadLocation) const
 {
 	//SpotlightLimb->SetRelativeRotation(FRotator(0, 0, 0));
 	SpotlightHead->SetWorldRotation((HitLocation - SpotlightHeadLocation).Rotation());
@@ -224,7 +227,7 @@ void ASimpleBeamLight::UpdateSpotlightHeadAndLimbRotation(const FVector& HitLoca
 }
 
 void ASimpleBeamLight::UpdateSpotlightIntensityAndAttRadius(const float InPlaybackPosition,
-	const float HitResultDistance) const
+                                                            const float HitResultDistance) const
 {
 	Spotlight->SetAttenuationRadius(HitResultDistance + 2000);
 	Spotlight->SetIntensity(InPlaybackPosition * SimpleBeamLightConfig.MaxSpotlightIntensity);
@@ -233,7 +236,7 @@ void ASimpleBeamLight::UpdateSpotlightIntensityAndAttRadius(const float InPlayba
 void ASimpleBeamLight::UpdateEmissiveLightBulbIntensity(const float Intensity) const
 {
 	EmissiveLightBulb->SetScalarParameterValue(TEXT("Intensity"),
-		Intensity * SimpleBeamLightConfig.MaxEmissiveLightBulbLightIntensity);
+	                                           Intensity * SimpleBeamLightConfig.MaxEmissiveLightBulbLightIntensity);
 }
 
 void ASimpleBeamLight::UpdateBeamEndLightIntensity(const float InPlaybackPosition) const

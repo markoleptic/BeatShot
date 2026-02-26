@@ -64,7 +64,8 @@ struct FBSEquipmentList : public FFastArraySerializer
 	bool NetDeltaSerialize(FNetDeltaSerializeInfo& DeltaParms)
 	{
 		return FFastArraySerializer::FastArrayDeltaSerialize<FBSAppliedEquipmentEntry, FBSEquipmentList>(Items,
-			DeltaParms, *this);
+			DeltaParms,
+			*this);
 	}
 
 	/** Creates and adds a new FBSAppliedEquipmentEntry, also granting any associated abilities. */
@@ -113,8 +114,9 @@ public:
 	void UnequipItem(UBSEquipmentInstance* ItemInstance, const bool bCallOnUnequipped = true);
 
 	//~UObject interface
-	virtual bool ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch,
-		FReplicationFlags* RepFlags) override;
+	virtual bool ReplicateSubobjects(class UActorChannel* Channel,
+	                                 class FOutBunch* Bunch,
+	                                 FReplicationFlags* RepFlags) override;
 	//~End of UObject interface
 
 	//~UActorComponent interface

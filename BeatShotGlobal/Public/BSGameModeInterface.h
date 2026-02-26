@@ -79,8 +79,9 @@ public:
 	 *  @param OutDecodeFailureReason contains reason for decode failure if decode failure
 	 *  @return the import result as an enum
 	 */
-	static ECustomGameModeImportResult ImportCustomGameMode(const FString& InSerializedJsonString, FBSConfig& OutConfig,
-		FText& OutDecodeFailureReason);
+	static ECustomGameModeImportResult ImportCustomGameMode(const FString& InSerializedJsonString,
+	                                                        FBSConfig& OutConfig,
+	                                                        FText& OutDecodeFailureReason);
 
 	/** Creates a serialized Json object export string from an FBSConfig
 	 *  @param InConfig game mode configuration to create serialized json string from
@@ -94,8 +95,10 @@ public:
 	 *  @param PresetGameModeDataAsset data asset containing preset game modes
 	 *  @return true if found Config corresponding to the input GameModeName string and difficulty
 	 */
-	static bool FindPresetGameMode(const FString& GameModeName, const EGameModeDifficulty& Difficulty,
-		const UBSGameModeDataAsset* PresetGameModeDataAsset, FBSConfig& OutConfig);
+	static bool FindPresetGameMode(const FString& GameModeName,
+	                               const EGameModeDifficulty& Difficulty,
+	                               const UBSGameModeDataAsset* PresetGameModeDataAsset,
+	                               FBSConfig& OutConfig);
 
 	/** Finds a preset game mode.
 	 *  @param BaseGameMode preset game mode name to search for
@@ -104,8 +107,10 @@ public:
 	 *  @param PresetGameModeDataAsset data asset containing preset game modes
 	 *  @return true if found Config corresponding to the input GameModeName string and difficulty
 	 */
-	static bool FindPresetGameMode(const EBaseGameMode& BaseGameMode, const EGameModeDifficulty& Difficulty,
-		const UBSGameModeDataAsset* PresetGameModeDataAsset, FBSConfig& OutConfig);
+	static bool FindPresetGameMode(const EBaseGameMode& BaseGameMode,
+	                               const EGameModeDifficulty& Difficulty,
+	                               const UBSGameModeDataAsset* PresetGameModeDataAsset,
+	                               FBSConfig& OutConfig);
 
 	/** 
      *  @param GameModeName preset game mode name to search for

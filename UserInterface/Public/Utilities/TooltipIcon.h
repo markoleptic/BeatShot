@@ -53,7 +53,8 @@ public:
 	 *  @return new tooltip icon instance.
 	 */
 	static UTooltipIcon* CreateTooltipIcon(UUserWidget* InOwningObject,
-		const TSubclassOf<UUserWidget>& TooltipIconClass, ETooltipIconType Type);
+	                                       const TSubclassOf<UUserWidget>& TooltipIconClass,
+	                                       ETooltipIconType Type);
 
 	/**
 	 * Modifies the appearance of the icon.

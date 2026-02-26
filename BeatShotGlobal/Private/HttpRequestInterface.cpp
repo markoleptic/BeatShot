@@ -17,8 +17,8 @@ bool IHttpRequestInterface::IsRefreshTokenValid(const FString RefreshToken)
 	FDateTime CookieExpireDate;
 	const int32 ExpiresStartPos = RefreshToken.Find("Expires=", ESearchCase::CaseSensitive, ESearchDir::FromStart, 0);
 	const FString RightChopped = RefreshToken.RightChop(ExpiresStartPos + 8);
-	const FString CookieExpireString = RightChopped.Left(RightChopped.Find(";", ESearchCase::IgnoreCase,
-		ESearchDir::FromStart, 0));
+	const FString CookieExpireString = RightChopped.Left(
+		RightChopped.Find(";", ESearchCase::IgnoreCase, ESearchDir::FromStart, 0));
 	FDateTime::ParseHttpDate(CookieExpireString, CookieExpireDate);
 
 	if (FDateTime::UtcNow() + FTimespan::FromDays(1) < CookieExpireDate)
@@ -29,7 +29,8 @@ bool IHttpRequestInterface::IsRefreshTokenValid(const FString RefreshToken)
 }
 
 void IHttpRequestInterface::RequestAccessToken(const FString RefreshToken,
-	TSharedPtr<FAccessTokenResponse, ESPMode::ThreadSafe> AccessTokenResponse)
+                                               TSharedPtr<FAccessTokenResponse, ESPMode::ThreadSafe>
+                                               AccessTokenResponse)
 {
 	const FHttpRequestRef HttpRequest = FHttpModule::Get().CreateRequest();
 	HttpRequest->SetURL(Constants::Endpoint_Refresh);
@@ -60,8 +61,10 @@ void IHttpRequestInterface::RequestAccessToken(const FString RefreshToken,
 				}
 				else
 				{
-					UE_LOG(LogTemp, Warning, TEXT("Request Access Token failed Http Status: %d"),
-						AccessTokenResponse->HttpStatus);
+					UE_LOG(LogTemp,
+					       Warning,
+					       TEXT("Request Access Token failed Http Status: %d"),
+					       AccessTokenResponse->HttpStatus);
 				}
 			}
 			if (AccessTokenResponse->OnHttpResponseReceived.IsBound())
@@ -73,7 +76,7 @@ void IHttpRequestInterface::RequestAccessToken(const FString RefreshToken,
 }
 
 void IHttpRequestInterface::LoginUser(const FLoginPayload LoginPayload,
-	TSharedPtr<FLoginResponse, ESPMode::ThreadSafe> LoginResponse)
+                                      TSharedPtr<FLoginResponse, ESPMode::ThreadSafe> LoginResponse)
 {
 	FString ContentString;
 	const TSharedRef<FJsonObject> JsonObject = MakeShareable(new FJsonObject());
@@ -127,8 +130,10 @@ void IHttpRequestInterface::LoginUser(const FLoginPayload LoginPayload,
 	HttpRequest->ProcessRequest();
 }
 
-void IHttpRequestInterface::PostPlayerScores(const TArray<FPlayerScore> ScoresToPost, const FString UserID,
-	const FString AccessToken, TSharedPtr<FBSHttpResponse, ESPMode::ThreadSafe> PostScoresResponse)
+void IHttpRequestInterface::PostPlayerScores(const TArray<FPlayerScore> ScoresToPost,
+                                             const FString UserID,
+                                             const FString AccessToken,
+                                             TSharedPtr<FBSHttpResponse, ESPMode::ThreadSafe> PostScoresResponse)
 {
 	FJsonScore JsonScores;
 	// Add all elements that haven't been saved to database to the JsonScores Scores array
@@ -174,8 +179,10 @@ void IHttpRequestInterface::PostPlayerScores(const TArray<FPlayerScore> ScoresTo
 				}
 				else
 				{
-					UE_LOG(LogTemp, Warning, TEXT("Send Scores Request failed Http Status: %d"),
-						PostScoresResponse->HttpStatus);
+					UE_LOG(LogTemp,
+					       Warning,
+					       TEXT("Send Scores Request failed Http Status: %d"),
+					       PostScoresResponse->HttpStatus);
 				}
 			}
 			if (PostScoresResponse->OnHttpResponseReceived.IsBound())
@@ -187,7 +194,7 @@ void IHttpRequestInterface::PostPlayerScores(const TArray<FPlayerScore> ScoresTo
 }
 
 void IHttpRequestInterface::PostFeedback(const FJsonFeedback InFeedback,
-	TSharedPtr<FBSHttpResponse, ESPMode::ThreadSafe> FeedbackResponse)
+                                         TSharedPtr<FBSHttpResponse, ESPMode::ThreadSafe> FeedbackResponse)
 {
 	FString ContentString;
 	const TSharedRef<FJsonObject> JsonObject = MakeShareable(new FJsonObject());
@@ -221,8 +228,10 @@ void IHttpRequestInterface::PostFeedback(const FJsonFeedback InFeedback,
 				}
 				else
 				{
-					UE_LOG(LogTemp, Warning, TEXT("Failed to send feedback Http Status: %d"),
-						FeedbackResponse->HttpStatus);
+					UE_LOG(LogTemp,
+					       Warning,
+					       TEXT("Failed to send feedback Http Status: %d"),
+					       FeedbackResponse->HttpStatus);
 				}
 			}
 			if (FeedbackResponse->OnHttpResponseReceived.IsBound())
@@ -233,8 +242,10 @@ void IHttpRequestInterface::PostFeedback(const FJsonFeedback InFeedback,
 	HttpRequest->ProcessRequest();
 }
 
-void IHttpRequestInterface::DeleteScores(const FString CustomGameModeName, const FString UserID,
-	const FString AccessToken, TSharedPtr<FDeleteScoresResponse, ESPMode::ThreadSafe> DeleteScoresResponse)
+void IHttpRequestInterface::DeleteScores(const FString CustomGameModeName,
+                                         const FString UserID,
+                                         const FString AccessToken,
+                                         TSharedPtr<FDeleteScoresResponse, ESPMode::ThreadSafe> DeleteScoresResponse)
 {
 	FString ContentString;
 	const FJsonDeleteScores JsonDelete = FJsonDeleteScores(CustomGameModeName);
@@ -278,8 +289,10 @@ void IHttpRequestInterface::DeleteScores(const FString CustomGameModeName, const
 				}
 				else
 				{
-					UE_LOG(LogTemp, Warning, TEXT("Failed to delete scores Http Status: %d"),
-						DeleteScoresResponse->HttpStatus);
+					UE_LOG(LogTemp,
+					       Warning,
+					       TEXT("Failed to delete scores Http Status: %d"),
+					       DeleteScoresResponse->HttpStatus);
 				}
 			}
 			if (DeleteScoresResponse->OnHttpResponseReceived.IsBound())
@@ -291,7 +304,8 @@ void IHttpRequestInterface::DeleteScores(const FString CustomGameModeName, const
 }
 
 void IHttpRequestInterface::AuthenticateSteamUser(const FString AuthTicket,
-	TSharedPtr<FSteamAuthTicketResponse, ESPMode::ThreadSafe> SteamAuthTicketResponse)
+                                                  TSharedPtr<FSteamAuthTicketResponse, ESPMode::ThreadSafe>
+                                                  SteamAuthTicketResponse)
 {
 	const FHttpRequestRef HttpRequest = FHttpModule::Get().CreateRequest();
 	HttpRequest->SetURL(Constants::Endpoint_AuthenticateUserTicketNoRedirect + AuthTicket);
@@ -333,11 +347,11 @@ void IHttpRequestInterface::AuthenticateSteamUser(const FString AuthTicket,
 				else
 				{
 					SteamAuthTicketResponse->ErrorCode = JsonObject->HasField(TEXT("errorcode"))
-						? JsonObject->GetStringField(TEXT("errorcode"))
-						: "Unknown Error Code";
+					                                     ? JsonObject->GetStringField(TEXT("errorcode"))
+					                                     : "Unknown Error Code";
 					SteamAuthTicketResponse->ErrorDesc = JsonObject->HasField(TEXT("errordesc"))
-						? JsonObject->GetStringField(TEXT("errordesc"))
-						: "Unknown Error Description";
+					                                     ? JsonObject->GetStringField(TEXT("errordesc"))
+					                                     : "Unknown Error Description";
 				}
 			}
 			if (SteamAuthTicketResponse->OnHttpResponseReceived.IsBound())

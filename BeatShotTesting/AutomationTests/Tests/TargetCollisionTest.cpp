@@ -21,8 +21,8 @@ public:
 	virtual EAutomationTestFlags GetTestFlags() const override
 	{
 		return ((EAutomationTestFlags::CommandletContext | EAutomationTestFlags::EditorContext |
-			EAutomationTestFlags_HighPriorityAndAbove | EAutomationTestFlags::EngineFilter) & ~(
-			EAutomationTestFlags::SmokeFilter));
+		         EAutomationTestFlags_HighPriorityAndAbove | EAutomationTestFlags::EngineFilter) & ~(
+			        EAutomationTestFlags::SmokeFilter));
 	}
 
 	virtual bool IsStressTest() const override { return true; }
@@ -105,7 +105,7 @@ bool FTargetCollisionTest::RunTest(const FString& Parameters)
 	AddInfo(FString::Printf(TEXT("Total collisions: %d"), TotalCollisions));
 	AddInfo(FString::Printf(TEXT("Min Distance between two spheres: %.4lf"), MinDistance));
 	AddInfo(FString::Printf(TEXT("Total time spent executing GetTargetSpawnParams: %.4lf"),
-		TargetSpawnParamsExecutionTime));
+	                        TargetSpawnParamsExecutionTime));
 
 	ResetTestVariables();
 	CleanUpWorld();
@@ -128,7 +128,13 @@ void FTargetCollisionTest::TestIntersection(const FSphere& SphereOne, const FSph
 
 	const FString What = FString::Printf(
 		TEXT("Sphere at (%.2f, %.2f) w/ R=%.2lf intersecting sphere at (%.2f, %.2f) w/ R=%.2lf by %.2lf"),
-		SphereOne.Center.Y, SphereOne.Center.Z, SphereOne.W, SphereTwo.Center.Y, SphereTwo.Center.Z, SphereTwo.W, Dist);
+		SphereOne.Center.Y,
+		SphereOne.Center.Z,
+		SphereOne.W,
+		SphereTwo.Center.Y,
+		SphereTwo.Center.Z,
+		SphereTwo.W,
+		Dist);
 	TestFalse(What, bIntersects);
 }
 

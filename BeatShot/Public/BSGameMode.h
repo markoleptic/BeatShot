@@ -51,8 +51,9 @@ protected:
 	virtual void PostLoad() override;
 	virtual void Logout(AController* Exiting) override;
 	ACharacter* SpawnPlayer(APlayerController* PlayerController);
-	void HandleAudioImporterResult(URuntimeAudioImporterLibrary* Importer, UImportedSoundWave* SoundWave,
-		ERuntimeImportStatus Status);
+	void HandleAudioImporterResult(URuntimeAudioImporterLibrary* Importer,
+	                               UImportedSoundWave* SoundWave,
+	                               ERuntimeImportStatus Status);
 	void HandleGetAvailableAudioInputDevices(const TArray<FRuntimeAudioInputDeviceInfo>& DeviceInfo);
 
 	UPROPERTY()
@@ -176,8 +177,10 @@ private:
 	void UpdateShotsFired(ABSPlayerController* Controller);
 
 	/** Called by UpdatePlayerScores to update the streak. */
-	void UpdateStreak(ABSPlayerController* Controller, FPlayerScore& InScore, int32 Streak,
-		const FTransform& Transform) const;
+	void UpdateStreak(ABSPlayerController* Controller,
+	                  FPlayerScore& InScore,
+	                  int32 Streak,
+	                  const FTransform& Transform) const;
 
 	/** Not currently used. */
 	void UpdateTimeOffset(const float TimeOffset, const FTransform& Transform);

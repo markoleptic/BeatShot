@@ -40,8 +40,10 @@ inline float SimpleSpline(const float Value)
 
 /** Base Character for this game. */
 UCLASS()
-class BEATSHOT_API ABSCharacterBase : public ACharacter, public IBSPlayerSettingsInterface,
-                                      public IAbilitySystemInterface, public IGameplayTagAssetInterface
+class BEATSHOT_API ABSCharacterBase : public ACharacter,
+                                      public IBSPlayerSettingsInterface,
+                                      public IAbilitySystemInterface,
+                                      public IGameplayTagAssetInterface
 {
 	GENERATED_BODY()
 
@@ -155,8 +157,10 @@ protected:
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void UnPossessed() override;
 	virtual void OnRep_PlayerState() override;
-	virtual void ApplyDamageMomentum(float DamageTaken, const FDamageEvent& DamageEvent, APawn* PawnInstigator,
-		AActor* DamageCauser) override;
+	virtual void ApplyDamageMomentum(float DamageTaken,
+	                                 const FDamageEvent& DamageEvent,
+	                                 APawn* PawnInstigator,
+	                                 AActor* DamageCauser) override;
 	virtual void ClearJumpInput(float DeltaTime) override;
 	virtual void Jump() override;
 	virtual void StopJumping() override;

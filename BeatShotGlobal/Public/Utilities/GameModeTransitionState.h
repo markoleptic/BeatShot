@@ -16,7 +16,8 @@ enum class ETransitionState : uint8
 	QuitToMainMenu UMETA(DisplayName="QuitToMainMenu"),
 	QuitToDesktop UMETA(DisplayName="QuitToDesktop"),
 	PlayAgain UMETA(DisplayName="PlayAgain"),
-	None UMETA(DisplayName="None")};
+	None UMETA(DisplayName="None")
+};
 
 ENUM_RANGE_BY_FIRST_AND_LAST(ETransitionState, ETransitionState::StartFromMainMenu, ETransitionState::None);
 

@@ -41,11 +41,11 @@ protected:
 
 	UFUNCTION()
 	void OnSelectionChanged_RuntimeTargetSpawningLocationSelectionMode(const TArray<FString>& Selected,
-		const ESelectInfo::Type SelectionType);
+	                                                                   const ESelectInfo::Type SelectionType);
 
 	UFUNCTION()
 	void OnSelectionChanged_TargetSpawningPolicy(const TArray<FString>& Selected,
-		const ESelectInfo::Type SelectionType);
+	                                             const ESelectInfo::Type SelectionType);
 
 	FString GetComboBoxEntryTooltipStringTableKey_TargetSpawningPolicy(const FString& EnumString);
 

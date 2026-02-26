@@ -34,7 +34,7 @@ public:
 	virtual EAutomationTestFlags GetTestFlags() const override
 	{
 		return EAutomationTestFlags::CommandletContext | EAutomationTestFlags::EditorContext |
-			EAutomationTestFlags_HighPriorityAndAbove | EAutomationTestFlags::EngineFilter;
+		       EAutomationTestFlags_HighPriorityAndAbove | EAutomationTestFlags::EngineFilter;
 	}
 
 	virtual bool IsStressTest() const { return false; }

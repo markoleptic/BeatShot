@@ -64,8 +64,15 @@ namespace Constants
 #pragma region DefaultSettings
 
 	inline const TArray DefaultBandLimits = {
-		FVector2d(0, 44), FVector2d(45, 88), FVector2d(89, 177), FVector2d(178, 355), FVector2d(356, 710),
-		FVector2d(711, 1420), FVector2d(1421, 2840), FVector2d(2841, 5680), FVector2d(5681, 11360),
+		FVector2d(0, 44),
+		FVector2d(45, 88),
+		FVector2d(89, 177),
+		FVector2d(178, 355),
+		FVector2d(356, 710),
+		FVector2d(711, 1420),
+		FVector2d(1421, 2840),
+		FVector2d(2841, 5680),
+		FVector2d(5681, 11360),
 		FVector2d(11361, 22720)
 	};
 
@@ -565,11 +572,16 @@ namespace Constants
 
 	/** Default Spectrum of colors to use with BeamVisualizer. */
 	inline const TArray DefaultBeamLightColors = {
-		FLinearColor(255 / 255.f, 0 / 255.f, 0 / 255.f), FLinearColor(255 / 255.f, 127 / 255.f, 0 / 255.f),
-		FLinearColor(255 / 255.f, 255 / 255.f, 0 / 255.f), FLinearColor(127 / 255.f, 255 / 255.f, 0 / 255.f),
-		FLinearColor(0 / 255.f, 255 / 255.f, 0 / 255.f), FLinearColor(0 / 255.f, 255 / 255.f, 127 / 255.f),
-		FLinearColor(0 / 255.f, 255 / 255.f, 255 / 255.f), FLinearColor(0 / 255.f, 127 / 255.f, 255 / 255.f),
-		FLinearColor(0 / 255.f, 0 / 255.f, 255 / 255.f), FLinearColor(127 / 255.f, 0 / 255.f, 255 / 255.f)
+		FLinearColor(255 / 255.f, 0 / 255.f, 0 / 255.f),
+		FLinearColor(255 / 255.f, 127 / 255.f, 0 / 255.f),
+		FLinearColor(255 / 255.f, 255 / 255.f, 0 / 255.f),
+		FLinearColor(127 / 255.f, 255 / 255.f, 0 / 255.f),
+		FLinearColor(0 / 255.f, 255 / 255.f, 0 / 255.f),
+		FLinearColor(0 / 255.f, 255 / 255.f, 127 / 255.f),
+		FLinearColor(0 / 255.f, 255 / 255.f, 255 / 255.f),
+		FLinearColor(0 / 255.f, 127 / 255.f, 255 / 255.f),
+		FLinearColor(0 / 255.f, 0 / 255.f, 255 / 255.f),
+		FLinearColor(127 / 255.f, 0 / 255.f, 255 / 255.f)
 	};
 
 	/** Default lifetimes for the BeamVisualizer lights. */

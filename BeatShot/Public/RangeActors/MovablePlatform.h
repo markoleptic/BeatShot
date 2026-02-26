@@ -18,10 +18,12 @@ enum class EPlatformTransitionType : uint8
 	None UMETA(DisplayName="None"),
 	MoveUpByInteract UMETA(DisplayName="MoveUpByInteract"),
 	MoveDownByInteract UMETA(DisplayName="MoveDownByInteract"),
-	MoveDownByStepOff UMETA(DisplayName="MoveDownByStepOff")};
+	MoveDownByStepOff UMETA(DisplayName="MoveDownByStepOff")
+};
 
-ENUM_RANGE_BY_FIRST_AND_LAST(EPlatformTransitionType, EPlatformTransitionType::None,
-	EPlatformTransitionType::MoveDownByStepOff);
+ENUM_RANGE_BY_FIRST_AND_LAST(EPlatformTransitionType,
+                             EPlatformTransitionType::None,
+                             EPlatformTransitionType::MoveDownByStepOff);
 
 /** A movable portion of ground that allows the player to rise vertically. */
 UCLASS()
@@ -45,20 +47,32 @@ class BEATSHOT_API AMovablePlatform : public AActor
 	void InterpFloorElevation(const float DeltaSeconds);
 
 	UFUNCTION()
-	void OnTriggerVolumeBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	void OnTriggerVolumeBeginOverlap(UPrimitiveComponent* OverlappedComp,
+	                                 AActor* OtherActor,
+	                                 UPrimitiveComponent* OtherComp,
+	                                 int32 OtherBodyIndex,
+	                                 bool bFromSweep,
+	                                 const FHitResult& SweepResult);
 
 	UFUNCTION()
-	void OnTriggerVolumeEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	void OnTriggerVolumeEndOverlap(UPrimitiveComponent* OverlappedComponent,
+	                               AActor* OtherActor,
+	                               UPrimitiveComponent* OtherComp,
+	                               int32 OtherBodyIndex);
 
 	UFUNCTION()
-	void OnCharacterStepOnFloor(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
-		int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	void OnCharacterStepOnFloor(UPrimitiveComponent* OverlappedComp,
+	                            AActor* OtherActor,
+	                            UPrimitiveComponent* OtherComp,
+	                            int32 OtherBodyIndex,
+	                            bool bFromSweep,
+	                            const FHitResult& SweepResult);
 
 	UFUNCTION()
-	void OnCharacterStepOffFloor(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	void OnCharacterStepOffFloor(UPrimitiveComponent* OverlappedComponent,
+	                             AActor* OtherActor,
+	                             UPrimitiveComponent* OtherComp,
+	                             int32 OtherBodyIndex);
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)

@@ -53,20 +53,28 @@ public:
 
 	// Begin UAnimNotify interface
 	virtual FString GetNotifyName_Implementation() const override;
-	virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
-		const FAnimNotifyEventReference& EventReference) override;
+	virtual void Notify(USkeletalMeshComponent* MeshComp,
+	                    UAnimSequenceBase* Animation,
+	                    const FAnimNotifyEventReference& EventReference) override;
 	// End UAnimNotify interface
 
 #if WITH_EDITOR
 	UFUNCTION(BlueprintCallable, Category = "BeatShot|AnimNotify")
-	void SetParameters(FGameplayTag EffectIn, FVector LocationOffsetIn, FRotator RotationOffsetIn,
-		FBSAnimNotifySoundSettings AudioPropertiesIn, bool bAttachedIn, FName SocketNameIn, bool bPerformTraceIn,
-		FBSAnimNotifyTraceSettings TracePropertiesIn);
+	void SetParameters(FGameplayTag EffectIn,
+	                   FVector LocationOffsetIn,
+	                   FRotator RotationOffsetIn,
+	                   FBSAnimNotifySoundSettings AudioPropertiesIn,
+	                   bool bAttachedIn,
+	                   FName SocketNameIn,
+	                   bool bPerformTraceIn,
+	                   FBSAnimNotifyTraceSettings TracePropertiesIn);
 #endif
 
 
 	/** Effect to Play. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BeatShot|AnimNotify",
+	UPROPERTY(EditAnywhere,
+		BlueprintReadWrite,
+		Category = "BeatShot|AnimNotify",
 		meta = (DisplayName = "Effect", ExposeOnSpawn = true))
 	FGameplayTag Effect;
 
@@ -83,12 +91,16 @@ public:
 	FBSAnimNotifySoundSettings AudioProperties;
 
 	/** Should attach to the bone/socket. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BeatShot|AttachmentProperties",
+	UPROPERTY(EditAnywhere,
+		BlueprintReadWrite,
+		Category = "BeatShot|AttachmentProperties",
 		meta = (ExposeOnSpawn = true))
 	uint32 bAttached : 1; //~ Does not follow coding standard due to redirection from BP
 
 	/** SocketName to attach to. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BeatShot|AttachmentProperties",
+	UPROPERTY(EditAnywhere,
+		BlueprintReadWrite,
+		Category = "BeatShot|AttachmentProperties",
 		meta = (ExposeOnSpawn = true, EditCondition = "bAttached"))
 	FName SocketName;
 
@@ -97,7 +109,9 @@ public:
 	uint32 bPerformTrace : 1;
 
 	/** Scale to spawn the particle system at. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BeatShot|AnimNotify",
+	UPROPERTY(EditAnywhere,
+		BlueprintReadWrite,
+		Category = "BeatShot|AnimNotify",
 		meta = (ExposeOnSpawn = true, EditCondition = "bPerformTrace"))
 	FBSAnimNotifyTraceSettings TraceProperties;
 };

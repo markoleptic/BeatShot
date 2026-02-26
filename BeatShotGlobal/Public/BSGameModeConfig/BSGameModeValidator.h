@@ -47,8 +47,11 @@ struct BEATSHOTGLOBAL_API FValidationCheckData
 
 	explicit FValidationCheckData(EGameModeWarningType GameModeWarningType);
 
-	FValidationCheckData(EGameModeWarningType GameModeWarningType, const FString& InStringTableKey,
-		const FString& InDynamicStringTableKey, int32 InGridSnapSize, bool InCalculatedValuesAreIntegers);
+	FValidationCheckData(EGameModeWarningType GameModeWarningType,
+	                     const FString& InStringTableKey,
+	                     const FString& InDynamicStringTableKey,
+	                     int32 InGridSnapSize,
+	                     bool InCalculatedValuesAreIntegers);
 
 	/** Empties CalculatedValues and sets bRequireOtherPropertiesToBeChanged to false. */
 	void ResetLiveData();
@@ -97,8 +100,10 @@ struct BEATSHOTGLOBAL_API FValidationCheck
 
 	explicit FValidationCheck(uint32 InOwningPropertyHash, EGameModeWarningType GameModeWarningType);
 
-	void AddData(const FString& InStringTableKey, const FString& InDynamicStringTableKey, int32 InGridSnapSize,
-		bool InCalculatedValuesAreIntegers);
+	void AddData(const FString& InStringTableKey,
+	             const FString& InDynamicStringTableKey,
+	             int32 InGridSnapSize,
+	             bool InCalculatedValuesAreIntegers);
 
 	FValidationCheckData ValidationCheckData;
 
@@ -115,7 +120,7 @@ struct BEATSHOTGLOBAL_API FValidationCheck
 	FORCEINLINE bool operator ==(const FValidationCheck& Other) const
 	{
 		return OwningPropertyHash == Other.OwningPropertyHash && ValidationDelegate.GetHandle() == Other.
-			ValidationDelegate.GetHandle();
+		       ValidationDelegate.GetHandle();
 	}
 
 	friend FORCEINLINE uint32 GetTypeHash(const FValidationCheck& Object)
@@ -339,8 +344,9 @@ public:
 	 *  @param PropertyName name of property to find.
 	 *	@return a property if found, otherwise null.
 	 */
-	static uint32 FindBSConfigProperty(const FName SubStructName, const FName SubSubStructName,
-		const FName PropertyName);
+	static uint32 FindBSConfigProperty(const FName SubStructName,
+	                                   const FName SubSubStructName,
+	                                   const FName PropertyName);
 
 	/** Finds a validation property based on a BSConfig FProperty.
 	 *  @param PropertyHash the property to look for.

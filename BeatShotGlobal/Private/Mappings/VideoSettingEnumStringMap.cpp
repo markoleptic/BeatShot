@@ -11,7 +11,11 @@
 UVideoSettingEnumStringMap::UVideoSettingEnumStringMap()
 {
 	PopulateEnumTypes(TSet({
-		StaticEnum<EDLSSEnabledMode>(), StaticEnum<EStreamlineReflexMode>(), StaticEnum<UDLSSMode>(),
-		StaticEnum<EStreamlineDLSSGMode>(), StaticEnum<ENISEnabledMode>(), StaticEnum<UNISMode>()
+		StaticEnum<EDLSSEnabledMode>(),
+		StaticEnum<EStreamlineReflexMode>(),
+		StaticEnum<UDLSSMode>(),
+		StaticEnum<EStreamlineDLSSGMode>(),
+		StaticEnum<ENISEnabledMode>(),
+		StaticEnum<UNISMode>()
 	}));
 }

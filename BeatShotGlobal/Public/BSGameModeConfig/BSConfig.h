@@ -71,9 +71,14 @@ struct BEATSHOTGLOBAL_API FBSConfig
 	bool IsCompatibleWithReinforcementLearning() const;
 
 	/** Sets the target colors from user settings. */
-	void InitColors(bool bUseSeparateOutlineColor, const FLinearColor& Inactive, const FLinearColor& Outline,
-		const FLinearColor& Start, const FLinearColor& Peak, const FLinearColor& End, const FLinearColor& TrackingDam,
-		const FLinearColor& NotTrackingDam);
+	void InitColors(bool bUseSeparateOutlineColor,
+	                const FLinearColor& Inactive,
+	                const FLinearColor& Outline,
+	                const FLinearColor& Start,
+	                const FLinearColor& Peak,
+	                const FLinearColor& End,
+	                const FLinearColor& TrackingDam,
+	                const FLinearColor& NotTrackingDam);
 
 	/** Returns a Json Object representation of the struct. */
 	FString ToString() const;

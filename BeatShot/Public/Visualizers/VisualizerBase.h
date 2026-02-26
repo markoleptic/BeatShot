@@ -37,7 +37,7 @@ public:
 
 	/** Initializes a visualizer already in the level. */
 	virtual void InitializeVisualizerFromWorld(const FPlayerSettings_AudioAnalyzer& InAASettings,
-		const int32 NumSpawnedVisualizers);
+	                                           const int32 NumSpawnedVisualizers);
 
 	/** Sets whether the visualizer should receive input from the Audio Analyzer. */
 	virtual void SetActivationState(const bool bActivate);
@@ -102,7 +102,7 @@ public:
 protected:
 	/** Maps AudioAnalyzer channels to individual visualizer lights. */
 	virtual void MapAudioAnalyzerChannelsToVisualizerLights(const int32 NumBandChannels,
-		const int32 NumVisualizers = INDEX_NONE);
+	                                                        const int32 NumVisualizers = INDEX_NONE);
 
 	/** Returns the visualizer light indices that correspond to AudioAnalyzer ChannelIndex. */
 	virtual TArray<int32>& GetLightIndices(const int32 ChannelIndex);
@@ -111,7 +111,10 @@ protected:
 	TArray<FVector> GetSplinePointLocations() const;
 
 	/** The data asset that specifies the configuration for this visualizer. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced, Category = "Visualizer Definition",
+	UPROPERTY(EditAnywhere,
+		BlueprintReadOnly,
+		Instanced,
+		Category = "Visualizer Definition",
 		meta=(DisplayPriority=-20000))
 	UBSVisualizerDefinition* VisualizerDefinition;
 

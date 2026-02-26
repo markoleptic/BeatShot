@@ -130,12 +130,21 @@ public:
 	}
 
 	/** Paints the widget on tick. */
-	virtual int32 OnPaint(const FPaintArgs& Args, const FGeometry& AllottedGeometry, const FSlateRect& MyCullingRect,
-		FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle,
-		bool bParentEnabled) const override
+	virtual int32 OnPaint(const FPaintArgs& Args,
+	                      const FGeometry& AllottedGeometry,
+	                      const FSlateRect& MyCullingRect,
+	                      FSlateWindowElementList& OutDrawElements,
+	                      int32 LayerId,
+	                      const FWidgetStyle& InWidgetStyle,
+	                      bool bParentEnabled) const override
 	{
-		const int32 MaxLayerId = SCompoundWidget::OnPaint(Args, AllottedGeometry, MyCullingRect, OutDrawElements,
-			LayerId, InWidgetStyle, bParentEnabled);
+		const int32 MaxLayerId = SCompoundWidget::OnPaint(Args,
+		                                                  AllottedGeometry,
+		                                                  MyCullingRect,
+		                                                  OutDrawElements,
+		                                                  LayerId,
+		                                                  InWidgetStyle,
+		                                                  bParentEnabled);
 		SetMainOverlayRenderOpacity(Args.GetCurrentTime(), Args.GetDeltaTime());
 		return MaxLayerId;
 	}
@@ -144,7 +153,7 @@ public:
 	void SetLoadingScreenState(const ELoadingScreenState& InLoadingScreenState) const
 	{
 		if (LoadingScreenState == ELoadingScreenState::FadingIn && InLoadingScreenState ==
-			ELoadingScreenState::FadingOut && !bStartFadeOutOnFadeInEnd)
+		    ELoadingScreenState::FadingOut && !bStartFadeOutOnFadeInEnd)
 		{
 			bStartFadeOutOnFadeInEnd = true;
 		}

@@ -101,7 +101,8 @@ void UCrossHairWidget::SetCrossHairDotSize(const int32 NewSize, const int32 Outl
 	if (MaterialInstance)
 	{
 		MaterialInstance->SetScalarParameterValue("FillOutlineRatio",
-			static_cast<float>(NewSize) / static_cast<float>(NewSize + OutlineSize));
+		                                          static_cast<float>(NewSize) / static_cast<float>(
+			                                          NewSize + OutlineSize));
 	}
 }
 

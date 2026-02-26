@@ -48,10 +48,14 @@ public:
 	 * @param TargetToDestroy The target to aim to
 	 * @param TimelinePlaybackRate Speed of the interpolation, will use 1 / SpawnBeatDelay if not specified
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Ability|Tasks",
+	UFUNCTION(BlueprintCallable,
+		Category = "Ability|Tasks",
 		meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "TRUE"))
-	static UBSAT_AimToTarget* AimToTarget(UBSGameplayAbility* OwningAbility, FName TaskInstanceName,
-		UCurveFloat* RotationCurve, ATarget* TargetToDestroy, float TimelinePlaybackRate = -1.f);
+	static UBSAT_AimToTarget* AimToTarget(UBSGameplayAbility* OwningAbility,
+	                                      FName TaskInstanceName,
+	                                      UCurveFloat* RotationCurve,
+	                                      ATarget* TargetToDestroy,
+	                                      float TimelinePlaybackRate = -1.f);
 
 private:
 	/** Float interpolation function bound to AimBotTimeline, which sets the rotation of the camera. */

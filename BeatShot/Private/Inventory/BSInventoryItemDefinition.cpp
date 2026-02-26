@@ -3,7 +3,7 @@
 
 #include "Inventory/BSInventoryItemDefinition.h"
 
-UBSInventoryItemDefinition::UBSInventoryItemDefinition(const FObjectInitializer& ObjectInitializer): Super(
+UBSInventoryItemDefinition::UBSInventoryItemDefinition(const FObjectInitializer& ObjectInitializer) : Super(
 	ObjectInitializer)
 {
 }

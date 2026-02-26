@@ -33,8 +33,9 @@ public:
 	virtual void OnPlayerSettingsChanged(const FPlayerSettings_Game& GameSettings) override;
 
 	/** Takes in a PlayerScore struct and updates all elements of the PlayerHUD. */
-	void UpdateAllElements(const FPlayerScore& Scores, const float TimeOffsetNormalized = -1.f,
-		const float Error = -1.f);
+	void UpdateAllElements(const FPlayerScore& Scores,
+	                       const float TimeOffsetNormalized = -1.f,
+	                       const float Error = -1.f);
 
 	/** Callback function for OnSecondPassed to update the current song progress. Called every second by BSGameMode. */
 	UFUNCTION()

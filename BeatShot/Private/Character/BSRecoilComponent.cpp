@@ -8,7 +8,7 @@
 #include "Kismet/KismetMathLibrary.h"
 
 
-UBSRecoilComponent::UBSRecoilComponent(): RecoilCurve(nullptr), KickbackCurve(nullptr), KickbackIntensityCurve(nullptr)
+UBSRecoilComponent::UBSRecoilComponent() : RecoilCurve(nullptr), KickbackCurve(nullptr), KickbackIntensityCurve(nullptr)
 {
 	PrimaryComponentTick.bCanEverTick = true;
 	bIsFiring = false;
@@ -30,8 +30,9 @@ void UBSRecoilComponent::BeginPlay()
 	FireRateDelegate.BindUObject(this, &UBSRecoilComponent::OnFireRateTimerCompleted);
 }
 
-void UBSRecoilComponent::TickComponent(float DeltaTime, ELevelTick TickType,
-	FActorComponentTickFunction* ThisTickFunction)
+void UBSRecoilComponent::TickComponent(float DeltaTime,
+                                       ELevelTick TickType,
+                                       FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	RecoilTimeline.TickTimeline(DeltaTime);
@@ -83,8 +84,10 @@ void UBSRecoilComponent::Recoil(const float FireRate)
 void UBSRecoilComponent::SetRecoilRotation(float DeltaTime)
 {
 	const FRotator Current = GetRelativeRotation();
-	const FRotator UpdatedRotation = UKismetMathLibrary::RInterpTo(Current, CurrentShotCameraRecoilRotation, DeltaTime,
-		CameraRecoilInterpSpeed);
+	const FRotator UpdatedRotation = UKismetMathLibrary::RInterpTo(Current,
+	                                                               CurrentShotCameraRecoilRotation,
+	                                                               DeltaTime,
+	                                                               CameraRecoilInterpSpeed);
 	SetRelativeRotation(UpdatedRotation + FRotator(KickbackAngle, 0, 0));
 
 	if (bHasRecoil)
@@ -123,7 +126,8 @@ void UBSRecoilComponent::UpdateKickback(float DeltaTime)
 	}
 
 	KickbackAngle = KickbackCurve->GetFloatValue(KickbackAlpha / KickbackDuration) * KickbackIntensityCurve->
-		GetFloatValue(FMath::Min(ShotsFired, static_cast<float>(MagazineSize)) / static_cast<float>(MagazineSize));
+	                GetFloatValue(
+		                FMath::Min(ShotsFired, static_cast<float>(MagazineSize)) / static_cast<float>(MagazineSize));
 }
 
 void UBSRecoilComponent::UpdateRecoil(FVector Output)

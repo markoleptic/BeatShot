@@ -29,8 +29,11 @@ void UCountdownWidget::StartCountdown(const float CountdownLength, const float P
 	TextBlock_Click->SetVisibility(ESlateVisibility::Collapsed);
 	CountdownContainer->SetVisibility(ESlateVisibility::Visible);
 	CountdownTimeline.SetTimelineLength(CountdownLength);
-	GetWorld()->GetTimerManager().SetTimer(StartAAManagerPlaybackTimer, this,
-		&UCountdownWidget::StartAAManagerPlaybackTimerComplete, CountdownLength - PlayerDelay, false);
+	GetWorld()->GetTimerManager().SetTimer(StartAAManagerPlaybackTimer,
+	                                       this,
+	                                       &UCountdownWidget::StartAAManagerPlaybackTimerComplete,
+	                                       CountdownLength - PlayerDelay,
+	                                       false);
 	CountdownTimeline.PlayFromStart();
 }
 
@@ -46,7 +49,8 @@ void UCountdownWidget::CountdownTick(const float Value)
 {
 	TextBlock_Counter->SetText(FText::AsNumber(ceil(CountdownTimeline.GetTimelineLength() - Value)));
 	Image_Countdown->GetDynamicMaterial()->SetScalarParameterValue(FName("Progress"),
-		UKismetMathLibrary::Fraction(CountdownTimeline.GetTimelineLength() - Value));
+	                                                               UKismetMathLibrary::Fraction(
+		                                                               CountdownTimeline.GetTimelineLength() - Value));
 }
 
 void UCountdownWidget::CountdownComplete()
@@ -60,13 +64,13 @@ void UCountdownWidget::CountdownComplete()
 void UCountdownWidget::SetCountdownPaused(const bool bIsPaused)
 {
 	if (bIsPaused && GetWorld()->GetTimerManager().IsTimerActive(StartAAManagerPlaybackTimer) && CountdownTimeline.
-		IsPlaying())
+	    IsPlaying())
 	{
 		CountdownTimeline.Stop();
 		GetWorld()->GetTimerManager().PauseTimer(StartAAManagerPlaybackTimer);
 	}
 	else if (!bIsPaused && GetWorld()->GetTimerManager().IsTimerPaused(StartAAManagerPlaybackTimer) && !
-		CountdownTimeline.IsPlaying())
+	         CountdownTimeline.IsPlaying())
 	{
 		CountdownTimeline.Play();
 		GetWorld()->GetTimerManager().UnPauseTimer(StartAAManagerPlaybackTimer);

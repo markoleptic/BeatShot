@@ -38,8 +38,9 @@ void ATargetPreview::Destroyed()
 	Super::Destroyed();
 }
 
-void ATargetPreview::InitTargetWidget(const TObjectPtr<UTargetWidget> InTargetWidget, const FVector& InStartLocation,
-	const float BoundsHeight)
+void ATargetPreview::InitTargetWidget(const TObjectPtr<UTargetWidget> InTargetWidget,
+                                      const FVector& InStartLocation,
+                                      const float BoundsHeight)
 {
 	TargetWidget = InTargetWidget;
 	BoxBoundsHeight = BoundsHeight;
@@ -80,8 +81,11 @@ bool ATargetPreview::ActivateTarget(const float Lifespan)
 		{
 			const float DestroyTime = FMath::FRandRange(Lifespan * 0.25f, Lifespan * 0.75f);
 			GetWorldTimerManager().ClearTimer(SimulatePlayerDestroyingTimer);
-			GetWorldTimerManager().SetTimer(SimulatePlayerDestroyingTimer, this,
-				&ThisClass::OnSimulatePlayerDestroyingTimerExpired, DestroyTime, false);
+			GetWorldTimerManager().SetTimer(SimulatePlayerDestroyingTimer,
+			                                this,
+			                                &ThisClass::OnSimulatePlayerDestroyingTimerExpired,
+			                                DestroyTime,
+			                                false);
 		}
 	}
 	else if (bSimulatePlayerDestroying && bWasActivated)
@@ -90,8 +94,11 @@ bool ATargetPreview::ActivateTarget(const float Lifespan)
 		{
 			const float DestroyTime = FMath::FRandRange(0.5f, 1.f);
 			GetWorldTimerManager().ClearTimer(SimulatePlayerDestroyingTimer);
-			GetWorldTimerManager().SetTimer(SimulatePlayerDestroyingTimer, this,
-				&ThisClass::OnSimulatePlayerDestroyingTimerExpired, DestroyTime, false);
+			GetWorldTimerManager().SetTimer(SimulatePlayerDestroyingTimer,
+			                                this,
+			                                &ThisClass::OnSimulatePlayerDestroyingTimerExpired,
+			                                DestroyTime,
+			                                false);
 		}
 	}
 	return bWasActivated;

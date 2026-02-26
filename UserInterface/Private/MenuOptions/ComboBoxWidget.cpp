@@ -15,7 +15,8 @@ void UComboBoxWidget::NativeConstruct()
 	Super::NativeConstruct();
 	ComboBox->OnGenerateWidgetEventDelegate.BindDynamic(this, &UComboBoxWidget::OnGenerateWidgetEvent);
 	ComboBox->OnSelectionChanged_GenerateWidgetForMultiSelection.BindDynamic(this,
-		&IBSWidgetInterface::OnSelectionChanged_GenerateMultiSelectionItem);
+	                                                                         &IBSWidgetInterface::
+	                                                                         OnSelectionChanged_GenerateMultiSelectionItem);
 	ComboBox->SetSelectionMode(SelectionMode);
 	ComboBox->SetCanSelectNone(bCanSelectNone);
 	ComboBox->SetCloseComboBoxOnSelectionChanged(bCloseComboBoxOnSelectionChanged);
@@ -51,7 +52,7 @@ UWidget* UComboBoxWidget::OnGenerateWidgetEvent(const UBSComboBoxString* ComboBo
 }
 
 FString UComboBoxWidget::GetStringTableKeyFromComboBox(const UBSComboBoxString* ComboBoxString,
-	const FString& EnumString)
+                                                       const FString& EnumString)
 {
 	if (GetComboBoxEntryTooltipStringTableKey.IsBound())
 	{
@@ -99,9 +100,11 @@ UWidget* UComboBoxWidget::AddGameModeCategoryTagWidgets(UBSTaggedComboBoxEntry* 
 				TagWidgetsToAdd.Add(TagWidget);
 			}
 
-			ComboBoxEntry->AddGameModeCategoryTagWidget(ParentTagWidgetsToAdd, TagWidgetsToAdd,
-				MenuOptionStyle->Padding_TagWidget, MenuOptionStyle->VerticalAlignment_TagWidget,
-				MenuOptionStyle->HorizontalAlignment_TagWidget);
+			ComboBoxEntry->AddGameModeCategoryTagWidget(ParentTagWidgetsToAdd,
+			                                            TagWidgetsToAdd,
+			                                            MenuOptionStyle->Padding_TagWidget,
+			                                            MenuOptionStyle->VerticalAlignment_TagWidget,
+			                                            MenuOptionStyle->HorizontalAlignment_TagWidget);
 
 			break;
 		}

@@ -59,7 +59,8 @@ void UBandChannelWidget::SetDefaultValues(const FVector2d Values, const int32 Ch
 	Value_BandChannelMin->SetText(FText::AsNumber(Values.X));
 	Value_BandChannelMax->SetText(FText::AsNumber(Values.Y));
 	const TArray ChannelNumber = {
-		IBSWidgetInterface::GetWidgetTextFromKey("AA_BandChannelText"), FText::AsNumber(ChannelIndex + 1),
+		IBSWidgetInterface::GetWidgetTextFromKey("AA_BandChannelText"),
+		FText::AsNumber(ChannelIndex + 1),
 		IBSWidgetInterface::GetWidgetTextFromKey("AA_BandChannelUnit")
 	};
 	TextBlock_Description->SetText(FText::Join(FText::FromString(" "), ChannelNumber));

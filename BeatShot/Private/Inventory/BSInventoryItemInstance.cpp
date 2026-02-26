@@ -10,7 +10,7 @@
 
 class FLifetimeProperty;
 
-UBSInventoryItemInstance::UBSInventoryItemInstance(const FObjectInitializer& ObjectInitializer): Super(
+UBSInventoryItemInstance::UBSInventoryItemInstance(const FObjectInitializer& ObjectInitializer) : Super(
 	ObjectInitializer)
 {
 }

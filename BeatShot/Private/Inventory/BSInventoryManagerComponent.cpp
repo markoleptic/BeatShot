@@ -88,8 +88,9 @@ void FBSInventoryList::RemoveEntry(UBSInventoryItemInstance* Instance)
 	}
 }
 
-UBSInventoryManagerComponent::UBSInventoryManagerComponent(const FObjectInitializer& ObjectInitializer):
-	Super(ObjectInitializer), InventoryList(this)
+UBSInventoryManagerComponent::UBSInventoryManagerComponent(const FObjectInitializer& ObjectInitializer) :
+	Super(ObjectInitializer),
+	InventoryList(this)
 {
 	SetIsReplicatedByDefault(true);
 }
@@ -102,7 +103,7 @@ void UBSInventoryManagerComponent::GetLifetimeReplicatedProps(TArray<FLifetimePr
 }
 
 UBSInventoryItemInstance* UBSInventoryManagerComponent::AddItemInstance(TSubclassOf<UBSInventoryItemDefinition> ItemDef,
-	int32 StackCount)
+                                                                        int32 StackCount)
 {
 	UBSInventoryItemInstance* Result = nullptr;
 	if (ItemDef != nullptr)
@@ -171,7 +172,7 @@ int32 UBSInventoryManagerComponent::GetTotalItemCountByDefinition(TSubclassOf<UB
 }
 
 bool UBSInventoryManagerComponent::ConsumeItemsByDefinition(TSubclassOf<UBSInventoryItemDefinition> ItemDef,
-	int32 NumToConsume)
+                                                            int32 NumToConsume)
 {
 	AActor* OwningActor = GetOwner();
 	if (!OwningActor || !OwningActor->HasAuthority())
@@ -197,8 +198,9 @@ bool UBSInventoryManagerComponent::ConsumeItemsByDefinition(TSubclassOf<UBSInven
 	return TotalConsumed == NumToConsume;
 }
 
-bool UBSInventoryManagerComponent::ReplicateSubobjects(UActorChannel* Channel, FOutBunch* Bunch,
-	FReplicationFlags* RepFlags)
+bool UBSInventoryManagerComponent::ReplicateSubobjects(UActorChannel* Channel,
+                                                       FOutBunch* Bunch,
+                                                       FReplicationFlags* RepFlags)
 {
 	bool WroteSomething = Super::ReplicateSubobjects(Channel, Bunch, RepFlags);
 

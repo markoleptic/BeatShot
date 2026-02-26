@@ -23,15 +23,16 @@ void UBSMovementSounds::PostLoad()
 	}
 }
 
-void UBSMovementSounds::GetFootstepSounds(const FGameplayTag Effect, const FGameplayTagContainer& Context,
-	TArray<TObjectPtr<USoundBase>>& Sounds) const
+void UBSMovementSounds::GetFootstepSounds(const FGameplayTag Effect,
+                                          const FGameplayTagContainer& Context,
+                                          TArray<TObjectPtr<USoundBase>>& Sounds) const
 {
 	if (Effect.IsValid() && Context.IsValid())
 	{
 		for (const auto& FootstepSound : FootstepSounds)
 		{
 			if (Effect.MatchesTagExact(FootstepSound.Key.EffectTag) && Context.HasAllExact(FootstepSound.Key.Context) &&
-				Context.IsEmpty() == FootstepSound.Key.Context.IsEmpty())
+			    Context.IsEmpty() == FootstepSound.Key.Context.IsEmpty())
 			{
 				Sounds.Append(FootstepSound.Value.Sounds);
 			}

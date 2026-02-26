@@ -64,7 +64,8 @@ void USpawnArea::Init(const int32 InIndex, const FVector& InBottomLeftVertex)
 }
 
 TMap<EAdjacentDirection, int32> USpawnArea::CreateAdjacentIndices(const EGridIndexType InGridIndexType,
-	const int32 InIndex, const int32 InWidth)
+                                                                  const int32 InIndex,
+                                                                  const int32 InWidth)
 {
 	TMap<EAdjacentDirection, int32> Temp;
 

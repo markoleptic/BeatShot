@@ -18,7 +18,7 @@ void UBSAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AActo
 }
 
 void UBSAbilitySystemComponent::CancelAbilitiesByFunc(TShouldCancelAbilityFunc ShouldCancelFunc,
-	bool bReplicateCancelAbility)
+                                                      bool bReplicateCancelAbility)
 {
 	ABILITYLIST_SCOPE_LOCK();
 	for (const FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities.Items)
@@ -42,14 +42,17 @@ void UBSAbilitySystemComponent::CancelAbilitiesByFunc(TShouldCancelAbilityFunc S
 				{
 					if (BSAbilityInstance->CanBeCanceled())
 					{
-						BSAbilityInstance->CancelAbility(AbilitySpec.Handle, AbilityActorInfo.Get(),
-							BSAbilityInstance->GetCurrentActivationInfo(), bReplicateCancelAbility);
+						BSAbilityInstance->CancelAbility(AbilitySpec.Handle,
+						                                 AbilityActorInfo.Get(),
+						                                 BSAbilityInstance->GetCurrentActivationInfo(),
+						                                 bReplicateCancelAbility);
 					}
 					else
 					{
-						UE_LOG(LogTemp, Error,
-							TEXT("CancelAbilitiesByFunc: Can't cancel ability [%s] because CanBeCanceled is false."),
-							*BSAbilityInstance->GetName());
+						UE_LOG(LogTemp,
+						       Error,
+						       TEXT("CancelAbilitiesByFunc: Can't cancel ability [%s] because CanBeCanceled is false."),
+						       *BSAbilityInstance->GetName());
 					}
 				}
 			}
@@ -61,8 +64,10 @@ void UBSAbilitySystemComponent::CancelAbilitiesByFunc(TShouldCancelAbilityFunc S
 			{
 				// Non-instanced abilities can always be canceled.
 				check(AbilityCDO->CanBeCanceled());
-				AbilityCDO->CancelAbility(AbilitySpec.Handle, AbilityActorInfo.Get(), FGameplayAbilityActivationInfo(),
-					bReplicateCancelAbility);
+				AbilityCDO->CancelAbility(AbilitySpec.Handle,
+				                          AbilityActorInfo.Get(),
+				                          FGameplayAbilityActivationInfo(),
+				                          bReplicateCancelAbility);
 			}
 		}
 	}
@@ -74,7 +79,7 @@ void UBSAbilitySystemComponent::CancelInputActivatedAbilities(bool bReplicateCan
 	{
 		const EBSAbilityActivationPolicy ActivationPolicy = Ability->GetActivationPolicy();
 		return ((ActivationPolicy == EBSAbilityActivationPolicy::OnInputTriggered) || (ActivationPolicy ==
-			EBSAbilityActivationPolicy::WhileInputActive));
+			        EBSAbilityActivationPolicy::WhileInputActive));
 	};
 
 	CancelAbilitiesByFunc(ShouldCancelFunc, bReplicateCancelAbility);
@@ -105,7 +110,7 @@ bool UBSAbilitySystemComponent::IsActivationGroupBlocked(EBSAbilityActivationGro
 }
 
 void UBSAbilitySystemComponent::AddAbilityToActivationGroup(EBSAbilityActivationGroup Group,
-	UBSGameplayAbility* Ability)
+                                                            UBSGameplayAbility* Ability)
 {
 	check(Ability);
 	check(ActivationGroupCounts[static_cast<uint8>(Group)] < INT32_MAX);
@@ -122,18 +127,20 @@ void UBSAbilitySystemComponent::AddAbilityToActivationGroup(EBSAbilityActivation
 
 	case EBSAbilityActivationGroup::Exclusive_Replaceable:
 	case EBSAbilityActivationGroup::Exclusive_Blocking:
-		CancelActivationGroupAbilities(EBSAbilityActivationGroup::Exclusive_Replaceable, Ability,
-			bReplicateCancelAbility);
+		CancelActivationGroupAbilities(EBSAbilityActivationGroup::Exclusive_Replaceable,
+		                               Ability,
+		                               bReplicateCancelAbility);
 		break;
 
-	default: checkf(false, TEXT("AddAbilityToActivationGroup: Invalid ActivationGroup [%d]\n"),
-			static_cast<uint8>(Group));
+	default: checkf(false,
+	                TEXT("AddAbilityToActivationGroup: Invalid ActivationGroup [%d]\n"),
+	                static_cast<uint8>(Group));
 		break;
 	}
 
 	const int32 ExclusiveCount = ActivationGroupCounts[static_cast<uint8>(
-		EBSAbilityActivationGroup::Exclusive_Replaceable)] + ActivationGroupCounts[static_cast<uint8>(
-		EBSAbilityActivationGroup::Exclusive_Blocking)];
+		                             EBSAbilityActivationGroup::Exclusive_Replaceable)] + ActivationGroupCounts[
+		                             static_cast<uint8>(EBSAbilityActivationGroup::Exclusive_Blocking)];
 	if (!ensure(ExclusiveCount <= 1))
 	{
 		UE_LOG(LogTemp, Error, TEXT("AddAbilityToActivationGroup: Multiple exclusive abilities are running."));
@@ -141,7 +148,7 @@ void UBSAbilitySystemComponent::AddAbilityToActivationGroup(EBSAbilityActivation
 }
 
 void UBSAbilitySystemComponent::RemoveAbilityFromActivationGroup(EBSAbilityActivationGroup Group,
-	UBSGameplayAbility* Ability)
+                                                                 UBSGameplayAbility* Ability)
 {
 	check(Ability);
 	check(ActivationGroupCounts[static_cast<uint8>(Group)] > 0);
@@ -150,10 +157,11 @@ void UBSAbilitySystemComponent::RemoveAbilityFromActivationGroup(EBSAbilityActiv
 }
 
 void UBSAbilitySystemComponent::CancelActivationGroupAbilities(EBSAbilityActivationGroup Group,
-	UBSGameplayAbility* IgnoreAbility, bool bReplicateCancelAbility)
+                                                               UBSGameplayAbility* IgnoreAbility,
+                                                               bool bReplicateCancelAbility)
 {
 	auto ShouldCancelFunc = [this, Group, IgnoreAbility](const UBSGameplayAbility* Ability,
-		FGameplayAbilitySpecHandle Handle)
+	                                                     FGameplayAbilitySpecHandle Handle)
 	{
 		return ((Ability->GetActivationGroup() == Group) && (Ability != IgnoreAbility));
 	};
@@ -162,7 +170,8 @@ void UBSAbilitySystemComponent::CancelActivationGroupAbilities(EBSAbilityActivat
 }
 
 void UBSAbilitySystemComponent::GetAbilityTargetData(const FGameplayAbilitySpecHandle AbilityHandle,
-	FGameplayAbilityActivationInfo ActivationInfo, FGameplayAbilityTargetDataHandle& OutTargetDataHandle)
+                                                     FGameplayAbilityActivationInfo ActivationInfo,
+                                                     FGameplayAbilityTargetDataHandle& OutTargetDataHandle)
 {
 	TSharedPtr<FAbilityReplicatedDataCache> ReplicatedData = AbilityTargetDataMap.Find(
 		FGameplayAbilitySpecHandleAndPredictionKey(AbilityHandle, ActivationInfo.GetActivationPredictionKey()));
@@ -254,7 +263,7 @@ void UBSAbilitySystemComponent::ProcessAbilityInput(float DeltaTime, bool bGameP
 				if (AbilitySpec->IsActive())
 				{
 					if (CastChecked<UBSGameplayAbility>(AbilitySpec->Ability)->GetActivationPolicy() ==
-						EBSAbilityActivationPolicy::SpammableTriggered)
+					    EBSAbilityActivationPolicy::SpammableTriggered)
 					{
 						// Even though ability is active, activating it will cancel and reactivate
 						AbilitiesToActivate.AddUnique(AbilitySpec->Handle);

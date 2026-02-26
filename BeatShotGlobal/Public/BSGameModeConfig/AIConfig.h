@@ -13,10 +13,12 @@ enum class EReinforcementLearningMode : uint8
 	None UMETA(DisplayName="None"),
 	Training UMETA(DisplayName="Training"),
 	Exploration UMETA(DisplayName="Exploration"),
-	ActiveAgent UMETA(DisplayName="ActiveAgent")};
+	ActiveAgent UMETA(DisplayName="ActiveAgent")
+};
 
-ENUM_RANGE_BY_FIRST_AND_LAST(EReinforcementLearningMode, EReinforcementLearningMode::None,
-	EReinforcementLearningMode::ActiveAgent);
+ENUM_RANGE_BY_FIRST_AND_LAST(EReinforcementLearningMode,
+                             EReinforcementLearningMode::None,
+                             EReinforcementLearningMode::ActiveAgent);
 
 /** Enum representing auto or custom hyper-parameters. */
 UENUM(BlueprintType)
@@ -24,10 +26,12 @@ enum class EReinforcementLearningHyperParameterMode: uint8
 {
 	None UMETA(DisplayName="None"),
 	Auto UMETA(DisplayName="Auto"),
-	Custom UMETA(DisplayName="Custom")};
+	Custom UMETA(DisplayName="Custom")
+};
 
-ENUM_RANGE_BY_FIRST_AND_LAST(EReinforcementLearningHyperParameterMode, EReinforcementLearningHyperParameterMode::Auto,
-	EReinforcementLearningHyperParameterMode::Custom);
+ENUM_RANGE_BY_FIRST_AND_LAST(EReinforcementLearningHyperParameterMode,
+                             EReinforcementLearningHyperParameterMode::Auto,
+                             EReinforcementLearningHyperParameterMode::Custom);
 
 USTRUCT(BlueprintType)
 struct BEATSHOTGLOBAL_API FBS_AIConfig

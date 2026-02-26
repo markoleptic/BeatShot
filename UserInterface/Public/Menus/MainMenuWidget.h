@@ -41,8 +41,10 @@ DECLARE_DELEGATE(FOnSteamLoginRequest);
 
 /** Widget that is the entry point into the game, holding most other widgets that aren't MenuWidgets. */
 UCLASS()
-class USERINTERFACE_API UMainMenuWidget : public UUserWidget, public IBSPlayerSettingsInterface,
-                                          public IHttpRequestInterface, public IBSPlayerScoreInterface
+class USERINTERFACE_API UMainMenuWidget : public UUserWidget,
+                                          public IBSPlayerSettingsInterface,
+                                          public IHttpRequestInterface,
+                                          public IBSPlayerScoreInterface
 {
 	GENERATED_BODY()
 

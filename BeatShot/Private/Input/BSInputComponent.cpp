@@ -11,7 +11,7 @@ UBSInputComponent::UBSInputComponent(const FObjectInitializer& ObjectInitializer
 }
 
 void UBSInputComponent::AddInputMappings(const UBSInputConfig* InputConfig,
-	UEnhancedInputLocalPlayerSubsystem* InputSubsystem) const
+                                         UEnhancedInputLocalPlayerSubsystem* InputSubsystem) const
 {
 	check(InputConfig);
 	check(InputSubsystem);
@@ -38,7 +38,7 @@ void UBSInputComponent::AddInputMappings(const UBSInputConfig* InputConfig,
 }
 
 void UBSInputComponent::RemoveInputMappings(const UBSInputConfig* InputConfig,
-	UEnhancedInputLocalPlayerSubsystem* InputSubsystem) const
+                                            UEnhancedInputLocalPlayerSubsystem* InputSubsystem) const
 {
 	check(InputConfig);
 	check(InputSubsystem);

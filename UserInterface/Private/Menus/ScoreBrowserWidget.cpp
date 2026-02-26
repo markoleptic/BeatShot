@@ -29,7 +29,7 @@ void UScoreBrowserWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaT
 }
 
 void UScoreBrowserWidget::InitScoreBrowser(const EScoreBrowserType InScoreBrowserType,
-	const FString& ErrorStringTableKey)
+                                           const FString& ErrorStringTableKey)
 {
 	ScoreBrowserType = InScoreBrowserType;
 	switch (InScoreBrowserType)

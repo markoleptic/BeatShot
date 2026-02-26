@@ -45,8 +45,10 @@ static nc::NdArray<T> GetNdArrayFromTArray(const TArray<T>& InTArray, const int3
 static nc::NdArray<int> Get5X5OverflowArray(const int32 Overflow)
 {
 	return nc::NdArray<int>({
-		Overflow == 2 || Overflow == 3 || Overflow == 4 ? 1 : 0, Overflow == 4 ? 1 : 0,
-		Overflow == 1 || Overflow == 3 ? 1 : 0, Overflow == 4 ? 1 : 0,
+		Overflow == 2 || Overflow == 3 || Overflow == 4 ? 1 : 0,
+		Overflow == 4 ? 1 : 0,
+		Overflow == 1 || Overflow == 3 ? 1 : 0,
+		Overflow == 4 ? 1 : 0,
 		Overflow == 2 || Overflow == 3 || Overflow == 4 ? 1 : 0
 	});
 }
@@ -191,8 +193,10 @@ TArray<T> GetAveraged5X5TArray(const TArray<T>& In, const int32 NumRows, const i
  *  @param NumRows Number of rows in original matrix
  *  @param NumCols Number of columns in original matrix
  */
-inline FAccuracyData GetAveragedAccuracyData(const TArray<int32>& InTotalSpawns, const TArray<int32>& InTotalHits,
-	const int32 NumRows, const int32 NumCols)
+inline FAccuracyData GetAveragedAccuracyData(const TArray<int32>& InTotalSpawns,
+                                             const TArray<int32>& InTotalHits,
+                                             const int32 NumRows,
+                                             const int32 NumCols)
 {
 	// Define the output size of the array (m x n)
 	constexpr int SmallM = 5;

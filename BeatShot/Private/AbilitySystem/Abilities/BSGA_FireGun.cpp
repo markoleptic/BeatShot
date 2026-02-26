@@ -11,8 +11,10 @@ UBSGA_FireGun::UBSGA_FireGun()
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
 }
 
-void UBSGA_FireGun::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
-	const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
+void UBSGA_FireGun::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
+                                    const FGameplayAbilityActorInfo* ActorInfo,
+                                    const FGameplayAbilityActivationInfo ActivationInfo,
+                                    const FGameplayEventData* TriggerEventData)
 {
 	UAbilitySystemComponent* Component = CurrentActorInfo->AbilitySystemComponent.Get();
 	OnTargetDataReadyCallbackDelegateHandle = Component->AbilityTargetDataSetDelegate(CurrentSpecHandle,
@@ -21,15 +23,23 @@ void UBSGA_FireGun::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 }
 
-void UBSGA_FireGun::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
-	const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
+void UBSGA_FireGun::EndAbility(const FGameplayAbilitySpecHandle Handle,
+                               const FGameplayAbilityActorInfo* ActorInfo,
+                               const FGameplayAbilityActivationInfo ActivationInfo,
+                               bool bReplicateEndAbility,
+                               bool bWasCancelled)
 {
 	if (IsEndAbilityValid(Handle, ActorInfo))
 	{
 		if (ScopeLockCount > 0)
 		{
-			WaitingToExecute.Add(FPostLockDelegate::CreateUObject(this, &ThisClass::EndAbility, Handle, ActorInfo,
-				ActivationInfo, bReplicateEndAbility, bWasCancelled));
+			WaitingToExecute.Add(FPostLockDelegate::CreateUObject(this,
+			                                                      &ThisClass::EndAbility,
+			                                                      Handle,
+			                                                      ActorInfo,
+			                                                      ActivationInfo,
+			                                                      bReplicateEndAbility,
+			                                                      bWasCancelled));
 			return;
 		}
 
@@ -38,16 +48,17 @@ void UBSGA_FireGun::EndAbility(const FGameplayAbilitySpecHandle Handle, const FG
 
 		// When ability ends, consume target data and remove delegate
 		MyAbilityComponent->AbilityTargetDataSetDelegate(CurrentSpecHandle,
-			CurrentActivationInfo.GetActivationPredictionKey()).Remove(OnTargetDataReadyCallbackDelegateHandle);
+		                                                 CurrentActivationInfo.GetActivationPredictionKey()).Remove(
+			OnTargetDataReadyCallbackDelegateHandle);
 		MyAbilityComponent->ConsumeClientReplicatedTargetData(CurrentSpecHandle,
-			CurrentActivationInfo.GetActivationPredictionKey());
+		                                                      CurrentActivationInfo.GetActivationPredictionKey());
 
 		Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 	}
 }
 
 void UBSGA_FireGun::OnTargetDataReadyCallback(const FGameplayAbilityTargetDataHandle& InData,
-	FGameplayTag ApplicationTag)
+                                              FGameplayTag ApplicationTag)
 {
 	UAbilitySystemComponent* MyAbilityComponent = CurrentActorInfo->AbilitySystemComponent.Get();
 	if (MyAbilityComponent->FindAbilitySpecFromHandle(CurrentSpecHandle))
@@ -62,8 +73,10 @@ void UBSGA_FireGun::OnTargetDataReadyCallback(const FGameplayAbilityTargetDataHa
 		if (bShouldNotifyServer)
 		{
 			MyAbilityComponent->CallServerSetReplicatedTargetData(CurrentSpecHandle,
-				CurrentActivationInfo.GetActivationPredictionKey(), LocalTargetDataHandle, ApplicationTag,
-				MyAbilityComponent->ScopedPredictionKey);
+			                                                      CurrentActivationInfo.GetActivationPredictionKey(),
+			                                                      LocalTargetDataHandle,
+			                                                      ApplicationTag,
+			                                                      MyAbilityComponent->ScopedPredictionKey);
 		}
 
 		if (CommitAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo))
@@ -79,7 +92,7 @@ void UBSGA_FireGun::OnTargetDataReadyCallback(const FGameplayAbilityTargetDataHa
 
 	// We've processed the data
 	MyAbilityComponent->ConsumeClientReplicatedTargetData(CurrentSpecHandle,
-		CurrentActivationInfo.GetActivationPredictionKey());
+	                                                      CurrentActivationInfo.GetActivationPredictionKey());
 }
 
 void UBSGA_FireGun::StartTargeting()

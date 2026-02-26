@@ -17,8 +17,9 @@
 
 DEFINE_LOG_CATEGORY(LogBSGameUserSettings);
 
-ENUM_RANGE_BY_FIRST_AND_LAST(UDLSSSupport, UDLSSSupport::Supported,
-	UDLSSSupport::NotSupportedIncompatibleAPICaptureToolActive);
+ENUM_RANGE_BY_FIRST_AND_LAST(UDLSSSupport,
+                             UDLSSSupport::Supported,
+                             UDLSSSupport::NotSupportedIncompatibleAPICaptureToolActive);
 
 ENUM_RANGE_BY_FIRST_AND_LAST(UDLSSMode, UDLSSMode::Off, UDLSSMode::UltraPerformance);
 
@@ -50,8 +51,10 @@ namespace
 		if (GConfig)
 		{
 			const FString Value = FString::FromInt(AntiAliasingMethod);
-			GConfig->SetString(TEXT("/Script/Engine.RendererSettings"), TEXT("r.AntiAliasingMethod"), *Value,
-				GEngineIni);
+			GConfig->SetString(TEXT("/Script/Engine.RendererSettings"),
+			                   TEXT("r.AntiAliasingMethod"),
+			                   *Value,
+			                   GEngineIni);
 			GConfig->Flush(false, GEngineIni);
 		}
 	}
@@ -66,8 +69,9 @@ namespace
 	}
 
 	/** Applies the DLSS Mode and sets the screen percentage CVar. */
-	bool ApplyDLSSMode(const UDLSSMode DLSSMode, const FIntPoint& ScreenRes,
-		const bool bRestoreFullResWhenDisabled = true)
+	bool ApplyDLSSMode(const UDLSSMode DLSSMode,
+	                   const FIntPoint& ScreenRes,
+	                   const bool bRestoreFullResWhenDisabled = true)
 	{
 		bool bShouldEnable = false;
 		float ScreenPercentage = 100.f;
@@ -81,9 +85,14 @@ namespace
 			float MaxScreenPercentage;
 			float OptimalSharpness;
 
-			UDLSSLibrary::GetDLSSModeInformation(DLSSMode, FVector2D(ScreenRes.X, ScreenRes.Y), bIsSupported,
-				OptimalScreenPercentage, bIsFixedScreenPercentage, MinScreenPercentage, MaxScreenPercentage,
-				OptimalSharpness);
+			UDLSSLibrary::GetDLSSModeInformation(DLSSMode,
+			                                     FVector2D(ScreenRes.X, ScreenRes.Y),
+			                                     bIsSupported,
+			                                     OptimalScreenPercentage,
+			                                     bIsFixedScreenPercentage,
+			                                     MinScreenPercentage,
+			                                     MaxScreenPercentage,
+			                                     OptimalSharpness);
 
 			bIsSupported = bIsSupported || DLSSMode == UDLSSMode::Auto;
 			const bool bIsDLAA = DLSSMode == UDLSSMode::DLAA;
@@ -116,8 +125,9 @@ namespace
 	}
 
 	/** Attempts to load a control bus from a soft object path. */
-	USoundControlBus* TryLoadControlBus(const FSoftObjectPath& Path, TMap<FName, TObjectPtr<USoundControlBus>>& Map,
-		const FName& Key)
+	USoundControlBus* TryLoadControlBus(const FSoftObjectPath& Path,
+	                                    TMap<FName, TObjectPtr<USoundControlBus>>& Map,
+	                                    const FName& Key)
 	{
 		if (UObject* ObjPath = Path.TryLoad(); ensureMsgf(ObjPath, TEXT("Failed to load Control Bus.")))
 		{
@@ -243,9 +253,8 @@ void UBSGameUserSettings::LoadDLSSSettings()
 #if WITH_EDITOR
 		return;
 #else
-		FModuleManager::Get().LoadModule("DLSS");
-		FModuleManager::Get().LoadModule("NIS");
-		FModuleManager::Get().LoadModule("StreamlineCore");
+		FModuleManager::Get().LoadModule("DLSS"); FModuleManager::Get().LoadModule("NIS"); FModuleManager::Get().
+			LoadModule("StreamlineCore");
 #endif
 	}
 
@@ -282,7 +291,7 @@ void UBSGameUserSettings::LoadDLSSSettings()
 
 	// Frame Generation
 	if (UStreamlineLibraryDLSSG::IsDLSSGSupported() && UStreamlineLibraryDLSSG::IsDLSSGModeSupported(
-		FrameGenerationEnabledMode))
+		    FrameGenerationEnabledMode))
 	{
 		UStreamlineLibraryDLSSG::SetDLSSGMode(FrameGenerationEnabledMode);
 	}
@@ -294,7 +303,7 @@ void UBSGameUserSettings::LoadDLSSSettings()
 
 	// NIS
 	if (UNISLibrary::IsNISSupported() && UNISLibrary::IsNISModeSupported(NISMode) && DLSSEnabledMode ==
-		EDLSSEnabledMode::Off)
+	    EDLSSEnabledMode::Off)
 	{
 		UNISLibrary::SetNISMode(NISMode);
 		UNISLibrary::SetNISSharpness(NISSharpness);
@@ -323,20 +332,24 @@ void UBSGameUserSettings::LoadDLSSSettings()
 void UBSGameUserSettings::LoadUserControlBusMix(const UWorld* World)
 {
 	if (ensureMsgf(World && (World->WorldType == EWorldType::Game || World->WorldType == EWorldType::PIE),
-		TEXT("Failed to load current player world")))
+	               TEXT("Failed to load current player world")))
 	{
 		const UBSAudioSettings* BSAudioSettings = GetDefault<UBSAudioSettings>();
 
 		ControlBusMap.Empty();
 
-		USoundControlBus* OverallControlBus = TryLoadControlBus(BSAudioSettings->OverallVolumeControlBus, ControlBusMap,
-			TEXT("Overall"));
-		USoundControlBus* MenuControlBus = TryLoadControlBus(BSAudioSettings->MenuVolumeControlBus, ControlBusMap,
-			TEXT("Menu"));
-		USoundControlBus* MusicControlBus = TryLoadControlBus(BSAudioSettings->MusicVolumeControlBus, ControlBusMap,
-			TEXT("Music"));
-		USoundControlBus* SoundFXControlBus = TryLoadControlBus(BSAudioSettings->SoundFXVolumeControlBus, ControlBusMap,
-			TEXT("SoundFX"));
+		USoundControlBus* OverallControlBus = TryLoadControlBus(BSAudioSettings->OverallVolumeControlBus,
+		                                                        ControlBusMap,
+		                                                        TEXT("Overall"));
+		USoundControlBus* MenuControlBus = TryLoadControlBus(BSAudioSettings->MenuVolumeControlBus,
+		                                                     ControlBusMap,
+		                                                     TEXT("Menu"));
+		USoundControlBus* MusicControlBus = TryLoadControlBus(BSAudioSettings->MusicVolumeControlBus,
+		                                                      ControlBusMap,
+		                                                      TEXT("Music"));
+		USoundControlBus* SoundFXControlBus = TryLoadControlBus(BSAudioSettings->SoundFXVolumeControlBus,
+		                                                        ControlBusMap,
+		                                                        TEXT("SoundFX"));
 
 		if (UObject* ObjPath = BSAudioSettings->UserSettingsControlBusMix.TryLoad(); ensureMsgf(ObjPath,
 			TEXT("Failed to load Control Bus Mix.")))
@@ -348,13 +361,21 @@ void UBSGameUserSettings::LoadUserControlBusMix(const UWorld* World)
 				UAudioModulationStatics::ActivateBusMix(World, SoundControlBusMix);
 
 				const FSoundControlBusMixStage OverallControlBusMixStage = UAudioModulationStatics::CreateBusMixStage(
-					World, OverallControlBus, OverallVolume / 100.0);
+					World,
+					OverallControlBus,
+					OverallVolume / 100.0);
 				const FSoundControlBusMixStage MenuControlBusMixStage = UAudioModulationStatics::CreateBusMixStage(
-					World, MenuControlBus, MenuVolume / 100.0);
+					World,
+					MenuControlBus,
+					MenuVolume / 100.0);
 				const FSoundControlBusMixStage MusicControlBusMixStage = UAudioModulationStatics::CreateBusMixStage(
-					World, MusicControlBus, MusicVolume / 100.0);
+					World,
+					MusicControlBus,
+					MusicVolume / 100.0);
 				const FSoundControlBusMixStage SoundFXControlBusMixStage = UAudioModulationStatics::CreateBusMixStage(
-					World, SoundFXControlBus, SoundFXVolume / 100.0);
+					World,
+					SoundFXControlBus,
+					SoundFXVolume / 100.0);
 
 				TArray<FSoundControlBusMixStage> ControlBusMixStageArray;
 				ControlBusMixStageArray.Add(OverallControlBusMixStage);
@@ -447,7 +468,7 @@ void UBSGameUserSettings::ValidateNvidiaSettings()
 
 	// Frame Generation
 	if (!UStreamlineLibraryDLSSG::IsDLSSGSupported() || !UStreamlineLibraryDLSSG::IsDLSSGModeSupported(
-		FrameGenerationEnabledMode))
+		    FrameGenerationEnabledMode))
 	{
 		FrameGenerationEnabledMode = EStreamlineDLSSGMode::Off;
 	}
@@ -479,7 +500,7 @@ void UBSGameUserSettings::ApplyNvidiaSettings()
 		UNISLibrary::SetNISMode(NISMode);
 	}
 	if (UStreamlineLibraryDLSSG::IsDLSSGSupported() && UStreamlineLibraryDLSSG::IsDLSSGModeSupported(
-		FrameGenerationEnabledMode))
+		    FrameGenerationEnabledMode))
 	{
 		if (UStreamlineLibraryDLSSG::GetDLSSGMode() != FrameGenerationEnabledMode)
 		{
@@ -613,8 +634,8 @@ TMap<FString, uint8> UBSGameUserSettings::GetSupportedNvidiaSettingModes(
 	case ENvidiaSettingType::DLSSEnabledMode:
 		{
 			TArray<EDLSSEnabledMode> Modes = UDLSSLibrary::IsDLSSSupported()
-				? TArray{EDLSSEnabledMode::On, EDLSSEnabledMode::Off}
-				: TArray{EDLSSEnabledMode::Off};
+			                                 ? TArray{EDLSSEnabledMode::On, EDLSSEnabledMode::Off}
+			                                 : TArray{EDLSSEnabledMode::Off};
 			Out = VideoSettingEnumMap->GetNvidiaSettingModes(Modes);
 		}
 		break;
@@ -635,8 +656,8 @@ TMap<FString, uint8> UBSGameUserSettings::GetSupportedNvidiaSettingModes(
 	case ENvidiaSettingType::NISEnabledMode:
 		{
 			TArray<ENISEnabledMode> Modes = UNISLibrary::IsNISSupported()
-				? TArray{ENISEnabledMode::On, ENISEnabledMode::Off}
-				: TArray{ENISEnabledMode::Off};
+			                                ? TArray{ENISEnabledMode::On, ENISEnabledMode::Off}
+			                                : TArray{ENISEnabledMode::Off};
 			Out = VideoSettingEnumMap->GetNvidiaSettingModes(Modes);
 		}
 		break;
@@ -660,7 +681,9 @@ TMap<FString, uint8> UBSGameUserSettings::GetSupportedNvidiaSettingModes(
 float UBSGameUserSettings::GetPostProcessBiasFromBrightness() const
 {
 	return FMath::GetMappedRangeValueClamped(FVector2D(Constants::MinValue_Brightness, Constants::MaxValue_Brightness),
-		FVector2D(Constants::MinValue_ExposureCompensation, Constants::MaxValue_ExposureCompensation), Brightness);
+	                                         FVector2D(Constants::MinValue_ExposureCompensation,
+	                                                   Constants::MaxValue_ExposureCompensation),
+	                                         Brightness);
 }
 
 void UBSGameUserSettings::SetInMenu(const bool bIsInMenu)

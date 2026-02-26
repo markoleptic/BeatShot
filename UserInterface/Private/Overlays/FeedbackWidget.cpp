@@ -54,16 +54,18 @@ void UFeedbackWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 	else if (Button == Button_SubmitFeedback)
 	{
 		const FJsonFeedback Feedback(TitlePrefix.ToString() + Value_Title->GetText().ToString(),
-			Value_Content->GetText().ToString());
+		                             Value_Content->GetText().ToString());
 		TSharedPtr<FBSHttpResponse> Response = MakeShareable(new FBSHttpResponse());
 		Response->OnHttpResponseReceived.BindLambda([this, Response]
 		{
 			if (Response->bConnectedSuccessfully && Response->HttpStatus <= 300)
 			{
 				TextBlock_FeedbackResponseTitle->SetText(FText::FromStringTable(
-					"/Game/StringTables/ST_Widgets.ST_Widgets", FString("FeedbackResponseSuccessTitle")));
+					"/Game/StringTables/ST_Widgets.ST_Widgets",
+					FString("FeedbackResponseSuccessTitle")));
 				TextBlock_FeedbackResponseInfo->SetText(FText::FromStringTable(
-					"/Game/StringTables/ST_Widgets.ST_Widgets", FString("FeedbackResponseSuccessInfo")));
+					"/Game/StringTables/ST_Widgets.ST_Widgets",
+					FString("FeedbackResponseSuccessInfo")));
 				Value_Title->SetText(FText::GetEmpty());
 				Value_Content->SetText(FText::GetEmpty());
 				Button_SubmitFeedback->SetIsEnabled(false);
@@ -71,9 +73,11 @@ void UFeedbackWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 			else
 			{
 				TextBlock_FeedbackResponseTitle->SetText(FText::FromStringTable(
-					"/Game/StringTables/ST_Widgets.ST_Widgets", FString("FeedbackResponseFailureTitle")));
+					"/Game/StringTables/ST_Widgets.ST_Widgets",
+					FString("FeedbackResponseFailureTitle")));
 				TextBlock_FeedbackResponseInfo->SetText(FText::FromStringTable(
-					"/Game/StringTables/ST_Widgets.ST_Widgets", FString("FeedbackResponseFailureInfo")));
+					"/Game/StringTables/ST_Widgets.ST_Widgets",
+					FString("FeedbackResponseFailureInfo")));
 			}
 			PlayFadeInResponse();
 		});

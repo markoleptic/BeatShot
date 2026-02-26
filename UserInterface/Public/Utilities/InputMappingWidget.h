@@ -12,8 +12,10 @@ class UMenuOptionStyle;
 class UTextBlock;
 class UInputKeySelector;
 
-DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnKeySelected, const FName MappingName, const EPlayerMappableKeySlot& Slot,
-	const FInputChord SelectedKey);
+DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnKeySelected,
+                                       const FName MappingName,
+                                       const EPlayerMappableKeySlot& Slot,
+                                       const FInputChord SelectedKey);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnIsSelectingKey, UInputKeySelector* KeySelector);
 
 UCLASS()

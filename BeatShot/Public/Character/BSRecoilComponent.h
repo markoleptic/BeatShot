@@ -21,8 +21,9 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
-		FActorComponentTickFunction* ThisTickFunction) override;
+	virtual void TickComponent(float DeltaTime,
+	                           ELevelTick TickType,
+	                           FActorComponentTickFunction* ThisTickFunction) override;
 
 	/** Returns the current spread rotation (Pitch and Yaw at the current time). Used by FireGun ability. */
 	UFUNCTION(BlueprintPure, Category = "BeatShot|Recoil")

@@ -25,11 +25,11 @@ void AVisualizerBase::InitializeVisualizer(const FPlayerSettings_AudioAnalyzer& 
 	SetActorRotation(GetVisualizerDefinition()->Rotation);
 	SetActorScale3D(GetVisualizerDefinition()->Scale);
 	MapAudioAnalyzerChannelsToVisualizerLights(InAASettings.NumBandChannels,
-		GetVisualizerDefinition()->NumVisualizerLightsToSpawn);
+	                                           GetVisualizerDefinition()->NumVisualizerLightsToSpawn);
 }
 
 void AVisualizerBase::InitializeVisualizerFromWorld(const FPlayerSettings_AudioAnalyzer& InAASettings,
-	const int32 NumSpawnedVisualizers)
+                                                    const int32 NumSpawnedVisualizers)
 {
 	MapAudioAnalyzerChannelsToVisualizerLights(InAASettings.NumBandChannels, NumSpawnedVisualizers);
 }
@@ -78,7 +78,7 @@ void AVisualizerBase::AddTestVisualizer()
 }
 
 void AVisualizerBase::MapAudioAnalyzerChannelsToVisualizerLights(const int32 NumBandChannels,
-	const int32 NumVisualizers)
+                                                                 const int32 NumVisualizers)
 {
 	UBSVisualizerDefinition* BaseConfig = GetVisualizerDefinition();
 
@@ -94,8 +94,8 @@ void AVisualizerBase::MapAudioAnalyzerChannelsToVisualizerLights(const int32 Num
 	}
 
 	if ((NumVisualizers > NumBandChannels) && (BaseConfig->AssignmentMethod !=
-		ELightVisualizerAssignmentMethod::MultiLightPerChannelOnly) && (BaseConfig->AssignmentMethod !=
-		ELightVisualizerAssignmentMethod::Auto))
+	                                           ELightVisualizerAssignmentMethod::MultiLightPerChannelOnly) && (
+		    BaseConfig->AssignmentMethod != ELightVisualizerAssignmentMethod::Auto))
 	{
 		for (int i = 0; i < NumBandChannels; i++)
 		{
@@ -105,8 +105,8 @@ void AVisualizerBase::MapAudioAnalyzerChannelsToVisualizerLights(const int32 Num
 	}
 
 	if ((NumBandChannels > NumVisualizers) && (BaseConfig->AssignmentMethod !=
-		ELightVisualizerAssignmentMethod::MultiChannelPerLightOnly) && (BaseConfig->AssignmentMethod !=
-		ELightVisualizerAssignmentMethod::Auto))
+	                                           ELightVisualizerAssignmentMethod::MultiChannelPerLightOnly) && (
+		    BaseConfig->AssignmentMethod != ELightVisualizerAssignmentMethod::Auto))
 	{
 		for (int i = 0; i < NumVisualizers; i++)
 		{

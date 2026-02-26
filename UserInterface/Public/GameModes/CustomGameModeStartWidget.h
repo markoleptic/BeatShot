@@ -25,17 +25,20 @@ struct USERINTERFACE_API FStartWidgetProperties
 	bool bGameModeNameChanged;
 	bool bDifficultyChanged;
 
-	FStartWidgetProperties() : bUseTemplateChecked(false), bIsPreset(false), bIsCustom(false),
-	                           bGameModeNameChanged(false), bDifficultyChanged(false)
+	FStartWidgetProperties() : bUseTemplateChecked(false),
+	                           bIsPreset(false),
+	                           bIsCustom(false),
+	                           bGameModeNameChanged(false),
+	                           bDifficultyChanged(false)
 	{
 	}
 
 	FORCEINLINE bool operator==(const FStartWidgetProperties& Other) const
 	{
 		return bUseTemplateChecked == Other.bUseTemplateChecked && bIsPreset == Other.bIsPreset && bIsCustom == Other.
-			bIsCustom && GameModeName.Equals(Other.NewCustomGameModeName, ESearchCase::CaseSensitive) && Difficulty.
-			Equals(Other.Difficulty) && NewCustomGameModeName.Equals(Other.NewCustomGameModeName,
-				ESearchCase::CaseSensitive);
+		       bIsCustom && GameModeName.Equals(Other.NewCustomGameModeName, ESearchCase::CaseSensitive) && Difficulty.
+		       Equals(Other.Difficulty) && NewCustomGameModeName.Equals(Other.NewCustomGameModeName,
+		                                                                ESearchCase::CaseSensitive);
 	}
 };
 

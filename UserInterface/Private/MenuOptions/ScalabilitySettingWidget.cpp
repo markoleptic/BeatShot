@@ -85,5 +85,5 @@ void UScalabilitySettingWidget::OnBSButtonPressed_VideoQuality(const UBSButton* 
 		return;
 	}
 	OnVideoSettingQualityButtonPressed.Broadcast(VideoSettingButton->GetVideoSettingType(),
-		VideoSettingButton->GetVideoSettingQuality());
+	                                             VideoSettingButton->GetVideoSettingQuality());
 }

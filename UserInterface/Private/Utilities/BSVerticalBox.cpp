@@ -40,7 +40,8 @@ bool UBSVerticalBox::UpdateBrushColors_Private(TArray<TObjectPtr<UPanelSlot>>& I
 					if (UBSVerticalBox* VerticalBox = Cast<UBSVerticalBox>(Widget))
 					{
 						bLastLeftBorderDark = VerticalBox->UpdateBrushColors_Private(
-							Cast<UBSVerticalBox>(Widget)->Slots, bLastLeftBorderDark);
+							Cast<UBSVerticalBox>(Widget)->Slots,
+							bLastLeftBorderDark);
 					}
 					// UUserWidget contains a HorizontalBox
 					else if (UBSHorizontalBox* HorizontalBox = Cast<UBSHorizontalBox>(Widget))

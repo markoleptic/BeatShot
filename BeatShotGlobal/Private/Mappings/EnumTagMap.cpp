@@ -8,7 +8,7 @@ FEnumTagPair::FEnumTagPair()
 {
 }
 
-FEnumTagPair::FEnumTagPair(const FString& InEnumValue, const uint8 InIndex): FEnumStringPair(InEnumValue, InIndex)
+FEnumTagPair::FEnumTagPair(const FString& InEnumValue, const uint8 InIndex) : FEnumStringPair(InEnumValue, InIndex)
 {
 }
 
@@ -25,7 +25,7 @@ void FEnumTagPair::AddParentTags(const FGameplayTagContainer& InParentTags)
 	}
 }
 
-FEnumTagMapping::FEnumTagMapping(): Enum(nullptr)
+FEnumTagMapping::FEnumTagMapping() : Enum(nullptr)
 {
 }
 

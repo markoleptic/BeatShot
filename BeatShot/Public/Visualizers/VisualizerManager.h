@@ -27,7 +27,7 @@ public:
 	 *  InitializeVisualizer on each. Spawns all default visualizers in Default Spawn Through Code Visualizers array,
 	 *  calls InitializeVisualizer on each, and adds them to Visualizers array. Calls SplitVisualizers at the end. */
 	void InitializeVisualizers(const FPlayerSettings_Game& PlayerSettings,
-		const FPlayerSettings_AudioAnalyzer& InAASettings);
+	                           const FPlayerSettings_AudioAnalyzer& InAASettings);
 
 	/** Main function to update all visualizers, called on tick in GameMode. */
 	void UpdateVisualizers(const TArray<float>& SpectrumValues);

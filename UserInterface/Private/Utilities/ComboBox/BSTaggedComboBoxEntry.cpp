@@ -7,8 +7,10 @@
 #include "Utilities/GameModeCategoryTagWidget.h"
 
 void UBSTaggedComboBoxEntry::AddGameModeCategoryTagWidget(TArray<UGameModeCategoryTagWidget*>& InParentTagWidgets,
-	TArray<UGameModeCategoryTagWidget*>& InTagWidgets, const FMargin InMargin, const EVerticalAlignment InVAlign,
-	const EHorizontalAlignment InHAlign)
+                                                          TArray<UGameModeCategoryTagWidget*>& InTagWidgets,
+                                                          const FMargin InMargin,
+                                                          const EVerticalAlignment InVAlign,
+                                                          const EHorizontalAlignment InHAlign)
 {
 	InTagWidgets.Sort([&](const UGameModeCategoryTagWidget& Widget, const UGameModeCategoryTagWidget& Widget2)
 	{

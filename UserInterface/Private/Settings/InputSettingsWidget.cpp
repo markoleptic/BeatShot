@@ -119,7 +119,7 @@ void UInputSettingsWidget::InitializeInputSettings(const TMap<FName, FKeyMapping
 			for (const auto& KeyMapping : Row.Value.Mappings)
 			{
 				if (MatchingLegacy && MatchingLegacy->Slot == KeyMapping.GetSlot() && MatchingLegacy->NewKey !=
-					KeyMapping.GetCurrentKey())
+				    KeyMapping.GetCurrentKey())
 				{
 					Widget->SetKeyForSlot(MatchingLegacy->Slot, MatchingLegacy->NewKey);
 				}
@@ -142,8 +142,9 @@ void UInputSettingsWidget::InitializeInputSettings(const TMap<FName, FKeyMapping
 	UpdateBrushColors();
 }
 
-void UInputSettingsWidget::OnKeySelected(const FName MappingName, const EPlayerMappableKeySlot& InSlot,
-	const FInputChord SelectedKey)
+void UInputSettingsWidget::OnKeySelected(const FName MappingName,
+                                         const EPlayerMappableKeySlot& InSlot,
+                                         const FInputChord SelectedKey)
 {
 	// UE_LOG(LogTemp, Display, TEXT("NewKeySelected for %s at Slot %s: %s"), *MappingName.ToString(),
 	//	 *UEnum::GetDisplayValueAsText(InSlot).ToString(), *SelectedKey.GetInputText().ToString());

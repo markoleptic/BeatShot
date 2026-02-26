@@ -4,7 +4,7 @@
 #include "Animation/Notifies/AnimNotify_PlayFootstepSound.h"
 #include "Audio/BSMovementSoundInterface.h"
 
-UAnimNotify_PlayFootstepSound::UAnimNotify_PlayFootstepSound(): bAttached(1), bPerformTrace(0)
+UAnimNotify_PlayFootstepSound::UAnimNotify_PlayFootstepSound() : bAttached(1), bPerformTrace(0)
 {
 }
 
@@ -19,8 +19,9 @@ FString UAnimNotify_PlayFootstepSound::GetNotifyName_Implementation() const
 	return Super::GetNotifyName_Implementation();
 }
 
-void UAnimNotify_PlayFootstepSound::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
-	const FAnimNotifyEventReference& EventReference)
+void UAnimNotify_PlayFootstepSound::Notify(USkeletalMeshComponent* MeshComp,
+                                           UAnimSequenceBase* Animation,
+                                           const FAnimNotifyEventReference& EventReference)
 {
 	Super::Notify(MeshComp, Animation, EventReference);
 
@@ -44,14 +45,17 @@ void UAnimNotify_PlayFootstepSound::Notify(USkeletalMeshComponent* MeshComp, UAn
 			{
 				// If trace is needed, set up Start Location to Attached
 				FVector TraceStart = bAttached
-					? MeshComp->GetSocketLocation(SocketName)
-					: MeshComp->GetComponentLocation();
+				                     ? MeshComp->GetSocketLocation(SocketName)
+				                     : MeshComp->GetComponentLocation();
 
 				if (UWorld* World = OwningActor->GetWorld())
 				{
-					World->LineTraceSingleByChannel(HitResult, TraceStart,
-						(TraceStart + TraceProperties.EndTraceLocationOffset), TraceProperties.TraceChannel,
-						QueryParams, FCollisionResponseParams::DefaultResponseParam);
+					World->LineTraceSingleByChannel(HitResult,
+					                                TraceStart,
+					                                (TraceStart + TraceProperties.EndTraceLocationOffset),
+					                                TraceProperties.TraceChannel,
+					                                QueryParams,
+					                                FCollisionResponseParams::DefaultResponseParam);
 				}
 			}
 
@@ -81,17 +85,30 @@ void UAnimNotify_PlayFootstepSound::Notify(USkeletalMeshComponent* MeshComp, UAn
 			{
 				// If the object is still valid, Execute the AnimMotionEffect Event on it, passing in relevant data
 				IBSMovementSoundInterface::Execute_PlayMovementSound(ImplementingObject,
-					bAttached ? SocketName : FName("None"), Effect, MeshComp, LocationOffset, RotationOffset, Animation,
-					HitResult, Context, AudioProperties.VolumeMultiplier, AudioProperties.PitchMultiplier);
+				                                                     bAttached ? SocketName : FName("None"),
+				                                                     Effect,
+				                                                     MeshComp,
+				                                                     LocationOffset,
+				                                                     RotationOffset,
+				                                                     Animation,
+				                                                     HitResult,
+				                                                     Context,
+				                                                     AudioProperties.VolumeMultiplier,
+				                                                     AudioProperties.PitchMultiplier);
 			}
 		}
 	}
 }
 
 #if WITH_EDITOR
-void UAnimNotify_PlayFootstepSound::SetParameters(const FGameplayTag EffectIn, const FVector LocationOffsetIn,
-	const FRotator RotationOffsetIn, const FBSAnimNotifySoundSettings AudioPropertiesIn, const bool bAttachedIn,
-	const FName SocketNameIn, const bool bPerformTraceIn, const FBSAnimNotifyTraceSettings TracePropertiesIn)
+void UAnimNotify_PlayFootstepSound::SetParameters(const FGameplayTag EffectIn,
+                                                  const FVector LocationOffsetIn,
+                                                  const FRotator RotationOffsetIn,
+                                                  const FBSAnimNotifySoundSettings AudioPropertiesIn,
+                                                  const bool bAttachedIn,
+                                                  const FName SocketNameIn,
+                                                  const bool bPerformTraceIn,
+                                                  const FBSAnimNotifyTraceSettings TracePropertiesIn)
 {
 	Effect = EffectIn;
 	LocationOffset = LocationOffsetIn;

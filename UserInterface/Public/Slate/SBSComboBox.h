@@ -47,7 +47,10 @@ public:
 	using SBSTableRowOptionType = SBSTableRow<OptionType>;
 
 	SLATE_BEGIN_ARGS(SBSComboRow) : _Style(&FAppStyle::Get().GetWidgetStyle<FTableRowStyle>("ComboBox.Row")),
-	                                _Content(), _Padding(FMargin(0)), _MaxNumSelectedItems(-1), _CanSelectNone(false)
+	                                _Content(),
+	                                _Padding(FMargin(0)),
+	                                _MaxNumSelectedItems(-1),
+	                                _CanSelectNone(false)
 		{
 		}
 
@@ -64,7 +67,8 @@ public:
 		SBSTableRow<OptionType>::Construct(
 			typename SBSTableRow<OptionType>::FArguments().Style(InArgs._Style).Padding(InArgs._Padding).Content()[
 				InArgs._Content.Widget].MaxNumSelectedItems(InArgs._MaxNumSelectedItems).CanSelectNone(
-				InArgs._CanSelectNone), InOwnerTable);
+				InArgs._CanSelectNone),
+			InOwnerTable);
 	}
 };
 
@@ -86,13 +90,25 @@ public:
 	using FOnSelectionChanged = typename TSlateDelegates<NullableOptionType>::FOnSelectionChanged;
 
 	SLATE_BEGIN_ARGS(SBSComboBox)
-			: _Content(), _ComboBoxStyle(&FAppStyle::Get().GetWidgetStyle<FComboBoxStyle>("ComboBox")),
-			  _ButtonStyle(nullptr), _ItemStyle(&FAppStyle::Get().GetWidgetStyle<FTableRowStyle>("ComboBox.Row")),
-			  _ContentPadding(_ComboBoxStyle->ContentPadding), _ForegroundColor(FSlateColor::UseStyle()),
-			  _OptionsSource(), _OnSelectionChanged(), _OnGenerateWidget(), _OnMultiSelectionChanged(),
-			  _InitiallySelectedItems(TArray<NullableOptionType>()), _Method(), _MaxListHeight(450.0f),
-			  _HasDownArrow(true), _EnableGamepadNavigationMode(false), _IsFocusable(true),
-			  _CloseComboBoxOnSelectionChanged(false), _MaxNumSelectedItems(-1), _CanSelectNone(false)
+			: _Content(),
+			  _ComboBoxStyle(&FAppStyle::Get().GetWidgetStyle<FComboBoxStyle>("ComboBox")),
+			  _ButtonStyle(nullptr),
+			  _ItemStyle(&FAppStyle::Get().GetWidgetStyle<FTableRowStyle>("ComboBox.Row")),
+			  _ContentPadding(_ComboBoxStyle->ContentPadding),
+			  _ForegroundColor(FSlateColor::UseStyle()),
+			  _OptionsSource(),
+			  _OnSelectionChanged(),
+			  _OnGenerateWidget(),
+			  _OnMultiSelectionChanged(),
+			  _InitiallySelectedItems(TArray<NullableOptionType>()),
+			  _Method(),
+			  _MaxListHeight(450.0f),
+			  _HasDownArrow(true),
+			  _EnableGamepadNavigationMode(false),
+			  _IsFocusable(true),
+			  _CloseComboBoxOnSelectionChanged(false),
+			  _MaxNumSelectedItems(-1),
+			  _CanSelectNone(false)
 		{
 		}
 
@@ -174,8 +190,8 @@ public:
 		// version.
 		const FComboButtonStyle& OurComboButtonStyle = InArgs._ComboBoxStyle->ComboButtonStyle;
 		const FButtonStyle* const OurButtonStyle = InArgs._ButtonStyle
-			? InArgs._ButtonStyle
-			: &OurComboButtonStyle.ButtonStyle;
+		                                           ? InArgs._ButtonStyle
+		                                           : &OurComboButtonStyle.ButtonStyle;
 		PressedSound = InArgs._PressedSoundOverride.Get(InArgs._ComboBoxStyle->PressedSlateSound);
 		SelectionChangeSound = InArgs._SelectionChangeSoundOverride.Get(
 			InArgs._ComboBoxStyle->SelectionChangeSlateSound);
@@ -240,9 +256,13 @@ public:
 		}
 	}
 
-	SBSComboBox(): ItemStyle(nullptr), EnableGamepadNavigationMode(false), bControllerInputCaptured(false),
-	               bCloseComboBoxOnSelectionChanged(false), OptionsSource(nullptr), MaxNumSelectedItems(-1),
-	               bCanSelectNone(false)
+	SBSComboBox() : ItemStyle(nullptr),
+	                EnableGamepadNavigationMode(false),
+	                bControllerInputCaptured(false),
+	                bCloseComboBoxOnSelectionChanged(false),
+	                OptionsSource(nullptr),
+	                MaxNumSelectedItems(-1),
+	                bCanSelectNone(false)
 
 	{
 #if WITH_ACCESSIBILITY
@@ -325,8 +345,9 @@ public:
 	}
 
 	// Only really called when initializing options in BSComboBoxString
-	void SetItemSelection(NullableOptionType InSelectedItem, bool bSelected,
-		ESelectInfo::Type SelectInfo = ESelectInfo::Direct)
+	void SetItemSelection(NullableOptionType InSelectedItem,
+	                      bool bSelected,
+	                      ESelectInfo::Type SelectInfo = ESelectInfo::Direct)
 	{
 		if (TListTypeTraits<OptionType>::IsPtrValid(InSelectedItem))
 		{
@@ -340,8 +361,9 @@ public:
 		}
 	}
 
-	void SetItemSelection(TConstArrayView<NullableOptionType> InItems, bool bSelected,
-		ESelectInfo::Type SelectInfo = ESelectInfo::Direct)
+	void SetItemSelection(TConstArrayView<NullableOptionType> InItems,
+	                      bool bSelected,
+	                      ESelectInfo::Type SelectInfo = ESelectInfo::Direct)
 	{
 		const TArray<OptionType> ComboListItems = ComboListView->GetSelectedItems();
 		if (InItems.Num() > 0)
@@ -458,7 +480,7 @@ protected:
 									ComboListItem);
 								const int32 SelectionIndex = OptionsSource->Find(InSelected);
 								SetItemSelection((*OptionsSource)[SelectionIndex + -1],
-									ComboListView->IsItemSelected(InSelected));
+								                 ComboListView->IsItemSelected(InSelected));
 							}
 						}
 						return FReply::Handled();
@@ -477,7 +499,7 @@ protected:
 									ComboListItem);
 								const int32 SelectionIndex = OptionsSource->Find(InSelected);
 								SetItemSelection((*OptionsSource)[SelectionIndex + 1],
-									ComboListView->IsItemSelected(InSelected));
+								                 ComboListView->IsItemSelected(InSelected));
 							}
 						}
 						return FReply::Handled();
@@ -521,8 +543,9 @@ private:
 		return SNew(SBSComboRow<OptionType>, OwnerTable)
 			[
 				SNew(STextBlock)
-				.Text(NSLOCTEXT("SlateCore", "ComboBoxMissingOnGenerateWidgetMethod",
-					"Please provide a .OnGenerateWidget() handler."))
+				.Text(NSLOCTEXT("SlateCore",
+				                "ComboBoxMissingOnGenerateWidgetMethod",
+				                "Please provide a .OnGenerateWidget() handler."))
 			];
 	}
 
@@ -541,7 +564,7 @@ private:
 					OptionType ActuallySelected = TListTypeTraits<OptionType>::NullableItemTypeConvertToItemType(
 						ComboListItem);
 					ComboListView->Private_SetItemSelection(ActuallySelected,
-						ComboListView->IsItemSelected(ActuallySelected));
+					                                        ComboListView->IsItemSelected(ActuallySelected));
 					ComboListView->RequestScrollIntoView(ActuallySelected, 0);
 				}
 			}

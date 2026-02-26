@@ -34,12 +34,13 @@ void ABeamVisualizer::InitializeVisualizer(const FPlayerSettings_AudioAnalyzer& 
 			if (GetFastDef().bGrowFromCenter)
 			{
 				FVector LocationOffset = GetFastDef().Location - GetFastDef().OffsetLocation * (static_cast<float>(
-					GetFastDef().NumVisualizerLightsToSpawn - 1) / 2);
-				FRotator RotationOffset = GetFastDef().Rotation - GetFastDef().OffsetRotation * (static_cast<float>(
-					GetFastDef().NumVisualizerLightsToSpawn - 1) / 2);
+					                         GetFastDef().NumVisualizerLightsToSpawn - 1) / 2);
+				FRotator RotationOffset = GetFastDef().Rotation - GetFastDef().OffsetRotation * (
+					                          static_cast<float>(GetFastDef().NumVisualizerLightsToSpawn - 1) / 2);
 				float Exponent = static_cast<float>(GetFastDef().NumVisualizerLightsToSpawn - 1) / 2;
 				FVector ScaleOffset(FMath::Pow(GetFastDef().OffsetScale.X, Exponent),
-					FMath::Pow(GetFastDef().OffsetScale.Y, Exponent), FMath::Pow(GetFastDef().OffsetScale.Z, Exponent));
+				                    FMath::Pow(GetFastDef().OffsetScale.Y, Exponent),
+				                    FMath::Pow(GetFastDef().OffsetScale.Z, Exponent));
 				CurrentOffsetTransform = FTransform(RotationOffset, LocationOffset, ScaleOffset);
 			}
 
@@ -48,8 +49,8 @@ void ABeamVisualizer::InitializeVisualizer(const FPlayerSettings_AudioAnalyzer& 
 			for (int i = 0; i < GetFastDef().NumVisualizerLightsToSpawn - 1; i++)
 			{
 				CurrentOffsetTransform = FTransform(CurrentOffsetTransform.Rotator() + GetFastDef().OffsetRotation,
-					CurrentOffsetTransform.GetLocation() + GetFastDef().OffsetLocation,
-					CurrentOffsetTransform.GetScale3D() * GetFastDef().OffsetScale);
+				                                    CurrentOffsetTransform.GetLocation() + GetFastDef().OffsetLocation,
+				                                    CurrentOffsetTransform.GetScale3D() * GetFastDef().OffsetScale);
 				SpawnTransforms.Add(CurrentOffsetTransform);
 			}
 			break;
@@ -69,15 +70,18 @@ void ABeamVisualizer::InitializeVisualizer(const FPlayerSettings_AudioAnalyzer& 
 
 	if (!GetFastDef().VisualizerLightClass)
 	{
-		UE_LOG(LogTemp, Warning,
-			TEXT("A class was not provided in the Visualizer Light Class property of a Beam Visualizer's definition"));
+		UE_LOG(LogTemp,
+		       Warning,
+		       TEXT("A class was not provided in the Visualizer Light Class property of a Beam Visualizer's definition"
+		       ));
 		return;
 	}
 
 	for (int i = 0; i < SpawnTransforms.Num(); i++)
 	{
 		ASimpleBeamLight* Light = GetWorld()->SpawnActorDeferred<ASimpleBeamLight>(GetFastDef().VisualizerLightClass,
-			SpawnTransforms[i], this);
+			SpawnTransforms[i],
+			this);
 		FSimpleBeamLightConfig Config;
 		Config.bUseSpotlight = GetFastDef().bUseSpotlight;
 		Config.LightDuration = GetFastDef().LightDuration;
@@ -110,7 +114,7 @@ void ABeamVisualizer::InitializeVisualizer(const FPlayerSettings_AudioAnalyzer& 
 }
 
 void ABeamVisualizer::InitializeVisualizerFromWorld(const FPlayerSettings_AudioAnalyzer& InAASettings,
-	const int32 NumSpawnedVisualizers)
+                                                    const int32 NumSpawnedVisualizers)
 {
 	BeamVisualizerDefinition = GetVisualizerDefinition();
 

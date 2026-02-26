@@ -16,5 +16,5 @@ public:
 	UBSDamageExecCalc();
 
 	virtual void Execute_Implementation(const FGameplayEffectCustomExecutionParameters& ExecutionParams,
-		OUT FGameplayEffectCustomExecutionOutput& OutExecutionOutput) const override;
+	                                    OUT FGameplayEffectCustomExecutionOutput& OutExecutionOutput) const override;
 };

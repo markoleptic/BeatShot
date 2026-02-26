@@ -21,15 +21,20 @@ UBSGA_AimBot::UBSGA_AimBot()
 	bZZero = true;
 }
 
-void UBSGA_AimBot::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
-	const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
+void UBSGA_AimBot::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
+                                   const FGameplayAbilityActorInfo* ActorInfo,
+                                   const FGameplayAbilityActivationInfo ActivationInfo,
+                                   const FGameplayEventData* TriggerEventData)
 {
 	SetIgnoreStartLocation(IgnoreStartLocation);
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 }
 
-void UBSGA_AimBot::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
-	const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
+void UBSGA_AimBot::EndAbility(const FGameplayAbilitySpecHandle Handle,
+                              const FGameplayAbilityActorInfo* ActorInfo,
+                              const FGameplayAbilityActivationInfo ActivationInfo,
+                              bool bReplicateEndAbility,
+                              bool bWasCancelled)
 {
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
@@ -68,8 +73,11 @@ void UBSGA_AimBot::CheckTargetQueue()
 		return;
 	}
 
-	UBSAT_AimToTarget* AimToTarget = UBSAT_AimToTarget::AimToTarget(this, FName(), SmoothingCurve, ActiveTarget,
-		1.f / ActiveTarget->GetSpawnBeatDelay());
+	UBSAT_AimToTarget* AimToTarget = UBSAT_AimToTarget::AimToTarget(this,
+	                                                                FName(),
+	                                                                SmoothingCurve,
+	                                                                ActiveTarget,
+	                                                                1.f / ActiveTarget->GetSpawnBeatDelay());
 	AimToTarget->OnCancelled.AddDynamic(this, &ThisClass::OnAimToTargetCancelled);
 	AimToTarget->OnCompleted.AddDynamic(this, &ThisClass::OnAimToTargetCompleted);
 	AimToTarget->ReadyForActivation();

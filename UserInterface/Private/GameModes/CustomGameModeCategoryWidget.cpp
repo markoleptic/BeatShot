@@ -65,8 +65,9 @@ void UCustomGameModeCategoryWidget::HandlePropertyValidation(
 		}
 		if (const TWeakObjectPtr<UMenuOptionWidget>* Found = PropertyMenuOptionWidgetMap.Find(Elem.OwningPropertyHash))
 		{
-			(*Found)->UpdateDynamicTooltipIcon(GetTypeHash(*Elem.ValidationCheckPtr.Get()), Elem.bSuccess,
-				Elem.ValidationCheckPtr->ValidationCheckData);
+			(*Found)->UpdateDynamicTooltipIcon(GetTypeHash(*Elem.ValidationCheckPtr.Get()),
+			                                   Elem.bSuccess,
+			                                   Elem.ValidationCheckPtr->ValidationCheckData);
 		}
 	}
 }
@@ -117,7 +118,7 @@ void UCustomGameModeCategoryWidget::AddGameModeCategoryTagWidgets(UMenuOptionWid
 }
 
 void UCustomGameModeCategoryWidget::AssociatePropertyWithMenuOption(const uint32 PropertyHash,
-	UMenuOptionWidget* MenuOptionWidget)
+                                                                    UMenuOptionWidget* MenuOptionWidget)
 {
 	PropertyMenuOptionWidgetMap.Add(PropertyHash, MenuOptionWidget);
 }
@@ -130,7 +131,7 @@ void UCustomGameModeCategoryWidget::AddWatchedProperty(const uint32 PropertyHash
 bool UCustomGameModeCategoryWidget::UpdateValueIfDifferent(const USingleRangeInputWidget* Widget, const float Value)
 {
 	if (FMath::IsNearlyEqual(Widget->GetSliderValue(), Value) && FMath::IsNearlyEqual(Widget->GetEditableTextBoxValue(),
-		Value))
+		    Value))
 	{
 		return false;
 	}
@@ -159,7 +160,7 @@ bool UCustomGameModeCategoryWidget::UpdateValueIfDifferent(const UComboBoxWidget
 }
 
 bool UCustomGameModeCategoryWidget::UpdateValueIfDifferent(const UComboBoxWidget* Widget,
-	const TArray<FString>& NewOptions)
+                                                           const TArray<FString>& NewOptions)
 {
 	const TArray<FString> SelectedOptions = Widget->ComboBox->GetSelectedOptions();
 
@@ -202,8 +203,10 @@ bool UCustomGameModeCategoryWidget::UpdateValueIfDifferent(const UTextInputWidge
 	return true;
 }
 
-bool UCustomGameModeCategoryWidget::UpdateValuesIfDifferent(const UDualRangeInputWidget* Widget, const bool bIsChecked,
-	const float Min, const float Max)
+bool UCustomGameModeCategoryWidget::UpdateValuesIfDifferent(const UDualRangeInputWidget* Widget,
+                                                            const bool bIsChecked,
+                                                            const float Min,
+                                                            const float Max)
 {
 	bool bDifferent = Widget->IsInConstantMode() != bIsChecked;
 	if (bDifferent)
@@ -212,7 +215,8 @@ bool UCustomGameModeCategoryWidget::UpdateValuesIfDifferent(const UDualRangeInpu
 	}
 
 	const bool bMinDifferent = !FMath::IsNearlyEqual(Widget->GetMinSliderValue(false), Min) || !FMath::IsNearlyEqual(
-		Widget->GetMinEditableTextBoxValue(false), Min);
+		                           Widget->GetMinEditableTextBoxValue(false),
+		                           Min);
 	if (bMinDifferent)
 	{
 		Widget->SetValue_Min(Min);
@@ -220,7 +224,8 @@ bool UCustomGameModeCategoryWidget::UpdateValuesIfDifferent(const UDualRangeInpu
 	bDifferent = bMinDifferent || bDifferent;
 
 	const bool bMaxDifferent = !FMath::IsNearlyEqual(Widget->GetMaxSliderValue(false), Max) || !FMath::IsNearlyEqual(
-		Widget->GetMaxEditableTextBoxValue(false), Max);
+		                           Widget->GetMaxEditableTextBoxValue(false),
+		                           Max);
 	if (bMaxDifferent)
 	{
 		Widget->SetValue_Max(Max);
@@ -231,7 +236,8 @@ bool UCustomGameModeCategoryWidget::UpdateValuesIfDifferent(const UDualRangeInpu
 }
 
 bool UCustomGameModeCategoryWidget::UpdateValuesIfDifferent(const UToggleableSingleRangeInputWidget* Widget,
-	const bool bIsChecked, const float Value)
+                                                            const bool bIsChecked,
+                                                            const float Value)
 {
 	// Don't consider the slider/text box value if checked
 	if (bIsChecked)
@@ -251,7 +257,8 @@ bool UCustomGameModeCategoryWidget::UpdateValuesIfDifferent(const UToggleableSin
 	}
 
 	const bool bValueDiff = !FMath::IsNearlyEqual(Widget->GetSliderValue(), Value) || !FMath::IsNearlyEqual(
-		Widget->GetEditableTextBoxValue(), Value);
+		                        Widget->GetEditableTextBoxValue(),
+		                        Value);
 
 	if (bValueDiff)
 	{

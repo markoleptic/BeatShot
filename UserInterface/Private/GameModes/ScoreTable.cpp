@@ -212,7 +212,8 @@ TSharedRef<ITableRow> UScoreTable::OnGenerateRow(TSharedPtr<FPlayerScore> Item,
 		.Font(TableCellFont);
 }
 
-void UScoreTable::OnSortColumn(EColumnSortPriority::Type, const FName& InColumnId,
+void UScoreTable::OnSortColumn(EColumnSortPriority::Type,
+                               const FName& InColumnId,
                                const EColumnSortMode::Type InSortMode)
 {
 	PrimarySortedColumn = InColumnId;
@@ -247,7 +248,8 @@ void UScoreTable::SortItems()
 		return; // No column selected for sorting or nothing to sort.
 	}
 
-	auto CompareColumn = [this](const TSharedPtr<FPlayerScore>& L, const TSharedPtr<FPlayerScore>& R,
+	auto CompareColumn = [this](const TSharedPtr<FPlayerScore>& L,
+	                            const TSharedPtr<FPlayerScore>& R,
 	                            const FName& Column)
 	{
 		if (Column == SPlayerScoreRow::DateColumnName)

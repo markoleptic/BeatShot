@@ -29,7 +29,7 @@ protected:
 
 	/** Updates options that depend on the value selection of TargetActivationResponses. */
 	void UpdateDependentOptions_TargetActivationResponses(const TArray<ETargetActivationResponse>& InResponses,
-		const bool bUseConstantTargetSpeed);
+	                                                      const bool bUseConstantTargetSpeed);
 
 	/** Updates options that depend on the value selection of TargetDistributionPolicy. */
 	void UpdateDependentOptions_TargetDistributionPolicy(const ETargetDistributionPolicy& Policy);
@@ -39,12 +39,14 @@ protected:
 
 	void OnSliderTextBoxValueChanged(USingleRangeInputWidget* Widget, const float Value);
 
-	void OnMinMaxMenuOptionChanged(UDualRangeInputWidget* Widget, const bool bChecked, const float MinOrConstant,
-		const float Max);
+	void OnMinMaxMenuOptionChanged(UDualRangeInputWidget* Widget,
+	                               const bool bChecked,
+	                               const float MinOrConstant,
+	                               const float Max);
 
 	UFUNCTION()
 	void OnSelectionChanged_TargetActivationSelectionPolicy(const TArray<FString>& Selected,
-		const ESelectInfo::Type SelectionType);
+	                                                        const ESelectInfo::Type SelectionType);
 
 	FString GetComboBoxEntryTooltipStringTableKey_TargetActivationSelectionPolicy(const FString& EnumString);
 

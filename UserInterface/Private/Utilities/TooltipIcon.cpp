@@ -7,7 +7,8 @@
 #include "Utilities/TooltipData.h"
 #include "Utilities/TooltipWidget.h"
 
-UTooltipIcon::UTooltipIcon(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer), Button(nullptr),
+UTooltipIcon::UTooltipIcon(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer),
+                                                                          Button(nullptr),
                                                                           Image(nullptr),
                                                                           TooltipIconType(ETooltipIconType::Default)
 {
@@ -33,7 +34,8 @@ void UTooltipIcon::PostInitProperties()
 }
 
 UTooltipIcon* UTooltipIcon::CreateTooltipIcon(UUserWidget* InOwningObject,
-	const TSubclassOf<UUserWidget>& TooltipIconClass, const ETooltipIconType Type)
+                                              const TSubclassOf<UUserWidget>& TooltipIconClass,
+                                              const ETooltipIconType Type)
 {
 	if (UTooltipIcon* Icon = CreateWidget<UTooltipIcon>(InOwningObject, TooltipIconClass))
 	{

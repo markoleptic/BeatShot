@@ -6,7 +6,9 @@
 
 
 FHyperLinkTextBlockDecorator::FHyperLinkTextBlockDecorator(URichTextBlock* InOwner,
-	UHyperlinkTextBlockDecorator* InDecorator) : FRichTextDecorator(InOwner), Decorator(InDecorator)
+                                                           UHyperlinkTextBlockDecorator* InDecorator) :
+	FRichTextDecorator(InOwner),
+	Decorator(InDecorator)
 {
 	OnHyperlinkClicked.BindLambda([this]()
 	{
@@ -34,7 +36,7 @@ void FHyperLinkTextBlockDecorator::OnBrowserLinkClicked() const
 }
 
 TSharedPtr<SWidget> FHyperLinkTextBlockDecorator::CreateDecoratorWidget(const FTextRunInfo& RunInfo,
-	const FTextBlockStyle& DefaultTextStyle) const
+                                                                        const FTextBlockStyle& DefaultTextStyle) const
 {
 	TSharedPtr<FSlateHyperlinkRun::FWidgetViewModel> Model = MakeShareable(new FSlateHyperlinkRun::FWidgetViewModel);
 	TSharedPtr<SBSRichTextHyperlink> Link = SNew(SBSRichTextHyperlink, Model.ToSharedRef())
@@ -45,7 +47,7 @@ TSharedPtr<SWidget> FHyperLinkTextBlockDecorator::CreateDecoratorWidget(const FT
 	return Link;
 }
 
-UHyperlinkTextBlockDecorator::UHyperlinkTextBlockDecorator(const FObjectInitializer& ObjectInitializer): Super(
+UHyperlinkTextBlockDecorator::UHyperlinkTextBlockDecorator(const FObjectInitializer& ObjectInitializer) : Super(
 	ObjectInitializer)
 {
 }

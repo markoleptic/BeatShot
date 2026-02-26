@@ -31,19 +31,33 @@ enum class ESelectionModeType : uint8
 
 class UBSComboBoxEntry;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSelectionChangedEvent, FString, SelectedItem, ESelectInfo::Type,
-	SelectionType);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSelectionChangedEvent,
+                                             FString,
+                                             SelectedItem,
+                                             ESelectInfo::Type,
+                                             SelectionType);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnOpeningEvent);
 
-DECLARE_DYNAMIC_DELEGATE_RetVal_TwoParams(UWidget*, FGenerateWidgetForSingleItem, const UBSComboBoxString*,
-	BSComboBoxString, FString, Item);
+DECLARE_DYNAMIC_DELEGATE_RetVal_TwoParams(UWidget*,
+                                          FGenerateWidgetForSingleItem,
+                                          const UBSComboBoxString*,
+                                          BSComboBoxString,
+                                          FString,
+                                          Item);
 
-DECLARE_DYNAMIC_DELEGATE_RetVal_TwoParams(UWidget*, FGenerateWidgetForMultiSelection, const UBSComboBoxString*,
-	BSComboBoxString, const TArray<FString>&, Items);
+DECLARE_DYNAMIC_DELEGATE_RetVal_TwoParams(UWidget*,
+                                          FGenerateWidgetForMultiSelection,
+                                          const UBSComboBoxString*,
+                                          BSComboBoxString,
+                                          const TArray<FString>&,
+                                          Items);
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnMultiSelectionChangedEvent, const TArray<FString>&, ActiveSelections,
-	const ESelectInfo::Type, SelectionType);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnMultiSelectionChangedEvent,
+                                             const TArray<FString>&,
+                                             ActiveSelections,
+                                             const ESelectInfo::Type,
+                                             SelectionType);
 
 UCLASS(meta=( DisplayName="BSComboBox (String) C++"))
 class USERINTERFACE_API UBSComboBoxString : public UWidget, public IBSWidgetInterface
@@ -243,8 +257,10 @@ public:
 	/** Sets the text for the Entry and tooltip text, and binds to the OnHovered event in the TooltipImage. This can be
 	 *  called by classes that bind to OnGenerateWidgetEvent to customize the entry text and tooltip text, and if needed
 	 *  further modify the Entry. */
-	static void InitializeComboBoxEntry(const UBSComboBoxEntry* Entry, const FText& EntryText,
-		const bool bShowTooltipIcon, const FText& TooltipText = FText());
+	static void InitializeComboBoxEntry(const UBSComboBoxEntry* Entry,
+	                                    const FText& EntryText,
+	                                    const bool bShowTooltipIcon,
+	                                    const FText& TooltipText = FText());
 
 #if WITH_EDITOR
 	virtual const FText GetPaletteCategory() override;
@@ -261,7 +277,7 @@ protected:
 
 	/** Called by slate when the underlying combobox selection changes. Handles both single select and multi-select. */
 	virtual void HandleSelectionChanged(const TArray<TSharedPtr<FString>>& Items,
-		const ESelectInfo::Type SelectionType);
+	                                    const ESelectInfo::Type SelectionType);
 
 	/** Generates a widget for the combobox content that is selected. */
 	virtual TSharedRef<SWidget> HandleSelectionChangedGenerateWidget(

@@ -8,7 +8,8 @@
 FPlayerSettings IBSPlayerSettingsInterface::LoadPlayerSettings()
 {
 	if (const USaveGamePlayerSettings* SaveGamePlayerSettings = SaveLoadCommon::LoadFromSlot<USaveGamePlayerSettings>(
-		TEXT("SettingsSlot"), 0))
+		TEXT("SettingsSlot"),
+		0))
 	{
 		return SaveGamePlayerSettings->GetPlayerSettings();
 	}

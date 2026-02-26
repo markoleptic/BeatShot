@@ -61,12 +61,16 @@ protected:
 	TObjectPtr<UBSGameModeDataAsset> GameModeDataAsset;
 
 	/** Default Game Modes to test. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameModes|Default",
+	UPROPERTY(EditAnywhere,
+		BlueprintReadOnly,
+		Category = "GameModes|Default",
 		meta = (EditCondition = "GameModeDataAsset != nullptr"))
 	TSet<EBaseGameMode> DefaultGameModesToTest;
 
 	/** Default Game Mode Difficulties to test. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameModes|Default",
+	UPROPERTY(EditAnywhere,
+		BlueprintReadOnly,
+		Category = "GameModes|Default",
 		meta = (EditCondition = "GameModeDataAsset != nullptr"))
 	TSet<EGameModeDifficulty> DefaultGameModeDifficultiesToTest;
 
@@ -100,7 +104,9 @@ protected:
 	bool bDestroyAllActivatedTargetsOnTimeStep = true;
 
 	/** The number of activated targets to destroy at each time step. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Configuration",
+	UPROPERTY(EditAnywhere,
+		BlueprintReadOnly,
+		Category = "Configuration",
 		meta = (EditCondition = "!bDestroyAllActivatedTargetsOnTimeStep", ClampMin = 1))
 	int32 NumActivatedTargetsToDestroy = 1;
 

@@ -25,7 +25,7 @@ FBSConfig::FBSConfig(const EBaseGameMode InBaseGameMode, const EGameModeDifficul
 }
 
 FBS_DefiningConfig FBSConfig::GetConfigForPreset(const EBaseGameMode InBaseGameMode,
-	const EGameModeDifficulty InDifficulty)
+                                                 const EGameModeDifficulty InDifficulty)
 {
 	FBS_DefiningConfig Config;
 	Config.BaseGameMode = InBaseGameMode;
@@ -49,8 +49,8 @@ void FBSConfig::OnCreate()
 	if (IsCompatibleWithReinforcementLearning())
 	{
 		AIConfig.ReinforcementLearningMode = AIConfig.bEnableReinforcementLearning
-			? EReinforcementLearningMode::ActiveAgent
-			: EReinforcementLearningMode::Training;
+		                                     ? EReinforcementLearningMode::ActiveAgent
+		                                     : EReinforcementLearningMode::Training;
 	}
 	else
 	{
@@ -76,9 +76,14 @@ bool FBSConfig::IsCompatibleWithReinforcementLearning() const
 	return true;
 }
 
-void FBSConfig::InitColors(const bool bUseSeparateOutlineColor, const FLinearColor& Inactive,
-	const FLinearColor& Outline, const FLinearColor& Start, const FLinearColor& Peak, const FLinearColor& End,
-	const FLinearColor& TrackingDam, const FLinearColor& NotTrackingDam)
+void FBSConfig::InitColors(const bool bUseSeparateOutlineColor,
+                           const FLinearColor& Inactive,
+                           const FLinearColor& Outline,
+                           const FLinearColor& Start,
+                           const FLinearColor& Peak,
+                           const FLinearColor& End,
+                           const FLinearColor& TrackingDam,
+                           const FLinearColor& NotTrackingDam)
 {
 	TargetConfig.bUseSeparateOutlineColor = bUseSeparateOutlineColor;
 	TargetConfig.OutlineColor = Outline;
@@ -120,8 +125,11 @@ void FBSConfig::InitColors(const bool bUseSeparateOutlineColor, const FLinearCol
 
 FString FBSConfig::ToString() const
 {
-	const TSharedPtr<FJsonObject> JsonObject = FJsonObjectConverter::UStructToJsonObject<FBSConfig>(*this, 0,
-		CPF_Transient | CPF_SkipSerialization, nullptr);
+	const TSharedPtr<FJsonObject> JsonObject = FJsonObjectConverter::UStructToJsonObject<FBSConfig>(
+		*this,
+		0,
+		CPF_Transient | CPF_SkipSerialization,
+		nullptr);
 	if (JsonObject.IsValid())
 	{
 		FString JsonString;
@@ -148,8 +156,12 @@ bool FBSConfig::FromString(const FString& JsonString, FBSConfig& OutConfig, FTex
 	const TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(JsonString);
 	if (FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid())
 	{
-		return FJsonObjectConverter::JsonObjectToUStruct<FBSConfig>(JsonObject.ToSharedRef(), &OutConfig, 0,
-			CPF_Transient | CPF_SkipSerialization, false, OutFailReason);
+		return FJsonObjectConverter::JsonObjectToUStruct<FBSConfig>(JsonObject.ToSharedRef(),
+		                                                            &OutConfig,
+		                                                            0,
+		                                                            CPF_Transient | CPF_SkipSerialization,
+		                                                            false,
+		                                                            OutFailReason);
 	}
 	return false;
 }

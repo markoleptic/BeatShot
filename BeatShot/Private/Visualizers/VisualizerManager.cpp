@@ -8,14 +8,14 @@
 #include "Visualizers/StaticCubeVisualizer.h"
 #include "Visualizers/VisualizerBase.h"
 
-AVisualizerManager::AVisualizerManager(): bUpdateBeamVisualizers(false), bUpdateCubeVisualizers(false)
+AVisualizerManager::AVisualizerManager() : bUpdateBeamVisualizers(false), bUpdateCubeVisualizers(false)
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 }
 
 void AVisualizerManager::InitializeVisualizers(const FPlayerSettings_Game& PlayerSettings,
-	const FPlayerSettings_AudioAnalyzer& InAASettings)
+                                               const FPlayerSettings_AudioAnalyzer& InAASettings)
 {
 	AvgSpectrumValues.Init(0, InAASettings.NumBandChannels);
 	CurrentSpectrumValues.Init(0, InAASettings.NumBandChannels);
@@ -59,8 +59,9 @@ void AVisualizerManager::InitializeVisualizers(const FPlayerSettings_Game& Playe
 			{
 				continue;
 			}
-			FTransform Transform(CDO->GetVisualizerDefinition()->Rotation, CDO->GetVisualizerDefinition()->Location,
-				CDO->GetVisualizerDefinition()->Scale);
+			FTransform Transform(CDO->GetVisualizerDefinition()->Rotation,
+			                     CDO->GetVisualizerDefinition()->Location,
+			                     CDO->GetVisualizerDefinition()->Scale);
 			AVisualizerBase* SpawnedVisualizer = GetWorld()->SpawnActorDeferred<AVisualizerBase>(Visualizer, Transform);
 			SpawnedVisualizer->InitializeVisualizer(InAASettings);
 			SpawnedVisualizer->FinishSpawning(Transform, true);
@@ -80,8 +81,11 @@ float AVisualizerManager::GetNormalizedSpectrumValue(const int32 Index, const bo
 	{
 		return UKismetMathLibrary::MapRangeClamped(CurrentSpectrumValues[Index], 0, MaxSpectrumValues[Index], 0, 1);
 	}
-	return UKismetMathLibrary::MapRangeClamped(CurrentCubeSpectrumValues[Index] - AvgSpectrumValues[Index], 0,
-		MaxSpectrumValues[Index], 0, 1);
+	return UKismetMathLibrary::MapRangeClamped(CurrentCubeSpectrumValues[Index] - AvgSpectrumValues[Index],
+	                                           0,
+	                                           MaxSpectrumValues[Index],
+	                                           0,
+	                                           1);
 }
 
 void AVisualizerManager::UpdateVisualizers(const TArray<float>& SpectrumValues)
@@ -185,7 +189,7 @@ void AVisualizerManager::UpdateVisualizerSettings(const FPlayerSettings_Game& Pl
 
 	bUpdateCubeVisualizers = PlayerSettings.bShow_LVLeftCube || PlayerSettings.bShow_LVRightCube;
 	bUpdateBeamVisualizers = PlayerSettings.bShow_LVFrontBeam || PlayerSettings.bShow_LVTopBeam || PlayerSettings.
-		bShow_LVLeftBeam || PlayerSettings.bShow_LVRightBeam;
+	                         bShow_LVLeftBeam || PlayerSettings.bShow_LVRightBeam;
 }
 
 void AVisualizerManager::UpdateAASettings(const FPlayerSettings_AudioAnalyzer& NewAASettings)

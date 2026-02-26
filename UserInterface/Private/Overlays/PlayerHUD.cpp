@@ -43,7 +43,7 @@ void UPlayerHUD::Init(const TSharedPtr<FBSConfig>& InConfig)
 			const int32 Min = -static_cast<int32>(InConfig->TargetConfig.SpawnBeatDelay * 100.f);
 			const FString MinTick = FString::FromInt(Min) + "ms";
 			const int32 Max = (InConfig->TargetConfig.TargetMaxLifeSpan - InConfig->TargetConfig.SpawnBeatDelay) *
-				100.f;
+			                  100.f;
 			const FString MaxTick = FString::FromInt(Max) + "ms";
 			HitTimingWidget->Init(FText::FromString(MinTick), FText::FromString(MaxTick));
 		}
@@ -53,7 +53,7 @@ void UPlayerHUD::Init(const TSharedPtr<FBSConfig>& InConfig)
 			const int32 Min = -static_cast<int32>(InConfig->TargetConfig.SpawnBeatDelay * 100.f);
 			const FString MinTick = FString::FromInt(Min) + "ms";
 			const int32 Max = (InConfig->TargetConfig.TargetMaxLifeSpan - InConfig->TargetConfig.SpawnBeatDelay) *
-				100.f;
+			                  100.f;
 			const FString MaxTick = FString::FromInt(Max) + "ms";
 			HitTimingWidget->Init(FText::FromString(MinTick), FText::FromString(MaxTick));
 		}
@@ -82,7 +82,7 @@ void UPlayerHUD::Init(const TSharedPtr<FBSConfig>& InConfig)
 void UPlayerHUD::OnPlayerSettingsChanged(const FPlayerSettings_Game& GameSettings)
 {
 	if (GameSettings.bShowHitTimingWidget && (Config->TargetConfig.TargetDamageType == ETargetDamageType::Hit || Config
-		->TargetConfig.TargetDamageType == ETargetDamageType::Combined))
+	                                          ->TargetConfig.TargetDamageType == ETargetDamageType::Combined))
 	{
 		if (!HitTimingWidget->GetIsEnabled())
 		{
@@ -91,7 +91,8 @@ void UPlayerHUD::OnPlayerSettingsChanged(const FPlayerSettings_Game& GameSetting
 		}
 	}
 	else if (!GameSettings.bShowHitTimingWidget && (Config->TargetConfig.TargetDamageType == ETargetDamageType::Hit ||
-		Config->TargetConfig.TargetDamageType == ETargetDamageType::Combined))
+	                                                Config->TargetConfig.TargetDamageType ==
+	                                                ETargetDamageType::Combined))
 	{
 		if (HitTimingWidget->GetIsEnabled())
 		{

@@ -26,81 +26,111 @@ struct FSimpleBeamLightConfig
 	GENERATED_BODY()
 
 	/** The length of time this light will be on for. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Simple Beam Light Config | General",
+	UPROPERTY(EditAnywhere,
+		BlueprintReadOnly,
+		Category = "Simple Beam Light Config | General",
 		meta=(DisplayPriority=0))
 	float LightDuration = 1.f;
 
 	/** The base color to apply to Spotlight, BeamEndLight, and SimpleBeamComponent. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Simple Beam Light Config | General",
+	UPROPERTY(EditAnywhere,
+		BlueprintReadOnly,
+		Category = "Simple Beam Light Config | General",
 		meta=(DisplayPriority=100))
 	FLinearColor LightColor;
 
 	/** Max intensity of the EmissiveLightBulb. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Simple Beam Light Config | EmissiveLightBulb",
+	UPROPERTY(EditAnywhere,
+		BlueprintReadOnly,
+		Category = "Simple Beam Light Config | EmissiveLightBulb",
 		meta=(DisplayName="Max Light Bulb Intensity", DisplayPriority=200))
 	float MaxEmissiveLightBulbLightIntensity;
 
 	/** whether this light will need to use the LightPositionTimeline and LineTracing at runtime.
 	 *  If true, LightMovementCurve must have a curve. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Simple Beam Light Config | Movement",
+	UPROPERTY(EditAnywhere,
+		BlueprintReadOnly,
+		Category = "Simple Beam Light Config | Movement",
 		meta=(DisplayName="Moving Light", DisplayPriority=300))
 	bool bIsMovingLight = false;
 
 	/** Curve that defines the position of the end of the beam over time. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Simple Beam Light Config | Movement",
+	UPROPERTY(EditAnywhere,
+		BlueprintReadOnly,
+		Category = "Simple Beam Light Config | Movement",
 		meta=(DisplayPriority=400, EditCondition="bIsMovingLight", EditConditionHides))
 	UCurveVector* LightMovementCurve;
 
 	/** whether to activate the Spotlight. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Simple Beam Light Config | Spotlight",
+	UPROPERTY(EditAnywhere,
+		BlueprintReadOnly,
+		Category = "Simple Beam Light Config | Spotlight",
 		meta=(DisplayPriority=500))
 	bool bUseSpotlight = false;
 
 	/** Max intensity of the Spotlight. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Simple Beam Light Config | Spotlight",
+	UPROPERTY(EditAnywhere,
+		BlueprintReadOnly,
+		Category = "Simple Beam Light Config | Spotlight",
 		meta=(DisplayPriority=600, EditCondition="bUseSpotlight", EditConditionHides))
 	float MaxSpotlightIntensity = DefaultMaxSpotlightIntensity;
 
 	/** Inner cone angle for the Spotlight. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Simple Beam Light Config | Spotlight",
+	UPROPERTY(EditAnywhere,
+		BlueprintReadOnly,
+		Category = "Simple Beam Light Config | Spotlight",
 		meta=(DisplayName="Spotlight Inner Cone Angle", DisplayPriority=700, EditCondition="bUseSpotlight",
 			EditConditionHides))
 	float InnerConeAngle = DefaultSimpleBeamLightInnerConeAngle;
 
 	/** Outer cone angle for the Spotlight. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Simple Beam Light Config | Spotlight",
+	UPROPERTY(EditAnywhere,
+		BlueprintReadOnly,
+		Category = "Simple Beam Light Config | Spotlight",
 		meta=(DisplayName="Spotlight Outer Cone Angle", DisplayPriority=800, EditCondition="bUseSpotlight",
 			EditConditionHides))
 	float OuterConeAngle = DefaultSimpleBeamLightOuterConeAngle;
 
 	/** whether to activate the BeamEndLight. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Simple Beam Light Config | BeamEndLight",
+	UPROPERTY(EditAnywhere,
+		BlueprintReadOnly,
+		Category = "Simple Beam Light Config | BeamEndLight",
 		meta=(DisplayPriority=900))
 	bool bUseBeamEndLight = false;
 
 	/** Max intensity of the MaxBeamEndLight. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Simple Beam Light Config | BeamEndLight",
+	UPROPERTY(EditAnywhere,
+		BlueprintReadOnly,
+		Category = "Simple Beam Light Config | BeamEndLight",
 		meta=(DisplayPriority=1000, EditCondition="bUseBeamEndLight", EditConditionHides))
 	float MaxBeamEndLightIntensity = DefaultMaxBeamEndLightIntensity;
 
 	/** The Niagara System used for this light. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Simple Beam Light Config | Niagara Beam",
+	UPROPERTY(EditAnywhere,
+		BlueprintReadOnly,
+		Category = "Simple Beam Light Config | Niagara Beam",
 		meta=(DisplayPriority=1100))
 	UNiagaraSystem* NiagaraSystem;
 
 	/** Auto calculates the beam length by doing a line trace on initialization. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Simple Beam Light Config | Niagara Beam",
+	UPROPERTY(EditAnywhere,
+		BlueprintReadOnly,
+		Category = "Simple Beam Light Config | Niagara Beam",
 		meta=(DisplayPriority=1200, EditCondition="NiagaraSystem != nullptr", EditConditionHides))
 	bool bAutoCalculateBeamLength = true;
 
 	/** The Niagara System float parameters to used for this light. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Simple Beam Light Config | Niagara Beam",
+	UPROPERTY(EditAnywhere,
+		BlueprintReadOnly,
+		Category = "Simple Beam Light Config | Niagara Beam",
 		meta=(ForceInlineRow),
 		meta=(DisplayPriority=1300, EditCondition="NiagaraSystem != nullptr", EditConditionHides))
 	TMap<FString, float> NiagaraFloatParameters;
 
 	/** The Niagara System Color parameters to used for this light. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Simple Beam Light Config | Niagara Beam",
+	UPROPERTY(EditAnywhere,
+		BlueprintReadOnly,
+		Category = "Simple Beam Light Config | Niagara Beam",
 		meta=(ForceInlineRow),
 		meta=(DisplayPriority=1400, EditCondition="NiagaraSystem != nullptr", EditConditionHides))
 	TMap<FString, FLinearColor> NiagaraColorParameters;

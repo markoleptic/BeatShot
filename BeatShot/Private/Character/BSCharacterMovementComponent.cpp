@@ -11,8 +11,10 @@
 #include "PhysicalMaterials/PhysicalMaterial.h"
 #include "PhysicsEngine/PhysicsSettings.h"
 
-static TAutoConsoleVariable CVarShowPos(TEXT("cl.ShowPos"), 0, TEXT("Show position and movement information.\n"),
-	ECVF_Default);
+static TAutoConsoleVariable CVarShowPos(TEXT("cl.ShowPos"),
+                                        0,
+                                        TEXT("Show position and movement information.\n"),
+                                        ECVF_Default);
 
 DECLARE_CYCLE_STAT(TEXT("Char StepUp"), STAT_CharStepUp, STATGROUP_Character);
 DECLARE_CYCLE_STAT(TEXT("Char PhysFalling"), STAT_CharPhysFalling, STATGROUP_Character);
@@ -214,8 +216,8 @@ const FCharacterGroundInfo& UBSCharacterMovementComponent::GetGroundInfo()
 
 		const float CapsuleHalfHeight = CapsuleComp->GetUnscaledCapsuleHalfHeight();
 		const ECollisionChannel CollisionChannel = (UpdatedComponent
-			? UpdatedComponent->GetCollisionObjectType()
-			: ECC_Pawn);
+		                                            ? UpdatedComponent->GetCollisionObjectType()
+		                                            : ECC_Pawn);
 		const FVector TraceStart(GetActorLocation());
 		const FVector TraceEnd(TraceStart.X, TraceStart.Y, TraceStart.Z - GroundTraceDistance - CapsuleHalfHeight);
 
@@ -260,8 +262,9 @@ void UBSCharacterMovementComponent::OnRegister()
 	}
 }
 
-void UBSCharacterMovementComponent::TickComponent(float DeltaTime, ELevelTick TickType,
-	FActorComponentTickFunction* ThisTickFunction)
+void UBSCharacterMovementComponent::TickComponent(float DeltaTime,
+                                                  ELevelTick TickType,
+                                                  FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
@@ -279,10 +282,18 @@ void UBSCharacterMovementComponent::TickComponent(float DeltaTime, ELevelTick Ti
 
 	if (bShowPos || CVarShowPos.GetValueOnGameThread() != 0)
 	{
-		GEngine->AddOnScreenDebugMessage(1, 1.0f, FColor::Green,
-			FString::Printf(TEXT("pos: %s"), *UpdatedComponent->GetComponentLocation().ToCompactString()));
-		GEngine->AddOnScreenDebugMessage(2, 1.0f, FColor::Green,
-			FString::Printf(TEXT("ang: %s"), *CharacterOwner->GetControlRotation().ToCompactString()));
+		GEngine->AddOnScreenDebugMessage(1,
+		                                 1.0f,
+		                                 FColor::Green,
+		                                 FString::Printf(
+			                                 TEXT("pos: %s"),
+			                                 *UpdatedComponent->GetComponentLocation().ToCompactString()));
+		GEngine->AddOnScreenDebugMessage(2,
+		                                 1.0f,
+		                                 FColor::Green,
+		                                 FString::Printf(
+			                                 TEXT("ang: %s"),
+			                                 *CharacterOwner->GetControlRotation().ToCompactString()));
 		GEngine->AddOnScreenDebugMessage(3, 1.0f, FColor::Green, FString::Printf(TEXT("vel: %f"), Velocity.Size()));
 	}
 
@@ -316,13 +327,15 @@ void UBSCharacterMovementComponent::TickComponent(float DeltaTime, ELevelTick Ti
 	bCrouchFrameTolerated = IsCrouching();
 }
 
-void UBSCharacterMovementComponent::CalcVelocity(float DeltaTime, float Friction, bool bFluid,
-	float BrakingDeceleration)
+void UBSCharacterMovementComponent::CalcVelocity(float DeltaTime,
+                                                 float Friction,
+                                                 bool bFluid,
+                                                 float BrakingDeceleration)
 {
 	// Do not update velocity when using root motion or when SimulatedProxy and not simulating root motion;
 	// SimulatedProxy are repped their Velocity
 	if (!HasValidData() || HasAnimRootMotion() || DeltaTime < MIN_TICK_TIME || (CharacterOwner && CharacterOwner->
-		GetLocalRole() == ROLE_SimulatedProxy && !bWasSimulatingRootMotion))
+		    GetLocalRole() == ROLE_SimulatedProxy && !bWasSimulatingRootMotion))
 	{
 		return;
 	}
@@ -342,8 +355,8 @@ void UBSCharacterMovementComponent::CalcVelocity(float DeltaTime, float Friction
 		else
 		{
 			Acceleration = MaxAccel * (Velocity.SizeSquared() < SMALL_NUMBER
-				? UpdatedComponent->GetForwardVector()
-				: Velocity.GetSafeNormal());
+			                           ? UpdatedComponent->GetForwardVector()
+			                           : Velocity.GetSafeNormal());
 		}
 
 		AnalogInputModifier = 1.0f;
@@ -362,7 +375,7 @@ void UBSCharacterMovementComponent::CalcVelocity(float DeltaTime, float Friction
 		const FVector OldVelocity = Velocity;
 
 		const float ActualBrakingFriction = (bUseSeparateBrakingFriction ? BrakingFriction : Friction) *
-			LocalSurfaceFriction;
+		                                    LocalSurfaceFriction;
 
 		// Apply quicker stopping when on ground
 		if (bZeroAcceleration)
@@ -377,7 +390,7 @@ void UBSCharacterMovementComponent::CalcVelocity(float DeltaTime, float Friction
 
 		// Don't allow braking to lower us below max speed if we started above it.
 		if (bVelocityOverMax && Velocity.SizeSquared() < FMath::Square(MaxSpeed) && FVector::DotProduct(Acceleration,
-			OldVelocity) > 0.0f)
+			    OldVelocity) > 0.0f)
 		{
 			Velocity = OldVelocity.GetSafeNormal() * MaxSpeed;
 		}
@@ -411,7 +424,8 @@ void UBSCharacterMovementComponent::CalcVelocity(float DeltaTime, float Friction
 			const auto Dir = UnitAcceleration.CosineAngle2D(LookVec);
 			const auto NoClipAccelClamp = BSCharacter->IsSprinting() ? 2.0f * MaxAcceleration : MaxAcceleration;
 			Velocity = (Dir * LookVec * PerpendicularAccel.Size2D() + TangentialAccel).GetClampedToSize(
-				NoClipAccelClamp, NoClipAccelClamp);
+				NoClipAccelClamp,
+				NoClipAccelClamp);
 		}
 	}
 	// ladder movement
@@ -431,13 +445,13 @@ void UBSCharacterMovementComponent::CalcVelocity(float DeltaTime, float Friction
 			const float Veer = Velocity.X * AccelDir.X + Velocity.Y * AccelDir.Y;
 			// Get add speed with air speed cap
 			const float AddSpeed = (bIsGroundMove ? Acceleration : Acceleration.GetClampedToMaxSize2D(AirSpeedCap)).
-				Size2D() - Veer;
+			                       Size2D() - Veer;
 			if (AddSpeed > 0.0f)
 			{
 				// Apply acceleration
 				const float AccelerationMultiplier = bIsGroundMove
-					? GroundAccelerationMultiplier
-					: AirAccelerationMultiplier;
+				                                     ? GroundAccelerationMultiplier
+				                                     : AirAccelerationMultiplier;
 				FVector CurrentAcceleration = Acceleration * AccelerationMultiplier * LocalSurfaceFriction * DeltaTime;
 				CurrentAcceleration = CurrentAcceleration.GetClampedToMaxSize2D(AddSpeed);
 				Velocity += CurrentAcceleration;
@@ -506,8 +520,8 @@ void UBSCharacterMovementComponent::ApplyVelocityBraking(float DeltaTime, float 
 	{
 		// Zero friction uses constant deceleration, so no need for iteration.
 		const float dt = ((RemainingTime > MaxTimeStep && !bZeroFriction)
-			? FMath::Min(MaxTimeStep, RemainingTime * 0.5f)
-			: RemainingTime);
+		                  ? FMath::Min(MaxTimeStep, RemainingTime * 0.5f)
+		                  : RemainingTime);
 		RemainingTime -= dt;
 
 		// apply friction and braking
@@ -649,7 +663,7 @@ void UBSCharacterMovementComponent::PhysFalling(float deltaTime, int32 Iteration
 			// Account for that here with a more correct change in position.
 			const float NonGravityTime = FMath::Max(0.f, timeTick - GravityTime);
 			Adjusted = (OldVelocityWithRootMotion * NonGravityTime) + (0.5f * (OldVelocityWithRootMotion + Velocity) *
-				GravityTime);
+			                                                           GravityTime);
 		}
 
 		// Move
@@ -724,8 +738,10 @@ void UBSCharacterMovementComponent::PhysFalling(float deltaTime, int32 Iteration
 
 				constexpr bool bCheckLandingSpot = false; // we already checked above.
 				AirControlAccel = (Velocity - VelocityNoAirControl) / timeTick;
-				const FVector AirControlDeltaV = LimitAirControl(LastMoveTimeSlice, AirControlAccel, Hit,
-					bCheckLandingSpot) * LastMoveTimeSlice;
+				const FVector AirControlDeltaV = LimitAirControl(LastMoveTimeSlice,
+				                                                 AirControlAccel,
+				                                                 Hit,
+				                                                 bCheckLandingSpot) * LastMoveTimeSlice;
 				Adjusted = (VelocityNoAirControl + AirControlDeltaV) * LastMoveTimeSlice;
 			}
 
@@ -740,8 +756,8 @@ void UBSCharacterMovementComponent::PhysFalling(float deltaTime, int32 Iteration
 			{
 				const FVector NewVelocity = (DeltaStep / subTimeTickRemaining);
 				Velocity = HasAnimRootMotion() || CurrentRootMotion.HasOverrideVelocityWithIgnoreZAccumulate()
-					? FVector(Velocity.X, Velocity.Y, NewVelocity.Z)
-					: NewVelocity;
+				           ? FVector(Velocity.X, Velocity.Y, NewVelocity.Z)
+				           : NewVelocity;
 			}
 
 			if (subTimeTickRemaining > KINDA_SMALL_NUMBER && (Delta | Adjusted) > 0.f)
@@ -783,8 +799,10 @@ void UBSCharacterMovementComponent::PhysFalling(float deltaTime, int32 Iteration
 					if (bHasLimitedAirControl)
 					{
 						constexpr bool bCheckLandingSpot = false; // we already checked above.
-						const FVector AirControlDeltaV = LimitAirControl(subTimeTickRemaining, AirControlAccel, Hit,
-							bCheckLandingSpot) * subTimeTickRemaining;
+						const FVector AirControlDeltaV = LimitAirControl(subTimeTickRemaining,
+						                                                 AirControlAccel,
+						                                                 Hit,
+						                                                 bCheckLandingSpot) * subTimeTickRemaining;
 
 						// Only allow if not back in to first wall
 						if (FVector::DotProduct(AirControlDeltaV, OldHitNormal) > 0.f)
@@ -798,13 +816,14 @@ void UBSCharacterMovementComponent::PhysFalling(float deltaTime, int32 Iteration
 					{
 						const FVector NewVelocity = (Delta / subTimeTickRemaining);
 						Velocity = HasAnimRootMotion() || CurrentRootMotion.HasOverrideVelocityWithIgnoreZAccumulate()
-							? FVector(Velocity.X, Velocity.Y, NewVelocity.Z)
-							: NewVelocity;
+						           ? FVector(Velocity.X, Velocity.Y, NewVelocity.Z)
+						           : NewVelocity;
 					}
 
 					// bDitch=true means that pawn is straddling two slopes, neither of which he can stand on
-					bool bDitch = ((OldHitImpactNormal.Z > 0.f) && (Hit.ImpactNormal.Z > 0.f) && (FMath::Abs(Delta.Z) <=
-						KINDA_SMALL_NUMBER) && ((Hit.ImpactNormal | OldHitImpactNormal) < 0.f));
+					bool bDitch = ((OldHitImpactNormal.Z > 0.f) && (Hit.ImpactNormal.Z > 0.f) && (
+						               FMath::Abs(Delta.Z) <= KINDA_SMALL_NUMBER) && (
+						               (Hit.ImpactNormal | OldHitImpactNormal) < 0.f));
 					SafeMoveUpdatedComponent(Delta, PawnRotation, true, Hit);
 					if (Hit.Time == 0.f)
 					{
@@ -824,7 +843,7 @@ void UBSCharacterMovementComponent::PhysFalling(float deltaTime, int32 Iteration
 						return;
 					}
 					if (GetPerchRadiusThreshold() > 0.f && Hit.Time == 1.f && OldHitImpactNormal.Z >=
-						GetWalkableFloorZ())
+					    GetWalkableFloorZ())
 					{
 						// We might be in a virtual 'ditch' within our perch radius. This is rare.
 						const FVector PawnLocation = UpdatedComponent->GetComponentLocation();
@@ -857,8 +876,9 @@ bool UBSCharacterMovementComponent::ShouldLimitAirControl(float DeltaTime, const
 	return false;
 }
 
-FVector UBSCharacterMovementComponent::NewFallVelocity(const FVector& InitialVelocity, const FVector& Gravity,
-	float DeltaTime) const
+FVector UBSCharacterMovementComponent::NewFallVelocity(const FVector& InitialVelocity,
+                                                       const FVector& Gravity,
+                                                       float DeltaTime) const
 {
 	//return Super::NewFallVelocity(InitialVelocity, Gravity, DeltaTime);
 	FVector FallVel = Super::NewFallVelocity(InitialVelocity, Gravity, DeltaTime);
@@ -891,7 +911,7 @@ void UBSCharacterMovementComponent::UpdateSurfaceFriction(bool bIsSliding)
 	else
 	{
 		const bool bPlayerControlsMovedVertically = bOnLadder || Velocity.Z > JumpVelocity || Velocity.Z <= 0.0f ||
-			bCheatFlying;
+		                                            bCheatFlying;
 		if (bPlayerControlsMovedVertically)
 		{
 			LocalSurfaceFriction = 1.0f;
@@ -1001,7 +1021,7 @@ void UBSCharacterMovementComponent::DoCrouchResize(float TargetTime, float Delta
 	{
 		// restore collision size before crouching
 		CharacterCapsule->SetCapsuleSize(DefaultCharacter->GetCapsuleComponent()->GetUnscaledCapsuleRadius(),
-			DefaultCharacter->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight());
+		                                 DefaultCharacter->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight());
 		bShrinkProxyCapsule = true;
 	}
 
@@ -1048,25 +1068,33 @@ void UBSCharacterMovementComponent::DoCrouchResize(float TargetTime, float Delta
 			// plane constraint would prevent the base of the capsule from
 			// staying at the same spot.
 			UpdatedComponent->MoveComponent(FVector(0.0f, 0.0f, -ScaledHalfHeightAdjust),
-				UpdatedComponent->GetComponentQuat(), true, nullptr, MOVECOMP_NoFlags, ETeleportType::TeleportPhysics);
+			                                UpdatedComponent->GetComponentQuat(),
+			                                true,
+			                                nullptr,
+			                                MOVECOMP_NoFlags,
+			                                ETeleportType::TeleportPhysics);
 		}
 		else
 		{
 			UpdatedComponent->MoveComponent(FVector(0.0f, 0.0f, ScaledHalfHeightAdjust),
-				UpdatedComponent->GetComponentQuat(), true, nullptr, MOVECOMP_NoFlags, ETeleportType::None);
+			                                UpdatedComponent->GetComponentQuat(),
+			                                true,
+			                                nullptr,
+			                                MOVECOMP_NoFlags,
+			                                ETeleportType::None);
 		}
 	}
 
 	bForceNextFloorCheck = true;
 
 	const float MeshAdjust = DefaultCharacter->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight() -
-		ClampedCrouchedHalfHeight;
+	                         ClampedCrouchedHalfHeight;
 	AdjustProxyCapsuleSize();
 	CharacterOwner->OnStartCrouch(MeshAdjust, MeshAdjust * ComponentScale);
 
 	// Don't smooth this change in mesh position
 	if ((bClientSimulation && CharacterOwner->GetLocalRole() == ROLE_SimulatedProxy) || (IsNetMode(NM_ListenServer) &&
-		CharacterOwner->GetRemoteRole() == ROLE_AutonomousProxy))
+		    CharacterOwner->GetRemoteRole() == ROLE_AutonomousProxy))
 	{
 		FNetworkPredictionData_Client_Character* ClientData = GetPredictionData_Client_Character();
 		if (ClientData)
@@ -1093,7 +1121,7 @@ void UBSCharacterMovementComponent::DoUnCrouchResize(float TargetTime, float Del
 
 	// See if collision is already at desired size.
 	if (FMath::IsNearlyEqual(CharacterCapsule->GetUnscaledCapsuleHalfHeight(),
-		DefaultCharacter->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight()))
+	                         DefaultCharacter->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight()))
 	{
 		if (!bClientSimulation)
 		{
@@ -1135,17 +1163,23 @@ void UBSCharacterMovementComponent::DoUnCrouchResize(float TargetTime, float Del
 
 			// Check how much we have left to go (with some wiggle room to still allow for partial un-crouches in some areas)
 			const float HalfHeightAdjust = ComponentScale * (UnCrouchedHeight - OldUnscaledHalfHeight) *
-				GroundUnCrouchCheckFactor;
+			                               GroundUnCrouchCheckFactor;
 
 			// Compensate for the difference between current capsule size and standing size
 			// Shrink by negative amount, so actually grow it.
 			const FCollisionShape StandingCapsuleShape = GetPawnCapsuleCollisionShape(SHRINK_HeightCustom,
 				-SweepInflation - HalfHeightAdjust);
 			const ECollisionChannel CollisionChannel = UpdatedComponent->GetCollisionObjectType();
-			FVector StandingLocation = PawnLocation + FVector(0.0f, 0.0f,
-				StandingCapsuleShape.GetCapsuleHalfHeight() - CurrentCrouchedHalfHeight);
-			bool bEncroached = MyWorld->OverlapBlockingTestByChannel(StandingLocation, FQuat::Identity,
-				CollisionChannel, StandingCapsuleShape, CapsuleParams, ResponseParam);
+			FVector StandingLocation = PawnLocation + FVector(0.0f,
+			                                                  0.0f,
+			                                                  StandingCapsuleShape.GetCapsuleHalfHeight() -
+			                                                  CurrentCrouchedHalfHeight);
+			bool bEncroached = MyWorld->OverlapBlockingTestByChannel(StandingLocation,
+			                                                         FQuat::Identity,
+			                                                         CollisionChannel,
+			                                                         StandingCapsuleShape,
+			                                                         CapsuleParams,
+			                                                         ResponseParam);
 			if (bEncroached)
 			{
 				// We're blocked from doing a full uncrouch, so don't attempt for now
@@ -1188,8 +1222,12 @@ void UBSCharacterMovementComponent::DoUnCrouchResize(float TargetTime, float Del
 		if (!bCrouchMaintainsBaseLocation)
 		{
 			// Expand in place
-			bEncroached = MyWorld->OverlapBlockingTestByChannel(PawnLocation, FQuat::Identity, CollisionChannel,
-				StandingCapsuleShape, CapsuleParams, ResponseParam);
+			bEncroached = MyWorld->OverlapBlockingTestByChannel(PawnLocation,
+			                                                    FQuat::Identity,
+			                                                    CollisionChannel,
+			                                                    StandingCapsuleShape,
+			                                                    CapsuleParams,
+			                                                    ResponseParam);
 
 			if (bEncroached)
 			{
@@ -1217,19 +1255,29 @@ void UBSCharacterMovementComponent::DoUnCrouchResize(float TargetTime, float Del
 						// Compute where the base of the sweep ended up, and see
 						// if we can stand there
 						const float DistanceToBase = (Hit.Time * TraceDist) + ShortCapsuleShape.Capsule.HalfHeight;
-						const FVector NewLoc = FVector(PawnLocation.X, PawnLocation.Y,
-							PawnLocation.Z - DistanceToBase + StandingCapsuleShape.Capsule.HalfHeight + SweepInflation +
-							MIN_FLOOR_DIST / 2.0f);
-						bEncroached = MyWorld->OverlapBlockingTestByChannel(NewLoc, FQuat::Identity, CollisionChannel,
-							StandingCapsuleShape, CapsuleParams, ResponseParam);
+						const FVector NewLoc = FVector(PawnLocation.X,
+						                               PawnLocation.Y,
+						                               PawnLocation.Z - DistanceToBase + StandingCapsuleShape.Capsule.
+						                               HalfHeight + SweepInflation + MIN_FLOOR_DIST / 2.0f);
+						bEncroached = MyWorld->OverlapBlockingTestByChannel(
+							NewLoc,
+							FQuat::Identity,
+							CollisionChannel,
+							StandingCapsuleShape,
+							CapsuleParams,
+							ResponseParam);
 						if (!bEncroached)
 						{
 							// Intentionally not using MoveUpdatedComponent,
 							// where a horizontal plane constraint would prevent
 							// the base of the capsule from staying at the same
 							// spot.
-							UpdatedComponent->MoveComponent(NewLoc - PawnLocation, UpdatedComponent->GetComponentQuat(),
-								false, nullptr, MOVECOMP_NoFlags, ETeleportType::TeleportPhysics);
+							UpdatedComponent->MoveComponent(NewLoc - PawnLocation,
+							                                UpdatedComponent->GetComponentQuat(),
+							                                false,
+							                                nullptr,
+							                                MOVECOMP_NoFlags,
+							                                ETeleportType::TeleportPhysics);
 						}
 					}
 				}
@@ -1238,10 +1286,16 @@ void UBSCharacterMovementComponent::DoUnCrouchResize(float TargetTime, float Del
 		else
 		{
 			// Expand while keeping base location the same.
-			FVector StandingLocation = PawnLocation + FVector(0.0f, 0.0f,
-				StandingCapsuleShape.GetCapsuleHalfHeight() - CurrentCrouchedHalfHeight);
-			bEncroached = MyWorld->OverlapBlockingTestByChannel(StandingLocation, FQuat::Identity, CollisionChannel,
-				StandingCapsuleShape, CapsuleParams, ResponseParam);
+			FVector StandingLocation = PawnLocation + FVector(0.0f,
+			                                                  0.0f,
+			                                                  StandingCapsuleShape.GetCapsuleHalfHeight() -
+			                                                  CurrentCrouchedHalfHeight);
+			bEncroached = MyWorld->OverlapBlockingTestByChannel(StandingLocation,
+			                                                    FQuat::Identity,
+			                                                    CollisionChannel,
+			                                                    StandingCapsuleShape,
+			                                                    CapsuleParams,
+			                                                    ResponseParam);
 
 			if (bEncroached)
 			{
@@ -1253,8 +1307,13 @@ void UBSCharacterMovementComponent::DoUnCrouchResize(float TargetTime, float Del
 					if (CurrentFloor.bBlockingHit && CurrentFloor.FloorDist > MinFloorDist)
 					{
 						StandingLocation.Z -= CurrentFloor.FloorDist - MinFloorDist;
-						bEncroached = MyWorld->OverlapBlockingTestByChannel(StandingLocation, FQuat::Identity,
-							CollisionChannel, StandingCapsuleShape, CapsuleParams, ResponseParam);
+						bEncroached = MyWorld->OverlapBlockingTestByChannel(
+							StandingLocation,
+							FQuat::Identity,
+							CollisionChannel,
+							StandingCapsuleShape,
+							CapsuleParams,
+							ResponseParam);
 					}
 				}
 			}
@@ -1262,8 +1321,12 @@ void UBSCharacterMovementComponent::DoUnCrouchResize(float TargetTime, float Del
 			if (!bEncroached)
 			{
 				// Commit the change in location.
-				UpdatedComponent->MoveComponent(StandingLocation - PawnLocation, UpdatedComponent->GetComponentQuat(),
-					false, nullptr, MOVECOMP_NoFlags, ETeleportType::TeleportPhysics);
+				UpdatedComponent->MoveComponent(StandingLocation - PawnLocation,
+				                                UpdatedComponent->GetComponentQuat(),
+				                                false,
+				                                nullptr,
+				                                MOVECOMP_NoFlags,
+				                                ETeleportType::TeleportPhysics);
 				bForceNextFloorCheck = true;
 			}
 		}
@@ -1284,8 +1347,9 @@ void UBSCharacterMovementComponent::DoUnCrouchResize(float TargetTime, float Del
 	const float NewHalfHeight = OldUnscaledHalfHeight + HalfHeightAdjust;
 
 	// Now call SetCapsuleSize() to cause touch/un-touch events and actually grow the capsule
-	CharacterCapsule->SetCapsuleSize(DefaultCharacter->GetCapsuleComponent()->GetUnscaledCapsuleRadius(), NewHalfHeight,
-		true);
+	CharacterCapsule->SetCapsuleSize(DefaultCharacter->GetCapsuleComponent()->GetUnscaledCapsuleRadius(),
+	                                 NewHalfHeight,
+	                                 true);
 
 	// OnEndCrouch takes the change from the Default size, not the current one
 	const float MeshAdjust = DefaultCharacter->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight() - NewHalfHeight;
@@ -1297,7 +1361,7 @@ void UBSCharacterMovementComponent::DoUnCrouchResize(float TargetTime, float Del
 
 	// Don't smooth this change in mesh position
 	if ((bClientSimulation && CharacterOwner->GetLocalRole() == ROLE_SimulatedProxy) || (IsNetMode(NM_ListenServer) &&
-		CharacterOwner->GetRemoteRole() == ROLE_AutonomousProxy))
+		    CharacterOwner->GetRemoteRole() == ROLE_AutonomousProxy))
 	{
 		FNetworkPredictionData_Client_Character* ClientData = GetPredictionData_Client_Character();
 		if (ClientData)
@@ -1308,8 +1372,11 @@ void UBSCharacterMovementComponent::DoUnCrouchResize(float TargetTime, float Del
 	}
 }
 
-bool UBSCharacterMovementComponent::MoveUpdatedComponentImpl(const FVector& Delta, const FQuat& NewRotation,
-	bool bSweep, FHitResult* OutHit, ETeleportType Teleport)
+bool UBSCharacterMovementComponent::MoveUpdatedComponentImpl(const FVector& Delta,
+                                                             const FQuat& NewRotation,
+                                                             bool bSweep,
+                                                             FHitResult* OutHit,
+                                                             ETeleportType Teleport)
 {
 	FVector NewDelta = Delta;
 	if (bSweep && Teleport == ETeleportType::None && Delta != FVector::ZeroVector && IsFalling() && Delta.Z > 0.0f)
@@ -1329,8 +1396,13 @@ bool UBSCharacterMovementComponent::MoveUpdatedComponentImpl(const FVector& Delt
 			InitCollisionParams(QueryParams, ResponseParam);
 			const ECollisionChannel CollisionChannel = UpdatedComponent->GetCollisionObjectType();
 			FHitResult Hit(1.f);
-			const bool bBlockingHit = GetWorld()->LineTraceSingleByChannel(Hit, LineTraceStart,
-				LineTraceStart + DeltaDir, CollisionChannel, QueryParams, ResponseParam);
+			const bool bBlockingHit = GetWorld()->LineTraceSingleByChannel(
+				Hit,
+				LineTraceStart,
+				LineTraceStart + DeltaDir,
+				CollisionChannel,
+				QueryParams,
+				ResponseParam);
 			if (bBlockingHit && FMath::Abs(Hit.ImpactNormal.Z) <= VerticalSlopeNormalZ)
 			{
 				//  Blocked horizontally by box
@@ -1385,8 +1457,11 @@ bool UBSCharacterMovementComponent::DoJump(bool bClientSimulation)
 	return false;
 }
 
-FVector UBSCharacterMovementComponent::HandleSlopeBoosting(const FVector& SlideResult, const FVector& Delta,
-	const float Time, const FVector& Normal, const FHitResult& Hit) const
+FVector UBSCharacterMovementComponent::HandleSlopeBoosting(const FVector& SlideResult,
+                                                           const FVector& Delta,
+                                                           const float Time,
+                                                           const FVector& Normal,
+                                                           const FHitResult& Hit) const
 {
 	//return Super::HandleSlopeBoosting(SlideResult, Delta, Time, Normal, Hit);
 	if (bOnLadder || bCheatFlying)
@@ -1470,7 +1545,7 @@ bool UBSCharacterMovementComponent::IsValidLandingSpot(const FVector& CapsuleLoc
 			// Reject hits that are above our box
 			const float LowerHemisphereZ = Hit.Location.Z - PawnHalfHeight + MAX_FLOOR_DIST;
 			if ((Hit.ImpactNormal.Z < GetWalkableFloorZ() || Hit.ImpactNormal.Z == 1.0f) && Hit.ImpactPoint.Z >
-				LowerHemisphereZ)
+			    LowerHemisphereZ)
 			{
 				return false;
 			}
@@ -1525,8 +1600,9 @@ bool UBSCharacterMovementComponent::IsValidLandingSpot(const FVector& CapsuleLoc
 	return true;
 }
 
-bool UBSCharacterMovementComponent::ShouldCheckForValidLandingSpot(float DeltaTime, const FVector& Delta,
-	const FHitResult& Hit) const
+bool UBSCharacterMovementComponent::ShouldCheckForValidLandingSpot(float DeltaTime,
+                                                                   const FVector& Delta,
+                                                                   const FHitResult& Hit) const
 {
 	// TODO: check for flat base valid landing spots? at the moment this check is too generous for the capsule hemisphere
 	return !bUseFlatBaseForFloorChecks && Super::ShouldCheckForValidLandingSpot(DeltaTime, Delta, Hit);
@@ -1585,10 +1661,16 @@ void UBSCharacterMovementComponent::ToggleNoClip()
 	SetNoClip(!bCheatFlying);
 }
 
-void UBSCharacterMovementComponent::PlayMovementSound_Implementation(const FName Bone, const FGameplayTag MotionEffect,
-	USceneComponent* StaticMeshComponent, const FVector LocationOffset, const FRotator RotationOffset,
-	const UAnimSequenceBase* AnimationSequence, const FHitResult HitResult, FGameplayTagContainer Context,
-	float AudioVolume, float AudioPitch)
+void UBSCharacterMovementComponent::PlayMovementSound_Implementation(const FName Bone,
+                                                                     const FGameplayTag MotionEffect,
+                                                                     USceneComponent* StaticMeshComponent,
+                                                                     const FVector LocationOffset,
+                                                                     const FRotator RotationOffset,
+                                                                     const UAnimSequenceBase* AnimationSequence,
+                                                                     const FHitResult HitResult,
+                                                                     FGameplayTagContainer Context,
+                                                                     float AudioVolume,
+                                                                     float AudioPitch)
 {
 	if (HitResult.PhysMaterial.IsValid())
 	{
@@ -1607,9 +1689,19 @@ void UBSCharacterMovementComponent::PlayMovementSound_Implementation(const FName
 			MovementSounds->GetFootstepSounds(MotionEffect, Context, Sounds);
 			for (const TObjectPtr<USoundBase>& Sound : Sounds)
 			{
-				UGameplayStatics::SpawnSoundAttached(Sound.Get(), StaticMeshComponent, Bone, LocationOffset,
-					RotationOffset, EAttachLocation::KeepRelativeOffset, false, AudioVolume, AudioPitch, 0.0f, nullptr,
-					nullptr, true);
+				UGameplayStatics::SpawnSoundAttached(Sound.Get(),
+				                                     StaticMeshComponent,
+				                                     Bone,
+				                                     LocationOffset,
+				                                     RotationOffset,
+				                                     EAttachLocation::KeepRelativeOffset,
+				                                     false,
+				                                     AudioVolume,
+				                                     AudioPitch,
+				                                     0.0f,
+				                                     nullptr,
+				                                     nullptr,
+				                                     true);
 			}
 		}
 	}

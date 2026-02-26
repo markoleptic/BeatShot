@@ -36,8 +36,12 @@ struct FSteamStat
 	float FloatAvgDenominator;
 	TSet<EBaseGameMode> BaseGameModes;
 
-	FSteamStat(): APIName(nullptr), StatType(Stat_Int), IntValue(0), FloatValue(0), FloatAvgNumerator(0),
-	              FloatAvgDenominator(0)
+	FSteamStat() : APIName(nullptr),
+	               StatType(Stat_Int),
+	               IntValue(0),
+	               FloatValue(0),
+	               FloatAvgNumerator(0),
+	               FloatAvgDenominator(0)
 	{
 	}
 
@@ -72,7 +76,7 @@ struct FSteamAchievement
 	FSteamStat* ProgressStat;
 	bool bAchieved;
 
-	FSteamAchievement(): APIName(nullptr), ProgressStat(nullptr), bAchieved(false)
+	FSteamAchievement() : APIName(nullptr), ProgressStat(nullptr), bAchieved(false)
 	{
 	}
 
@@ -104,7 +108,7 @@ struct FOnAuthTicketForWebApiResponseCallbackHandler
 	EResult Result;
 	FString Ticket;
 
-	FOnAuthTicketForWebApiResponseCallbackHandler(): Handle(0), Result(k_EResultFail)
+	FOnAuthTicketForWebApiResponseCallbackHandler() : Handle(0), Result(k_EResultFail)
 	{
 	}
 };
@@ -141,8 +145,10 @@ private:
 	/** Delegate registered with Steam to trigger when a user activates the Steam Overlay. */
 	STEAM_CALLBACK_MANUAL(USteamManager, OnSteamOverlayActive, GameOverlayActivated_t, OnSteamOverlayActiveDelegate);
 	/** Delegate registered with Steam to trigger when a response is received from GetAuthTicketForWebApi. */
-	STEAM_CALLBACK_MANUAL(USteamManager, OnAuthTicketForWebApiResponse, GetTicketForWebApiResponse_t,
-		OnAuthTicketForWebApiResponseDelegate);
+	STEAM_CALLBACK_MANUAL(USteamManager,
+	                      OnAuthTicketForWebApiResponse,
+	                      GetTicketForWebApiResponse_t,
+	                      OnAuthTicketForWebApiResponseDelegate);
 	/** Delegate registered with Steam to trigger anytime RequestStats() is called. */
 	STEAM_CALLBACK_MANUAL(USteamManager, OnUserStatsReceived, UserStatsReceived_t, OnUserStatsReceivedDelegate);
 	/** Delegate registered with Steam to trigger anytime you attempt to store stats on Steam. */

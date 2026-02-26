@@ -10,8 +10,12 @@
 #include "Utilities/ComboBox/BSComboBoxEntry.h"
 #include "Utilities/ComboBox/BSComboBoxString.h"
 
-float IBSWidgetInterface::OnEditableTextBoxChanged(const FText& NewTextValue, UEditableTextBox* TextBoxToChange,
-	USlider* SliderToChange, const float GridSnapSize, const float Min, const float Max)
+float IBSWidgetInterface::OnEditableTextBoxChanged(const FText& NewTextValue,
+                                                   UEditableTextBox* TextBoxToChange,
+                                                   USlider* SliderToChange,
+                                                   const float GridSnapSize,
+                                                   const float Min,
+                                                   const float Max)
 {
 	const FString StringTextValue = UKismetStringLibrary::Replace(NewTextValue.ToString(), ",", "");
 	const float ClampedValue = FMath::Clamp(FCString::Atof(*StringTextValue), Min, Max);
@@ -21,16 +25,21 @@ float IBSWidgetInterface::OnEditableTextBoxChanged(const FText& NewTextValue, UE
 	return SnappedValue;
 }
 
-float IBSWidgetInterface::OnSliderChanged(const float NewValue, UEditableTextBox* TextBoxToChange,
-	const float GridSnapSize)
+float IBSWidgetInterface::OnSliderChanged(const float NewValue,
+                                          UEditableTextBox* TextBoxToChange,
+                                          const float GridSnapSize)
 {
 	const float ReturnValue = FMath::GridSnap(NewValue, GridSnapSize);
 	TextBoxToChange->SetText(FText::AsNumber(ReturnValue));
 	return ReturnValue;
 }
 
-void IBSWidgetInterface::SetSliderAndEditableTextBoxValues(const float NewValue, UEditableTextBox* TextBoxToChange,
-	USlider* SliderToChange, const float GridSnapSize, const float Min, const float Max)
+void IBSWidgetInterface::SetSliderAndEditableTextBoxValues(const float NewValue,
+                                                           UEditableTextBox* TextBoxToChange,
+                                                           USlider* SliderToChange,
+                                                           const float GridSnapSize,
+                                                           const float Min,
+                                                           const float Max)
 {
 	const float ClampedValue = FMath::Clamp(NewValue, Min, Max);
 	const float SnappedValue = FMath::GridSnap(ClampedValue, GridSnapSize);
@@ -57,7 +66,7 @@ UWidget* IBSWidgetInterface::OnGenerateWidgetEvent(const UBSComboBoxString* Comb
 }
 
 UWidget* IBSWidgetInterface::OnSelectionChanged_GenerateMultiSelectionItem(const UBSComboBoxString* ComboBoxString,
-	const TArray<FString>& SelectedOptions)
+                                                                           const TArray<FString>& SelectedOptions)
 {
 	FString EntryString = FString();
 
@@ -97,7 +106,7 @@ UWidget* IBSWidgetInterface::OnSelectionChanged_GenerateMultiSelectionItem(const
 }
 
 FString IBSWidgetInterface::GetStringTableKeyFromComboBox(const UBSComboBoxString* ComboBoxString,
-	const FString& EnumString)
+                                                          const FString& EnumString)
 {
 	return FString();
 }

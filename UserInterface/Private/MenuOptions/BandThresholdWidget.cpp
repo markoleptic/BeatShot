@@ -10,8 +10,9 @@ void UBandThresholdWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 	OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged_Threshold);
-	SetValues(Constants::MinValue_BandFrequencyThreshold, Constants::MaxValue_BandFrequencyThreshold,
-		Constants::SnapSize_BandFrequencyThreshold);
+	SetValues(Constants::MinValue_BandFrequencyThreshold,
+	          Constants::MaxValue_BandFrequencyThreshold,
+	          Constants::SnapSize_BandFrequencyThreshold);
 	SetShowTooltipIcon(false);
 }
 
@@ -19,14 +20,15 @@ void UBandThresholdWidget::SetDefaultValue(const float Value, const int32 Channe
 {
 	SetValue(Value);
 	const TArray ChannelNumber = {
-		IBSWidgetInterface::GetWidgetTextFromKey("AA_BandChannelText"), FText::AsNumber(ChannelIndex + 1)
+		IBSWidgetInterface::GetWidgetTextFromKey("AA_BandChannelText"),
+		FText::AsNumber(ChannelIndex + 1)
 	};
 	TextBlock_Description->SetText(FText::Join(FText::FromString(" "), ChannelNumber));
 	Index = ChannelIndex;
 }
 
 void UBandThresholdWidget::OnSliderTextBoxValueChanged_Threshold(USingleRangeInputWidget* SliderTextBoxOptionWidget,
-	const float Value)
+                                                                 const float Value)
 {
 	if (!OnThresholdValueCommitted.ExecuteIfBound(this, Index, Value))
 	{

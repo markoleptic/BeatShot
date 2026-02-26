@@ -97,13 +97,16 @@ protected:
 
 	/** Updates the Min and Max slider and editable text box values if different from Min and Max. Also updates the
 	 *  checked state. */
-	static bool UpdateValuesIfDifferent(const UDualRangeInputWidget* Widget, const bool bIsChecked, const float Min,
-		const float Max);
+	static bool UpdateValuesIfDifferent(const UDualRangeInputWidget* Widget,
+	                                    const bool bIsChecked,
+	                                    const float Min,
+	                                    const float Max);
 
 	/** Updates the slider and editable text box values if different from Value,
 	 *  but only if the checkbox is unchecked. */
-	static bool UpdateValuesIfDifferent(const UToggleableSingleRangeInputWidget* Widget, const bool bIsChecked,
-		const float Value);
+	static bool UpdateValuesIfDifferent(const UToggleableSingleRangeInputWidget* Widget,
+	                                    const bool bIsChecked,
+	                                    const float Value);
 
 	/** Shared pointer to the game mode config inside GameModesWidget. */
 	TSharedPtr<FBSConfig> BSConfig;

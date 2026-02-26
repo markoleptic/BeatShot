@@ -44,10 +44,11 @@ void UAudioSelectWidget::NativeConstruct()
 	Value_Seconds->OnTextCommitted.AddUniqueDynamic(this, &UAudioSelectWidget::OnValueChanged_Seconds);
 	Value_Minutes->OnTextCommitted.AddUniqueDynamic(this, &UAudioSelectWidget::OnValueChanged_Minutes);
 	ComboBox_InAudioDevices->OnSelectionChanged.AddUniqueDynamic(this,
-		&UAudioSelectWidget::OnSelectionChanged_InAudioDevice);
+	                                                             &UAudioSelectWidget::OnSelectionChanged_InAudioDevice);
 	ComboBox_SongTitle->OnSelectionChanged.AddUniqueDynamic(this, &UAudioSelectWidget::OnSelectionChanged_SongTitle);
 	Checkbox_PlaybackAudio->OnCheckStateChanged.AddUniqueDynamic(this,
-		&UAudioSelectWidget::OnCheckStateChanged_PlaybackAudio);
+	                                                             &UAudioSelectWidget::
+	                                                             OnCheckStateChanged_PlaybackAudio);
 
 	SetupTooltip(QMark_PlaybackAudio, GetTooltipTextFromKey("PlaybackAudio"));
 	SetupTooltip(QMark_Input, GetTooltipTextFromKey("AF_InputAudioDevice"));
@@ -166,7 +167,7 @@ void UAudioSelectWidget::OnButtonClicked_CaptureAudio()
 
 	const bool bAudioDeviceSelectionValid = ComboBox_InAudioDevices->GetSelectedIndex() != -1;
 	const bool bSongSelectionValid = !ComboBox_SongTitle->GetSelectedOption().IsEmpty() || !Value_SongTitle->GetText().
-		IsEmptyOrWhitespace();
+	                                 IsEmptyOrWhitespace();
 
 	Button_Start->SetIsEnabled(bAudioDeviceSelectionValid && bSongSelectionValid);
 }
@@ -253,8 +254,9 @@ void UAudioSelectWidget::OnValueChanged_Minutes(const FText& NewMinutes, ETextCo
 {
 	const int32 ClampedMinutes = FMath::Clamp(FCString::Atoi(*NewMinutes.ToString()), 0, 99);
 	Value_Minutes->SetText(FText::AsNumber(ClampedMinutes, &NumberFormattingOptions));
-	AudioConfig.SongLength = ClampedMinutes * 60 + FMath::Clamp(FCString::Atoi(*Value_Seconds->GetText().ToString()), 0,
-		60);
+	AudioConfig.SongLength = ClampedMinutes * 60 + FMath::Clamp(FCString::Atoi(*Value_Seconds->GetText().ToString()),
+	                                                            0,
+	                                                            60);
 }
 
 void UAudioSelectWidget::OnValueChanged_Seconds(const FText& NewSeconds, ETextCommit::Type CommitType)
@@ -262,11 +264,11 @@ void UAudioSelectWidget::OnValueChanged_Seconds(const FText& NewSeconds, ETextCo
 	const int32 ClampedSeconds = FMath::Clamp(FCString::Atoi(*NewSeconds.ToString()), 0, 60);
 	Value_Seconds->SetText(FText::AsNumber(ClampedSeconds, &NumberFormattingOptions));
 	AudioConfig.SongLength = FMath::Clamp(FCString::Atoi(*Value_Minutes->GetText().ToString()), 0, 99) * 60 +
-		ClampedSeconds;
+	                         ClampedSeconds;
 }
 
 void UAudioSelectWidget::OnSelectionChanged_InAudioDevice(const FString SelectedInAudioDevice,
-	const ESelectInfo::Type SelectionType)
+                                                          const ESelectInfo::Type SelectionType)
 {
 	if (ComboBox_InAudioDevices->GetSelectedIndex() != -1)
 	{
@@ -276,7 +278,7 @@ void UAudioSelectWidget::OnSelectionChanged_InAudioDevice(const FString Selected
 		Box_SongLength->SetVisibility(ESlateVisibility::Visible);
 
 		const bool bSongSelectionValid = !ComboBox_SongTitle->GetSelectedOption().IsEmpty() || !Value_SongTitle->
-			GetText().IsEmptyOrWhitespace();
+		                                 GetText().IsEmptyOrWhitespace();
 
 		Button_Start->SetIsEnabled(bSongSelectionValid);
 	}
@@ -322,13 +324,26 @@ bool UAudioSelectWidget::OpenFileDialog(TArray<FString>& OutFileNames)
 	FString DefaultFile;
 	const FString FileTypes = ".mp3,.ogg";
 	int OutFilterIndex = 0;
-	return FileDialogShared(false, GEngine->GameViewport->GetWindow()->GetNativeWindow()->GetOSWindowHandle(),
-		DialogTitle, DefaultPath, DefaultFile, FileTypes, 0, OutFileNames, OutFilterIndex);
+	return FileDialogShared(false,
+	                        GEngine->GameViewport->GetWindow()->GetNativeWindow()->GetOSWindowHandle(),
+	                        DialogTitle,
+	                        DefaultPath,
+	                        DefaultFile,
+	                        FileTypes,
+	                        0,
+	                        OutFileNames,
+	                        OutFilterIndex);
 }
 
-bool UAudioSelectWidget::FileDialogShared(bool bSave, const void* ParentWindowHandle, const FString& DialogTitle,
-	const FString& DefaultPath, const FString& DefaultFile, const FString& FileTypes, uint32 Flags,
-	TArray<FString>& OutFilenames, int32& OutFilterIndex)
+bool UAudioSelectWidget::FileDialogShared(bool bSave,
+                                          const void* ParentWindowHandle,
+                                          const FString& DialogTitle,
+                                          const FString& DefaultPath,
+                                          const FString& DefaultFile,
+                                          const FString& FileTypes,
+                                          uint32 Flags,
+                                          TArray<FString>& OutFilenames,
+                                          int32& OutFilterIndex)
 {
 	bool bSuccess;
 
@@ -338,7 +353,9 @@ bool UAudioSelectWidget::FileDialogShared(bool bSave, const void* ParentWindowHa
 
 	// Convert the forward slashes in the path name to backslashes, otherwise it'll be ignored as invalid and use whatever is cached in the registry
 	WCHAR Pathname[MAX_FILENAME_STR];
-	FCString::Strncpy(Pathname, *FPaths::ConvertRelativePathToFull(DefaultPath).Replace(TEXT("/"), TEXT("\\")), MAX_FILENAME_STR);
+	FCString::Strncpy(Pathname,
+	                  *FPaths::ConvertRelativePathToFull(DefaultPath).Replace(TEXT("/"), TEXT("\\")),
+	                  MAX_FILENAME_STR);
 
 	// Convert the "|" delimited list of filetypes to NULL delimited then add a second NULL character to indicate the end of the list
 	WCHAR FileTypeStr[MAX_FILETYPES_STR];
@@ -434,8 +451,8 @@ bool UAudioSelectWidget::FileDialogShared(bool bSave, const void* ParentWindowHa
 
 		// Get the extension to add to the filename (if one doesnt already exist)
 		FString Extension = CleanExtensionList.IsValidIndex(OutFilterIndex)
-			? CleanExtensionList[OutFilterIndex]
-			: TEXT("");
+		                    ? CleanExtensionList[OutFilterIndex]
+		                    : TEXT("");
 
 		// Make sure all filenames gathered have their paths normalized and proper extensions added
 		for (auto OutFilenameIt = OutFilenames.CreateIterator(); OutFilenameIt; ++OutFilenameIt)
@@ -470,7 +487,8 @@ void UAudioSelectWidget::ShowSongPathErrorMessage()
 {
 	PopupMessageWidget = CreateWidget<UPopupMessageWidget>(GetWorld(), PopupMessageClass);
 	TArray<UBSButton*> Buttons = PopupMessageWidget->InitPopup(GetWidgetTextFromKey("G_Error"),
-		GetWidgetTextFromKey("ASW_SongPathErrorMessage"), 1);
+	                                                           GetWidgetTextFromKey("ASW_SongPathErrorMessage"),
+	                                                           1);
 	if (!Buttons.IsEmpty())
 	{
 		Buttons[0]->SetButtonText(GetWidgetTextFromKey("G_Okay"));

@@ -14,10 +14,10 @@
 FStartWidgetProperties UCustomGameModeStartWidget::StartWidgetProperties;
 TDelegate<void(FStartWidgetProperties&)> UCustomGameModeStartWidget::OnStartWidgetPropertyChanged;
 
-UCustomGameModeStartWidget::UCustomGameModeStartWidget(): CheckBoxOption_UseTemplate(nullptr),
-                                                          ComboBoxOption_GameModeTemplates(nullptr),
-                                                          ComboBoxOption_GameModeDifficulty(nullptr),
-                                                          EditableTextBoxOption_CustomGameModeName(nullptr)
+UCustomGameModeStartWidget::UCustomGameModeStartWidget() : CheckBoxOption_UseTemplate(nullptr),
+                                                           ComboBoxOption_GameModeTemplates(nullptr),
+                                                           ComboBoxOption_GameModeDifficulty(nullptr),
+                                                           EditableTextBoxOption_CustomGameModeName(nullptr)
 {
 	GameModeCategory = EGameModeCategory::Start;
 }
@@ -27,7 +27,8 @@ void UCustomGameModeStartWidget::NativeConstruct()
 	Super::NativeConstruct();
 
 	CheckBoxOption_UseTemplate->CheckBox->OnCheckStateChanged.AddUniqueDynamic(this,
-		&ThisClass::OnCheckStateChanged_UseTemplate);
+	                                                                           &ThisClass::
+	                                                                           OnCheckStateChanged_UseTemplate);
 	EditableTextBoxOption_CustomGameModeName->EditableTextBox->OnTextChanged.AddUniqueDynamic(this,
 		&ThisClass::OnTextChanged_CustomGameModeName);
 	ComboBoxOption_GameModeTemplates->ComboBox->OnSelectionChanged.AddUniqueDynamic(this,
@@ -71,7 +72,7 @@ void UCustomGameModeStartWidget::RefreshProperties() const
 
 	ComboBoxOption_GameModeTemplates->SetVisibility(
 		StartWidgetProperties.bUseTemplateChecked && (StartWidgetProperties.bIsCustom || StartWidgetProperties.
-			bIsPreset)
+		                                              bIsPreset)
 		? ESlateVisibility::SelfHitTestInvisible
 		: ESlateVisibility::Collapsed);
 
@@ -128,7 +129,7 @@ void UCustomGameModeStartWidget::OnTextChanged_CustomGameModeName(const FText& T
 }
 
 void UCustomGameModeStartWidget::OnSelectionChanged_GameModeTemplates(const TArray<FString>& Selected,
-	const ESelectInfo::Type SelectionType)
+                                                                      const ESelectInfo::Type SelectionType)
 {
 	if (SelectionType == ESelectInfo::Type::Direct || Selected.Num() != 1)
 	{
@@ -140,7 +141,7 @@ void UCustomGameModeStartWidget::OnSelectionChanged_GameModeTemplates(const TArr
 }
 
 void UCustomGameModeStartWidget::OnSelectionChanged_GameModeDifficulty(const TArray<FString>& Selected,
-	const ESelectInfo::Type SelectionType)
+                                                                       const ESelectInfo::Type SelectionType)
 {
 	if (SelectionType == ESelectInfo::Type::Direct || Selected.Num() != 1)
 	{

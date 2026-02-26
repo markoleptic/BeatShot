@@ -25,8 +25,9 @@ public:
 	virtual void Destroyed() override;
 
 	/** Sets the values of TargetWidget and its position in the viewport. */
-	void InitTargetWidget(const TObjectPtr<UTargetWidget> InTargetWidget, const FVector& InStartLocation,
-		const float BoundsHeight);
+	void InitTargetWidget(const TObjectPtr<UTargetWidget> InTargetWidget,
+	                      const FVector& InStartLocation,
+	                      const float BoundsHeight);
 
 	/** Sets the values of bSimulatePlayerDestroying and DestroyChance. */
 	void SetSimulatePlayerDestroying(const bool bInSimulatePlayerDestroying, const float InDestroyChance);

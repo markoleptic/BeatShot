@@ -21,7 +21,7 @@ void UTargetWidget::SetTargetScale(const FVector& NewScale) const
 	if (TargetImage)
 	{
 		TargetImage->SetDesiredSizeOverride(FVector2d(Constants::SphereTargetDiameter * NewScale.X,
-			Constants::SphereTargetDiameter * NewScale.Y));
+		                                              Constants::SphereTargetDiameter * NewScale.Y));
 	}
 }
 

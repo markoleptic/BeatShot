@@ -25,20 +25,20 @@ namespace BSCommon
 	[[nodiscard]] static constexpr FORCEINLINE T GridSnapFromZero(T Location, int32 Grid)
 	{
 		return Grid == T{}
-			? Location
-			: Location > T{}
-			? ceil(Location / Grid) * Grid
-			: FMath::Floor(Location / Grid) * Grid;
+		       ? Location
+		       : Location > T{}
+		       ? ceil(Location / Grid) * Grid
+		       : FMath::Floor(Location / Grid) * Grid;
 	}
 
 	template <class T>
 	[[nodiscard]] static constexpr FORCEINLINE T GridSnapToZero(T Location, int32 Grid)
 	{
 		return Grid == T{}
-			? Location
-			: Location > T{}
-			? FMath::Floor(Location / Grid) * Grid
-			: ceil(Location / Grid) * Grid;
+		       ? Location
+		       : Location > T{}
+		       ? FMath::Floor(Location / Grid) * Grid
+		       : ceil(Location / Grid) * Grid;
 	}
 }
 

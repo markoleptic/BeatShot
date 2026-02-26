@@ -20,7 +20,7 @@ public:
 	virtual void InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor) override;
 
 	using TShouldCancelAbilityFunc = TFunctionRef<bool(const UBSGameplayAbility* Ability,
-		FGameplayAbilitySpecHandle Handle)>;
+	                                                   FGameplayAbilitySpecHandle Handle)>;
 	/** Cancels abilities based on the ShouldCancelFunc. */
 	void CancelAbilitiesByFunc(TShouldCancelAbilityFunc ShouldCancelFunc, bool bReplicateCancelAbility);
 
@@ -49,12 +49,14 @@ public:
 	void RemoveAbilityFromActivationGroup(EBSAbilityActivationGroup Group, UBSGameplayAbility* Ability);
 
 	/** Cancels abilities matching the activation group, optionally ignoring the IgnoreAbility. */
-	void CancelActivationGroupAbilities(EBSAbilityActivationGroup Group, UBSGameplayAbility* IgnoreAbility,
-		bool bReplicateCancelAbility);
+	void CancelActivationGroupAbilities(EBSAbilityActivationGroup Group,
+	                                    UBSGameplayAbility* IgnoreAbility,
+	                                    bool bReplicateCancelAbility);
 
 	/** Gets the ability target data associated with the given ability handle and activation info. */
 	void GetAbilityTargetData(const FGameplayAbilitySpecHandle AbilityHandle,
-		FGameplayAbilityActivationInfo ActivationInfo, FGameplayAbilityTargetDataHandle& OutTargetDataHandle);
+	                          FGameplayAbilityActivationInfo ActivationInfo,
+	                          FGameplayAbilityTargetDataHandle& OutTargetDataHandle);
 
 	/** Wrapper around GetActivatableGameplayAbilitySpecsByAllMatchingTags to shorten code. */
 	TArray<FGameplayAbilitySpec*> GetAbilitySpecsFromGameplayTag(const FGameplayTag& InputTag) const;

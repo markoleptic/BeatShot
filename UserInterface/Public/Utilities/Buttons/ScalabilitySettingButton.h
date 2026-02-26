@@ -17,8 +17,9 @@ class USERINTERFACE_API UScalabilitySettingButton : public UBSButton
 public:
 	/** Create functions like this with additional parameters to store info about the button being pressed. Remember to
 	 *  call SetHasSetDefaults in any child implementations. */
-	void SetDefaults(const EVideoSettingType InVideoSettingType, const uint8 VideoSettingQuality,
-		UBSButton* NextButton = nullptr);
+	void SetDefaults(const EVideoSettingType InVideoSettingType,
+	                 const uint8 VideoSettingQuality,
+	                 UBSButton* NextButton = nullptr);
 
 	/** Returns the video setting type for this button widget. */
 	EVideoSettingType GetVideoSettingType() const { return SettingType; }

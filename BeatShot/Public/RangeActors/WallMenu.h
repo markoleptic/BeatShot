@@ -41,8 +41,12 @@ struct FText3DToggle
 		SettingType = FString();
 	}
 
-	FText3DToggle(USceneComponent* InParent, UBoxComponent* Collision, UText3DComponent* InOnText,
-		UText3DComponent* InOffText, const bool bInIsOnText, const FString InSettingType)
+	FText3DToggle(USceneComponent* InParent,
+	              UBoxComponent* Collision,
+	              UText3DComponent* InOnText,
+	              UText3DComponent* InOffText,
+	              const bool bInIsOnText,
+	              const FString InSettingType)
 	{
 		bIsOnText = bInIsOnText;
 		Parent = InParent;
@@ -95,8 +99,9 @@ class BEATSHOT_API AWallMenu : public AActor, public IBSPlayerSettingsInterface,
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	/* ~End IAbilitySystemInterface */
 
-	void OnGameplayEffectAppliedToSelf(UAbilitySystemComponent* ABS, const FGameplayEffectSpec& EffectSpec,
-		FActiveGameplayEffectHandle EffectHandle);
+	void OnGameplayEffectAppliedToSelf(UAbilitySystemComponent* ABS,
+	                                   const FGameplayEffectSpec& EffectSpec,
+	                                   FActiveGameplayEffectHandle EffectHandle);
 
 public:
 	void OnTimeOfDayChangeCompleted(const ETimeOfDay NewTimeOfDay);
@@ -223,17 +228,25 @@ protected:
 	virtual void OnPlayerSettingsChanged(const FPlayerSettings_Game& GameSettings) override;
 	virtual void OnPlayerSettingsChanged(const FPlayerSettings_User& UserSettings) override;
 
-	void SetupMainText(UText3DComponent* InComponent, USceneComponent* InParent, const bool bFirstText,
-		const FString& Key, const FVector& AdditionalOffset = FVector::ZeroVector) const;
+	void SetupMainText(UText3DComponent* InComponent,
+	                   USceneComponent* InParent,
+	                   const bool bFirstText,
+	                   const FString& Key,
+	                   const FVector& AdditionalOffset = FVector::ZeroVector) const;
 
-	void SetupToggleText(USceneComponent* InParent, UText3DComponent* InToggleTextOn, UText3DComponent* InToggleTextOff,
-		UBoxComponent* InBoxOn, UBoxComponent* InBoxOff, const FVector& AdditionalOffset = FVector::ZeroVector);
+	void SetupToggleText(USceneComponent* InParent,
+	                     UText3DComponent* InToggleTextOn,
+	                     UText3DComponent* InToggleTextOff,
+	                     UBoxComponent* InBoxOn,
+	                     UBoxComponent* InBoxOff,
+	                     const FVector& AdditionalOffset = FVector::ZeroVector);
 
 	/** Displays which settings are on/off etc. by lighting the correct words. */
 	void ToggleAllText(const FPlayerSettings_Game& GameSettings, bool bNightModeUnlocked) const;
 
-	void ToggleText(const bool bIsOn, const UText3DComponent* InToggleTextOn,
-		const UText3DComponent* InToggleTextOff) const;
+	void ToggleText(const bool bIsOn,
+	                const UText3DComponent* InToggleTextOn,
+	                const UText3DComponent* InToggleTextOff) const;
 
 	void ToggleNightModeText(const bool bIsOn) const;
 

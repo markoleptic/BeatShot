@@ -8,13 +8,21 @@
 UBSGameModeEnumTagMap::UBSGameModeEnumTagMap()
 {
 	PopulateEnumTypes(TSet({
-		StaticEnum<EBoundsScalingPolicy>(), StaticEnum<EMovingTargetDirectionMode>(),
-		StaticEnum<EConsecutiveTargetScalePolicy>(), StaticEnum<ETargetDamageType>(),
-		StaticEnum<ETargetActivationSelectionPolicy>(), StaticEnum<ERecentTargetMemoryPolicy>(),
-		StaticEnum<ETargetDeactivationCondition>(), StaticEnum<ETargetDestructionCondition>(),
-		StaticEnum<ETargetActivationResponse>(), StaticEnum<ETargetDeactivationResponse>(),
-		StaticEnum<ETargetSpawningPolicy>(), StaticEnum<ETargetDistributionPolicy>(),
-		StaticEnum<EReinforcementLearningMode>(), StaticEnum<EReinforcementLearningHyperParameterMode>(),
-		StaticEnum<ETargetSpawnResponse>(), StaticEnum<ERuntimeTargetSpawningLocationSelectionMode>()
+		StaticEnum<EBoundsScalingPolicy>(),
+		StaticEnum<EMovingTargetDirectionMode>(),
+		StaticEnum<EConsecutiveTargetScalePolicy>(),
+		StaticEnum<ETargetDamageType>(),
+		StaticEnum<ETargetActivationSelectionPolicy>(),
+		StaticEnum<ERecentTargetMemoryPolicy>(),
+		StaticEnum<ETargetDeactivationCondition>(),
+		StaticEnum<ETargetDestructionCondition>(),
+		StaticEnum<ETargetActivationResponse>(),
+		StaticEnum<ETargetDeactivationResponse>(),
+		StaticEnum<ETargetSpawningPolicy>(),
+		StaticEnum<ETargetDistributionPolicy>(),
+		StaticEnum<EReinforcementLearningMode>(),
+		StaticEnum<EReinforcementLearningHyperParameterMode>(),
+		StaticEnum<ETargetSpawnResponse>(),
+		StaticEnum<ERuntimeTargetSpawningLocationSelectionMode>()
 	}));
 }

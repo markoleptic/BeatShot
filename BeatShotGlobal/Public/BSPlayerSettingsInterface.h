@@ -18,14 +18,14 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FOnPlayerSettingsChanged_Game, const FPlayer
 
 /** Broadcast when Audio Analyzer specific settings are changed and saved. */
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnPlayerSettingsChanged_AudioAnalyzer,
-	const FPlayerSettings_AudioAnalyzer& AudioAnalyzerSettings);
+                                    const FPlayerSettings_AudioAnalyzer& AudioAnalyzerSettings);
 
 /** Broadcast when User specific settings are changed and saved. */
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnPlayerSettingsChanged_User, const FPlayerSettings_User& UserSettings);
 
 /** Broadcast when CrossHair specific settings are changed and saved. */
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnPlayerSettingsChanged_CrossHair,
-	const FPlayerSettings_CrossHair& CrossHairSettings);
+                                    const FPlayerSettings_CrossHair& CrossHairSettings);
 
 UINTERFACE()
 class UBSPlayerSettingsInterface : public UInterface

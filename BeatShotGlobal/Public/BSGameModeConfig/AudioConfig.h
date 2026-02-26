@@ -13,7 +13,8 @@ enum class EAudioFormat : uint8
 	None UMETA(DisplayName="None"),
 	File UMETA(DisplayName="File"),
 	Capture UMETA(DisplayName="Capture"),
-	Loopback UMETA(DisplayName="Loopback")};
+	Loopback UMETA(DisplayName="Loopback")
+};
 
 ENUM_RANGE_BY_FIRST_AND_LAST(EAudioFormat, EAudioFormat::File, EAudioFormat::Loopback);
 
