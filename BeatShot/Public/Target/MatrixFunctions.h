@@ -3,7 +3,40 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "NumCpp.hpp"
-#include "SaveGames/SaveGamePlayerScore.h"
+#include "Score/AccuracyData.h"
+
+/** A struct where each element is an index of a smaller matrix that represents multiple indices of a larger matrix. */
+struct FGenericIndexMapping
+{
+	int32 Index;
+	TArray<int32> MappedIndices;
+
+	FGenericIndexMapping()
+	{
+		Index = INDEX_NONE;
+		MappedIndices = TArray<int32>();
+	}
+
+	FGenericIndexMapping(const int32 InIndex)
+	{
+		Index = InIndex;
+		MappedIndices = TArray<int32>();
+	}
+
+	FORCEINLINE bool operator ==(const FGenericIndexMapping& Other) const
+	{
+		if (Other.Index == Index)
+		{
+			return true;
+		}
+		return false;
+	}
+
+	friend FORCEINLINE uint32 GetTypeHash(const FGenericIndexMapping& Struct)
+	{
+		return GetTypeHash(Struct.Index);
+	}
+};
 
 /** Converts an NdArray of floats to a TArray of floats. */
 template <typename T>

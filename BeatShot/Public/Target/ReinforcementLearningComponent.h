@@ -7,6 +7,7 @@
 #include "NumCpp.hpp"
 #include "BSGameModeConfig/AIConfig.h"
 #include "Components/ActorComponent.h"
+#include "Score/CommonScoreInfo.h"
 #include "ReinforcementLearningComponent.generated.h"
 
 class UCompositeCurveTable;
