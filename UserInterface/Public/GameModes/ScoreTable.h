@@ -33,14 +33,15 @@ private:
 
 	EColumnSortPriority::Type GetColumnSortPriority(const FName InColumnId) const;
 
-	EColumnSortMode::Type GetSortModeForColumn(const FName ColumnId) const;
+	EColumnSortMode::Type GetSortModeForColumn(const FName InColumnId) const;
 
 	void SortItems();
 
 	SHeaderRow::FColumn::FArguments MakeColumn(const FName& InColumnName);
 
-
 	TSharedPtr<SListView<TSharedPtr<FPlayerScore>>> SlateWidget;
+
+	TSharedPtr<SHeaderRow> Header;
 
 	TMap<EBaseGameMode, FText> BaseGameModeText;
 
@@ -50,17 +51,36 @@ private:
 
 	FName PrimarySortedColumn = SPlayerScoreRow::DateColumnName;
 
-	UPROPERTY(EditInstanceOnly)
+	UPROPERTY(EditAnywhere)
 	FTableRowStyle TableRowStyle = FCoreStyle::Get().GetWidgetStyle<FTableRowStyle>("TableView.Row");
 
-	UPROPERTY(EditInstanceOnly)
+	UPROPERTY(EditAnywhere)
 	FHeaderRowStyle HeaderRowStyle = FCoreStyle::Get().GetWidgetStyle<FHeaderRowStyle>("TableView.Header");
 
-	UPROPERTY(EditInstanceOnly)
+	UPROPERTY(EditAnywhere)
 	FSlateFontInfo HeaderFont;
 
-	UPROPERTY(EditInstanceOnly)
+	UPROPERTY(EditAnywhere)
 	FSlateFontInfo TableCellFont;
 
+	UPROPERTY(EditAnywhere)
+	TMap<FName, FText> HeaderColumnText = {
+		{SPlayerScoreRow::DateColumnName, FText()}, {SPlayerScoreRow::GameModeColumnName, FText()},
+		{SPlayerScoreRow::DifficultyColumnName, FText()}, {SPlayerScoreRow::SongColumnName, FText()},
+		{SPlayerScoreRow::ScoreColumnName, FText()}, {SPlayerScoreRow::AccuracyColumnName, FText()},
+		{SPlayerScoreRow::CompletionColumnName, FText()}, {SPlayerScoreRow::StreakColumnName, FText()},
+		{SPlayerScoreRow::ShotsFiredColumnName, FText()}, {SPlayerScoreRow::TargetsHitColumnName, FText()},
+		{SPlayerScoreRow::TargetsSpawnedColumnName, FText()}, {SPlayerScoreRow::ReactionTimeColumnName, FText()},
+	};
+
 	EColumnSortMode::Type PrimarySortMode = EColumnSortMode::Ascending;
+
+	TMap<FName, float> HeaderColumnTextWidth;
+	TMap<EBaseGameMode, float> BaseGameModeCellTextWidth;
+	TMap<EGameModeDifficulty, float> DifficultyCellTextWidth;
+	float DateCellTextWidth = 0.0f;
+	float ScoreCellTextWidth = 0.0f;
+	float PercentCellTextWidth = 0.0f;
+	float CounterCellTextWidth = 0.0f;
+	float ReactionTimeCellTextWidth = 0.0f;
 };

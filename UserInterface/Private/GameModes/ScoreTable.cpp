@@ -2,13 +2,64 @@
 
 
 #include "GameModes/ScoreTable.h"
+#include "Fonts/FontMeasure.h"
 #include "Internationalization/BreakIterator.h"
 #include "SaveGames/SaveGamePlayerScore.h"
 #include "Slate/SPlayerScoreRow.h"
 
 TSharedRef<SWidget> UScoreTable::RebuildWidget()
 {
-	const TSharedRef<SHeaderRow> Header = SNew(SHeaderRow)
+	if (HeaderColumnTextWidth.IsEmpty())
+	{
+		static const auto FontMeasureService = FSlateApplication::Get().GetRenderer()->GetFontMeasureService();
+		for (const auto& [Name, Text] : HeaderColumnText)
+		{
+			HeaderColumnTextWidth.Add(Name, FontMeasureService->Measure(Text, HeaderFont).X);
+		}
+		for (const auto& [BaseGameMode, Text] : BaseGameModeText)
+		{
+			BaseGameModeCellTextWidth.Add(BaseGameMode, FontMeasureService->Measure(Text, TableCellFont).X);
+		}
+		for (const auto& [Difficulty, Text] : DifficultyText)
+		{
+			DifficultyCellTextWidth.Add(Difficulty, FontMeasureService->Measure(Text, TableCellFont).X);
+		}
+		{
+			const auto TestText = FText::FromString("8888-88-88, 88:88PM");
+			DateCellTextWidth = FontMeasureService->Measure(TestText, TableCellFont).X;
+		}
+		{
+			static auto FormattingOptions = FNumberFormattingOptions().SetMinimumFractionalDigits(0).
+			                                                           SetMaximumFractionalDigits(0).
+			                                                           SetMinimumIntegralDigits(6).
+			                                                           SetMaximumIntegralDigits(6);
+			const auto TestText = FText::AsNumber(888888, &FormattingOptions);
+			ScoreCellTextWidth = FontMeasureService->Measure(TestText, TableCellFont).X;
+		}
+		{
+			static const FTextFormat PercentFormat = FTextFormat::FromString("{0}%");
+			static auto FormattingOptions = FNumberFormattingOptions().SetMinimumFractionalDigits(1).
+			                                                           SetMaximumFractionalDigits(1).
+			                                                           SetMinimumIntegralDigits(2).
+			                                                           SetMaximumIntegralDigits(3);
+			const auto TestText = FText::Format(PercentFormat, FText::AsNumber(100.0, &FormattingOptions));
+			PercentCellTextWidth = FontMeasureService->Measure(TestText, TableCellFont).X;
+		}
+		{
+			static auto FormattingOptions = FNumberFormattingOptions().SetMinimumFractionalDigits(0).
+			                                                           SetMaximumFractionalDigits(0);
+			const auto TestText = FText::AsNumber(8888, &FormattingOptions);
+			CounterCellTextWidth = FontMeasureService->Measure(TestText, TableCellFont).X;
+		}
+		{
+			static auto FormattingOptions = FNumberFormattingOptions().SetMinimumFractionalDigits(0).
+			                                                           SetMaximumFractionalDigits(0);
+			const auto TestText = FText::AsNumber(888888.f, &FormattingOptions);
+			ReactionTimeCellTextWidth = FontMeasureService->Measure(TestText, TableCellFont).X;
+		}
+	}
+
+	Header = SNew(SHeaderRow)
 		.Style(&HeaderRowStyle);
 	Header->AddColumn(MakeColumn(SPlayerScoreRow::DateColumnName));
 	Header->AddColumn(MakeColumn(SPlayerScoreRow::GameModeColumnName));
@@ -26,7 +77,7 @@ TSharedRef<SWidget> UScoreTable::RebuildWidget()
 	SlateWidget = SNew(SListView<TSharedPtr<FPlayerScore>>)
 		.ListItemsSource(&ListItems)
 		.OnGenerateRow_UObject(this, &UScoreTable::OnGenerateRow)
-		.SelectionMode(ESelectionMode::None)
+		.SelectionMode(ESelectionMode::Type::Multi)
 		.HeaderRow(Header);
 
 	return SlateWidget.ToSharedRef();
@@ -53,6 +104,83 @@ void UScoreTable::SetListItems(const TArray<TSharedPtr<FPlayerScore>>& InListIte
 	if (SlateWidget)
 	{
 		SortItems();
+		static const auto FontMeasureService = FSlateApplication::Get().GetRenderer()->GetFontMeasureService();
+		const auto& Columns = Header->GetColumns();
+		for (int i = 0; i < Columns.Num(); i++)
+		{
+			const FName& ColumnName = Columns[i].ColumnId;
+			float Width = HeaderColumnTextWidth[ColumnName];
+
+			if (ColumnName == SPlayerScoreRow::DateColumnName)
+			{
+				Width = FMath::Max(Width, DateCellTextWidth);
+			}
+			else if (ColumnName == SPlayerScoreRow::ScoreColumnName)
+			{
+				Width = FMath::Max(Width, ScoreCellTextWidth);
+			}
+			else if (ColumnName == SPlayerScoreRow::AccuracyColumnName)
+			{
+				Width = FMath::Max(Width, PercentCellTextWidth);
+			}
+			else if (ColumnName == SPlayerScoreRow::CompletionColumnName)
+			{
+				Width = FMath::Max(Width, PercentCellTextWidth);
+			}
+			else if (ColumnName == SPlayerScoreRow::StreakColumnName)
+			{
+				Width = FMath::Max(Width, CounterCellTextWidth);
+			}
+			else if (ColumnName == SPlayerScoreRow::ShotsFiredColumnName)
+			{
+				Width = FMath::Max(Width, CounterCellTextWidth);
+			}
+			else if (ColumnName == SPlayerScoreRow::TargetsHitColumnName)
+			{
+				Width = FMath::Max(Width, CounterCellTextWidth);
+			}
+			else if (ColumnName == SPlayerScoreRow::TargetsSpawnedColumnName)
+			{
+				Width = FMath::Max(Width, CounterCellTextWidth);
+			}
+			else if (ColumnName == SPlayerScoreRow::ReactionTimeColumnName)
+			{
+				Width = FMath::Max(Width, ReactionTimeCellTextWidth);
+			}
+			else
+			{
+				FText Text;
+				for (const auto& Item : InListItems)
+				{
+					if (ColumnName == SPlayerScoreRow::GameModeColumnName)
+					{
+						if (Item->DefiningConfig.GameModeType == EGameModeType::Preset)
+						{
+							Text = *BaseGameModeText.Find(Item->DefiningConfig.BaseGameMode);
+						}
+						else if (Item->DefiningConfig.GameModeType == EGameModeType::Custom)
+						{
+							Text = FText::FromString(Item->DefiningConfig.CustomGameModeName);
+						}
+					}
+					else if (ColumnName == SPlayerScoreRow::DifficultyColumnName)
+					{
+						if (Item->DefiningConfig.GameModeType == EGameModeType::Preset)
+						{
+							Text = *DifficultyText.Find(Item->DefiningConfig.Difficulty);
+						}
+					}
+					else if (ColumnName == SPlayerScoreRow::SongColumnName)
+					{
+						Text = FText::FromString(Item->SongTitle);
+					}
+					Width = FMath::Max(FontMeasureService->Measure(Text, TableCellFont).X, Width);
+				}
+			}
+
+			Header->SetColumnWidth(ColumnName, Width + 10.f);
+		}
+
 		SlateWidget->RequestListRefresh();
 	}
 }
@@ -68,7 +196,7 @@ void UScoreTable::ReleaseSlateResources(bool bReleaseChildren)
 }
 
 TSharedRef<ITableRow> UScoreTable::OnGenerateRow(TSharedPtr<FPlayerScore> Item,
-	const TSharedRef<STableViewBase>& OwnerTable)
+                                                 const TSharedRef<STableViewBase>& OwnerTable)
 {
 	return SNew(SPlayerScoreRow, OwnerTable)
 		.Item(Item)
@@ -78,8 +206,8 @@ TSharedRef<ITableRow> UScoreTable::OnGenerateRow(TSharedPtr<FPlayerScore> Item,
 		.Font(TableCellFont);
 }
 
-void UScoreTable::OnSortColumn(EColumnSortPriority::Type InSortPriority, const FName& InColumnId,
-	EColumnSortMode::Type InSortMode)
+void UScoreTable::OnSortColumn(EColumnSortPriority::Type, const FName& InColumnId,
+                               const EColumnSortMode::Type InSortMode)
 {
 	PrimarySortedColumn = InColumnId;
 	PrimarySortMode = InSortMode;
@@ -114,7 +242,7 @@ void UScoreTable::SortItems()
 	}
 
 	auto CompareColumn = [this](const TSharedPtr<FPlayerScore>& L, const TSharedPtr<FPlayerScore>& R,
-		const FName& Column)
+	                            const FName& Column)
 	{
 		if (Column == SPlayerScoreRow::DateColumnName)
 		{
@@ -234,12 +362,11 @@ void UScoreTable::SortItems()
 
 SHeaderRow::FColumn::FArguments UScoreTable::MakeColumn(const FName& InColumnName)
 {
-	return SHeaderRow::FColumn::FArguments{}.ColumnId(InColumnName).DefaultLabel(FText::FromName(InColumnName)).
+	return SHeaderRow::FColumn::FArguments{}.ColumnId(InColumnName).HAlignHeader(HAlign_Center).
 	                                         SortMode_UObject(this, &UScoreTable::GetSortModeForColumn, InColumnName).
-	                                         OnSort_UObject(this, &UScoreTable::OnSortColumn).HAlignHeader(
-		                                         HAlign_Center).HeaderContent()[SNew(STextBlock)
-	.Text(FText::FromName(InColumnName))
+	                                         OnSort_UObject(this, &UScoreTable::OnSortColumn).HeaderContent()[SNew(
+		STextBlock)
+	.Text(HeaderColumnText[InColumnName])
 	.Font(HeaderFont)
-	.AutoWrapText(true)
-	.LineBreakPolicy(FBreakIterator::CreateCamelCaseBreakIterator())];
+	.AutoWrapText(false)];
 }

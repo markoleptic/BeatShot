@@ -33,25 +33,25 @@ void SPlayerScoreRow::Construct(const FArguments& InArgs, const TSharedRef<STabl
 
 TSharedRef<SWidget> SPlayerScoreRow::GenerateWidgetForColumn(const FName& ColumnName)
 {
-	auto PercentFormatter = [](const float Value)
+	static const auto PercentFormatter = [](const float Value)
 	{
-		auto ZeroDecimalNumberFormattingOptions = FNumberFormattingOptions().SetMinimumFractionalDigits(0).
-		                                                                     SetMaximumFractionalDigits(0);
+		static const auto ZeroDecimalNumberFormattingOptions = FNumberFormattingOptions().SetMinimumFractionalDigits(1).
+			SetMaximumFractionalDigits(1).SetMinimumIntegralDigits(2).SetMaximumIntegralDigits(3);
 		static const FTextFormat PercentFormat = FTextFormat::FromString("{0}%");
 		return FText::Format(PercentFormat, FText::AsNumber(Value * 100.f, &ZeroDecimalNumberFormattingOptions));
 	};
 
-	auto ZeroDecimalTimesOneHundredFormatter = [](const float Value)
+	static auto ZeroDecimalTimesOneHundredFormatter = [](const float Value)
 	{
-		auto ZeroDecimalNumberFormattingOptions = FNumberFormattingOptions().SetMinimumFractionalDigits(0).
-		                                                                     SetMaximumFractionalDigits(0);
+		static const auto ZeroDecimalNumberFormattingOptions = FNumberFormattingOptions().SetMinimumFractionalDigits(0).
+			SetMaximumFractionalDigits(0);
 		return FText::AsNumber(Value * 100.f, &ZeroDecimalNumberFormattingOptions);
 	};
 
-	auto ZeroDecimalFormatter = [](const float Value)
+	static auto ZeroDecimalFormatter = [](const float Value)
 	{
-		auto ZeroDecimalNumberFormattingOptions = FNumberFormattingOptions().SetMinimumFractionalDigits(0).
-		                                                                     SetMaximumFractionalDigits(0);
+		static const auto ZeroDecimalNumberFormattingOptions = FNumberFormattingOptions().SetMinimumFractionalDigits(0).
+			SetMaximumFractionalDigits(0);
 		return FText::AsNumber(Value, &ZeroDecimalNumberFormattingOptions);
 	};
 
@@ -63,7 +63,7 @@ TSharedRef<SWidget> SPlayerScoreRow::GenerateWidgetForColumn(const FName& Column
 		return SNew(SBox)
 			.Padding(FMargin(4.0, 0.0))
 			.VAlign(VAlign_Center)
-			.HAlign(HAlign_Center)
+			.HAlign(HAlign_Left)
 			[
 				SNew(STextBlock)
 				.Font(Font)
