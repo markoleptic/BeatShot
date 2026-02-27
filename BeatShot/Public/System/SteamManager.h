@@ -3,14 +3,11 @@
 #pragma once
 
 #include <steam/isteamfriends.h>
-#include <steam/isteamuser.h>
 #include <steam/isteamuserstats.h>
 #include <steam/steam_api_common.h>
 #include "SteamManager.generated.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(LogSteamManager, Log, All);
-
-DECLARE_DELEGATE(FOnAuthTicketForWebApiReady);
 
 enum class EBaseGameMode : uint8;
 class UBSGameInstance;
@@ -98,21 +95,6 @@ struct FSteamAchievement
 	}
 };
 
-USTRUCT()
-struct FOnAuthTicketForWebApiResponseCallbackHandler
-{
-	GENERATED_BODY()
-
-	FOnAuthTicketForWebApiReady OnAuthTicketForWebApiReady;
-	HAuthTicket Handle;
-	EResult Result;
-	FString Ticket;
-
-	FOnAuthTicketForWebApiResponseCallbackHandler() : Handle(0), Result(k_EResultFail)
-	{
-	}
-};
-
 /** Class responsible for linking to Steam. */
 UCLASS()
 class BEATSHOT_API USteamManager : public UObject
@@ -134,21 +116,13 @@ public:
 	 *  StoreStats(). */
 	void UpdateStat_NumGamesPlayed(const EBaseGameMode GameMode, int IntValue);
 
-	UPROPERTY()
-	UBSGameInstance* DefaultGameInstance;
-
-	/** Calls GetAuthTicketForWebApi using Steam Api, callback is OnTicketForWebApiResponse. */
-	bool CreateAuthTicketForWebApi(
-		TSharedPtr<FOnAuthTicketForWebApiResponseCallbackHandler, ESPMode::ThreadSafe> CallbackHandler);
+	FString GetPersonaName() const;
 
 private:
+	TWeakObjectPtr<UBSGameInstance> DefaultGameInstance;
+
 	/** Delegate registered with Steam to trigger when a user activates the Steam Overlay. */
 	STEAM_CALLBACK_MANUAL(USteamManager, OnSteamOverlayActive, GameOverlayActivated_t, OnSteamOverlayActiveDelegate);
-	/** Delegate registered with Steam to trigger when a response is received from GetAuthTicketForWebApi. */
-	STEAM_CALLBACK_MANUAL(USteamManager,
-	                      OnAuthTicketForWebApiResponse,
-	                      GetTicketForWebApiResponse_t,
-	                      OnAuthTicketForWebApiResponseDelegate);
 	/** Delegate registered with Steam to trigger anytime RequestStats() is called. */
 	STEAM_CALLBACK_MANUAL(USteamManager, OnUserStatsReceived, UserStatsReceived_t, OnUserStatsReceivedDelegate);
 	/** Delegate registered with Steam to trigger anytime you attempt to store stats on Steam. */
@@ -184,6 +158,5 @@ private:
 	/** If Steam Stats were successfully initialized. */
 	bool bInitializedStats;
 
-	/** A queue of AuthTicket callbacks that are executed in order. */
-	TQueue<TSharedPtr<FOnAuthTicketForWebApiResponseCallbackHandler>> ActiveCallbacks;
+	FString PersonaName;
 };

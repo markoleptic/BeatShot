@@ -3,7 +3,6 @@
 
 
 #include "BSPlayerScoreInterface.h"
-#include "BSPlayerSettingsInterface.h"
 #include "CommonWidgetCarousel.h"
 #include "Blueprint/WidgetTree.h"
 #include "BSGameModeConfig/BSGameModeValidator.h"
@@ -18,7 +17,6 @@
 #include "Menus/GameModeMenuWidget.h"
 #include "Overlays/AudioSelectWidget.h"
 #include "Overlays/GameModeSharingWidget.h"
-#include "SaveGames/SaveGamePlayerSettings.h"
 #include "Utilities/SavedTextWidget.h"
 #include "Utilities/Buttons/MenuButton.h"
 #include "Windows/WindowsPlatformApplicationMisc.h"
@@ -683,12 +681,10 @@ void UGameModeMenuWidget::OnButtonClicked_RemoveSelectedCustom()
 		const FString RemovedGameModeName = BSConfig->DefiningConfig.CustomGameModeName;
 		if (FBSConfig Found; FindCustomGameMode(RemovedGameModeName, Found))
 		{
-			if (RemoveCustomGameMode(Found))
-			{
-				SetAndPlaySavedText(FText::Format(CustomGameModeRemovalSuccessFormattedText,
-				                                  {{TEXT("GameMode"), FText::FromString(RemovedGameModeName)}}));
-				RefreshGameModes();
-			}
+			RemoveCustomGameMode(Found, false);
+			SetAndPlaySavedText(FText::Format(CustomGameModeRemovalSuccessFormattedText,
+			                                  {{TEXT("GameMode"), FText::FromString(RemovedGameModeName)}}));
+			RefreshGameModes();
 		}
 		if (FBSConfig DefaultConfig; FindPresetGameMode(EBaseGameMode::MultiBeat,
 		                                                EGameModeDifficulty::Normal,
@@ -706,59 +702,24 @@ void UGameModeMenuWidget::OnButtonClicked_RemoveSelectedCustom()
 	{
 		PopupMessageWidget->FadeOut();
 		const FString GameModeNameToRemove = BSConfig->DefiningConfig.CustomGameModeName;
-
-		TSharedPtr<FAccessTokenResponse> AccessTokenResponse = MakeShareable(new FAccessTokenResponse());
-		AccessTokenResponse->OnHttpResponseReceived.BindLambda([this, AccessTokenResponse, GameModeNameToRemove]
+		if (FBSConfig Found; FindCustomGameMode(GameModeNameToRemove, Found))
 		{
-			if (AccessTokenResponse->OK)
-			{
-				TSharedPtr<FDeleteScoresResponse> DeleteScoresResponse = MakeShareable(new FDeleteScoresResponse());
-				DeleteScoresResponse->OnHttpResponseReceived.BindLambda(
-					[this, DeleteScoresResponse, GameModeNameToRemove]
-					{
-						if (DeleteScoresResponse->OK)
-						{
-							if (FBSConfig Found; FindCustomGameMode(GameModeNameToRemove, Found))
-							{
-								if (RemoveCustomGameMode(Found))
-								{
-									FFormatNamedArguments Args;
-									Args.Add(TEXT("GameMode"), FText::FromString(GameModeNameToRemove));
-									Args.Add(TEXT("NumRemoved"), FText::AsNumber(DeleteScoresResponse->NumRemoved));
-									SetAndPlaySavedText(FText::Format(CustomGameModeRemovalSuccessFormattedText, Args));
-									RefreshGameModes();
+			const int NumRemoved = RemoveCustomGameMode(Found, true);
+			FFormatNamedArguments Args;
+			Args.Add(TEXT("GameMode"), FText::FromString(GameModeNameToRemove));
+			Args.Add(TEXT("NumRemoved"), FText::AsNumber(NumRemoved));
+			SetAndPlaySavedText(FText::Format(CustomGameModeRemovalSuccessFormattedText, Args));
+			RefreshGameModes();
 
-									if (FBSConfig DefaultConfig; FindPresetGameMode(EBaseGameMode::MultiBeat,
-										EGameModeDifficulty::Normal,
-										GameModeDataAsset.Get(),
-										DefaultConfig))
-									{
-										PopulateGameModeOptions(DefaultConfig);
-									}
-									UpdateSaveStartButtonStates();
-								}
-							}
-							else
-							{
-								SetAndPlaySavedText(GetWidgetTextFromKey("GM_RemoveGameModeDatabaseOnlySuccess"), 0.5f);
-							}
-						}
-						else
-						{
-							SetAndPlaySavedText(GetWidgetTextFromKey("GM_RemoveGameModeDatabaseFailure"), 0.5f);
-						}
-					});
-				DeleteScores(GameModeNameToRemove,
-				             IBSPlayerSettingsInterface::LoadPlayerSettings().User.UserID,
-				             AccessTokenResponse->AccessToken,
-				             DeleteScoresResponse);
-			}
-			else
+			if (FBSConfig DefaultConfig; FindPresetGameMode(EBaseGameMode::MultiBeat,
+			                                                EGameModeDifficulty::Normal,
+			                                                GameModeDataAsset.Get(),
+			                                                DefaultConfig))
 			{
-				SetAndPlaySavedText(GetWidgetTextFromKey("GM_RemoveGameModeDatabaseFailure"), 0.5f);
+				PopulateGameModeOptions(DefaultConfig);
 			}
-		});
-		RequestAccessToken(IBSPlayerSettingsInterface::LoadPlayerSettings().User.RefreshCookie, AccessTokenResponse);
+			UpdateSaveStartButtonStates();
+		}
 	});
 
 	PopupMessageWidget->AddToViewport();
@@ -979,7 +940,7 @@ void UGameModeMenuWidget::ShowAudioFormatSelect(const bool bStartFromDefaultGame
 				GameModeTransitionState.BSConfig.OnCreate_Custom();
 			}
 
-			OnGameModeStateChanged.Broadcast(GameModeTransitionState);
+			OnGameModeStateChanged.ExecuteIfBound(GameModeTransitionState);
 			AudioSelectWidget->FadeOut();
 		});
 

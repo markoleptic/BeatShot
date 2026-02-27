@@ -296,7 +296,7 @@ void ABSGameMode::EndGameMode(const bool bSaveScores, const ETransitionState Tra
 	AudioComponent->Stop();
 	AudioComponent->SetSound(nullptr);
 
-	bool bQuitToDesktopAfterSave = false;
+	bool bQuitToDesktop = false;
 	for (ABSPlayerController* Controller : Controllers)
 	{
 		if (Controller->IsPaused())
@@ -331,7 +331,7 @@ void ABSGameMode::EndGameMode(const bool bSaveScores, const ETransitionState Tra
 			Controller->ShowPostGameMenu();
 			break;
 		case ETransitionState::QuitToDesktop:
-			bQuitToDesktopAfterSave = true;
+			bQuitToDesktop = true;
 			break;
 		case ETransitionState::StartFromMainMenu:
 			break;
@@ -339,10 +339,20 @@ void ABSGameMode::EndGameMode(const bool bSaveScores, const ETransitionState Tra
 	}
 
 	// Handle saving scores before resetting Target Manager
-	HandleScoreSaving(bSaveScores, bQuitToDesktopAfterSave);
+	if (bSaveScores)
+	{
+		HandleScoreSaving();
+	}
+
+	if (bQuitToDesktop)
+	{
+		for (ABSPlayerController* Controller : Controllers)
+		{
+			UKismetSystemLibrary::QuitGame(Controller->GetWorld(), Controller, EQuitPreference::Quit, false);
+		}
+	}
 
 	TargetManager->Clear();
-
 	CollectGarbage(GARBAGE_COLLECTION_KEEPFLAGS);
 
 	if (TransitionState == ETransitionState::QuitToMainMenu && !Controllers.IsEmpty())
@@ -641,18 +651,11 @@ void ABSGameMode::LoadMatchingPlayerScores()
 	}
 }
 
-void ABSGameMode::HandleScoreSaving(const bool bExternalSaveScores, const bool bQuitToDesktopAfterSave)
+void ABSGameMode::HandleScoreSaving()
 {
-	if (!bExternalSaveScores)
-	{
-		for (auto& CurrentPlayerScore : CurrentPlayerScores)
-		{
-			CurrentPlayerScore.Value = FPlayerScore();
-		}
-		return;
-	}
-
 	const FAccuracyData AccuracyData = TargetManager->GetLocationAccuracy();
+	const TObjectPtr<USteamManager> SteamManager = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))
+		->GetSteamManager();
 
 	for (auto& CurrentPlayerScore : CurrentPlayerScores)
 	{
@@ -671,8 +674,6 @@ void ABSGameMode::HandleScoreSaving(const bool bExternalSaveScores, const bool b
 			TargetManager->UpdateCommonScoreInfoQTable(ScoreInfoInst);
 		}
 
-		UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-
 		const bool bValidToSave = CurrentPlayerScore.Value.IsValidToSave();
 		if (bValidToSave)
 		{
@@ -687,7 +688,7 @@ void ABSGameMode::HandleScoreSaving(const bool bExternalSaveScores, const bool b
 					1);
 			}
 #else // !UE_BUILD_SHIPPING
-			GI->GetSteamManager()->UpdateStat_NumGamesPlayed(
+			SteamManager->UpdateStat_NumGamesPlayed(
 				CurrentPlayerScore.Value.DefiningConfig.GameModeType == EGameModeType::Custom
 				? EBaseGameMode::None
 				: CurrentPlayerScore.Value.DefiningConfig.BaseGameMode,
@@ -701,9 +702,6 @@ void ABSGameMode::HandleScoreSaving(const bool bExternalSaveScores, const bool b
 		}
 
 		CurrentPlayerScore.Value = FPlayerScore();
-
-		// Let game instance handle posting scores to db
-		GI->SavePlayerScoresToDatabase(CurrentPlayerScore.Key, bValidToSave, bQuitToDesktopAfterSave);
 	}
 }
 

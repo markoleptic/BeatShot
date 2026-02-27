@@ -1,8 +1,10 @@
 ﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #include "System/SteamManager.h"
+#include <steam/isteamuser.h>
 #include <steam/isteamutils.h>
 #include "BSGameInstance.h"
+#include "BSGameModeConfig/DefiningConfig.h"
 #include "Containers/UnrealString.h"
 
 DEFINE_LOG_CATEGORY(LogSteamManager);
@@ -72,13 +74,17 @@ void USteamManager::InitializeSteamManager()
 		AppId = SteamUtils()->GetAppID();
 	}
 	OnSteamOverlayActiveDelegate.Register(this, &USteamManager::OnSteamOverlayActive);
-	OnAuthTicketForWebApiResponseDelegate.Register(this, &USteamManager::OnAuthTicketForWebApiResponse);
 	OnUserStatsReceivedDelegate.Register(this, &USteamManager::OnUserStatsReceived);
 	OnUserStatsStoredDelegate.Register(this, &USteamManager::OnUserStatsStored);
 	OnAchievementStoredDelegate.Register(this, &USteamManager::OnAchievementStored);
 	StatsData = g_Stats;
 	AchievementData = g_Achievements;
 	bInitializedStats = RequestStats();
+
+	if (auto* SteamFriendsPtr = SteamFriends())
+	{
+		PersonaName = UTF8_TO_TCHAR(SteamFriendsPtr->GetPersonaName());
+	}
 
 	// Online Subsystem Steam calls these
 	// SteamAPI_Init()
@@ -90,34 +96,6 @@ void USteamManager::AssignGameInstance(UBSGameInstance* InDefaultGameInstance)
 	DefaultGameInstance = InDefaultGameInstance;
 }
 
-bool USteamManager::CreateAuthTicketForWebApi(
-	TSharedPtr<FOnAuthTicketForWebApiResponseCallbackHandler, ESPMode::ThreadSafe> CallbackHandler)
-{
-	if (!SteamUser())
-	{
-		return false;
-	}
-	ActiveCallbacks.Enqueue(CallbackHandler);
-	CallbackHandler->Handle = SteamUser()->GetAuthTicketForWebApi("kxuhYhcZQyDdFtpS");
-	return true;
-}
-
-/** Callback for when a ticket for a WebApiResponse is generated */
-void USteamManager::OnAuthTicketForWebApiResponse(GetTicketForWebApiResponse_t* pParam)
-{
-	TSharedPtr<FOnAuthTicketForWebApiResponseCallbackHandler> CallbackHandler;
-	if (ActiveCallbacks.Dequeue(CallbackHandler))
-	{
-		BytesToHex(pParam->m_rgubTicket, pParam->m_cubTicket, CallbackHandler->Ticket);
-		CallbackHandler->Result = pParam->m_eResult;
-		CallbackHandler->OnAuthTicketForWebApiReady.ExecuteIfBound();
-	}
-	else
-	{
-		UE_LOG(LogSteamManager, Warning, TEXT("Failed to dequeue a CallbackHandler."));
-	}
-}
-
 /** Callback for when steam overlay is toggled */
 void USteamManager::OnSteamOverlayActive(GameOverlayActivated_t* pParam)
 {
@@ -127,7 +105,10 @@ void USteamManager::OnSteamOverlayActive(GameOverlayActivated_t* pParam)
 		AsyncTask(ENamedThreads::GameThread,
 		          [this]
 		          {
-			          DefaultGameInstance->OnSteamOverlayIsOn();
+			          if (DefaultGameInstance.IsValid())
+			          {
+				          DefaultGameInstance->OnSteamOverlayIsOn();
+			          }
 		          });
 	}
 	else
@@ -135,7 +116,10 @@ void USteamManager::OnSteamOverlayActive(GameOverlayActivated_t* pParam)
 		AsyncTask(ENamedThreads::GameThread,
 		          [this]
 		          {
-			          DefaultGameInstance->OnSteamOverlayIsOff();
+			          if (DefaultGameInstance.IsValid())
+			          {
+				          DefaultGameInstance->OnSteamOverlayIsOff();
+			          }
 		          });
 	}
 }
@@ -358,6 +342,11 @@ void USteamManager::UpdateStat_NumGamesPlayed(const EBaseGameMode GameMode, int 
 		return;
 	}
 	UpdateStat(APIName, IntValue);
+}
+
+FString USteamManager::GetPersonaName() const
+{
+	return PersonaName;
 }
 
 const char* USteamManager::GetStat_NumGamesPlayed(const EBaseGameMode GameMode)

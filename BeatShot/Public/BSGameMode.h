@@ -155,10 +155,8 @@ private:
 	/** Loads matching player scores into CurrentPlayerScore and calculates the MaxScorePerTarget. */
 	void LoadMatchingPlayerScores();
 
-	/** Saves player scores to slot and calls SaveScoresToDatabase() if bShouldSavePlayerScores is true and
-	 *  GetCompletedPlayerScores() returns a valid score object, otherwise broadcasts OnPostScoresResponse with
-	 *  "None". */
-	void HandleScoreSaving(bool bExternalSaveScores, bool bQuitToDesktopAfterSave);
+	/** Finalizes and saves player scores to slot. */
+	void HandleScoreSaving();
 
 	/** Returns the current player scores, checking for NaNs and updating the time. */
 	void FinalizePlayerScore(FPlayerScore& InScore) const;

@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "HttpRequestInterface.h"
 #include "Blueprint/UserWidget.h"
 #include "Utilities/BSWidgetInterface.h"
 #include "FeedbackWidget.generated.h"
@@ -15,7 +14,7 @@ class UEditableTextBox;
 
 /** Simple pop-up widget that sends feedback using a http request. */
 UCLASS()
-class USERINTERFACE_API UFeedbackWidget : public UUserWidget, public IHttpRequestInterface
+class USERINTERFACE_API UFeedbackWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
@@ -23,7 +22,7 @@ public:
 	void ShowFeedbackWidget();
 
 	/** Broadcast when the widget is hidden after animations have completed. */
-	TMulticastDelegate<void()> OnExitAnimationCompletedDelegate;
+	TDelegate<void()> OnExitAnimationCompletedDelegate;
 
 protected:
 	virtual void NativeConstruct() override;

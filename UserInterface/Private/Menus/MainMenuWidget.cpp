@@ -7,11 +7,9 @@
 #include "Components/WidgetSwitcher.h"
 #include "Kismet/GameplayStatics.h"
 #include "Menus/GameModeMenuWidget.h"
-#include "Menus/ScoreBrowserWidget.h"
 #include "Menus/ScoreViewerWidget.h"
 #include "Overlays/FeedbackWidget.h"
 #include "Overlays/LoginWidget.h"
-#include "SaveGames/SaveGamePlayerSettings.h"
 #include "Styles/MenuStyle.h"
 #include "Utilities/BSWidgetInterface.h"
 #include "Utilities/Buttons/MenuButton.h"
@@ -19,22 +17,8 @@
 void UMainMenuWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	Button_Login_Register->SetVisibility(ESlateVisibility::Collapsed);
 
 	SetStyles();
-
-	ScoresWidget->OnURLChangedResult.AddUObject(this, &UMainMenuWidget::OnURLChangedResult_ScoresWidget);
-	LoginWidget->OnLoginButtonClicked.AddUObject(this, &UMainMenuWidget::OnButtonClicked_Login);
-
-	LoginWidget->OnExitAnimationCompletedDelegate.AddUObject(this,
-	                                                         &ThisClass::OnWidgetExitAnimationCompleted,
-	                                                         Button_Login_Register);
-	FeedbackWidget->OnExitAnimationCompletedDelegate.AddUObject(this,
-	                                                            &ThisClass::OnWidgetExitAnimationCompleted,
-	                                                            Button_Feedback);
-
-	LoginWidget->Button_RetrySteamLogin->OnBSButtonPressed.AddUObject(this, &ThisClass::OnButtonClicked_BSButton);
-	Button_Login_Register->OnBSButtonPressed.AddUObject(this, &ThisClass::OnButtonClicked_BSButton);
 
 	MenuButton_PatchNotes->SetDefaults(Box_PatchNotes, MenuButton_GameModes);
 	MenuButton_GameModes->SetDefaults(Box_GameModes, MenuButton_Scores);
@@ -52,13 +36,10 @@ void UMainMenuWidget::NativeConstruct()
 	Button_Feedback->OnBSButtonPressed.AddUObject(this, &ThisClass::OnMenuButtonClicked_BSButton);
 	MenuButton_Quit->OnBSButtonPressed.AddUObject(this, &ThisClass::OnMenuButtonClicked_BSButton);
 
-	WebBrowserOverlayPatchNotes->InitScoreBrowser(EScoreBrowserType::PatchNotes);
-	ScoresWidget->InitScoreBrowser(EScoreBrowserType::MainMenuScores);
-
 	MenuButton_PatchNotes->SetActive();
 	MainMenuSwitcher->SetActiveWidget(MenuButton_PatchNotes->GetAssociatedWidget());
 
-	ScoreViewerWidget->LoadScores(LoadSaveGamePlayerScore(), true);
+	ScoreViewerWidget->LoadScores(LoadSaveGamePlayerScore(), false);
 }
 
 void UMainMenuWidget::NativePreConstruct()
@@ -72,34 +53,18 @@ void UMainMenuWidget::SetStyles()
 	MenuStyle = IBSWidgetInterface::GetStyleCDO<UMenuStyle>(MenuStyleClass);
 }
 
+UGameModeMenuWidget* UMainMenuWidget::GetGameModesWidget() const
+{
+	return GameModesWidget;
+}
+
+USettingsMenuWidget* UMainMenuWidget::GetSettingsMenuWidget() const
+{
+	return SettingsMenuWidget;
+}
+
 void UMainMenuWidget::OnPlayerSettingsChanged(const FPlayerSettings_User& UserSettings)
 {
-}
-
-void UMainMenuWidget::LoginScoresWidgetWithSteam(const FString SteamAuthTicket)
-{
-	CurrentLoginMethod = ELoginMethod::Steam;
-	ScoresWidget->LoginUserBrowser(FString(SteamAuthTicket));
-}
-
-void UMainMenuWidget::LoginScoresWidgetSubsequent()
-{
-	CurrentLoginMethod = ELoginMethod::Steam;
-	const FPlayerSettings_User PlayerSettings = LoadPlayerSettings().User;
-	if (IsRefreshTokenValid(PlayerSettings.RefreshCookie) && !PlayerSettings.UserID.IsEmpty())
-	{
-		ScoresWidget->LoadProfile(PlayerSettings.UserID);
-	}
-}
-
-void UMainMenuWidget::TryFallbackLogin()
-{
-	CurrentLoginMethod = ELoginMethod::Legacy;
-	const FPlayerSettings_User PlayerSettings = LoadPlayerSettings().User;
-	if (IsRefreshTokenValid(PlayerSettings.RefreshCookie) && !PlayerSettings.UserID.IsEmpty())
-	{
-		ScoresWidget->LoadProfile(PlayerSettings.UserID);
-	}
 }
 
 void UMainMenuWidget::OnMenuButtonClicked_BSButton(const UBSButton* Button)
@@ -116,34 +81,23 @@ void UMainMenuWidget::OnMenuButtonClicked_BSButton(const UBSButton* Button)
 		GameModesWidget->StopGameModePreview();
 	}
 
-	// Manually fade out browser overlay to avoid abrupt change
-	if (MenuButton == MenuButton_Scores)
-	{
-		if (bFadeInScoreBrowserOnButtonPress)
-		{
-			ScoresWidget->FadeOutLoadingOverlay();
-			bFadeInScoreBrowserOnButtonPress = false;
-		}
-		if (bFadeInOverlayTextOnButtonPress)
-		{
-			ScoresWidget->FadeOutLoadingIconAndShowText();
-			bFadeInOverlayTextOnButtonPress = false;
-		}
-	}
 	// Feedback button
-	else if (Button == Button_Feedback)
+	if (Button == Button_Feedback)
 	{
+		auto* FeedbackWidget = CreateWidget<UFeedbackWidget>(this, FeedbackWidgetClass);
+		FeedbackWidget->OnExitAnimationCompletedDelegate.BindLambda([this, FeedbackWidget]
+		{
+			Button_Feedback->SetInActive();
+			FeedbackWidget->RemoveFromParent();
+		});
+		FeedbackWidget->AddToViewport();
 		FeedbackWidget->ShowFeedbackWidget();
 	}
-
-	// Menu button
-	if (const auto AssociatedWidget = MenuButton->GetAssociatedWidget())
+	else if (const auto AssociatedWidget = MenuButton->GetAssociatedWidget())
 	{
 		MainMenuSwitcher->SetActiveWidget(AssociatedWidget);
 	}
-
-	// Quit button
-	if (Button == MenuButton_Quit)
+	else if (Button == MenuButton_Quit)
 	{
 		UKismetSystemLibrary::QuitGame(GetWorld(),
 		                               UGameplayStatics::GetPlayerController(GetWorld(), 0),
@@ -152,122 +106,14 @@ void UMainMenuWidget::OnMenuButtonClicked_BSButton(const UBSButton* Button)
 	}
 }
 
-void UMainMenuWidget::OnButtonClicked_BSButton(const UBSButton* Button)
+void UMainMenuWidget::UpdateLoginState(const FString& SteamPersonaName)
 {
-	// Login/Register button
-	if (Button == Button_Login_Register)
+	if (SteamPersonaName.IsEmpty())
 	{
-		LoginWidget->ShowSteamLoginScreen();
+		TextBlock_Username->SetText(IBSWidgetInterface::GetWidgetTextFromKey("Login_NotSignedIn"));
 	}
-	else if (Button == LoginWidget->Button_RetrySteamLogin)
+	else
 	{
-		CurrentLoginMethod = ELoginMethod::Steam;
-		TextBlock_SignInState->SetText(FText());
-		if (OnSteamLoginRequest.IsBound())
-		{
-			OnSteamLoginRequest.Execute();
-		}
+		TextBlock_Username->SetText(FText::FromString(SteamPersonaName));
 	}
-}
-
-void UMainMenuWidget::OnURLChangedResult_ScoresWidget(const bool bSuccess)
-{
-	UpdateLoginState(bSuccess);
-}
-
-void UMainMenuWidget::UpdateLoginState(const bool bSuccessfulLogin, const FString OptionalStringTableKey)
-{
-	if (!bSuccessfulLogin)
-	{
-		if (OptionalStringTableKey.IsEmpty())
-		{
-			TextBlock_SignInState->SetText(IBSWidgetInterface::GetWidgetTextFromKey("Login_NotSignedIn"));
-		}
-		else
-		{
-			TextBlock_SignInState->SetText(IBSWidgetInterface::GetWidgetTextFromKey(OptionalStringTableKey));
-		}
-		// Collapse username
-		TextBlock_Username->SetText(FText());
-		TextBlock_Username->SetVisibility(ESlateVisibility::Collapsed);
-
-		// Show Login Button
-		Button_Login_Register->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-		bFadeInOverlayTextOnButtonPress = true;
-		CurrentLoginMethod = ELoginMethod::None;
-		return;
-	}
-
-	switch (CurrentLoginMethod)
-	{
-	case ELoginMethod::None:
-		TextBlock_SignInState->SetText(FText::FromString("Unhandled Login Method"));
-		Button_Login_Register->SetVisibility(ESlateVisibility::Collapsed);
-		UE_LOG(LogTemp, Warning, TEXT("Unhandled Login Method in Main Menu"));
-		break;
-	case ELoginMethod::Steam:
-		TextBlock_SignInState->SetText(IBSWidgetInterface::GetWidgetTextFromKey("Login_SignedInSteam"));
-		// Only collapse login button if signed in through steam
-		Button_Login_Register->SetVisibility(ESlateVisibility::Collapsed);
-		break;
-	case ELoginMethod::Legacy:
-		TextBlock_SignInState->SetText(IBSWidgetInterface::GetWidgetTextFromKey("Login_SignedInAs"));
-		Button_Login_Register->
-			SetButtonText(IBSWidgetInterface::GetWidgetTextFromKey("Login_Register_SteamButtonText"));
-		LoginWidget->SetIsLegacySignedIn(true);
-		break;
-	}
-
-	// Show username
-	TextBlock_Username->SetText(FText::FromString(LoadPlayerSettings().User.DisplayName));
-	TextBlock_Username->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-
-	bFadeInScoreBrowserOnButtonPress = true;
-	CurrentLoginMethod = ELoginMethod::None;
-}
-
-void UMainMenuWidget::OnWidgetExitAnimationCompleted(UMenuButton* ButtonToSetInactive)
-{
-	ButtonToSetInactive->SetInActive();
-}
-
-// ReSharper disable once CppPassValueParameterByConstReference
-void UMainMenuWidget::OnButtonClicked_Login(const FLoginPayload LoginPayload)
-{
-	CurrentLoginMethod = ELoginMethod::Legacy;
-	TSharedPtr<FLoginResponse> LoginResponse(new FLoginResponse);
-	LoginResponse->OnHttpResponseReceived.BindLambda([this, LoginResponse, LoginPayload]
-	{
-		if (LoginResponse->HttpStatus != 200)
-		{
-			if (LoginResponse->HttpStatus == 401)
-			{
-				LoginWidget->ShowLoginScreen("Login_InvalidCredentialsText");
-			}
-			else if (LoginResponse->HttpStatus == 408 || LoginResponse->HttpStatus == 504)
-			{
-				LoginWidget->ShowLoginScreen("Login_TimeOutErrorText");
-			}
-			else
-			{
-				LoginWidget->ShowLoginScreen("Login_LoginErrorText");
-			}
-			UpdateLoginState(false);
-		}
-		else
-		{
-			FPlayerSettings_User PlayerSettingsToSave = LoadPlayerSettings().User;
-			PlayerSettingsToSave.UserID = LoginResponse->UserID;
-			PlayerSettingsToSave.DisplayName = LoginResponse->DisplayName;
-			PlayerSettingsToSave.RefreshCookie = LoginResponse->RefreshToken;
-			SavePlayerSettings(PlayerSettingsToSave);
-			TextBlock_SignInState->SetText(IBSWidgetInterface::GetWidgetTextFromKey("SignInState_LoggingWebBrowser"));
-
-			// Callback function for this is OnURLChangedResult_ScoresWidget
-			ScoresWidget->LoginUserBrowser(LoginPayload, PlayerSettingsToSave.UserID);
-		}
-	});
-	TextBlock_SignInState->SetText(IBSWidgetInterface::GetWidgetTextFromKey("SignInState_SendingRequest"));
-	LoginUser(LoginPayload, LoginResponse);
 }

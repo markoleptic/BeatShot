@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "BSGameModeInterface.h"
-#include "HttpRequestInterface.h"
 #include "Blueprint/UserWidget.h"
 #include "GameModes/CustomGameModeStartWidget.h"
 #include "Utilities/BSCarouselNavBar.h"
@@ -69,10 +68,7 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FOnGameModeBreakingChange, const bool bIsGam
 /** The base widget for selecting or customizing a game mode. The custom portion is split into multiple
  *  SettingsCategoryWidgets. Includes a default game modes section. */
 UCLASS()
-class USERINTERFACE_API UGameModeMenuWidget : public UUserWidget,
-                                              public IHttpRequestInterface,
-                                              public IBSGameModeInterface,
-                                              public IBSWidgetInterface
+class USERINTERFACE_API UGameModeMenuWidget : public UUserWidget, public IBSGameModeInterface, public IBSWidgetInterface
 {
 	GENERATED_BODY()
 
@@ -95,7 +91,7 @@ public:
 	bool bIsMainMenuChild;
 
 	/** Executes when the user is exiting the GameModesWidget, broadcast to GameInstance to handle transition. */
-	TMulticastDelegate<void(const FGameModeTransitionState& TransitionState)> OnGameModeStateChanged;
+	TDelegate<void(const FGameModeTransitionState& TransitionState)> OnGameModeStateChanged;
 
 	/** Broadcast false when any non-defining config option is false. Broadcasts true only if all are true.
 	 *  Only Broadcasts if different from the previous. */

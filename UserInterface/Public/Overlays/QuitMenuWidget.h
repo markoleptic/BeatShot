@@ -8,8 +8,6 @@
 #include "QuitMenuWidget.generated.h"
 
 struct FGameModeTransitionState;
-DECLARE_DYNAMIC_DELEGATE(FOnExitQuitMenu);
-
 class UTextBlock;
 class UVerticalBox;
 class UOverlay;
@@ -23,9 +21,9 @@ class USERINTERFACE_API UQuitMenuWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
-	virtual void NativeConstruct() override;
-
 public:
+	void SetIsPostGameModeMenuChild(bool IsPostGameModeMenuChild);
+
 	/** Fades in the MenuOverlay, and also fades in the background blur. */
 	UFUNCTION()
 	void PlayInitialFadeInMenu()
@@ -42,16 +40,11 @@ public:
 		PlayAnimationReverse(FadeOutBackgroundBlur);
 	}
 
-	/** whether this instance of QuitMenu belongs to The PostGameMenuWidget or not. */
-	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Default", meta = (ExposeOnSpawn="true"))
-	bool bIsPostGameMenuChild;
-
 	/** Broadcasts to parent so it can slide menu button back to starting position. */
-	UPROPERTY()
-	FOnExitQuitMenu OnExitQuitMenu;
+	TDelegate<void()> OnExitQuitMenu;
 
 	/** Bound to DefaultGameInstance when constructed in DefaultPlayerController. */
-	TMulticastDelegate<void(const FGameModeTransitionState& TransitionState)> OnGameModeStateChanged;
+	TDelegate<void(const FGameModeTransitionState& TransitionState)> OnGameModeStateChanged;
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
@@ -171,6 +164,9 @@ private:
 
 	UFUNCTION()
 	void SetSaveMenuTitleDesktop();
+
+	/** Whether this instance of QuitMenu belongs to The PostGameMenuWidget or not. */
+	bool bIsPostGameMenuChild;
 
 	/** Whether to save scores, used as argument when calling EndGameMode() from DefaultGameMode. */
 	bool bShouldSaveScores;

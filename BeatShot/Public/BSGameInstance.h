@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "BSPlayerScoreInterface.h"
 #include "BSPlayerSettingsInterface.h"
-#include "HttpRequestInterface.h"
 #include "MetasoundGeneratorHandle.h"
 #include "Engine/GameInstance.h"
 #include "BSGameInstance.generated.h"
@@ -26,7 +25,6 @@ class USteamManager;
 UCLASS()
 class BEATSHOT_API UBSGameInstance : public UGameInstance,
                                      public IBSPlayerSettingsInterface,
-                                     public IHttpRequestInterface,
                                      public IBSPlayerScoreInterface
 {
 	GENERATED_BODY()
@@ -82,11 +80,6 @@ public:
 
 	/** Sets the actor that manages the time of day in the Range level. */
 	void SetTimeOfDayManager(const TObjectPtr<ATimeOfDayManager>& InManager) { TimeOfDayManager = InManager; }
-
-	/** Handles saving scores to database, called by BSGameMode. */
-	void SavePlayerScoresToDatabase(ABSPlayerController* PlayerController,
-	                                bool bWasValidToSave,
-	                                bool bQuitToDesktopAfterSave) const;
 
 	/** Sets the loading screen state to fading out and updates the loading screen audio component state. */
 	void RemoveLoadingScreen();

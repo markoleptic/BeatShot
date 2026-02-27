@@ -2,6 +2,7 @@
 
 
 #include "Overlays/FeedbackWidget.h"
+#include "HttpRequestInterface.h"
 #include "Components/EditableTextBox.h"
 #include "Components/MultiLineEditableTextBox.h"
 #include "Components/TextBlock.h"
@@ -81,7 +82,7 @@ void UFeedbackWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 			}
 			PlayFadeInResponse();
 		});
-		PostFeedback(Feedback, Response);
+		IHttpRequestInterface::PostFeedback(Feedback, Response);
 		PlayFadeOut();
 	}
 	else if (Button == Button_Okay)
@@ -140,6 +141,6 @@ void UFeedbackWidget::SetCollapsedAndUnbindDelegates()
 		UnbindFromAnimationFinished(FadeOutResponse, FadeOutResponseDelegate);
 		FadeOutResponseDelegate.Unbind();
 	}
-	OnExitAnimationCompletedDelegate.Broadcast();
+	OnExitAnimationCompletedDelegate.ExecuteIfBound();
 	SetVisibility(ESlateVisibility::Collapsed);
 }

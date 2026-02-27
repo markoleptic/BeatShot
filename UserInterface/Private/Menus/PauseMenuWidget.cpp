@@ -26,9 +26,10 @@ void UPauseMenuWidget::NativeConstruct()
 	MenuButton_FAQ->OnBSButtonPressed.AddUObject(this, &ThisClass::OnButtonClicked_BSButton);
 	MenuButton_RestartCurrentMode->OnBSButtonPressed.AddUObject(this, &ThisClass::OnButtonClicked_BSButton);
 	MenuButton_Quit->OnBSButtonPressed.AddUObject(this, &ThisClass::OnButtonClicked_BSButton);
-
-	QuitMenuWidget->OnExitQuitMenu.BindUFunction(this, "SetQuitMenuButtonsInActive");
-	SettingsMenuWidget->OnRestartButtonClicked.BindUFunction(this, "OnButtonClicked_RestartCurrentMode");
+	SettingsMenuWidget->OnRestartButtonClicked.BindLambda([&]
+	{
+		OnButtonClicked_BSButton(MenuButton_RestartCurrentMode);
+	});
 	FadeInWidget();
 }
 
@@ -58,15 +59,24 @@ void UPauseMenuWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 			UE_LOG(LogTemp, Display, TEXT("ResumeGame not bound."));
 		}
 	}
-	else if (Button == MenuButton_Quit)
+	else if (Button == MenuButton_Quit || Button == MenuButton_RestartCurrentMode)
 	{
-		QuitMenuWidget->SetVisibility(ESlateVisibility::Visible);
-		QuitMenuWidget->PlayInitialFadeInMenu();
-	}
-	else if (Button == MenuButton_RestartCurrentMode)
-	{
-		QuitMenuWidget->SetVisibility(ESlateVisibility::Visible);
-		QuitMenuWidget->PlayFadeInRestartMenu();
+		auto* QuitMenuWidget = CreateWidget<UQuitMenuWidget>(this, QuitMenuClass);
+		QuitMenuWidget->SetIsPostGameModeMenuChild(false);
+		QuitMenuWidget->OnExitQuitMenu.BindUObject(this, &ThisClass::SetQuitMenuButtonsInActive);
+		QuitMenuWidget->OnGameModeStateChanged.BindLambda([&](auto&&... Args)
+		{
+			OnGameModeStateChanged.ExecuteIfBound(Forward<decltype(Args)>(Args)...);
+		});
+
+		if (Button == MenuButton_Quit)
+		{
+			QuitMenuWidget->PlayInitialFadeInMenu();
+		}
+		else
+		{
+			QuitMenuWidget->PlayFadeInRestartMenu();
+		}
 	}
 
 	if (const UMenuButton* MenuButton = Cast<UMenuButton>(Button))
@@ -76,13 +86,4 @@ void UPauseMenuWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 			PauseMenuSwitcher->SetActiveWidget(AssociatedWidget);
 		}
 	}
-}
-
-void UPauseMenuWidget::OnButtonClicked_RestartCurrentMode()
-{
-	QuitMenuWidget->SetVisibility(ESlateVisibility::Visible);
-	QuitMenuWidget->PlayFadeInRestartMenu();
-
-	MenuButton_RestartCurrentMode->SetActive();
-	PauseMenuSwitcher->SetActiveWidget(MenuButton_RestartCurrentMode);
 }

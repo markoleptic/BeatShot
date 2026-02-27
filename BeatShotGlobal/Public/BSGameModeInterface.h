@@ -49,10 +49,12 @@ public:
 	 */
 	static void SaveCustomGameMode(const FBSConfig& ConfigToSave);
 
-	/** Removes a custom game modeand saves to slot. Also removes the FCommonScoreInfo.
+	/** Removes a custom game mode and saves to slot. Optionally removes scores and FCommonScoreInfo.
 	 *  @param ConfigToRemove Configuration to search for
+	 *  @param bRemoveScores If true, also removes scores
+	 *  @return Number of score entries that were removed
 	 */
-	static int32 RemoveCustomGameMode(const FBSConfig& ConfigToRemove);
+	static int32 RemoveCustomGameMode(const FBSConfig& ConfigToRemove, bool bRemoveScores);
 
 	/** Removes all custom game modes and saves to slot. Also removes the FCommonScoreInfos for all custom game modes
 	 *  from SaveGamePlayerScore.

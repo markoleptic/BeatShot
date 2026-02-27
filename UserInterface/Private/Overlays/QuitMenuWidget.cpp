@@ -6,10 +6,9 @@
 #include "Utilities/GameModeTransitionState.h"
 #include "Utilities/Buttons/BSButton.h"
 
-void UQuitMenuWidget::NativeConstruct()
+void UQuitMenuWidget::SetIsPostGameModeMenuChild(const bool IsPostGameModeMenuChild)
 {
-	Super::NativeConstruct();
-
+	bIsPostGameMenuChild = IsPostGameModeMenuChild;
 	if (bIsPostGameMenuChild)
 	{
 		bShouldSaveScores = false;
@@ -123,7 +122,7 @@ void UQuitMenuWidget::OnQuitToMainMenu()
 	FGameModeTransitionState TransitionState;
 	TransitionState.TransitionState = ETransitionState::QuitToMainMenu;
 	TransitionState.bSaveCurrentScores = bShouldSaveScores;
-	OnGameModeStateChanged.Broadcast(TransitionState);
+	OnGameModeStateChanged.ExecuteIfBound(TransitionState);
 }
 
 void UQuitMenuWidget::OnQuitToDesktop()
@@ -135,7 +134,7 @@ void UQuitMenuWidget::OnQuitToDesktop()
 	FGameModeTransitionState TransitionState;
 	TransitionState.TransitionState = ETransitionState::QuitToDesktop;
 	TransitionState.bSaveCurrentScores = bShouldSaveScores;
-	OnGameModeStateChanged.Broadcast(TransitionState);
+	OnGameModeStateChanged.ExecuteIfBound(TransitionState);
 }
 
 void UQuitMenuWidget::OnRestart()
@@ -143,7 +142,7 @@ void UQuitMenuWidget::OnRestart()
 	FGameModeTransitionState TransitionState;
 	TransitionState.TransitionState = ETransitionState::Restart;
 	TransitionState.bSaveCurrentScores = bShouldSaveScores;
-	OnGameModeStateChanged.Broadcast(TransitionState);
+	OnGameModeStateChanged.ExecuteIfBound(TransitionState);
 }
 
 void UQuitMenuWidget::CollapseWidget()

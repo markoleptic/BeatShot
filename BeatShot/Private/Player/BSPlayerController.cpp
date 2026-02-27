@@ -19,14 +19,12 @@
 #include "Menus/MainMenuWidget.h"
 #include "Menus/PauseMenuWidget.h"
 #include "Menus/PostGameMenuWidget.h"
-#include "Menus/ScoreBrowserWidget.h"
 #include "Menus/SettingsMenuWidget.h"
 #include "Overlays/CountdownWidget.h"
 #include "Overlays/CrossHairWidget.h"
 #include "Overlays/FrameCounterWidget.h"
 #include "Overlays/PlayerHUD.h"
 #include "Overlays/QTableWidget.h"
-#include "Overlays/QuitMenuWidget.h"
 #include "Player/BSPlayerState.h"
 #include "System/SteamManager.h"
 #include "Transitions/ScreenFadeWidget.h"
@@ -173,31 +171,29 @@ void ABSPlayerController::ShowMainMenu()
 	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 
 	MainMenuWidget = CreateWidget<UMainMenuWidget>(this, MainMenuClass);
-	MainMenuWidget->GameModesWidget->OnGameModeStateChanged.AddUObject(GI, &UBSGameInstance::HandleGameModeTransition);
-	MainMenuWidget->OnSteamLoginRequest.BindUObject(this, &ABSPlayerController::LoginUser);
-	GI->RegisterPlayerSettingsUpdaters(MainMenuWidget->SettingsMenuWidget->GetGameDelegate(),
-	                                   MainMenuWidget->SettingsMenuWidget->GetCrossHairDelegate(),
-	                                   MainMenuWidget->SettingsMenuWidget->GetAudioAnalyzerDelegate(),
-	                                   MainMenuWidget->SettingsMenuWidget->GetUserDelegate(),
+	MainMenuWidget->GetGameModesWidget()->OnGameModeStateChanged.BindUObject(
+		GI,
+		&UBSGameInstance::HandleGameModeTransition);
+	const auto* SettingsMenuWidget = MainMenuWidget->GetSettingsMenuWidget();
+	GI->RegisterPlayerSettingsUpdaters(SettingsMenuWidget->GetGameDelegate(),
+	                                   SettingsMenuWidget->GetCrossHairDelegate(),
+	                                   SettingsMenuWidget->GetAudioAnalyzerDelegate(),
+	                                   SettingsMenuWidget->GetUserDelegate(),
 	                                   MainMenuWidget->GetUserDelegate());
 
 	MainMenuWidget->AddToViewport();
 
 	if (AMainMenuGameMode* GameMode = Cast<AMainMenuGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
 	{
-		GameMode->SetupTargetManager(MainMenuWidget->GameModesWidget);
+		GameMode->SetupTargetManager(MainMenuWidget->GetGameModesWidget());
 	}
 
 	UBSGameUserSettings::Get()->SetInMenu(true);
 
-	if (!bIsLoggedIn)
-	{
-		LoginUser();
-	}
-	else
-	{
-		MainMenuWidget->LoginScoresWidgetSubsequent();
-	}
+	const TObjectPtr<USteamManager> SteamManager = GI->GetSteamManager();
+	check(SteamManager);
+
+	MainMenuWidget->UpdateLoginState(SteamManager->GetPersonaName());
 }
 
 void ABSPlayerController::HideMainMenu()
@@ -228,7 +224,7 @@ void ABSPlayerController::ShowPauseMenu()
 	                                   PauseMenuWidget->SettingsMenuWidget->GetAudioAnalyzerDelegate(),
 	                                   PauseMenuWidget->SettingsMenuWidget->GetUserDelegate());
 
-	PauseMenuWidget->QuitMenuWidget->OnGameModeStateChanged.AddUObject(GI, &UBSGameInstance::HandleGameModeTransition);
+	PauseMenuWidget->OnGameModeStateChanged.BindUObject(GI, &UBSGameInstance::HandleGameModeTransition);
 	PauseMenuWidget->AddToViewport();
 
 	UBSGameUserSettings::Get()->SetInMenu(true);
@@ -350,10 +346,7 @@ void ABSPlayerController::ShowPostGameMenu()
 	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 
 	PostGameMenuWidget = CreateWidget<UPostGameMenuWidget>(this, PostGameMenuWidgetClass);
-	PostGameMenuWidget->GameModesWidget->OnGameModeStateChanged.AddUObject(GI,
-	                                                                       &UBSGameInstance::HandleGameModeTransition);
-	PostGameMenuWidget->QuitMenuWidget->OnGameModeStateChanged.AddUObject(GI,
-	                                                                      &UBSGameInstance::HandleGameModeTransition);
+	PostGameMenuWidget->OnGameModeStateChanged.BindUObject(GI, &UBSGameInstance::HandleGameModeTransition);
 
 	GI->RegisterPlayerSettingsUpdaters(PostGameMenuWidget->SettingsMenuWidget->GetGameDelegate(),
 	                                   PostGameMenuWidget->SettingsMenuWidget->GetCrossHairDelegate(),
@@ -368,14 +361,6 @@ void ABSPlayerController::ShowPostGameMenu()
 
 
 	UBSGameUserSettings::Get()->SetInMenu(true);
-}
-
-void ABSPlayerController::OnPostScoresResponseReceived(const FString& StringTableKey)
-{
-	if (PostGameMenuWidget && PostGameMenuWidget->ScoresWidget)
-	{
-		PostGameMenuWidget->ScoresWidget->InitScoreBrowser(EScoreBrowserType::PostGameModeMenuScores, StringTableKey);
-	}
 }
 
 void ABSPlayerController::HandlePause()
@@ -451,87 +436,6 @@ void ABSPlayerController::OnPossess(APawn* InPawn)
 void ABSPlayerController::OnRep_PlayerState()
 {
 	Super::OnRep_PlayerState();
-}
-
-void ABSPlayerController::LoginUser()
-{
-	if (!MainMenuWidget)
-	{
-		return;
-	}
-
-	const UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	check(GI);
-
-	const TObjectPtr<USteamManager> SteamManager = GI->GetSteamManager();
-	check(SteamManager);
-
-	TSharedPtr<FOnAuthTicketForWebApiResponseCallbackHandler> CallbackHandler(
-		new FOnAuthTicketForWebApiResponseCallbackHandler());
-
-	// First get auth ticket for web api
-	CallbackHandler->OnAuthTicketForWebApiReady.BindLambda([this, CallbackHandler]
-	{
-		if (CallbackHandler->Result != k_EResultOK)
-		{
-			if (SteamUser())
-			{
-				SteamUser()->CancelAuthTicket(CallbackHandler->Handle);
-			}
-			MainMenuWidget->UpdateLoginState(false, "SignInState_SteamSignInFailed");
-			MainMenuWidget->TryFallbackLogin();
-		}
-		else
-		{
-			// Get display name, user id, and refresh token from BeatShot API request
-			TSharedPtr<FSteamAuthTicketResponse> SteamAuthTicketResponse(new FSteamAuthTicketResponse());
-			SteamAuthTicketResponse->OnHttpResponseReceived.BindLambda([this, SteamAuthTicketResponse, CallbackHandler]
-			{
-				if (!SteamAuthTicketResponse->bConnectedSuccessfully)
-				{
-					return;
-				}
-				const uint64 LocalSteamID = SteamUser()->GetSteamID().ConvertToUint64();
-				const uint64 ResponseSteamID = FCString::Atoi64(*SteamAuthTicketResponse->SteamID);
-
-				if (LocalSteamID == ResponseSteamID)
-				{
-					PlayerSettings.User.DisplayName = FString(SteamFriends()->GetPersonaName());
-					PlayerSettings.User.UserID = SteamAuthTicketResponse->SteamID;
-					PlayerSettings.User.RefreshCookie = SteamAuthTicketResponse->RefreshCookie;
-					SavePlayerSettings(PlayerSettings.User);
-					bIsLoggedIn = true;
-				}
-
-				AsyncTask(ENamedThreads::GameThread,
-				          [this, CallbackHandler]
-				          {
-					          TryResetAuthTicketHandle(CallbackHandler->Handle);
-				          });
-			});
-			AuthenticateSteamUser(CallbackHandler->Ticket, SteamAuthTicketResponse);
-
-			// This will be OnlineAsyncTaskThreadSteam, need GameThread for TimerManager later on
-			AsyncTask(ENamedThreads::GameThread,
-			          [this, CallbackHandler]
-			          {
-				          FDelegateHandle Handle = MainMenuWidget->ScoresWidget->OnURLChangedResult.AddLambda(
-					          [this, &Handle, CallbackHandler](const bool bSuccess)
-					          {
-						          TryResetAuthTicketHandle(CallbackHandler->Handle);
-						          Handle.Reset();
-					          });
-				          // Login to the in-game web browser using the redirect url from the auth ticket for web api
-				          MainMenuWidget->LoginScoresWidgetWithSteam(CallbackHandler->Ticket);
-			          });
-		}
-	});
-	// Could fail if not logged in to Steam
-	if (!SteamManager->CreateAuthTicketForWebApi(CallbackHandler))
-	{
-		MainMenuWidget->UpdateLoginState(false, "SignInState_SteamSignInFailed");
-		MainMenuWidget->TryFallbackLogin();
-	}
 }
 
 void ABSPlayerController::HidePostGameMenu()
@@ -748,19 +652,4 @@ void ABSPlayerController::HandleGameUserSettingsChanged(const UBSGameUserSetting
 			HideFPSCounter();
 		}
 	}
-}
-
-void ABSPlayerController::TryResetAuthTicketHandle(const uint32 Handle)
-{
-	NumAuthTicketFinishes++;
-	if (NumAuthTicketFinishes < 2)
-	{
-		return;
-	}
-	// Cancel auth ticket after two uses (BeatShot API and MainMenuWidget)
-	if (SteamUser() && Handle)
-	{
-		SteamUser()->CancelAuthTicket(Handle);
-	}
-	NumAuthTicketFinishes = 0;
 }

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Utilities/GameModeTransitionState.h"
 #include "PostGameMenuWidget.generated.h"
 
 class UAudioSelectWidget;
@@ -12,7 +13,7 @@ class UWidgetSwitcher;
 class UVerticalBox;
 class UGameModeMenuWidget;
 class USettingsMenuWidget;
-class UScoreBrowserWidget;
+class UScoreViewerWidget;
 class UFAQWidget;
 class UQuitMenuWidget;
 class UBSButton;
@@ -29,22 +30,24 @@ protected:
 	virtual void NativePreConstruct() override;
 
 public:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UScoreBrowserWidget* ScoresWidget;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UGameModeMenuWidget* GameModesWidget;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UQuitMenuWidget* QuitMenuWidget;
+	/** Executes when the user is exiting the GameModesWidget, broadcast to GameInstance to handle transition. */
+	TDelegate<void(const FGameModeTransitionState& TransitionState)> OnGameModeStateChanged;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	USettingsMenuWidget* SettingsMenuWidget;
 
 protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UScoreViewerWidget* ScoreViewerWidget;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UGameModeMenuWidget* GameModesWidget;
+
+	UPROPERTY(EditDefaultsOnly, Category = "PostGameMenuWidget")
+	TSubclassOf<UQuitMenuWidget> QuitMenuWidgetClass;
 	UPROPERTY(EditDefaultsOnly, Category = "PostGameMenuWidget")
 	TSubclassOf<UMenuStyle> MenuStyleClass;
 	UPROPERTY(EditDefaultsOnly, Category = "PostGameMenuWidget")
 	TSubclassOf<UAudioSelectWidget> AudioSelectClass;
-	UPROPERTY()
-	TObjectPtr<UAudioSelectWidget> AudioSelectWidget;
 
 	UPROPERTY()
 	const UMenuStyle* MenuStyle;
@@ -94,7 +97,4 @@ protected:
 	void SetScoresWidgetVisibility();
 
 	void OnButtonClicked_BSButton(const UBSButton* Button);
-
-	UFUNCTION()
-	void SetQuitMenuButtonsInActive();
 };

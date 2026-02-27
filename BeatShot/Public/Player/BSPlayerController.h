@@ -6,17 +6,14 @@
 #include "CoreMinimal.h"
 #include "BSPlayerScoreInterface.h"
 #include "BSPlayerSettingsInterface.h"
-#include "HttpRequestInterface.h"
 #include "SaveGames/SaveGamePlayerSettings.h"
 #include "Target/ReinforcementLearningComponent.h"
 #include "BSPlayerController.generated.h"
 
-class UTooltipWidget;
 class UBSGameUserSettings;
 class AFloatingTextActor;
 class UQTableWidget;
 class ABSCharacterBase;
-class ULoginWidget;
 class UFrameCounterWidget;
 class UScreenFadeWidget;
 class UPostGameMenuWidget;
@@ -34,7 +31,6 @@ DECLARE_DELEGATE(FOnScreenFadeToBlackFinish);
  *  to the viewport (MainMenuWidget, PauseMenu, PostGameModeMenu), and several other overlay widgets. */
 UCLASS()
 class BEATSHOT_API ABSPlayerController : public APlayerController,
-                                         public IHttpRequestInterface,
                                          public IBSPlayerSettingsInterface,
                                          public IBSPlayerScoreInterface
 {
@@ -137,9 +133,6 @@ public:
 	/** Spawns the floating text actor (combat text) with text indicating the accuracy based on time offset. */
 	void ShowAccuracyText(const float TimeOffset, const FTransform& Transform);
 
-	/** Called by Game Instance after saving scores to database, or before if there was a problem. */
-	void OnPostScoresResponseReceived(const FString& StringTableKey = FString());
-
 	/** Called by Character when receiving input from IA_Pause, or by exiting the PostGameMenu. */
 	void HandlePause();
 
@@ -151,9 +144,6 @@ public:
 
 	/** Server only */
 	virtual void OnRep_PlayerState() override;
-
-	/** Login the user by authenticating using GetAuthTicketForWebApi. */
-	void LoginUser();
 
 	/** Delegate that executes when the screen fade widget completes its animation.  */
 	FOnScreenFadeToBlackFinish OnScreenFadeToBlackFinish;
@@ -206,9 +196,6 @@ private:
 	virtual void OnPlayerSettingsChanged(const FPlayerSettings_CrossHair& NewCrossHairSettings) override;
 	void HandleGameUserSettingsChanged(const UBSGameUserSettings* InGameUserSettings);
 
-	/** Calls ResetAuthTicket from SteamAPI if both MainMenuWidget and BeatShot API requests were completed. */
-	void TryResetAuthTicketHandle(const uint32 Handle);
-
 	UPROPERTY()
 	TObjectPtr<UMainMenuWidget> MainMenuWidget;
 	UPROPERTY()
@@ -229,12 +216,6 @@ private:
 	TObjectPtr<UUserWidget> InteractInfoWidget;
 	UPROPERTY()
 	TObjectPtr<UQTableWidget> QTableWidget;
-
-	/** Whether the user successfully received a steam auth ticket BeatShot api response. */
-	bool bIsLoggedIn = false;
-
-	/** Number of completed steam auth ticket usages. */
-	uint8 NumAuthTicketFinishes = 0;
 
 	/** Z Order for the screen fade widget. */
 	const int32 ZOrderFadeScreen = 20;

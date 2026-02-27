@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Utilities/GameModeTransitionState.h"
 #include "PauseMenuWidget.generated.h"
 
 class UMenuStyle;
@@ -26,16 +27,19 @@ class USERINTERFACE_API UPauseMenuWidget : public UUserWidget
 
 public:
 	/** Delegate that gets bound to lambda function in DefaultPlayerController. */
-	FResumeGame ResumeGame;
+	TDelegate<void()> ResumeGame;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	TObjectPtr<UQuitMenuWidget> QuitMenuWidget;
+	/** Executes when the user is exiting the GameModesWidget, broadcast to GameInstance to handle transition. */
+	TDelegate<void(const FGameModeTransitionState& TransitionState)> OnGameModeStateChanged;
 
 protected:
 	virtual void NativeConstruct() override;
+
 	virtual void NativePreConstruct() override;
 
-	UPROPERTY(EditDefaultsOnly, Category = "MainMenuWidget")
+	UPROPERTY(EditDefaultsOnly, Category = "PauseMenuWidget")
+	TSubclassOf<UQuitMenuWidget> QuitMenuClass;
+	UPROPERTY(EditDefaultsOnly, Category = "PauseMenuWidget")
 	TSubclassOf<UMenuStyle> MenuStyleClass;
 
 	UPROPERTY()
@@ -79,11 +83,7 @@ private:
 	UFUNCTION()
 	void FadeInWidget() { PlayAnimationForward(FadeInPauseMenu); }
 
-	UFUNCTION()
 	void SetQuitMenuButtonsInActive();
 
 	void OnButtonClicked_BSButton(const UBSButton* Button);
-
-	UFUNCTION()
-	void OnButtonClicked_RestartCurrentMode();
 };

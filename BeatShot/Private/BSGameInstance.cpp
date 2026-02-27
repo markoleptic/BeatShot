@@ -13,7 +13,6 @@
 #include "DeveloperSettings/BSLoadingScreenSettings.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/BSPlayerController.h"
-#include "SaveGames/SaveGamePlayerSettings.h"
 #include "Slate/SLoadingScreenWidget.h"
 #include "System/SteamManager.h"
 #include "Utilities/GameModeTransitionState.h"
@@ -255,90 +254,6 @@ void UBSGameInstance::SetLoadingScreenAudioComponentState(const float FadeTarget
 			Subsystem->WatchOutput(LoadingScreenAudioComponent.Get(), FName("OnFadeCompleted"), OnFadeCompleted);
 		}
 	}
-}
-
-void UBSGameInstance::SavePlayerScoresToDatabase(ABSPlayerController* PlayerController,
-                                                 const bool bWasValidToSave,
-                                                 const bool bQuitToDesktopAfterSave) const
-{
-	const FPlayerSettings_User PlayerSettings = PlayerController->GetPlayerSettings().User;
-	// If game mode encountered a reason not to save to database
-	if (!bWasValidToSave)
-	{
-		PlayerController->OnPostScoresResponseReceived("SBW_DidNotSaveScores");
-		if (bQuitToDesktopAfterSave)
-		{
-			UKismetSystemLibrary::QuitGame(GetWorld(),
-			                               GetFirstLocalPlayerController(GetWorld()),
-			                               EQuitPreference::Quit,
-			                               false);
-		}
-		return;
-	}
-
-	// No account
-	if (PlayerSettings.RefreshCookie.IsEmpty())
-	{
-		if (bQuitToDesktopAfterSave)
-		{
-			UKismetSystemLibrary::QuitGame(GetWorld(),
-			                               GetFirstLocalPlayerController(GetWorld()),
-			                               EQuitPreference::Quit,
-			                               false);
-		}
-		PlayerController->OnPostScoresResponseReceived("SBW_NoAccount");
-		return;
-	}
-
-	// Acquire access token
-	TSharedPtr<FAccessTokenResponse> AccessTokenResponse = MakeShareable(new FAccessTokenResponse());
-	AccessTokenResponse->OnHttpResponseReceived.BindLambda(
-		[this, AccessTokenResponse, UserID = PlayerSettings.UserID, bQuitToDesktopAfterSave]
-		{
-			if (AccessTokenResponse->OK) // Successful access token retrieval
-			{
-				TSharedPtr<FBSHttpResponse> PostScoresResponse = MakeShareable(new FBSHttpResponse());
-				PostScoresResponse->OnHttpResponseReceived.BindLambda(
-					[this, PostScoresResponse, bQuitToDesktopAfterSave]
-					{
-						if (ABSPlayerController* Controller = Cast<ABSPlayerController>(
-							GetFirstLocalPlayerController(GetWorld())))
-						{
-							if (PostScoresResponse->OK) // Successful scores post
-							{
-								SetAllPlayerScoresSavedToDatabase();
-								Controller->OnPostScoresResponseReceived();
-							}
-							else // Unsuccessful scores post
-							{
-								Controller->OnPostScoresResponseReceived("SBW_SavedScoresLocallyOnly");
-							}
-
-							if (bQuitToDesktopAfterSave)
-							{
-								UKismetSystemLibrary::QuitGame(GetWorld(), Controller, EQuitPreference::Quit, false);
-							}
-						}
-					});
-				PostPlayerScores(LoadPlayerScores_UnsavedToDatabase(),
-				                 UserID,
-				                 AccessTokenResponse->AccessToken,
-				                 PostScoresResponse);
-			}
-			else // Unsuccessful access token retrieval
-			{
-				if (ABSPlayerController* Controller = Cast<ABSPlayerController>(
-					GetFirstLocalPlayerController(GetWorld())))
-				{
-					Controller->OnPostScoresResponseReceived("SBW_SavedScoresLocallyOnly");
-					if (bQuitToDesktopAfterSave)
-					{
-						UKismetSystemLibrary::QuitGame(GetWorld(), Controller, EQuitPreference::Quit, false);
-					}
-				}
-			}
-		});
-	RequestAccessToken(PlayerSettings.RefreshCookie, AccessTokenResponse);
 }
 
 void UBSGameInstance::RemoveLoadingScreen()
