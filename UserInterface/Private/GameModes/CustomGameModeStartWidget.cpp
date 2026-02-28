@@ -27,7 +27,7 @@ void UCustomGameModeStartWidget::NativeConstruct()
 	Super::NativeConstruct();
 
 	CheckBoxOption_UseTemplate->CheckBox->OnCheckStateChanged.AddUniqueDynamic(
-		this, &ThisClass:: OnCheckStateChanged_UseTemplate);
+		this, &ThisClass::OnCheckStateChanged_UseTemplate);
 	EditableTextBoxOption_CustomGameModeName->EditableTextBox->OnTextChanged.AddUniqueDynamic(
 		this, &ThisClass::OnTextChanged_CustomGameModeName);
 	ComboBoxOption_GameModeTemplates->ComboBox->OnSelectionChanged.AddUniqueDynamic(

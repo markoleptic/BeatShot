@@ -47,7 +47,7 @@ void UAudioSelectWidget::NativeConstruct()
 		this, &UAudioSelectWidget::OnSelectionChanged_InAudioDevice);
 	ComboBox_SongTitle->OnSelectionChanged.AddUniqueDynamic(this, &UAudioSelectWidget::OnSelectionChanged_SongTitle);
 	Checkbox_PlaybackAudio->OnCheckStateChanged.AddUniqueDynamic(
-		this, &UAudioSelectWidget:: OnCheckStateChanged_PlaybackAudio);
+		this, &UAudioSelectWidget::OnCheckStateChanged_PlaybackAudio);
 
 	SetupTooltip(QMark_PlaybackAudio, GetTooltipTextFromKey("PlaybackAudio"));
 	SetupTooltip(QMark_Input, GetTooltipTextFromKey("AF_InputAudioDevice"));

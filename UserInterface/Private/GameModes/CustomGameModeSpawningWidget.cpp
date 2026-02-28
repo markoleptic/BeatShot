@@ -102,7 +102,7 @@ void UCustomGameModeSpawningWidget::NativeConstruct()
 	CheckBoxOption_AllowSpawnWithoutActivation->CheckBox->OnCheckStateChanged.AddDynamic(
 		this, &ThisClass::OnCheckStateChanged_AllowSpawnWithoutActivation);
 	CheckBoxOption_BatchSpawning->CheckBox->OnCheckStateChanged.AddDynamic(
-		this, &ThisClass:: OnCheckStateChanged_BatchSpawning);
+		this, &ThisClass::OnCheckStateChanged_BatchSpawning);
 	CheckBoxOption_SpawnAtOriginWheneverPossible->CheckBox->OnCheckStateChanged.AddDynamic(
 		this, &ThisClass::OnCheckStateChanged_SpawnAtOriginWheneverPossible);
 	CheckBoxOption_SpawnEveryOtherTargetInCenter->CheckBox->OnCheckStateChanged.AddDynamic(

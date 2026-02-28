@@ -33,7 +33,7 @@ void UAudioAnalyzerSettingsWidget::NativeConstruct()
 		this, &ThisClass::OnSliderTextBoxValueChanged);
 
 	ComboBoxOption_NumBandChannels->ComboBox->OnSelectionChanged.AddDynamic(
-		this, &ThisClass:: OnSelectionChanged_NumBandChannels);
+		this, &ThisClass::OnSelectionChanged_NumBandChannels);
 
 	SavedTextWidget->SetSavedText(GetWidgetTextFromKey("SM_Saved_AudioAnalyzer"));
 

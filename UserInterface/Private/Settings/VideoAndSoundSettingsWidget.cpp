@@ -79,9 +79,9 @@ void UVideoAndSoundSettingsWidget::NativeConstruct()
 	ComboBoxOption_NIS_Mode->ComboBox->OnSelectionChanged.AddDynamic(this, &ThisClass::OnSelectionChanged_NIS_Mode);
 	ComboBoxOption_Reflex->ComboBox->OnSelectionChanged.AddDynamic(this, &ThisClass::OnSelectionChanged_Reflex);
 	ComboBoxOption_AntiAliasingMethod->ComboBox->OnSelectionChanged.AddDynamic(
-		this, &ThisClass:: OnSelectionChanged_AntiAliasingMethod);
+		this, &ThisClass::OnSelectionChanged_AntiAliasingMethod);
 	ComboBoxOption_OutputAudioDevice->ComboBox->OnSelectionChanged.AddDynamic(
-		this, &ThisClass:: OnSelectionChanged_OutputAudioDevice);
+		this, &ThisClass::OnSelectionChanged_OutputAudioDevice);
 
 	ComboBoxOption_DLSS_FrameGeneration->GetComboBoxEntryTooltipStringTableKey.BindUObject(
 		this, &ThisClass::GetComboBoxEntryTooltipStringTableKey_DLSS_FrameGeneration);

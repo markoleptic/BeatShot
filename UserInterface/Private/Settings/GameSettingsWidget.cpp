@@ -31,19 +31,19 @@ void UGameSettingsWidget::NativeConstruct()
 	MenuOption_UseSeparateOutlineColor->CheckBox->OnCheckStateChanged.AddDynamic(
 		this, &ThisClass::OnCheckStateChanged_UseSeparateOutlineColor);
 	MenuOption_ShowStreakCombatText->CheckBox->OnCheckStateChanged.AddDynamic(
-		this, &ThisClass:: OnCheckStateChanged_ShowCombatText);
+		this, &ThisClass::OnCheckStateChanged_ShowCombatText);
 	MenuOption_Recoil->CheckBox->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_Recoil);
 	MenuOption_AutomaticFire->CheckBox->OnCheckStateChanged.AddDynamic(
 		this, &ThisClass::OnCheckStateChanged_AutomaticFire);
 	MenuOption_ShowBulletDecals->CheckBox->OnCheckStateChanged.AddDynamic(
-		this, &ThisClass:: OnCheckStateChanged_ShowBulletDecals);
+		this, &ThisClass::OnCheckStateChanged_ShowBulletDecals);
 	MenuOption_ShowBulletTracers->CheckBox->OnCheckStateChanged.AddDynamic(
-		this, &ThisClass:: OnCheckStateChanged_ShowBulletTracers);
+		this, &ThisClass::OnCheckStateChanged_ShowBulletTracers);
 	MenuOption_ShowMuzzleFlash->CheckBox->OnCheckStateChanged.AddDynamic(
-		this, &ThisClass:: OnCheckStateChanged_ShowMuzzleFlash);
+		this, &ThisClass::OnCheckStateChanged_ShowMuzzleFlash);
 	MenuOption_ShowMesh->CheckBox->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_ShowMesh);
 	MenuOption_ShowHitTimingWidget->CheckBox->OnCheckStateChanged.AddDynamic(
-		this, &ThisClass:: OnCheckStateChanged_ShowHitTimingWidget);
+		this, &ThisClass::OnCheckStateChanged_ShowHitTimingWidget);
 
 	Button_Reset->OnBSButtonPressed.AddUObject(this, &ThisClass::OnButtonClicked_BSButton);
 	Button_Revert->OnBSButtonPressed.AddUObject(this, &ThisClass::OnButtonClicked_BSButton);
