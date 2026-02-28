@@ -138,13 +138,8 @@ public:
 	                      const FWidgetStyle& InWidgetStyle,
 	                      bool bParentEnabled) const override
 	{
-		const int32 MaxLayerId = SCompoundWidget::OnPaint(Args,
-		                                                  AllottedGeometry,
-		                                                  MyCullingRect,
-		                                                  OutDrawElements,
-		                                                  LayerId,
-		                                                  InWidgetStyle,
-		                                                  bParentEnabled);
+		const int32 MaxLayerId = SCompoundWidget::OnPaint(Args, AllottedGeometry, MyCullingRect, OutDrawElements,
+		                                                  LayerId, InWidgetStyle, bParentEnabled);
 		SetMainOverlayRenderOpacity(Args.GetCurrentTime(), Args.GetDeltaTime());
 		return MaxLayerId;
 	}

@@ -63,9 +63,8 @@ struct FBSEquipmentList : public FFastArraySerializer
 
 	bool NetDeltaSerialize(FNetDeltaSerializeInfo& DeltaParms)
 	{
-		return FFastArraySerializer::FastArrayDeltaSerialize<FBSAppliedEquipmentEntry, FBSEquipmentList>(Items,
-			DeltaParms,
-			*this);
+		return FFastArraySerializer::FastArrayDeltaSerialize<FBSAppliedEquipmentEntry, FBSEquipmentList>(
+			Items, DeltaParms, *this);
 	}
 
 	/** Creates and adds a new FBSAppliedEquipmentEntry, also granting any associated abilities. */

@@ -108,17 +108,13 @@ void UBSInputComponent::BindNativeAction(const UBSInputConfig* InputConfig,
 	{
 		if (PressedFunc)
 		{
-			FEnhancedInputActionEventBinding& Binding = BindAction(IA.InputAction,
-			                                                       IA.PressedTriggerEvent,
-			                                                       Object,
+			FEnhancedInputActionEventBinding& Binding = BindAction(IA.InputAction, IA.PressedTriggerEvent, Object,
 			                                                       PressedFunc);
 			NativeActionBindings.FindOrAdd(IA.InputTag).Add(&Binding);
 		}
 		if (ReleasedFunc)
 		{
-			FEnhancedInputActionEventBinding& Binding = BindAction(IA.InputAction,
-			                                                       ETriggerEvent::Completed,
-			                                                       Object,
+			FEnhancedInputActionEventBinding& Binding = BindAction(IA.InputAction, ETriggerEvent::Completed, Object,
 			                                                       ReleasedFunc);
 			NativeActionBindings.FindOrAdd(IA.InputTag).Add(&Binding);
 		}
@@ -139,21 +135,15 @@ void UBSInputComponent::BindAbilityActions(const UBSInputConfig* InputConfig,
 		{
 			if (PressedFunc)
 			{
-				FEnhancedInputActionEventBinding& Binding = BindAction(Action.InputAction,
-				                                                       Action.PressedTriggerEvent,
-				                                                       Object,
-				                                                       PressedFunc,
-				                                                       Action.InputTag);
+				FEnhancedInputActionEventBinding& Binding = BindAction(Action.InputAction, Action.PressedTriggerEvent,
+				                                                       Object, PressedFunc, Action.InputTag);
 				AbilityActionBindings.FindOrAdd(Action.InputTag).Add(&Binding);
 			}
 
 			if (ReleasedFunc)
 			{
-				FEnhancedInputActionEventBinding& Binding = BindAction(Action.InputAction,
-				                                                       ETriggerEvent::Completed,
-				                                                       Object,
-				                                                       ReleasedFunc,
-				                                                       Action.InputTag);
+				FEnhancedInputActionEventBinding& Binding = BindAction(Action.InputAction, ETriggerEvent::Completed,
+				                                                       Object, ReleasedFunc, Action.InputTag);
 				AbilityActionBindings.FindOrAdd(Action.InputTag).Add(&Binding);
 			}
 		}

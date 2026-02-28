@@ -98,14 +98,10 @@ void ATargetManager::Init(const TSharedPtr<FBSConfig>& InConfig,
 	BSConfig = InConfig;
 
 	// Initialize target colors
-	BSConfig->InitColors(InPlayerSettings.bUseSeparateOutlineColor,
-	                     InPlayerSettings.InactiveTargetColor,
-	                     InPlayerSettings.TargetOutlineColor,
-	                     InPlayerSettings.StartTargetColor,
-	                     InPlayerSettings.PeakTargetColor,
-	                     InPlayerSettings.EndTargetColor,
-	                     InPlayerSettings.TakingTrackingDamageColor,
-	                     InPlayerSettings.NotTakingTrackingDamageColor);
+	BSConfig->InitColors(InPlayerSettings.bUseSeparateOutlineColor, InPlayerSettings.InactiveTargetColor,
+	                     InPlayerSettings.TargetOutlineColor, InPlayerSettings.StartTargetColor,
+	                     InPlayerSettings.PeakTargetColor, InPlayerSettings.EndTargetColor,
+	                     InPlayerSettings.TakingTrackingDamageColor, InPlayerSettings.NotTakingTrackingDamageColor);
 
 	// Set SpawnBox location, BoxExtent, StaticExtents, and StaticExtrema
 	SpawnBox->SetRelativeLocation(GenerateStaticLocation(BSConfig.Get()));
@@ -130,8 +126,8 @@ void ATargetManager::Init(const TSharedPtr<FBSConfig>& InConfig,
 	if (BSConfig->TargetConfig.MovingTargetDirectionMode == EMovingTargetDirectionMode::HorizontalOnly || BSConfig->
 	    TargetConfig.MovingTargetDirectionMode == EMovingTargetDirectionMode::VerticalOnly)
 	{
-		SpawnAreaManager->GetRequestMovingTargetLocationsDelegate().BindUObject(this,
-			&ATargetManager::GetMovingTargetLocations);
+		SpawnAreaManager->GetRequestMovingTargetLocationsDelegate().BindUObject(
+			this, &ATargetManager::GetMovingTargetLocations);
 	}
 
 	// Init RLC
@@ -650,18 +646,12 @@ int32 ATargetManager::HandleTargetActivation() const
 		{
 			if (NumToActivateCheck < NumAvailableToActivate)
 			{
-				UE_LOG(LogTemp,
-				       Display,
-				       TEXT("NumToActivateCheck < NumAvailableToActivate %d %d"),
-				       NumToActivateCheck,
+				UE_LOG(LogTemp, Display, TEXT("NumToActivateCheck < NumAvailableToActivate %d %d"), NumToActivateCheck,
 				       NumAvailableToActivate);
 			}
 			else
 			{
-				UE_LOG(LogTemp,
-				       Display,
-				       TEXT("NumToActivateCheck > NumAvailableToActivate %d %d"),
-				       NumToActivateCheck,
+				UE_LOG(LogTemp, Display, TEXT("NumToActivateCheck > NumAvailableToActivate %d %d"), NumToActivateCheck,
 				       NumAvailableToActivate);
 			}
 		}
@@ -864,9 +854,7 @@ void ATargetManager::HandleTargetDamageEvent(FTargetDamageEvent& Event)
 	// Set TargetManagerData
 	Event.SetTargetManagerData(
 		ShouldDeactivateTarget(Event.bDamagedSelf, Event.CurrentHealth, Event.CurrentDeactivationHealthThreshold),
-		ShouldDestroyTarget(Event.bDamagedSelf, Event.bOutOfHealth),
-		CurrentStreak,
-		TotalPossibleDamage);
+		ShouldDestroyTarget(Event.bDamagedSelf, Event.bOutOfHealth), CurrentStreak, TotalPossibleDamage);
 
 	// Can deactivate immediately
 	if (Event.bWillDeactivate)
@@ -921,21 +909,17 @@ void ATargetManager::UpdateDynamicLookUpValues(const FTargetDamageEvent& Event)
 	if (Event.DamageType == ETargetDamageType::Self)
 	{
 		DynamicLookUpValue_TargetScale = FMath::Clamp(
-			DynamicLookUpValue_TargetScale - BSConfig->DynamicTargetScaling.DecrementAmount,
-			0,
+			DynamicLookUpValue_TargetScale - BSConfig->DynamicTargetScaling.DecrementAmount, 0,
 			BSConfig->DynamicTargetScaling.EndThreshold);
 		DynamicLookUpValue_SpawnAreaScale = FMath::Clamp(
-			DynamicLookUpValue_SpawnAreaScale - BSConfig->DynamicSpawnAreaScaling.DecrementAmount,
-			0,
+			DynamicLookUpValue_SpawnAreaScale - BSConfig->DynamicSpawnAreaScaling.DecrementAmount, 0,
 			BSConfig->DynamicSpawnAreaScaling.EndThreshold);
 	}
 	else if (Event.DamageType == ETargetDamageType::Hit)
 	{
-		DynamicLookUpValue_TargetScale = FMath::Clamp(DynamicLookUpValue_TargetScale + 1,
-		                                              0,
+		DynamicLookUpValue_TargetScale = FMath::Clamp(DynamicLookUpValue_TargetScale + 1, 0,
 		                                              BSConfig->DynamicTargetScaling.EndThreshold);
-		DynamicLookUpValue_SpawnAreaScale = FMath::Clamp(DynamicLookUpValue_SpawnAreaScale + 1,
-		                                                 0,
+		DynamicLookUpValue_SpawnAreaScale = FMath::Clamp(DynamicLookUpValue_SpawnAreaScale + 1, 0,
 		                                                 BSConfig->DynamicSpawnAreaScaling.EndThreshold);
 	}
 }
@@ -1204,9 +1188,7 @@ void ATargetManager::UpdateSpawnBoxExtents(const float Factor) const
 void ATargetManager::UpdateSpawnVolume(const float Factor) const
 {
 	const FVector Origin = GetSpawnBoxOrigin();
-	const FVector VolumeExtents = GenerateSpawnVolumeExtents(BSConfig.Get(),
-	                                                         GetSpawnBoxExtents(),
-	                                                         StaticExtents,
+	const FVector VolumeExtents = GenerateSpawnVolumeExtents(BSConfig.Get(), GetSpawnBoxExtents(), StaticExtents,
 	                                                         Factor);
 	const FVector VolumeLocation = GenerateSpawnVolumeLocation(BSConfig.Get(), Origin, VolumeExtents);
 
@@ -1467,8 +1449,7 @@ void ATargetManager::UpdateCommonScoreInfoQTable(FCommonScoreInfo& InCommonScore
 	if (RLComponent->GetRLMode() != EReinforcementLearningMode::None)
 	{
 		RLComponent->ClearCachedTargetPairs();
-		InCommonScoreInfo.UpdateQTable(RLComponent->GetTArray_FromNdArray_QTable(),
-		                               RLComponent->GetNumQTableRows(),
+		InCommonScoreInfo.UpdateQTable(RLComponent->GetTArray_FromNdArray_QTable(), RLComponent->GetNumQTableRows(),
 		                               RLComponent->GetNumQTableColumns(),
 		                               RLComponent->GetTArray_FromNdArray_TrainingSamples(),
 		                               RLComponent->GetTotalTrainingSamples());
@@ -1486,14 +1467,8 @@ void ATargetManager::DrawDebug() const
 		{
 			DrawDebugBox(GetWorld(), Sector.Center, Sector.Extents, FColor::Green, true, -1, 0, 6);
 		}
-		DrawDebugLine(GetWorld(),
-		              LastAnyTargetDirectionModeSectors.LineStart,
-		              LastAnyTargetDirectionModeSectors.LineEnd,
-		              FColor::Red,
-		              true,
-		              -1,
-		              0,
-		              6.f);
+		DrawDebugLine(GetWorld(), LastAnyTargetDirectionModeSectors.LineStart,
+		              LastAnyTargetDirectionModeSectors.LineEnd, FColor::Red, true, -1, 0, 6.f);
 	}
 	SpawnAreaManager->DrawDebug();
 }

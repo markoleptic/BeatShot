@@ -31,33 +31,19 @@ enum class ESelectionModeType : uint8
 
 class UBSComboBoxEntry;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSelectionChangedEvent,
-                                             FString,
-                                             SelectedItem,
-                                             ESelectInfo::Type,
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSelectionChangedEvent, FString, SelectedItem, ESelectInfo::Type,
                                              SelectionType);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnOpeningEvent);
 
-DECLARE_DYNAMIC_DELEGATE_RetVal_TwoParams(UWidget*,
-                                          FGenerateWidgetForSingleItem,
-                                          const UBSComboBoxString*,
-                                          BSComboBoxString,
-                                          FString,
-                                          Item);
+DECLARE_DYNAMIC_DELEGATE_RetVal_TwoParams(UWidget*, FGenerateWidgetForSingleItem, const UBSComboBoxString*,
+                                          BSComboBoxString, FString, Item);
 
-DECLARE_DYNAMIC_DELEGATE_RetVal_TwoParams(UWidget*,
-                                          FGenerateWidgetForMultiSelection,
-                                          const UBSComboBoxString*,
-                                          BSComboBoxString,
-                                          const TArray<FString>&,
-                                          Items);
+DECLARE_DYNAMIC_DELEGATE_RetVal_TwoParams(UWidget*, FGenerateWidgetForMultiSelection, const UBSComboBoxString*,
+                                          BSComboBoxString, const TArray<FString>&, Items);
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnMultiSelectionChangedEvent,
-                                             const TArray<FString>&,
-                                             ActiveSelections,
-                                             ESelectInfo::Type,
-                                             SelectionType);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnMultiSelectionChangedEvent, const TArray<FString>&, ActiveSelections,
+                                             ESelectInfo::Type, SelectionType);
 
 UCLASS(meta=( DisplayName="BSComboBox (String) C++"))
 class USERINTERFACE_API UBSComboBoxString : public UWidget, public IBSWidgetInterface

@@ -37,14 +37,13 @@ void UCrossHairSettingsWidget::NativeConstruct()
 	Button_Save->SetDefaults(static_cast<uint8>(ESettingButtonType::Save));
 
 	MenuOption_ColorSelect->OnColorChanged.BindUObject(this, &UCrossHairSettingsWidget::OnColorChanged_CrossHair);
-	MenuOption_CrossHairDotColorSelect->OnColorChanged.BindUObject(this,
-	                                                               &UCrossHairSettingsWidget::OnColorChanged_CrossHairDot);
-	MenuOption_OutlineColorSelect->OnColorChanged.BindUObject(this,
-	                                                          &UCrossHairSettingsWidget::OnColorChanged_CrossHairOutline);
+	MenuOption_CrossHairDotColorSelect->OnColorChanged.BindUObject(
+		this, &UCrossHairSettingsWidget::OnColorChanged_CrossHairDot);
+	MenuOption_OutlineColorSelect->OnColorChanged.BindUObject(
+		this, &UCrossHairSettingsWidget::OnColorChanged_CrossHairOutline);
 
-	MenuOption_ShowCrossHairDot->CheckBox->OnCheckStateChanged.AddDynamic(this,
-	                                                                      &UCrossHairSettingsWidget::
-	                                                                      OnCheckStateChanged_MenuOption_ShowCrossHairDot);
+	MenuOption_ShowCrossHairDot->CheckBox->OnCheckStateChanged.AddDynamic(
+		this, &UCrossHairSettingsWidget:: OnCheckStateChanged_MenuOption_ShowCrossHairDot);
 
 	SavedTextWidget->SetSavedText(GetWidgetTextFromKey("SM_Saved_CrossHair"));
 	InitialCrossHairSettings = LoadPlayerSettings().CrossHair;

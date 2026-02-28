@@ -49,8 +49,7 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FTickTraceDelegate EventReceived;
 
-	UFUNCTION(BlueprintCallable,
-		Category = "Ability|Tasks",
+	UFUNCTION(BlueprintCallable, Category = "Ability|Tasks",
 		meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "TRUE"))
 	static UBSAT_TickTrace* SingleWeaponTrace(UGameplayAbility* OwningAbility,
 	                                          const FName TaskInstanceName,

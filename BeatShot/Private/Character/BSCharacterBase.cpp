@@ -22,20 +22,14 @@
 #include "Player/BSPlayerState.h"
 #include "SaveGames/SaveGamePlayerSettings.h"
 
-static TAutoConsoleVariable CVarAutoBHop(TEXT("move.Pogo"),
-                                         0,
-                                         TEXT("If holding spacebar should make the player jump whenever possible.\n"),
-                                         ECVF_Default);
-static TAutoConsoleVariable CVarJumpBoost(TEXT("move.JumpBoost"),
-                                          1,
-                                          TEXT(
-	                                          "If the player should boost in a movement direction while jumping.\n0 - disables jump boosting entirely\n"
-	                                          "1 - boosts in the direction of input, even when moving in another direction\n2 - boosts in the direction "
-	                                          "of input when moving in the same direction\n"),
-                                          ECVF_Default);
-static TAutoConsoleVariable CVarBunnyHop(TEXT("move.BunnyHopping"),
-                                         0,
-                                         TEXT("Enable normal bunnyhopping.\n"),
+static TAutoConsoleVariable CVarAutoBHop(
+	TEXT("move.Pogo"), 0, TEXT("If holding spacebar should make the player jump whenever possible.\n"), ECVF_Default);
+static TAutoConsoleVariable CVarJumpBoost(
+	TEXT("move.JumpBoost"), 1,
+	TEXT("If the player should boost in a movement direction while jumping.\n0 - disables jump boosting entirely\n"
+		"1 - boosts in the direction of input, even when moving in another direction\n2 - boosts in the direction "
+		"of input when moving in the same direction\n"), ECVF_Default);
+static TAutoConsoleVariable CVarBunnyHop(TEXT("move.BunnyHopping"), 0, TEXT("Enable normal bunnyhopping.\n"),
                                          ECVF_Default);
 
 ABSCharacterBase::ABSCharacterBase(const FObjectInitializer& ObjectInitializer) :
@@ -140,10 +134,10 @@ void ABSCharacterBase::BeginPlay()
 	OnPlayerSettingsChanged(Settings.User);
 
 	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	GI->RegisterPlayerSettingsSubscriber<ABSCharacterBase, FPlayerSettings_Game>(this,
-		&ABSCharacterBase::OnPlayerSettingsChanged);
-	GI->RegisterPlayerSettingsSubscriber<ABSCharacterBase, FPlayerSettings_User>(this,
-		&ABSCharacterBase::OnPlayerSettingsChanged);
+	GI->RegisterPlayerSettingsSubscriber<ABSCharacterBase, FPlayerSettings_Game>(
+		this, &ABSCharacterBase::OnPlayerSettingsChanged);
+	GI->RegisterPlayerSettingsSubscriber<ABSCharacterBase, FPlayerSettings_User>(
+		this, &ABSCharacterBase::OnPlayerSettingsChanged);
 }
 
 void ABSCharacterBase::Tick(float DeltaTime)
@@ -185,86 +179,40 @@ void ABSCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	{
 		UBSInputComponent* BSInputComponent = CastChecked<UBSInputComponent>(PlayerInputComponent);
 
-		BSInputComponent->BindAbilityActions(LoadedConfig,
-		                                     this,
-		                                     &ThisClass::Input_AbilityInputTagPressed,
+		BSInputComponent->BindAbilityActions(LoadedConfig, this, &ThisClass::Input_AbilityInputTagPressed,
 		                                     &ThisClass::Input_AbilityInputTagReleased);
 
-		BSInputComponent->BindNativeAction(LoadedConfig,
-		                                   BSGameplayTags::Input_Move_Forward,
-		                                   this,
-		                                   &ThisClass::Input_Move,
+		BSInputComponent->BindNativeAction(LoadedConfig, BSGameplayTags::Input_Move_Forward, this,
+		                                   &ThisClass::Input_Move, true);
+		BSInputComponent->BindNativeAction(LoadedConfig, BSGameplayTags::Input_Move_Backward, this,
+		                                   &ThisClass::Input_Move, true);
+		BSInputComponent->BindNativeAction(LoadedConfig, BSGameplayTags::Input_Move_Left, this, &ThisClass::Input_Move,
 		                                   true);
-		BSInputComponent->BindNativeAction(LoadedConfig,
-		                                   BSGameplayTags::Input_Move_Backward,
-		                                   this,
-		                                   &ThisClass::Input_Move,
+		BSInputComponent->BindNativeAction(LoadedConfig, BSGameplayTags::Input_Move_Right, this, &ThisClass::Input_Move,
 		                                   true);
-		BSInputComponent->BindNativeAction(LoadedConfig,
-		                                   BSGameplayTags::Input_Move_Left,
-		                                   this,
-		                                   &ThisClass::Input_Move,
-		                                   true);
-		BSInputComponent->BindNativeAction(LoadedConfig,
-		                                   BSGameplayTags::Input_Move_Right,
-		                                   this,
-		                                   &ThisClass::Input_Move,
-		                                   true);
-		BSInputComponent->BindNativeAction(LoadedConfig,
-		                                   BSGameplayTags::Input_Look,
-		                                   this,
-		                                   &ThisClass::Input_Look,
+		BSInputComponent->BindNativeAction(LoadedConfig, BSGameplayTags::Input_Look, this, &ThisClass::Input_Look,
 		                                   true);
 		BSInputComponent->BindNativeAction(LoadedConfig, BSGameplayTags::Input_Jump, this, &ThisClass::Jump, true);
-		BSInputComponent->BindNativeAction(LoadedConfig,
-		                                   BSGameplayTags::Input_Pause,
-		                                   this,
-		                                   &ThisClass::Input_OnPause,
+		BSInputComponent->BindNativeAction(LoadedConfig, BSGameplayTags::Input_Pause, this, &ThisClass::Input_OnPause,
 		                                   true);
-		BSInputComponent->BindNativeAction(LoadedConfig,
-		                                   BSGameplayTags::Input_Walk,
-		                                   this,
-		                                   &ThisClass::Input_WalkStart,
-		                                   &ThisClass::Input_WalkEnd,
+		BSInputComponent->BindNativeAction(LoadedConfig, BSGameplayTags::Input_Walk, this, &ThisClass::Input_WalkStart,
+		                                   &ThisClass::Input_WalkEnd, true);
+		BSInputComponent->BindNativeAction(LoadedConfig, BSGameplayTags::Input_Crouch, this, &ThisClass::Input_Crouch,
+		                                   &ThisClass::Input_Crouch, true);
+		BSInputComponent->BindNativeAction(LoadedConfig, BSGameplayTags::Input_Interact, this,
+		                                   &ThisClass::Input_OnInteractStarted, &ThisClass::Input_OnInteractCompleted,
 		                                   true);
-		BSInputComponent->BindNativeAction(LoadedConfig,
-		                                   BSGameplayTags::Input_Crouch,
-		                                   this,
-		                                   &ThisClass::Input_Crouch,
-		                                   &ThisClass::Input_Crouch,
-		                                   true);
-		BSInputComponent->BindNativeAction(LoadedConfig,
-		                                   BSGameplayTags::Input_Interact,
-		                                   this,
-		                                   &ThisClass::Input_OnInteractStarted,
-		                                   &ThisClass::Input_OnInteractCompleted,
-		                                   true);
-		BSInputComponent->BindNativeAction(LoadedConfig,
-		                                   BSGameplayTags::Input_ShiftInteract,
-		                                   this,
+		BSInputComponent->BindNativeAction(LoadedConfig, BSGameplayTags::Input_ShiftInteract, this,
 		                                   &ThisClass::Input_OnShiftInteractStarted,
-		                                   &ThisClass::Input_OnShiftInteractCompleted,
-		                                   true);
-		BSInputComponent->BindNativeAction(LoadedConfig,
-		                                   BSGameplayTags::Input_EquipmentSlot_1,
-		                                   this,
-		                                   &ThisClass::Input_OnEquipmentSlot1Started,
-		                                   true);
-		BSInputComponent->BindNativeAction(LoadedConfig,
-		                                   BSGameplayTags::Input_EquipmentSlot_2,
-		                                   this,
-		                                   &ThisClass::Input_OnEquipmentSlot2Started,
-		                                   true);
-		BSInputComponent->BindNativeAction(LoadedConfig,
-		                                   BSGameplayTags::Input_EquipmentSlot_3,
-		                                   this,
-		                                   &ThisClass::Input_OnEquipmentSlot3Started,
-		                                   true);
-		BSInputComponent->BindNativeAction(LoadedConfig,
-		                                   BSGameplayTags::Input_EquipmentSlot_LastEquipped,
-		                                   this,
-		                                   &ThisClass::Input_OnEquipmentSlotLastEquippedStarted,
-		                                   true);
+		                                   &ThisClass::Input_OnShiftInteractCompleted, true);
+		BSInputComponent->BindNativeAction(LoadedConfig, BSGameplayTags::Input_EquipmentSlot_1, this,
+		                                   &ThisClass::Input_OnEquipmentSlot1Started, true);
+		BSInputComponent->BindNativeAction(LoadedConfig, BSGameplayTags::Input_EquipmentSlot_2, this,
+		                                   &ThisClass::Input_OnEquipmentSlot2Started, true);
+		BSInputComponent->BindNativeAction(LoadedConfig, BSGameplayTags::Input_EquipmentSlot_3, this,
+		                                   &ThisClass::Input_OnEquipmentSlot3Started, true);
+		BSInputComponent->BindNativeAction(LoadedConfig, BSGameplayTags::Input_EquipmentSlot_LastEquipped, this,
+		                                   &ThisClass::Input_OnEquipmentSlotLastEquippedStarted, true);
 	}
 }
 
@@ -538,9 +486,7 @@ void ABSCharacterBase::OnMovementModeChanged(EMovementMode PrevMovementMode, uin
 		bWasJumping = false;
 	}
 
-	K2_OnMovementModeChanged(PrevMovementMode,
-	                         GetCharacterMovement()->MovementMode,
-	                         PrevCustomMode,
+	K2_OnMovementModeChanged(PrevMovementMode, GetCharacterMovement()->MovementMode, PrevCustomMode,
 	                         GetCharacterMovement()->CustomMovementMode);
 	MovementModeChangedDelegate.Broadcast(this, PrevMovementMode, PrevCustomMode);
 }
@@ -653,11 +599,8 @@ void ABSCharacterBase::BindLeftClick()
 	if (const UBSInputConfig* LoadedConfig = InputConfig.Get())
 	{
 		UBSInputComponent* BSInputComponent = CastChecked<UBSInputComponent>(InputComponent);
-		BSInputComponent->BindNativeAction(LoadedConfig,
-		                                   BSGameplayTags::Input_LeftClick,
-		                                   this,
-		                                   &ThisClass::Input_OnLeftClick,
-		                                   true);
+		BSInputComponent->BindNativeAction(LoadedConfig, BSGameplayTags::Input_LeftClick, this,
+		                                   &ThisClass::Input_OnLeftClick, true);
 	}
 }
 

@@ -29,11 +29,9 @@ void UCountdownWidget::StartCountdown(const float CountdownLength, const float P
 	TextBlock_Click->SetVisibility(ESlateVisibility::Collapsed);
 	CountdownContainer->SetVisibility(ESlateVisibility::Visible);
 	CountdownTimeline.SetTimelineLength(CountdownLength);
-	GetWorld()->GetTimerManager().SetTimer(StartAAManagerPlaybackTimer,
-	                                       this,
+	GetWorld()->GetTimerManager().SetTimer(StartAAManagerPlaybackTimer, this,
 	                                       &UCountdownWidget::StartAAManagerPlaybackTimerComplete,
-	                                       CountdownLength - PlayerDelay,
-	                                       false);
+	                                       CountdownLength - PlayerDelay, false);
 	CountdownTimeline.PlayFromStart();
 }
 

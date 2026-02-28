@@ -37,8 +37,7 @@ enum class ETargetDistributionPolicy : uint8
 	Grid UMETA(DisplayName="Grid"),
 };
 
-ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDistributionPolicy,
-                             ETargetDistributionPolicy::HeadshotHeightOnly,
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDistributionPolicy, ETargetDistributionPolicy::HeadshotHeightOnly,
                              ETargetDistributionPolicy::Grid);
 
 
@@ -59,8 +58,7 @@ enum class EMovingTargetDirectionMode : uint8
 	ForwardOnly UMETA(DisplayName="Forward Only"),
 };
 
-ENUM_RANGE_BY_FIRST_AND_LAST(EMovingTargetDirectionMode,
-                             EMovingTargetDirectionMode::None,
+ENUM_RANGE_BY_FIRST_AND_LAST(EMovingTargetDirectionMode, EMovingTargetDirectionMode::None,
                              EMovingTargetDirectionMode::ForwardOnly);
 
 /** A direction that a target moves. */
@@ -99,8 +97,7 @@ enum class EConsecutiveTargetScalePolicy : uint8
 	SkillBased UMETA(DisplayName="Skill-Based")
 };
 
-ENUM_RANGE_BY_FIRST_AND_LAST(EConsecutiveTargetScalePolicy,
-                             EConsecutiveTargetScalePolicy::Static,
+ENUM_RANGE_BY_FIRST_AND_LAST(EConsecutiveTargetScalePolicy, EConsecutiveTargetScalePolicy::Static,
                              EConsecutiveTargetScalePolicy::SkillBased);
 
 
@@ -133,8 +130,7 @@ enum class ETargetSpawningPolicy : uint8
 	RuntimeOnly UMETA(DisplayName="Runtime Only"),
 };
 
-ENUM_RANGE_BY_FIRST_AND_LAST(ETargetSpawningPolicy,
-                             ETargetSpawningPolicy::UpfrontOnly,
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetSpawningPolicy, ETargetSpawningPolicy::UpfrontOnly,
                              ETargetSpawningPolicy::RuntimeOnly);
 
 
@@ -173,8 +169,7 @@ enum class ETargetActivationSelectionPolicy : uint8
 	Random UMETA(DisplayName="Random"),
 };
 
-ENUM_RANGE_BY_FIRST_AND_LAST(ETargetActivationSelectionPolicy,
-                             ETargetActivationSelectionPolicy::Bordering,
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetActivationSelectionPolicy, ETargetActivationSelectionPolicy::Bordering,
                              ETargetActivationSelectionPolicy::Random);
 
 
@@ -193,8 +188,7 @@ enum class ERecentTargetMemoryPolicy : uint8
 	NumTargetsBased UMETA(DisplayName="Num Targets Based"),
 };
 
-ENUM_RANGE_BY_FIRST_AND_LAST(ERecentTargetMemoryPolicy,
-                             ERecentTargetMemoryPolicy::None,
+ENUM_RANGE_BY_FIRST_AND_LAST(ERecentTargetMemoryPolicy, ERecentTargetMemoryPolicy::None,
                              ERecentTargetMemoryPolicy::NumTargetsBased);
 
 
@@ -211,8 +205,7 @@ enum class ETargetSpawnResponse : uint8
 	AddImmunity UMETA(DisplayName="Add Immunity"),
 };
 
-ENUM_RANGE_BY_FIRST_AND_LAST(ETargetSpawnResponse,
-                             ETargetSpawnResponse::ChangeDirection,
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetSpawnResponse, ETargetSpawnResponse::ChangeDirection,
                              ETargetSpawnResponse::AddImmunity);
 
 
@@ -239,8 +232,7 @@ enum class ETargetActivationResponse : uint8
 	ApplyLifetimeTargetScaling UMETA(DisplayName="Apply Lifetime Target Scaling"),
 };
 
-ENUM_RANGE_BY_FIRST_AND_LAST(ETargetActivationResponse,
-                             ETargetActivationResponse::RemoveImmunity,
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetActivationResponse, ETargetActivationResponse::RemoveImmunity,
                              ETargetActivationResponse::ApplyLifetimeTargetScaling);
 
 
@@ -261,8 +253,7 @@ enum class ETargetDeactivationCondition : uint8
 	OnSpecificHealthLost UMETA(DisplayName="On Specific Health Lost"),
 };
 
-ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDeactivationCondition,
-                             ETargetDeactivationCondition::OnAnyExternalDamageTaken,
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDeactivationCondition, ETargetDeactivationCondition::OnAnyExternalDamageTaken,
                              ETargetDeactivationCondition::OnSpecificHealthLost);
 
 
@@ -305,8 +296,7 @@ enum class ETargetDeactivationResponse : uint8
 	Reactivate UMETA(DisplayName="Reactivate"),
 };
 
-ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDeactivationResponse,
-                             ETargetDeactivationResponse::RemoveImmunity,
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDeactivationResponse, ETargetDeactivationResponse::RemoveImmunity,
                              ETargetDeactivationResponse::Reactivate);
 
 
@@ -328,8 +318,7 @@ enum class ETargetDestructionCondition : uint8
 	OnDeactivation UMETA(DisplayName="On Deactivation")
 };
 
-ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDestructionCondition,
-                             ETargetDestructionCondition::OnExpiration,
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDestructionCondition, ETargetDestructionCondition::OnExpiration,
                              ETargetDestructionCondition::OnDeactivation);
 
 

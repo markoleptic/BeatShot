@@ -203,10 +203,8 @@ void ASimpleBeamLight::OnNiagaraBeamFinished(UNiagaraComponent* NiagaraComponent
 
 void ASimpleBeamLight::LineTraceFromSpotlightHead(const FVector& EndLocation, FHitResult& OutHitResult) const
 {
-	GetWorld()->LineTraceSingleByChannel(OutHitResult,
-	                                     SpotlightHead->GetComponentLocation(),
-	                                     EndLocation * FVector(999999999),
-	                                     ECC_Camera,
+	GetWorld()->LineTraceSingleByChannel(OutHitResult, SpotlightHead->GetComponentLocation(),
+	                                     EndLocation * FVector(999999999), ECC_Camera,
 	                                     FCollisionQueryParams::DefaultQueryParam);
 }
 
@@ -235,8 +233,8 @@ void ASimpleBeamLight::UpdateSpotlightIntensityAndAttRadius(const float InPlayba
 
 void ASimpleBeamLight::UpdateEmissiveLightBulbIntensity(const float Intensity) const
 {
-	EmissiveLightBulb->SetScalarParameterValue(TEXT("Intensity"),
-	                                           Intensity * SimpleBeamLightConfig.MaxEmissiveLightBulbLightIntensity);
+	EmissiveLightBulb->SetScalarParameterValue(
+		TEXT("Intensity"), Intensity * SimpleBeamLightConfig.MaxEmissiveLightBulbLightIntensity);
 }
 
 void ASimpleBeamLight::UpdateBeamEndLightIntensity(const float InPlaybackPosition) const

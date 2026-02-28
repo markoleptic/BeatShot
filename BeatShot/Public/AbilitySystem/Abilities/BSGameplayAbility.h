@@ -27,8 +27,7 @@ enum class EBSAbilityActivationPolicy : uint8
 	SpammableTriggered UMETA(DisplayName="SpammableTriggered"),
 };
 
-ENUM_RANGE_BY_FIRST_AND_LAST(EBSAbilityActivationPolicy,
-                             EBSAbilityActivationPolicy::OnInputTriggered,
+ENUM_RANGE_BY_FIRST_AND_LAST(EBSAbilityActivationPolicy, EBSAbilityActivationPolicy::OnInputTriggered,
                              EBSAbilityActivationPolicy::SpammableTriggered);
 
 /** Defines how an ability activates in relation to other abilities. */
@@ -46,8 +45,7 @@ enum class EBSAbilityActivationGroup : uint8
 	Max UMETA(Hidden)
 };
 
-ENUM_RANGE_BY_FIRST_AND_LAST(EBSAbilityActivationGroup,
-                             EBSAbilityActivationGroup::Independent,
+ENUM_RANGE_BY_FIRST_AND_LAST(EBSAbilityActivationGroup, EBSAbilityActivationGroup::Independent,
                              EBSAbilityActivationGroup::Max);
 
 /** Base GameplayAbility used for this game. */

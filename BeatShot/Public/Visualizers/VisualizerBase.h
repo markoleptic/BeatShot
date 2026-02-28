@@ -111,10 +111,7 @@ protected:
 	TArray<FVector> GetSplinePointLocations() const;
 
 	/** The data asset that specifies the configuration for this visualizer. */
-	UPROPERTY(EditAnywhere,
-		BlueprintReadOnly,
-		Instanced,
-		Category = "Visualizer Definition",
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced, Category = "Visualizer Definition",
 		meta=(DisplayPriority=-20000))
 	UBSVisualizerDefinition* VisualizerDefinition;
 

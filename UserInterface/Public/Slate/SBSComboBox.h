@@ -67,8 +67,7 @@ public:
 		SBSTableRow<OptionType>::Construct(
 			typename SBSTableRow<OptionType>::FArguments().Style(InArgs._Style).Padding(InArgs._Padding).Content()[
 				InArgs._Content.Widget].MaxNumSelectedItems(InArgs._MaxNumSelectedItems).CanSelectNone(
-				InArgs._CanSelectNone),
-			InOwnerTable);
+				InArgs._CanSelectNone), InOwnerTable);
 	}
 };
 
@@ -236,9 +235,10 @@ public:
 			SComboButton::FArguments().ComboButtonStyle(&OurComboButtonStyle).ButtonStyle(OurButtonStyle).
 			                           Method(InArgs._Method).ButtonContent()[ButtonContent.ToSharedRef()].MenuContent()
 			[ComboBoxMenuContent].HasDownArrow(InArgs._HasDownArrow).ContentPadding(InArgs._ContentPadding).
-			                      ForegroundColor(InArgs._ForegroundColor).OnMenuOpenChanged(this,
-				                      &SBSComboBox<OptionType>::OnMenuOpenChanged).IsFocusable(InArgs._IsFocusable).
-			                      CollapseMenuOnParentFocus(InArgs._CollapseMenuOnParentFocus));
+			                      ForegroundColor(InArgs._ForegroundColor).
+			                      OnMenuOpenChanged(this, &SBSComboBox<OptionType>::OnMenuOpenChanged).
+			                      IsFocusable(InArgs._IsFocusable).CollapseMenuOnParentFocus(
+				                      InArgs._CollapseMenuOnParentFocus));
 		SetMenuContentWidgetToFocus(ComboListView);
 
 		// Need to establish the selected item at point of construction so its available for querying
@@ -284,8 +284,8 @@ protected:
 	class FSlateAccessibleComboBox : public FSlateAccessibleWidget, public IAccessibleProperty
 	{
 	public:
-		FSlateAccessibleComboBox(TWeakPtr<SWidget> InWidget) : FSlateAccessibleWidget(InWidget,
-			EAccessibleWidgetType::ComboBox)
+		FSlateAccessibleComboBox(TWeakPtr<SWidget> InWidget) : FSlateAccessibleWidget(
+			InWidget, EAccessibleWidgetType::ComboBox)
 		{
 		}
 
@@ -543,8 +543,7 @@ private:
 		return SNew(SBSComboRow<OptionType>, OwnerTable)
 			[
 				SNew(STextBlock)
-				.Text(NSLOCTEXT("SlateCore",
-				                "ComboBoxMissingOnGenerateWidgetMethod",
+				.Text(NSLOCTEXT("SlateCore", "ComboBoxMissingOnGenerateWidgetMethod",
 				                "Please provide a .OnGenerateWidget() handler."))
 			];
 	}

@@ -107,10 +107,8 @@ void UMainMenuWidget::OnMenuButtonClicked_BSButton(const UBSButton* Button)
 	}
 	else if (Button == MenuButton_Quit)
 	{
-		UKismetSystemLibrary::QuitGame(GetWorld(),
-		                               UGameplayStatics::GetPlayerController(GetWorld(), 0),
-		                               EQuitPreference::Quit,
-		                               false);
+		UKismetSystemLibrary::QuitGame(GetWorld(), UGameplayStatics::GetPlayerController(GetWorld(), 0),
+		                               EQuitPreference::Quit, false);
 	}
 }
 

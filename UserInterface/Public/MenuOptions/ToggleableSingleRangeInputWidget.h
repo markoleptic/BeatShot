@@ -8,10 +8,8 @@
 
 class UCommonTextBlock;
 class UToggleableSingleRangeInputWidget;
-DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnSliderTextBoxCheckBoxOptionChanged,
-                                       UToggleableSingleRangeInputWidget* Widget,
-                                       const bool bChecked,
-                                       const float MinOrConstantValue);
+DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnSliderTextBoxCheckBoxOptionChanged, UToggleableSingleRangeInputWidget* Widget,
+                                       const bool bChecked, const float MinOrConstantValue);
 
 UCLASS()
 class USERINTERFACE_API UToggleableSingleRangeInputWidget : public USingleRangeInputWidget

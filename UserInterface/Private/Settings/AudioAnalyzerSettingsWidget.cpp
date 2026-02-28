@@ -29,12 +29,11 @@ void UAudioAnalyzerSettingsWidget::NativeConstruct()
 	Button_SaveAndRestart->SetDefaults(static_cast<uint8>(ESettingButtonType::SaveAndRestart));
 
 	SliderTextBoxOption_TimeWindow->SetValues(0, 1.f, 0.01f);
-	SliderTextBoxOption_TimeWindow->OnSliderTextBoxValueChanged.AddUObject(this,
-	                                                                       &ThisClass::OnSliderTextBoxValueChanged);
+	SliderTextBoxOption_TimeWindow->OnSliderTextBoxValueChanged.AddUObject(
+		this, &ThisClass::OnSliderTextBoxValueChanged);
 
-	ComboBoxOption_NumBandChannels->ComboBox->OnSelectionChanged.AddDynamic(this,
-	                                                                        &ThisClass::
-	                                                                        OnSelectionChanged_NumBandChannels);
+	ComboBoxOption_NumBandChannels->ComboBox->OnSelectionChanged.AddDynamic(
+		this, &ThisClass:: OnSelectionChanged_NumBandChannels);
 
 	SavedTextWidget->SetSavedText(GetWidgetTextFromKey("SM_Saved_AudioAnalyzer"));
 
@@ -284,8 +283,7 @@ void UAudioAnalyzerSettingsWidget::ShowBandLimitErrorMessage()
 {
 	PopupMessageWidget = CreateWidget<UPopupMessageWidget>(GetWorld(), PopupMessageClass);
 	TArray<UBSButton*> Buttons = PopupMessageWidget->InitPopup(GetWidgetTextFromKey("G_Error"),
-	                                                           GetWidgetTextFromKey("AA_BandLimitThresholdError"),
-	                                                           1);
+	                                                           GetWidgetTextFromKey("AA_BandLimitThresholdError"), 1);
 
 	if (Buttons[0])
 	{

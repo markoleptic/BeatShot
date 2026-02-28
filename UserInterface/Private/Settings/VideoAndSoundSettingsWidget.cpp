@@ -41,8 +41,7 @@ void UVideoAndSoundSettingsWidget::NativeConstruct()
 	SliderTextBoxOption_MenuSound->SetValues(MinValue_Volume, MaxValue_Volume, SnapSize_Volume);
 	SliderTextBoxOption_MusicSound->SetValues(MinValue_Volume, MaxValue_Volume, SnapSize_Volume);
 	SliderTextBoxOption_SoundFX->SetValues(MinValue_Volume, MaxValue_Volume, SnapSize_Volume);
-	SliderTextBoxOption_DLSS_Sharpness->SetValues(MinValue_DLSSSharpness,
-	                                              MaxValue_DLSSSharpness,
+	SliderTextBoxOption_DLSS_Sharpness->SetValues(MinValue_DLSSSharpness, MaxValue_DLSSSharpness,
 	                                              SnapSize_DLSSSharpness);
 	SliderTextBoxOption_NIS_Sharpness->SetValues(MinValue_NISSharpness, MaxValue_NISSharpness, SnapSize_NISSharpness);
 	SliderTextBoxOption_ResolutionScale->SetValues(0.f, 1.f, 0.001f);
@@ -50,61 +49,59 @@ void UVideoAndSoundSettingsWidget::NativeConstruct()
 	SliderTextBoxOption_Brightness->SetValues(MinValue_Brightness, MaxValue_Brightness, SnapSize_Brightness);
 	SliderTextBoxOption_DisplayGamma->SetValues(MinValue_DisplayGamma, MaxValue_DisplayGamma, SnapSize_DisplayGamma);
 
-	VideoSettingOptionWidget_AA->OnVideoSettingQualityButtonPressed.AddUObject(this,
-	                                                                           &ThisClass::OnVideoSettingOptionWidget_ButtonPressed);
-	VideoSettingOptionWidget_GI->OnVideoSettingQualityButtonPressed.AddUObject(this,
-	                                                                           &ThisClass::OnVideoSettingOptionWidget_ButtonPressed);
-	VideoSettingOptionWidget_PP->OnVideoSettingQualityButtonPressed.AddUObject(this,
-	                                                                           &ThisClass::OnVideoSettingOptionWidget_ButtonPressed);
-	VideoSettingOptionWidget_RQ->OnVideoSettingQualityButtonPressed.AddUObject(this,
-	                                                                           &ThisClass::OnVideoSettingOptionWidget_ButtonPressed);
-	VideoSettingOptionWidget_TQ->OnVideoSettingQualityButtonPressed.AddUObject(this,
-	                                                                           &ThisClass::OnVideoSettingOptionWidget_ButtonPressed);
-	VideoSettingOptionWidget_SGQ->OnVideoSettingQualityButtonPressed.AddUObject(this,
-		&ThisClass::OnVideoSettingOptionWidget_ButtonPressed);
-	VideoSettingOptionWidget_SWQ->OnVideoSettingQualityButtonPressed.AddUObject(this,
-		&ThisClass::OnVideoSettingOptionWidget_ButtonPressed);
-	VideoSettingOptionWidget_VD->OnVideoSettingQualityButtonPressed.AddUObject(this,
-	                                                                           &ThisClass::OnVideoSettingOptionWidget_ButtonPressed);
-	VideoSettingOptionWidget_VEQ->OnVideoSettingQualityButtonPressed.AddUObject(this,
-		&ThisClass::OnVideoSettingOptionWidget_ButtonPressed);
+	VideoSettingOptionWidget_AA->OnVideoSettingQualityButtonPressed.AddUObject(
+		this, &ThisClass::OnVideoSettingOptionWidget_ButtonPressed);
+	VideoSettingOptionWidget_GI->OnVideoSettingQualityButtonPressed.AddUObject(
+		this, &ThisClass::OnVideoSettingOptionWidget_ButtonPressed);
+	VideoSettingOptionWidget_PP->OnVideoSettingQualityButtonPressed.AddUObject(
+		this, &ThisClass::OnVideoSettingOptionWidget_ButtonPressed);
+	VideoSettingOptionWidget_RQ->OnVideoSettingQualityButtonPressed.AddUObject(
+		this, &ThisClass::OnVideoSettingOptionWidget_ButtonPressed);
+	VideoSettingOptionWidget_TQ->OnVideoSettingQualityButtonPressed.AddUObject(
+		this, &ThisClass::OnVideoSettingOptionWidget_ButtonPressed);
+	VideoSettingOptionWidget_SGQ->OnVideoSettingQualityButtonPressed.AddUObject(
+		this, &ThisClass::OnVideoSettingOptionWidget_ButtonPressed);
+	VideoSettingOptionWidget_SWQ->OnVideoSettingQualityButtonPressed.AddUObject(
+		this, &ThisClass::OnVideoSettingOptionWidget_ButtonPressed);
+	VideoSettingOptionWidget_VD->OnVideoSettingQualityButtonPressed.AddUObject(
+		this, &ThisClass::OnVideoSettingOptionWidget_ButtonPressed);
+	VideoSettingOptionWidget_VEQ->OnVideoSettingQualityButtonPressed.AddUObject(
+		this, &ThisClass::OnVideoSettingOptionWidget_ButtonPressed);
 
 	ComboBoxOption_WindowMode->ComboBox->OnSelectionChanged.AddDynamic(this, &ThisClass::OnSelectionChanged_WindowMode);
 	ComboBoxOption_Resolution->ComboBox->OnSelectionChanged.AddDynamic(this, &ThisClass::OnSelectionChanged_Resolution);
 	ComboBoxOption_DLSS->ComboBox->OnSelectionChanged.AddDynamic(this, &ThisClass::OnSelectionChanged_DLSS_EnabledMode);
-	ComboBoxOption_DLSS_FrameGeneration->ComboBox->OnSelectionChanged.AddDynamic(this,
-		&ThisClass::OnSelectionChanged_FrameGeneration);
-	ComboBoxOption_DLSS_SuperResolution->ComboBox->OnSelectionChanged.AddDynamic(this,
-		&ThisClass::OnSelectionChanged_SuperResolution);
+	ComboBoxOption_DLSS_FrameGeneration->ComboBox->OnSelectionChanged.AddDynamic(
+		this, &ThisClass::OnSelectionChanged_FrameGeneration);
+	ComboBoxOption_DLSS_SuperResolution->ComboBox->OnSelectionChanged.AddDynamic(
+		this, &ThisClass::OnSelectionChanged_SuperResolution);
 	ComboBoxOption_NIS->ComboBox->OnSelectionChanged.AddDynamic(this, &ThisClass::OnSelectionChanged_NIS_EnabledMode);
 	ComboBoxOption_NIS_Mode->ComboBox->OnSelectionChanged.AddDynamic(this, &ThisClass::OnSelectionChanged_NIS_Mode);
 	ComboBoxOption_Reflex->ComboBox->OnSelectionChanged.AddDynamic(this, &ThisClass::OnSelectionChanged_Reflex);
-	ComboBoxOption_AntiAliasingMethod->ComboBox->OnSelectionChanged.AddDynamic(this,
-	                                                                           &ThisClass::
-	                                                                           OnSelectionChanged_AntiAliasingMethod);
-	ComboBoxOption_OutputAudioDevice->ComboBox->OnSelectionChanged.AddDynamic(this,
-	                                                                          &ThisClass::
-	                                                                          OnSelectionChanged_OutputAudioDevice);
+	ComboBoxOption_AntiAliasingMethod->ComboBox->OnSelectionChanged.AddDynamic(
+		this, &ThisClass:: OnSelectionChanged_AntiAliasingMethod);
+	ComboBoxOption_OutputAudioDevice->ComboBox->OnSelectionChanged.AddDynamic(
+		this, &ThisClass:: OnSelectionChanged_OutputAudioDevice);
 
-	ComboBoxOption_DLSS_FrameGeneration->GetComboBoxEntryTooltipStringTableKey.BindUObject(this,
-		&ThisClass::GetComboBoxEntryTooltipStringTableKey_DLSS_FrameGeneration);
-	ComboBoxOption_Reflex->GetComboBoxEntryTooltipStringTableKey.BindUObject(this,
-	                                                                         &ThisClass::GetComboBoxEntryTooltipStringTableKey_Reflex);
-	ComboBoxOption_DLSS_SuperResolution->GetComboBoxEntryTooltipStringTableKey.BindUObject(this,
-		&UVideoAndSoundSettingsWidget::GetComboBoxEntryTooltipStringTableKey_DLSS_SuperResolution);
+	ComboBoxOption_DLSS_FrameGeneration->GetComboBoxEntryTooltipStringTableKey.BindUObject(
+		this, &ThisClass::GetComboBoxEntryTooltipStringTableKey_DLSS_FrameGeneration);
+	ComboBoxOption_Reflex->GetComboBoxEntryTooltipStringTableKey.BindUObject(
+		this, &ThisClass::GetComboBoxEntryTooltipStringTableKey_Reflex);
+	ComboBoxOption_DLSS_SuperResolution->GetComboBoxEntryTooltipStringTableKey.BindUObject(
+		this, &UVideoAndSoundSettingsWidget::GetComboBoxEntryTooltipStringTableKey_DLSS_SuperResolution);
 
-	CheckBoxOption_HDREnabled->CheckBox->OnCheckStateChanged.AddDynamic(this,
-	                                                                    &ThisClass::OnCheckStateChanged_HDREnabled);
-	CheckBoxOption_FPSCounter->CheckBox->OnCheckStateChanged.AddDynamic(this,
-	                                                                    &ThisClass::OnCheckStateChanged_FPSCounter);
+	CheckBoxOption_HDREnabled->CheckBox->OnCheckStateChanged.AddDynamic(
+		this, &ThisClass::OnCheckStateChanged_HDREnabled);
+	CheckBoxOption_FPSCounter->CheckBox->OnCheckStateChanged.AddDynamic(
+		this, &ThisClass::OnCheckStateChanged_FPSCounter);
 	CheckBoxOption_VSync->CheckBox->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_VSyncEnabled);
 
-	EditableTextBoxOption_FPSLimitMenu->EditableTextBox->OnTextCommitted.AddDynamic(this,
-		&ThisClass::OnTextCommitted_FPSLimitMenu);
-	EditableTextBoxOption_FPSLimitGame->EditableTextBox->OnTextCommitted.AddDynamic(this,
-		&ThisClass::OnTextCommitted_FPSLimitGame);
-	EditableTextBoxOption_FPSLimitBackground->EditableTextBox->OnTextCommitted.AddDynamic(this,
-		&ThisClass::OnTextCommitted_FPSLimitBackground);
+	EditableTextBoxOption_FPSLimitMenu->EditableTextBox->OnTextCommitted.AddDynamic(
+		this, &ThisClass::OnTextCommitted_FPSLimitMenu);
+	EditableTextBoxOption_FPSLimitGame->EditableTextBox->OnTextCommitted.AddDynamic(
+		this, &ThisClass::OnTextCommitted_FPSLimitGame);
+	EditableTextBoxOption_FPSLimitBackground->EditableTextBox->OnTextCommitted.AddDynamic(
+		this, &ThisClass::OnTextCommitted_FPSLimitBackground);
 	EditableTextBoxOption_FPSLimitGame->EditableTextBox->SetJustification(ETextJustify::Type::Center);
 	EditableTextBoxOption_FPSLimitMenu->EditableTextBox->SetJustification(ETextJustify::Type::Center);
 	EditableTextBoxOption_FPSLimitBackground->EditableTextBox->SetJustification(ETextJustify::Type::Center);
@@ -163,24 +160,24 @@ void UVideoAndSoundSettingsWidget::NativeConstruct()
 	UpdateBrushColors();
 	InitializeVideoAndSoundSettings();
 
-	SliderTextBoxOption_GlobalSound->OnSliderTextBoxValueChanged.AddUObject(this,
-	                                                                        &ThisClass::OnSliderTextBoxValueChanged);
+	SliderTextBoxOption_GlobalSound->OnSliderTextBoxValueChanged.AddUObject(
+		this, &ThisClass::OnSliderTextBoxValueChanged);
 	SliderTextBoxOption_MenuSound->OnSliderTextBoxValueChanged.
 	                               AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
-	SliderTextBoxOption_MusicSound->OnSliderTextBoxValueChanged.AddUObject(this,
-	                                                                       &ThisClass::OnSliderTextBoxValueChanged);
+	SliderTextBoxOption_MusicSound->OnSliderTextBoxValueChanged.AddUObject(
+		this, &ThisClass::OnSliderTextBoxValueChanged);
 	SliderTextBoxOption_SoundFX->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
-	SliderTextBoxOption_DLSS_Sharpness->OnSliderTextBoxValueChanged.AddUObject(this,
-	                                                                           &ThisClass::OnSliderTextBoxValueChanged);
-	SliderTextBoxOption_NIS_Sharpness->OnSliderTextBoxValueChanged.AddUObject(this,
-	                                                                          &ThisClass::OnSliderTextBoxValueChanged);
-	SliderTextBoxOption_ResolutionScale->OnSliderTextBoxValueChanged.AddUObject(this,
-		&ThisClass::OnSliderTextBoxValueChanged);
+	SliderTextBoxOption_DLSS_Sharpness->OnSliderTextBoxValueChanged.AddUObject(
+		this, &ThisClass::OnSliderTextBoxValueChanged);
+	SliderTextBoxOption_NIS_Sharpness->OnSliderTextBoxValueChanged.AddUObject(
+		this, &ThisClass::OnSliderTextBoxValueChanged);
+	SliderTextBoxOption_ResolutionScale->OnSliderTextBoxValueChanged.AddUObject(
+		this, &ThisClass::OnSliderTextBoxValueChanged);
 	SliderTextBoxOption_HDRNits->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
-	SliderTextBoxOption_Brightness->OnSliderTextBoxValueChanged.AddUObject(this,
-	                                                                       &ThisClass::OnSliderTextBoxValueChanged);
-	SliderTextBoxOption_DisplayGamma->OnSliderTextBoxValueChanged.AddUObject(this,
-	                                                                         &ThisClass::OnSliderTextBoxValueChanged);
+	SliderTextBoxOption_Brightness->OnSliderTextBoxValueChanged.AddUObject(
+		this, &ThisClass::OnSliderTextBoxValueChanged);
+	SliderTextBoxOption_DisplayGamma->OnSliderTextBoxValueChanged.AddUObject(
+		this, &ThisClass::OnSliderTextBoxValueChanged);
 }
 
 void UVideoAndSoundSettingsWidget::InitializeVideoAndSoundSettings()
@@ -797,24 +794,21 @@ void UVideoAndSoundSettingsWidget::ShowConfirmVideoSettingsMessage()
 	{
 		TArray<UBSButton*> Buttons = PopupMessageWidget->InitPopup(
 			GetWidgetTextFromKey("ConfirmVideoSettingsPopupTitle"),
-			GetWidgetTextFromKey("ConfirmVideoSettingsPopupMessage"),
-			2);
+			GetWidgetTextFromKey("ConfirmVideoSettingsPopupMessage"), 2);
 		if (Buttons[0])
 		{
 			Buttons[0]->SetButtonText(GetWidgetTextFromKey("ConfirmVideoSettingsPopupButton2"));
-			Buttons[0]->OnBSButtonPressed.AddUObject(this,
-			                                         &UVideoAndSoundSettingsWidget::OnButtonPressed_CancelVideoSettings);
+			Buttons[0]->OnBSButtonPressed.AddUObject(
+				this, &UVideoAndSoundSettingsWidget::OnButtonPressed_CancelVideoSettings);
 		}
 		if (Buttons[1])
 		{
 			Buttons[1]->SetButtonText(GetWidgetTextFromKey("ConfirmVideoSettingsPopupButton1"));
-			Buttons[1]->OnBSButtonPressed.AddUObject(this,
-			                                         &UVideoAndSoundSettingsWidget::OnButtonPressed_ConfirmVideoSettings);
+			Buttons[1]->OnBSButtonPressed.AddUObject(
+				this, &UVideoAndSoundSettingsWidget::OnButtonPressed_ConfirmVideoSettings);
 		}
-		GetWorld()->GetTimerManager().SetTimer(RevertVideoSettingsTimer_UpdateSecond,
-		                                       this,
-		                                       &UVideoAndSoundSettingsWidget::RevertVideoSettingsTimerCallback,
-		                                       1.f,
+		GetWorld()->GetTimerManager().SetTimer(RevertVideoSettingsTimer_UpdateSecond, this,
+		                                       &UVideoAndSoundSettingsWidget::RevertVideoSettingsTimerCallback, 1.f,
 		                                       true);
 		GetWorld()->GetTimerManager().SetTimer(RevertVideoSettingsTimer, VideoSettingsTimeoutLength, false);
 	}

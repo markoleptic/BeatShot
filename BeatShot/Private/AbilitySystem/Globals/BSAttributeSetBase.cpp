@@ -95,12 +95,8 @@ void UBSAttributeSetBase::PostGameplayEffectExecute(const FGameplayEffectModCall
 	else if (Data.EvaluatedData.Attribute == GetMaxHealthAttribute())
 	{
 		// Notify any requested max health changes
-		OnMaxHealthChanged.Broadcast(Instigator,
-		                             Causer,
-		                             &Data.EffectSpec,
-		                             Data.EvaluatedData.Magnitude,
-		                             MaxHealthBeforeAttributeChange,
-		                             GetMaxHealth());
+		OnMaxHealthChanged.Broadcast(Instigator, Causer, &Data.EffectSpec, Data.EvaluatedData.Magnitude,
+		                             MaxHealthBeforeAttributeChange, GetMaxHealth());
 	}
 
 	// If health has actually changed activate callbacks. Also check that it isn't resetting health, in which case we
@@ -109,31 +105,18 @@ void UBSAttributeSetBase::PostGameplayEffectExecute(const FGameplayEffectModCall
 	{
 		if (DamageType != ETargetDamageType::None)
 		{
-			const FDamageEventData DamageEvent(Instigator,
-			                                   Causer,
-			                                   &Data.EffectSpec,
-			                                   Data.EvaluatedData.Magnitude,
-			                                   HealthBeforeAttributeChange,
-			                                   GetHealth(),
-			                                   DamageType);
+			const FDamageEventData DamageEvent(Instigator, Causer, &Data.EffectSpec, Data.EvaluatedData.Magnitude,
+			                                   HealthBeforeAttributeChange, GetHealth(), DamageType);
 			OnDamageTaken.Broadcast(DamageEvent);
 		}
-		OnHealthChanged.Broadcast(Instigator,
-		                          Causer,
-		                          &Data.EffectSpec,
-		                          Data.EvaluatedData.Magnitude,
-		                          HealthBeforeAttributeChange,
-		                          GetHealth());
+		OnHealthChanged.Broadcast(Instigator, Causer, &Data.EffectSpec, Data.EvaluatedData.Magnitude,
+		                          HealthBeforeAttributeChange, GetHealth());
 	}
 
 	if (GetHealth() <= 0.0f && !bOutOfHealth)
 	{
-		OnOutOfHealth.Broadcast(Instigator,
-		                        Causer,
-		                        &Data.EffectSpec,
-		                        Data.EvaluatedData.Magnitude,
-		                        HealthBeforeAttributeChange,
-		                        GetHealth());
+		OnOutOfHealth.Broadcast(Instigator, Causer, &Data.EffectSpec, Data.EvaluatedData.Magnitude,
+		                        HealthBeforeAttributeChange, GetHealth());
 	}
 
 	// Check health again in case an event above changed it.

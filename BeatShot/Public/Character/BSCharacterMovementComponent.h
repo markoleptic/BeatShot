@@ -14,12 +14,12 @@ class ABSCharacterBase;
 
 namespace MovementDefaults
 {
-	/** Crouch Timings (in seconds). */
-	static constexpr float DefaultCrouchTime = 0.4f;
-	static constexpr float DefaultCrouchJumpTime = 0.1f;
-	static constexpr float DefaultUncrouchTime = 0.2f;
-	static constexpr float DefaultUncrouchJumpTime = 0.8f;
-	static constexpr float DefaultLadderMoundTimeout = 0.2f;
+/** Crouch Timings (in seconds). */
+static constexpr float DefaultCrouchTime = 0.4f;
+static constexpr float DefaultCrouchJumpTime = 0.1f;
+static constexpr float DefaultUncrouchTime = 0.2f;
+static constexpr float DefaultUncrouchJumpTime = 0.8f;
+static constexpr float DefaultLadderMoundTimeout = 0.2f;
 }
 
 
@@ -122,9 +122,7 @@ protected:
 	float GroundBrakingDeceleration = 15.f;
 
 	/** Time (in millis) the player has to re-jump without applying friction. */
-	UPROPERTY(EditAnywhere,
-		BlueprintReadWrite,
-		Category = "BeatShot|CharacterMovement|Jumping/Falling",
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BeatShot|CharacterMovement|Jumping/Falling",
 		meta=(DisplayName="Rejump Window", ForceUnits="ms"))
 	float BrakingWindow = 15.f;
 
@@ -145,23 +143,17 @@ protected:
 	float CurrentCrouchProgress = 0.f;
 
 	/** The target ground speed when walking slowly. */
-	UPROPERTY(Category = "BeatShot|CharacterMovement|Walking",
-		EditAnywhere,
-		BlueprintReadWrite,
+	UPROPERTY(Category = "BeatShot|CharacterMovement|Walking", EditAnywhere, BlueprintReadWrite,
 		meta = (ClampMin = "0", UIMin = "0"))
 	float WalkSpeed = 285.75f;
 
 	/** The target ground speed when running. */
-	UPROPERTY(Category = "BeatShot|CharacterMovement|Walking",
-		EditAnywhere,
-		BlueprintReadWrite,
+	UPROPERTY(Category = "BeatShot|CharacterMovement|Walking", EditAnywhere, BlueprintReadWrite,
 		meta = (ClampMin = "0", UIMin = "0"))
 	float RunSpeed = 361.9f;
 
 	/** The target ground speed when sprinting. */
-	UPROPERTY(Category = "BeatShot|CharacterMovement|Walking",
-		EditAnywhere,
-		BlueprintReadWrite,
+	UPROPERTY(Category = "BeatShot|CharacterMovement|Walking", EditAnywhere, BlueprintReadWrite,
 		meta = (ClampMin = "0", UIMin = "0"))
 	float SprintSpeed = 609.6f;
 
@@ -170,16 +162,12 @@ protected:
 	float LadderSpeed = 381.0f;
 
 	/** The minimum speed to scale up from for slope movement. */
-	UPROPERTY(Category = "BeatShot|CharacterMovement|Walking",
-		EditAnywhere,
-		BlueprintReadWrite,
+	UPROPERTY(Category = "BeatShot|CharacterMovement|Walking", EditAnywhere, BlueprintReadWrite,
 		meta = (ClampMin = "0", UIMin = "0"))
 	float SpeedMultMin = SprintSpeed * 1.7f;
 
 	/** The maximum speed to scale up to for slope movement. */
-	UPROPERTY(Category = "BeatShot|CharacterMovement|Walking",
-		EditAnywhere,
-		BlueprintReadWrite,
+	UPROPERTY(Category = "BeatShot|CharacterMovement|Walking", EditAnywhere, BlueprintReadWrite,
 		meta = (ClampMin = "0", UIMin = "0"))
 	float SpeedMultMax = SprintSpeed * 2.5f;
 
@@ -195,16 +183,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BeatShot|CharacterMovement")
 	float BounceMultiplier = 0.0f;
 
-	UPROPERTY(Category = "BeatShot|CharacterMovement|Walking",
-		EditAnywhere,
-		BlueprintReadWrite,
+	UPROPERTY(Category = "BeatShot|CharacterMovement|Walking", EditAnywhere, BlueprintReadWrite,
 		meta = (ClampMin = "0", UIMin = "0"))
 	float AxisSpeedLimit = 6667.5f;
 
 	/** Threshold relating to speed ratio and friction which causes us to catch air. */
-	UPROPERTY(Category = "BeatShot|CharacterMovement|Walking",
-		EditAnywhere,
-		BlueprintReadWrite,
+	UPROPERTY(Category = "BeatShot|CharacterMovement|Walking", EditAnywhere, BlueprintReadWrite,
 		meta = (ClampMin = "0", UIMin = "0"))
 	float SlideLimit = 0.5f;
 

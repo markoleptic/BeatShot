@@ -51,12 +51,12 @@ struct FJsonFeedback
 
 namespace HttpRequestHelpers
 {
-	/** Makes a POST request to BeatShot website which emails the feedback. Executes OnHttpResponseReceived supplied by
-	 *  FeedbackResponse .
-	 *
-	 *  @param InFeedback struct to send with the request
-	 *  @param FeedbackResponse struct containing callback delegate and response info
-	 */
-	void BEATSHOTGLOBAL_API PostFeedback(const FJsonFeedback InFeedback,
-	                                     TSharedPtr<FBSHttpResponse, ESPMode::ThreadSafe> FeedbackResponse);
+/** Makes a POST request to BeatShot website which emails the feedback. Executes OnHttpResponseReceived supplied by
+ *  FeedbackResponse .
+ *
+ *  @param InFeedback struct to send with the request
+ *  @param FeedbackResponse struct containing callback delegate and response info
+ */
+void BEATSHOTGLOBAL_API PostFeedback(const FJsonFeedback InFeedback,
+                                     TSharedPtr<FBSHttpResponse, ESPMode::ThreadSafe> FeedbackResponse);
 }

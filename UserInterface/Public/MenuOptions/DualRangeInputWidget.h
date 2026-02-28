@@ -19,11 +19,8 @@ enum class EConstantMinMaxType : uint8
 ENUM_RANGE_BY_FIRST_AND_LAST(EConstantMinMaxType, EConstantMinMaxType::Constant, EConstantMinMaxType::Max);
 
 class UDualRangeInputWidget;
-DECLARE_MULTICAST_DELEGATE_FourParams(FOnMinMaxMenuOptionChanged,
-                                      UDualRangeInputWidget* Widget,
-                                      const bool bChecked,
-                                      const float MinOrConstantValue,
-                                      const float MaxValue);
+DECLARE_MULTICAST_DELEGATE_FourParams(FOnMinMaxMenuOptionChanged, UDualRangeInputWidget* Widget, const bool bChecked,
+                                      const float MinOrConstantValue, const float MaxValue);
 
 UCLASS()
 class USERINTERFACE_API UDualRangeInputWidget : public UMenuOptionWidget

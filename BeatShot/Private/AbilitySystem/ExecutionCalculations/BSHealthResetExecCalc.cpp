@@ -15,11 +15,9 @@ struct BSHealthStatics
 	BSHealthStatics()
 	{
 		HealthDef = FGameplayEffectAttributeCaptureDefinition(UBSAttributeSetBase::GetHealthAttribute(),
-		                                                      EGameplayEffectAttributeCaptureSource::Target,
-		                                                      false);
+		                                                      EGameplayEffectAttributeCaptureSource::Target, false);
 		MaxHealthDef = FGameplayEffectAttributeCaptureDefinition(UBSAttributeSetBase::GetMaxHealthAttribute(),
-		                                                         EGameplayEffectAttributeCaptureSource::Target,
-		                                                         false);
+		                                                         EGameplayEffectAttributeCaptureSource::Target, false);
 	}
 };
 
@@ -53,11 +51,9 @@ void UBSHealthResetExecCalc::Execute_Implementation(const FGameplayEffectCustomE
 	float CurrentHealth = 0.f;
 	float NewHealth = 0.f;
 
-	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(HealthStatics().HealthDef,
-	                                                           EvaluationParameters,
+	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(HealthStatics().HealthDef, EvaluationParameters,
 	                                                           CurrentHealth);
-	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(HealthStatics().MaxHealthDef,
-	                                                           EvaluationParameters,
+	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(HealthStatics().MaxHealthDef, EvaluationParameters,
 	                                                           NewHealth);
 
 	if (NewHealth > CurrentHealth)

@@ -90,11 +90,11 @@ void UDefaultGameModeScoreViewerWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	GameModeComboBoxWidget->ComboBox->OnSelectionChanged.AddUniqueDynamic(this,
-	                                                                      &ThisClass::OnSelectionChanged_GameMode);
+	GameModeComboBoxWidget->ComboBox->OnSelectionChanged.
+	                        AddUniqueDynamic(this, &ThisClass::OnSelectionChanged_GameMode);
 	SongComboBoxWidget->ComboBox->OnSelectionChanged.AddUniqueDynamic(this, &ThisClass::OnSelectionChanged_Song);
-	DifficultyComboBoxWidget->ComboBox->OnSelectionChanged.AddUniqueDynamic(this,
-	                                                                        &ThisClass::OnSelectionChanged_Difficulty);
+	DifficultyComboBoxWidget->ComboBox->OnSelectionChanged.AddUniqueDynamic(
+		this, &ThisClass::OnSelectionChanged_Difficulty);
 }
 
 void UDefaultGameModeScoreViewerWidget::OnSelectionChanged_GameMode(const TArray<FString>& ActiveSelections,

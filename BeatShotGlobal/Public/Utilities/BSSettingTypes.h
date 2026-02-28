@@ -53,6 +53,5 @@ enum class ENvidiaSettingType : uint8
 	StreamlineReflexMode UMETA(DisplayName="StreamlineReflexMode"),
 };
 
-ENUM_RANGE_BY_FIRST_AND_LAST(ENvidiaSettingType,
-                             ENvidiaSettingType::DLSSEnabledMode,
+ENUM_RANGE_BY_FIRST_AND_LAST(ENvidiaSettingType, ENvidiaSettingType::DLSSEnabledMode,
                              ENvidiaSettingType::StreamlineReflexMode);

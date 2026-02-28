@@ -69,8 +69,7 @@ protected:
 	 *  Mutable so that it can be set during GetTests. */
 	mutable UBSGameModeDataAsset* GameModeDataAsset;
 
-	const FTransform TargetManagerTransform = FTransform(FRotator(),
-	                                                     Constants::DefaultTargetManagerLocation,
+	const FTransform TargetManagerTransform = FTransform(FRotator(), Constants::DefaultTargetManagerLocation,
 	                                                     FVector(1.f));
 
 	/** Map to pull game mode configs from during tests. */

@@ -59,8 +59,7 @@ void AVisualizerManager::InitializeVisualizers(const FPlayerSettings_Game& Playe
 			{
 				continue;
 			}
-			FTransform Transform(CDO->GetVisualizerDefinition()->Rotation,
-			                     CDO->GetVisualizerDefinition()->Location,
+			FTransform Transform(CDO->GetVisualizerDefinition()->Rotation, CDO->GetVisualizerDefinition()->Location,
 			                     CDO->GetVisualizerDefinition()->Scale);
 			AVisualizerBase* SpawnedVisualizer = GetWorld()->SpawnActorDeferred<AVisualizerBase>(Visualizer, Transform);
 			SpawnedVisualizer->InitializeVisualizer(InAASettings);
@@ -81,11 +80,8 @@ float AVisualizerManager::GetNormalizedSpectrumValue(const int32 Index, const bo
 	{
 		return UKismetMathLibrary::MapRangeClamped(CurrentSpectrumValues[Index], 0, MaxSpectrumValues[Index], 0, 1);
 	}
-	return UKismetMathLibrary::MapRangeClamped(CurrentCubeSpectrumValues[Index] - AvgSpectrumValues[Index],
-	                                           0,
-	                                           MaxSpectrumValues[Index],
-	                                           0,
-	                                           1);
+	return UKismetMathLibrary::MapRangeClamped(CurrentCubeSpectrumValues[Index] - AvgSpectrumValues[Index], 0,
+	                                           MaxSpectrumValues[Index], 0, 1);
 }
 
 void AVisualizerManager::UpdateVisualizers(const TArray<float>& SpectrumValues)

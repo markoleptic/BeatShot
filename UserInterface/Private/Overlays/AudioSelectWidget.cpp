@@ -43,12 +43,11 @@ void UAudioSelectWidget::NativeConstruct()
 	Value_SongTitle->OnTextCommitted.AddUniqueDynamic(this, &UAudioSelectWidget::OnValueChanged_SongTitle);
 	Value_Seconds->OnTextCommitted.AddUniqueDynamic(this, &UAudioSelectWidget::OnValueChanged_Seconds);
 	Value_Minutes->OnTextCommitted.AddUniqueDynamic(this, &UAudioSelectWidget::OnValueChanged_Minutes);
-	ComboBox_InAudioDevices->OnSelectionChanged.AddUniqueDynamic(this,
-	                                                             &UAudioSelectWidget::OnSelectionChanged_InAudioDevice);
+	ComboBox_InAudioDevices->OnSelectionChanged.AddUniqueDynamic(
+		this, &UAudioSelectWidget::OnSelectionChanged_InAudioDevice);
 	ComboBox_SongTitle->OnSelectionChanged.AddUniqueDynamic(this, &UAudioSelectWidget::OnSelectionChanged_SongTitle);
-	Checkbox_PlaybackAudio->OnCheckStateChanged.AddUniqueDynamic(this,
-	                                                             &UAudioSelectWidget::
-	                                                             OnCheckStateChanged_PlaybackAudio);
+	Checkbox_PlaybackAudio->OnCheckStateChanged.AddUniqueDynamic(
+		this, &UAudioSelectWidget:: OnCheckStateChanged_PlaybackAudio);
 
 	SetupTooltip(QMark_PlaybackAudio, GetTooltipTextFromKey("PlaybackAudio"));
 	SetupTooltip(QMark_Input, GetTooltipTextFromKey("AF_InputAudioDevice"));
@@ -255,8 +254,7 @@ void UAudioSelectWidget::OnValueChanged_Minutes(const FText& NewMinutes, ETextCo
 {
 	const int32 ClampedMinutes = FMath::Clamp(FCString::Atoi(*NewMinutes.ToString()), 0, 99);
 	Value_Minutes->SetText(FText::AsNumber(ClampedMinutes, &NumberFormattingOptions));
-	AudioConfig.SongLength = ClampedMinutes * 60 + FMath::Clamp(FCString::Atoi(*Value_Seconds->GetText().ToString()),
-	                                                            0,
+	AudioConfig.SongLength = ClampedMinutes * 60 + FMath::Clamp(FCString::Atoi(*Value_Seconds->GetText().ToString()), 0,
 	                                                            60);
 }
 
@@ -325,15 +323,8 @@ bool UAudioSelectWidget::OpenFileDialog(TArray<FString>& OutFileNames)
 	FString DefaultFile;
 	const FString FileTypes = ".mp3,.ogg";
 	int OutFilterIndex = 0;
-	return FileDialogShared(false,
-	                        GEngine->GameViewport->GetWindow()->GetNativeWindow()->GetOSWindowHandle(),
-	                        DialogTitle,
-	                        DefaultPath,
-	                        DefaultFile,
-	                        FileTypes,
-	                        0,
-	                        OutFileNames,
-	                        OutFilterIndex);
+	return FileDialogShared(false, GEngine->GameViewport->GetWindow()->GetNativeWindow()->GetOSWindowHandle(),
+	                        DialogTitle, DefaultPath, DefaultFile, FileTypes, 0, OutFileNames, OutFilterIndex);
 }
 
 bool UAudioSelectWidget::FileDialogShared(bool bSave,
@@ -354,8 +345,7 @@ bool UAudioSelectWidget::FileDialogShared(bool bSave,
 
 	// Convert the forward slashes in the path name to backslashes, otherwise it'll be ignored as invalid and use whatever is cached in the registry
 	WCHAR Pathname[MAX_FILENAME_STR];
-	FCString::Strncpy(Pathname,
-	                  *FPaths::ConvertRelativePathToFull(DefaultPath).Replace(TEXT("/"), TEXT("\\")),
+	FCString::Strncpy(Pathname, *FPaths::ConvertRelativePathToFull(DefaultPath).Replace(TEXT("/"), TEXT("\\")),
 	                  MAX_FILENAME_STR);
 
 	// Convert the "|" delimited list of filetypes to NULL delimited then add a second NULL character to indicate the end of the list
@@ -488,8 +478,7 @@ void UAudioSelectWidget::ShowSongPathErrorMessage()
 {
 	PopupMessageWidget = CreateWidget<UPopupMessageWidget>(GetWorld(), PopupMessageClass);
 	TArray<UBSButton*> Buttons = PopupMessageWidget->InitPopup(GetWidgetTextFromKey("G_Error"),
-	                                                           GetWidgetTextFromKey("ASW_SongPathErrorMessage"),
-	                                                           1);
+	                                                           GetWidgetTextFromKey("ASW_SongPathErrorMessage"), 1);
 	if (!Buttons.IsEmpty())
 	{
 		Buttons[0]->SetButtonText(GetWidgetTextFromKey("G_Okay"));

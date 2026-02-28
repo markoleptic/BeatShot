@@ -57,24 +57,14 @@ class SBSTableRow : public ITableRow, public SBorder
 public:
 	/** Delegate signature for querying whether this FDragDropEvent will be handled by the drop target of type
 	 *  ItemType. */
-	DECLARE_DELEGATE_RetVal_ThreeParams(TOptional<EItemDropZone>,
-	                                    FOnCanAcceptDrop,
-	                                    const FDragDropEvent&,
-	                                    EItemDropZone,
-	                                    ItemType);
+	DECLARE_DELEGATE_RetVal_ThreeParams(TOptional<EItemDropZone>, FOnCanAcceptDrop, const FDragDropEvent&,
+	                                    EItemDropZone, ItemType);
 	/** Delegate signature for handling the drop of FDragDropEvent onto target of type ItemType. */
 	DECLARE_DELEGATE_RetVal_ThreeParams(FReply, FOnAcceptDrop, const FDragDropEvent&, EItemDropZone, ItemType);
 	/** Delegate signature for painting drop indicators. */
-	DECLARE_DELEGATE_RetVal_EightParams(int32,
-	                                    FOnPaintDropIndicator,
-	                                    EItemDropZone,
-	                                    const FPaintArgs&,
-	                                    const FGeometry&,
-	                                    const FSlateRect&,
-	                                    FSlateWindowElementList&,
-	                                    int32,
-	                                    const FWidgetStyle&,
-	                                    bool);
+	DECLARE_DELEGATE_RetVal_EightParams(int32, FOnPaintDropIndicator, EItemDropZone, const FPaintArgs&,
+	                                    const FGeometry&, const FSlateRect&, FSlateWindowElementList&, int32,
+	                                    const FWidgetStyle&, bool);
 
 public:
 	SLATE_BEGIN_ARGS(SBSTableRow< ItemType >) :
@@ -320,47 +310,28 @@ public:
 			if (bIsActive && OwnerTable->Private_UsesSelectorFocus() && OwnerTable->
 			    Private_HasSelectorFocus(*MyItemPtr))
 			{
-				FSlateDrawElement::MakeBox(OutDrawElements,
-				                           LayerId,
-				                           AllottedGeometry.ToPaintGeometry(),
-				                           &Style->SelectorFocusedBrush,
-				                           ESlateDrawEffect::None,
+				FSlateDrawElement::MakeBox(OutDrawElements, LayerId, AllottedGeometry.ToPaintGeometry(),
+				                           &Style->SelectorFocusedBrush, ESlateDrawEffect::None,
 				                           Style->SelectorFocusedBrush.GetTint(InWidgetStyle) * InWidgetStyle.
 				                           GetColorAndOpacityTint());
 			}
 		}
 
-		LayerId = SBorder::OnPaint(Args,
-		                           AllottedGeometry,
-		                           MyCullingRect,
-		                           OutDrawElements,
-		                           LayerId,
-		                           InWidgetStyle,
+		LayerId = SBorder::OnPaint(Args, AllottedGeometry, MyCullingRect, OutDrawElements, LayerId, InWidgetStyle,
 		                           bParentEnabled);
 
 		if (ItemDropZone.IsSet())
 		{
 			if (PaintDropIndicatorEvent.IsBound())
 			{
-				LayerId = PaintDropIndicatorEvent.Execute(ItemDropZone.GetValue(),
-				                                          Args,
-				                                          AllottedGeometry,
-				                                          MyCullingRect,
-				                                          OutDrawElements,
-				                                          LayerId,
-				                                          InWidgetStyle,
+				LayerId = PaintDropIndicatorEvent.Execute(ItemDropZone.GetValue(), Args, AllottedGeometry,
+				                                          MyCullingRect, OutDrawElements, LayerId, InWidgetStyle,
 				                                          bParentEnabled);
 			}
 			else
 			{
-				OnPaintDropIndicator(ItemDropZone.GetValue(),
-				                     Args,
-				                     AllottedGeometry,
-				                     MyCullingRect,
-				                     OutDrawElements,
-				                     LayerId,
-				                     InWidgetStyle,
-				                     bParentEnabled);
+				OnPaintDropIndicator(ItemDropZone.GetValue(), Args, AllottedGeometry, MyCullingRect, OutDrawElements,
+				                     LayerId, InWidgetStyle, bParentEnabled);
 			}
 		}
 
@@ -383,11 +354,8 @@ public:
 
 		if (OwnerTable->Private_GetOrientation() == Orient_Vertical)
 		{
-			FSlateDrawElement::MakeBox(OutDrawElements,
-			                           LayerId++,
-			                           AllottedGeometry.ToPaintGeometry(),
-			                           DropIndicatorBrush,
-			                           ESlateDrawEffect::None,
+			FSlateDrawElement::MakeBox(OutDrawElements, LayerId++, AllottedGeometry.ToPaintGeometry(),
+			                           DropIndicatorBrush, ESlateDrawEffect::None,
 			                           DropIndicatorBrush->GetTint(InWidgetStyle) * InWidgetStyle.
 			                           GetColorAndOpacityTint());
 		}
@@ -400,12 +368,9 @@ public:
 			FSlateLayoutTransform RotatedTransform(Pivot - RotatedLocalSize * 0.5f);
 			// Make the box centered to the alloted geometry, so that it can be rotated around the center.
 
-			FSlateDrawElement::MakeRotatedBox(OutDrawElements,
-			                                  LayerId++,
+			FSlateDrawElement::MakeRotatedBox(OutDrawElements, LayerId++,
 			                                  AllottedGeometry.ToPaintGeometry(RotatedLocalSize, RotatedTransform),
-			                                  DropIndicatorBrush,
-			                                  ESlateDrawEffect::None,
-			                                  -UE_HALF_PI,
+			                                  DropIndicatorBrush, ESlateDrawEffect::None, -UE_HALF_PI,
 			                                  // 90 deg CCW
 			                                  RotatedLocalSize * 0.5f,
 			                                  // Relative center to the flipped
@@ -526,8 +491,7 @@ public:
 					}
 
 					return FReply::Handled().DetectDrag(SharedThis(this), EKeys::LeftMouseButton).SetUserFocus(
-						OwnerTable->AsWidget(),
-						EFocusCause::Mouse).CaptureMouse(SharedThis(this));
+						OwnerTable->AsWidget(), EFocusCause::Mouse).CaptureMouse(SharedThis(this));
 				}
 			}
 		}
@@ -789,10 +753,8 @@ public:
 		{
 			const TSharedRef<ITypedTableView<ItemType>> OwnerTable = OwnerTablePtr.Pin().ToSharedRef();
 			const FVector2D LocalPointerPos = MyGeometry.AbsoluteToLocal(DragDropEvent.GetScreenSpacePosition());
-			const EItemDropZone ItemHoverZone = ZoneFromPointerPosition(
-				LocalPointerPos,
-				MyGeometry.GetLocalSize(),
-				OwnerTable->Private_GetOrientation());
+			const EItemDropZone ItemHoverZone = ZoneFromPointerPosition(LocalPointerPos, MyGeometry.GetLocalSize(),
+			                                                            OwnerTable->Private_GetOrientation());
 
 			ItemDropZone = [ItemHoverZone, DragDropEvent, this]()
 			{
@@ -837,9 +799,7 @@ public:
 					// The row gets final say over which zone to drop onto regardless of physical location.
 					const TOptional<EItemDropZone> ReportedZone = OnCanAcceptDrop.IsBound()
 					                                              ? OnCanAcceptDrop.Execute(
-						                                              DragDropEvent,
-						                                              HoveredZone,
-						                                              *MyItemPtr)
+						                                              DragDropEvent, HoveredZone, *MyItemPtr)
 					                                              : HoveredZone;
 
 					if (ReportedZone.IsSet())

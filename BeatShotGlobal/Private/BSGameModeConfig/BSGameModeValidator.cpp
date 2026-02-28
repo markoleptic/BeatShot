@@ -7,155 +7,155 @@
 
 namespace
 {
-	/** Finds a property in RootStruct.
-	 *  @param SubStructName name of the inner struct.
-	 *  @param PropertyName name of property to find.
-	 *	@return a property if found, otherwise null.
-	 */
-	template <typename RootStruct>
-	[[maybe_unused]] const FProperty* FindProperty(const FName SubStructName, const FName PropertyName)
+/** Finds a property in RootStruct.
+ *  @param SubStructName name of the inner struct.
+ *  @param PropertyName name of property to find.
+ *	@return a property if found, otherwise null.
+ */
+template <typename RootStruct>
+[[maybe_unused]] const FProperty* FindProperty(const FName SubStructName, const FName PropertyName)
+{
+	if (const FStructProperty* StructProperty = FindFProperty<FStructProperty>(RootStruct::StaticStruct(),
+	                                                                           SubStructName))
 	{
-		if (const FStructProperty* StructProperty = FindFProperty<FStructProperty>(RootStruct::StaticStruct(),
-			SubStructName))
-		{
-			return FindFProperty<FProperty>(StructProperty->Struct, PropertyName);
-		}
-		return nullptr;
+		return FindFProperty<FProperty>(StructProperty->Struct, PropertyName);
 	}
+	return nullptr;
+}
 
-	/** Finds a nested property in RootStruct.
-	 *  @param SubStructName name of the inner struct.
-	 *  @param SubSubStructName name of the inner struct inside the substruct.
-	 *  @param PropertyName name of property to find.
-	 *	@return a property if found, otherwise null.
-	 */
-	template <typename RootStruct>
-	[[maybe_unused]] const FProperty* FindProperty(const FName SubStructName,
-	                                               const FName SubSubStructName,
-	                                               const FName PropertyName)
+/** Finds a nested property in RootStruct.
+ *  @param SubStructName name of the inner struct.
+ *  @param SubSubStructName name of the inner struct inside the substruct.
+ *  @param PropertyName name of property to find.
+ *	@return a property if found, otherwise null.
+ */
+template <typename RootStruct>
+[[maybe_unused]] const FProperty* FindProperty(const FName SubStructName,
+                                               const FName SubSubStructName,
+                                               const FName PropertyName)
+{
+	if (const FStructProperty* StructProperty = FindFProperty<FStructProperty>(RootStruct::StaticStruct(),
+	                                                                           SubStructName))
 	{
-		if (const FStructProperty* StructProperty = FindFProperty<FStructProperty>(RootStruct::StaticStruct(),
-			SubStructName))
+		if (const FStructProperty* SubStructProperty = FindFProperty<FStructProperty>(StructProperty->Struct,
+			SubSubStructName))
 		{
-			if (const FStructProperty* SubStructProperty = FindFProperty<FStructProperty>(StructProperty->Struct,
-				SubSubStructName))
-			{
-				return FindFProperty<FProperty>(SubStructProperty->Struct, PropertyName);
-			}
+			return FindFProperty<FProperty>(SubStructProperty->Struct, PropertyName);
 		}
-		return nullptr;
 	}
+	return nullptr;
+}
 
-	/** Creates a FPropertyHash object using the substruct and property found in RootStruct.
-	 *  @param SubStructName name of the inner struct.
-	 *  @param PropertyName name of property to find.
-	 *	@return a FPropertyHash object containing all properties leading to innermost property.
-	 */
-	template <typename RootStruct>
-	FPropertyHash CreatePropertyHash(const FName SubStructName, const FName PropertyName)
+/** Creates a FPropertyHash object using the substruct and property found in RootStruct.
+ *  @param SubStructName name of the inner struct.
+ *  @param PropertyName name of property to find.
+ *	@return a FPropertyHash object containing all properties leading to innermost property.
+ */
+template <typename RootStruct>
+FPropertyHash CreatePropertyHash(const FName SubStructName, const FName PropertyName)
+{
+	FPropertyHash Hash;
+	if (const FStructProperty* StructProperty = FindFProperty<FStructProperty>(RootStruct::StaticStruct(),
+	                                                                           SubStructName))
 	{
-		FPropertyHash Hash;
-		if (const FStructProperty* StructProperty = FindFProperty<FStructProperty>(RootStruct::StaticStruct(),
-			SubStructName))
+		Hash.Properties.Add(StructProperty);
+		if (const FProperty* Property = FindFProperty<FProperty>(StructProperty->Struct, PropertyName))
 		{
-			Hash.Properties.Add(StructProperty);
-			if (const FProperty* Property = FindFProperty<FProperty>(StructProperty->Struct, PropertyName))
-			{
-				Hash.Properties.Add(Property);
-			}
+			Hash.Properties.Add(Property);
 		}
-		return Hash;
 	}
+	return Hash;
+}
 
-	/** Creates a FPropertyHash object using the substruct and property found in RootStruct.
-	 *  @param SubStructName name of the inner struct.
-	 *  @param SubSubStructName name of the inner struct inside the substruct.
-	 *  @param PropertyName name of property to find.
-	 *	@return a FPropertyHash object containing all properties leading to innermost property.
-	 */
-	template <typename RootStruct>
-	FPropertyHash CreatePropertyHash(const FName SubStructName, const FName SubSubStructName, const FName PropertyName)
+/** Creates a FPropertyHash object using the substruct and property found in RootStruct.
+ *  @param SubStructName name of the inner struct.
+ *  @param SubSubStructName name of the inner struct inside the substruct.
+ *  @param PropertyName name of property to find.
+ *	@return a FPropertyHash object containing all properties leading to innermost property.
+ */
+template <typename RootStruct>
+FPropertyHash CreatePropertyHash(const FName SubStructName, const FName SubSubStructName, const FName PropertyName)
+{
+	FPropertyHash Hash;
+	if (const FStructProperty* StructProperty = FindFProperty<FStructProperty>(RootStruct::StaticStruct(),
+	                                                                           SubStructName))
 	{
-		FPropertyHash Hash;
-		if (const FStructProperty* StructProperty = FindFProperty<FStructProperty>(RootStruct::StaticStruct(),
-			SubStructName))
+		Hash.Properties.Add(StructProperty);
+		if (const FStructProperty* SubStructProperty = FindFProperty<FStructProperty>(StructProperty->Struct,
+			SubSubStructName))
 		{
-			Hash.Properties.Add(StructProperty);
-			if (const FStructProperty* SubStructProperty = FindFProperty<FStructProperty>(StructProperty->Struct,
-				SubSubStructName))
-			{
-				Hash.Properties.Add(SubStructProperty);
-				if (const FProperty* Property = FindFProperty<FProperty>(SubStructProperty->Struct, PropertyName))
-				{
-					Hash.Properties.Add(Property);
-				}
-			}
-		}
-		return Hash;
-	}
-
-	/** Creates a FPropertyHash object using the substruct and property found in RootStruct.
-	 *  @param SubStructName name of the inner struct.
-	 *  @param PropertyName name of property to find.
-	 *	@return a FPropertyHash object containing all properties leading to innermost property.
-	 */
-	template <typename RootStruct>
-	uint32 GetPropertyHash(const FName SubStructName, const FName PropertyName)
-	{
-		FPropertyHash Hash;
-		if (const FStructProperty* StructProperty = FindFProperty<FStructProperty>(RootStruct::StaticStruct(),
-			SubStructName))
-		{
-			Hash.Properties.Add(StructProperty);
-			if (const FProperty* Property = FindFProperty<FProperty>(StructProperty->Struct, PropertyName))
+			Hash.Properties.Add(SubStructProperty);
+			if (const FProperty* Property = FindFProperty<FProperty>(SubStructProperty->Struct, PropertyName))
 			{
 				Hash.Properties.Add(Property);
 			}
 		}
-		return GetTypeHash(Hash);
 	}
+	return Hash;
+}
 
-	/** Creates a FPropertyHash object using the substruct and property found in RootStruct.
-	 *  @param SubStructName name of the inner struct.
-	 *  @param SubSubStructName name of the inner struct inside the substruct.
-	 *  @param PropertyName name of property to find.
-	 *	@return a FPropertyHash object containing all properties leading to innermost property.
-	 */
-	template <typename RootStruct>
-	uint32 GetPropertyHash(const FName SubStructName, const FName SubSubStructName, const FName PropertyName)
+/** Creates a FPropertyHash object using the substruct and property found in RootStruct.
+ *  @param SubStructName name of the inner struct.
+ *  @param PropertyName name of property to find.
+ *	@return a FPropertyHash object containing all properties leading to innermost property.
+ */
+template <typename RootStruct>
+uint32 GetPropertyHash(const FName SubStructName, const FName PropertyName)
+{
+	FPropertyHash Hash;
+	if (const FStructProperty* StructProperty = FindFProperty<FStructProperty>(RootStruct::StaticStruct(),
+	                                                                           SubStructName))
 	{
-		FPropertyHash Hash;
-		if (const FStructProperty* StructProperty = FindFProperty<FStructProperty>(RootStruct::StaticStruct(),
-			SubStructName))
+		Hash.Properties.Add(StructProperty);
+		if (const FProperty* Property = FindFProperty<FProperty>(StructProperty->Struct, PropertyName))
 		{
-			Hash.Properties.Add(StructProperty);
-			if (const FStructProperty* SubStructProperty = FindFProperty<FStructProperty>(StructProperty->Struct,
-				SubSubStructName))
+			Hash.Properties.Add(Property);
+		}
+	}
+	return GetTypeHash(Hash);
+}
+
+/** Creates a FPropertyHash object using the substruct and property found in RootStruct.
+ *  @param SubStructName name of the inner struct.
+ *  @param SubSubStructName name of the inner struct inside the substruct.
+ *  @param PropertyName name of property to find.
+ *	@return a FPropertyHash object containing all properties leading to innermost property.
+ */
+template <typename RootStruct>
+uint32 GetPropertyHash(const FName SubStructName, const FName SubSubStructName, const FName PropertyName)
+{
+	FPropertyHash Hash;
+	if (const FStructProperty* StructProperty = FindFProperty<FStructProperty>(RootStruct::StaticStruct(),
+	                                                                           SubStructName))
+	{
+		Hash.Properties.Add(StructProperty);
+		if (const FStructProperty* SubStructProperty = FindFProperty<FStructProperty>(StructProperty->Struct,
+			SubSubStructName))
+		{
+			Hash.Properties.Add(SubStructProperty);
+			if (const FProperty* Property = FindFProperty<FProperty>(SubStructProperty->Struct, PropertyName))
 			{
-				Hash.Properties.Add(SubStructProperty);
-				if (const FProperty* Property = FindFProperty<FProperty>(SubStructProperty->Struct, PropertyName))
-				{
-					Hash.Properties.Add(Property);
-				}
+				Hash.Properties.Add(Property);
 			}
 		}
-		return GetTypeHash(Hash);
 	}
+	return GetTypeHash(Hash);
+}
 
-	template <typename... EnumValue>
-	TFunction<bool(const TSharedPtr<FBSConfig>&, FValidationCheckData&)>
-	CreateValidationFunction(const TArray<std::common_type_t<EnumValue...>> FBS_TargetConfig::* Container,
-	                         const EnumValue... Values)
+template <typename... EnumValue>
+TFunction<bool(const TSharedPtr<FBSConfig>&, FValidationCheckData&)>
+CreateValidationFunction(const TArray<std::common_type_t<EnumValue...>> FBS_TargetConfig::* Container,
+                         const EnumValue... Values)
+{
+	using EnumType = std::common_type_t<EnumValue...>;
+	return [Container, Values...](const TSharedPtr<FBSConfig>& Config, FValidationCheckData& Data)
 	{
-		using EnumType = std::common_type_t<EnumValue...>;
-		return [Container, Values...](const TSharedPtr<FBSConfig>& Config, FValidationCheckData& Data)
-		{
-			const TArray<EnumType>& ContainerArray = Config->TargetConfig.*Container;
-			const bool ContainsAnyValue = (... || ContainerArray.Contains(Values));
-			return !(Config->TargetConfig.MovingTargetDirectionMode == EMovingTargetDirectionMode::None &&
-			         ContainsAnyValue);
-		};
-	}
+		const TArray<EnumType>& ContainerArray = Config->TargetConfig.*Container;
+		const bool ContainsAnyValue = (... || ContainerArray.Contains(Values));
+		return !(Config->TargetConfig.MovingTargetDirectionMode == EMovingTargetDirectionMode::None &&
+		         ContainsAnyValue);
+	};
+}
 }
 
 /* ---------------------- */
@@ -399,8 +399,7 @@ void UBSGameModeValidator::FPrivate::SetupValidationChecks()
 		GET_MEMBER_NAME_CHECKED(FBS_AIConfig, ReinforcementLearningMode));
 	const FPropertyHash HyperParameterMode = CreatePropertyHash<FBSConfig>(AIConfigName,
 	                                                                       GET_MEMBER_NAME_CHECKED(
-		                                                                       FBS_AIConfig,
-		                                                                       HyperParameterMode));
+		                                                                       FBS_AIConfig, HyperParameterMode));
 
 	FValidationPropertyPtr EnableReinforcementLearningPtr = CreateValidationProperty(EnableReinforcementLearning,
 		EGameModeCategory::General);
@@ -451,12 +450,10 @@ void UBSGameModeValidator::FPrivate::SetupValidationChecks()
 		GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, bSpawnEveryOtherTargetInCenter));
 	const FPropertyHash BatchSpawning = CreatePropertyHash<FBSConfig>(TargetConfigName,
 	                                                                  GET_MEMBER_NAME_CHECKED(
-		                                                                  FBS_TargetConfig,
-		                                                                  bUseBatchSpawning));
+		                                                                  FBS_TargetConfig, bUseBatchSpawning));
 	const FPropertyHash BoundsScalingPolicy = CreatePropertyHash<FBSConfig>(TargetConfigName,
 	                                                                        GET_MEMBER_NAME_CHECKED(
-		                                                                        FBS_TargetConfig,
-		                                                                        BoundsScalingPolicy));
+		                                                                        FBS_TargetConfig, BoundsScalingPolicy));
 	const FPropertyHash ConsecutiveTargetScalePolicy = CreatePropertyHash<FBSConfig>(TargetConfigName,
 		GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, ConsecutiveTargetScalePolicy));
 	const FPropertyHash MovingTargetDirectionMode = CreatePropertyHash<FBSConfig>(TargetConfigName,
@@ -467,8 +464,7 @@ void UBSGameModeValidator::FPrivate::SetupValidationChecks()
 		GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, TargetActivationSelectionPolicy));
 	const FPropertyHash TargetDamageType = CreatePropertyHash<FBSConfig>(TargetConfigName,
 	                                                                     GET_MEMBER_NAME_CHECKED(
-		                                                                     FBS_TargetConfig,
-		                                                                     TargetDamageType));
+		                                                                     FBS_TargetConfig, TargetDamageType));
 	const FPropertyHash TargetDistributionPolicy = CreatePropertyHash<FBSConfig>(TargetConfigName,
 		GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, TargetDistributionPolicy));
 	const FPropertyHash TargetSpawningPolicy = CreatePropertyHash<FBSConfig>(TargetConfigName,
@@ -489,8 +485,7 @@ void UBSGameModeValidator::FPrivate::SetupValidationChecks()
 		GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, TargetDestructionConditions));
 	const FPropertyHash BasePlayerHitDamage = CreatePropertyHash<FBSConfig>(TargetConfigName,
 	                                                                        GET_MEMBER_NAME_CHECKED(
-		                                                                        FBS_TargetConfig,
-		                                                                        BasePlayerHitDamage));
+		                                                                        FBS_TargetConfig, BasePlayerHitDamage));
 	const FPropertyHash BasePlayerTrackingDamage = CreatePropertyHash<FBSConfig>(TargetConfigName,
 		GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, BasePlayerTrackingDamage));
 	const FPropertyHash ConsecutiveChargeScaleMultiplier = CreatePropertyHash<FBSConfig>(TargetConfigName,
@@ -501,8 +496,7 @@ void UBSGameModeValidator::FPrivate::SetupValidationChecks()
 		GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, ExpirationHealthPenalty));
 	const FPropertyHash FloorDistance = CreatePropertyHash<FBSConfig>(TargetConfigName,
 	                                                                  GET_MEMBER_NAME_CHECKED(
-		                                                                  FBS_TargetConfig,
-		                                                                  FloorDistance));
+		                                                                  FBS_TargetConfig, FloorDistance));
 	const FPropertyHash MinDistanceBetweenTargets = CreatePropertyHash<FBSConfig>(TargetConfigName,
 		GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, MinDistanceBetweenTargets));
 	const FPropertyHash MaxHealth = CreatePropertyHash<FBSConfig>(TargetConfigName,
@@ -539,16 +533,13 @@ void UBSGameModeValidator::FPrivate::SetupValidationChecks()
 		                                                                           RecentTargetTimeLength));
 	const FPropertyHash SpawnBeatDelay = CreatePropertyHash<FBSConfig>(TargetConfigName,
 	                                                                   GET_MEMBER_NAME_CHECKED(
-		                                                                   FBS_TargetConfig,
-		                                                                   SpawnBeatDelay));
+		                                                                   FBS_TargetConfig, SpawnBeatDelay));
 	const FPropertyHash TargetMaxLifeSpan = CreatePropertyHash<FBSConfig>(TargetConfigName,
 	                                                                      GET_MEMBER_NAME_CHECKED(
-		                                                                      FBS_TargetConfig,
-		                                                                      TargetMaxLifeSpan));
+		                                                                      FBS_TargetConfig, TargetMaxLifeSpan));
 	const FPropertyHash TargetSpawnCD = CreatePropertyHash<FBSConfig>(TargetConfigName,
 	                                                                  GET_MEMBER_NAME_CHECKED(
-		                                                                  FBS_TargetConfig,
-		                                                                  TargetSpawnCD));
+		                                                                  FBS_TargetConfig, TargetSpawnCD));
 	const FPropertyHash BoxBoundsX = CreatePropertyHash<FBSConfig>(TargetConfigName, BoxBoundsName, FVectorXName);
 	const FPropertyHash BoxBoundsY = CreatePropertyHash<FBSConfig>(TargetConfigName, BoxBoundsName, FVectorYName);
 	const FPropertyHash BoxBoundsZ = CreatePropertyHash<FBSConfig>(TargetConfigName, BoxBoundsName, FVectorZName);
@@ -556,12 +547,10 @@ void UBSGameModeValidator::FPrivate::SetupValidationChecks()
 		GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, MaxNumActivatedTargetsAtOnce));
 	const FPropertyHash MaxNumRecentTargets = CreatePropertyHash<FBSConfig>(TargetConfigName,
 	                                                                        GET_MEMBER_NAME_CHECKED(
-		                                                                        FBS_TargetConfig,
-		                                                                        MaxNumRecentTargets));
+		                                                                        FBS_TargetConfig, MaxNumRecentTargets));
 	const FPropertyHash MaxNumTargetsAtOnce = CreatePropertyHash<FBSConfig>(TargetConfigName,
 	                                                                        GET_MEMBER_NAME_CHECKED(
-		                                                                        FBS_TargetConfig,
-		                                                                        MaxNumTargetsAtOnce));
+		                                                                        FBS_TargetConfig, MaxNumTargetsAtOnce));
 	const FPropertyHash MinNumTargetsToActivateAtOnce = CreatePropertyHash<FBSConfig>(TargetConfigName,
 		GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, MinNumTargetsToActivateAtOnce));
 	const FPropertyHash MaxNumTargetsToActivateAtOnce = CreatePropertyHash<FBSConfig>(TargetConfigName,
@@ -590,16 +579,14 @@ void UBSGameModeValidator::FPrivate::SetupValidationChecks()
 	FValidationPropertyPtr RecentTargetMemoryPolicyPtr = CreateValidationProperty(RecentTargetMemoryPolicy,
 		EGameModeCategory::General);
 	FValidationPropertyPtr TargetActivationSelectionPolicyPtr = CreateValidationProperty(
-		TargetActivationSelectionPolicy,
-		EGameModeCategory::TargetSpawning);
+		TargetActivationSelectionPolicy, EGameModeCategory::TargetSpawning);
 	FValidationPropertyPtr TargetDamageTypePtr = CreateValidationProperty(TargetDamageType, EGameModeCategory::General);
 	FValidationPropertyPtr TargetDistributionPolicyPtr = CreateValidationProperty(TargetDistributionPolicy,
 		EGameModeCategory::SpawnArea);
 	FValidationPropertyPtr TargetSpawningPolicyPtr = CreateValidationProperty(TargetSpawningPolicy,
 	                                                                          EGameModeCategory::TargetSpawning);
 	FValidationPropertyPtr RuntimeTargetSpawningLocationSelectionModePtr = CreateValidationProperty(
-		RuntimeTargetSpawningLocationSelectionMode,
-		EGameModeCategory::TargetSpawning);
+		RuntimeTargetSpawningLocationSelectionMode, EGameModeCategory::TargetSpawning);
 	FValidationPropertyPtr TargetSpawnResponsesPtr = CreateValidationProperty(TargetSpawnResponses,
 	                                                                          EGameModeCategory::TargetBehavior);
 	FValidationPropertyPtr TargetActivationResponsesPtr = CreateValidationProperty(TargetActivationResponses,
@@ -613,11 +600,9 @@ void UBSGameModeValidator::FPrivate::SetupValidationChecks()
 	FValidationPropertyPtr BasePlayerTrackingDamagePtr = CreateValidationProperty(BasePlayerTrackingDamage,
 		EGameModeCategory::General);
 	FValidationPropertyPtr ConsecutiveChargeScaleMultiplierPtr = CreateValidationProperty(
-		ConsecutiveChargeScaleMultiplier,
-		EGameModeCategory::TargetSizing);
+		ConsecutiveChargeScaleMultiplier, EGameModeCategory::TargetSizing);
 	FValidationPropertyPtr DeactivationHealthLostThresholdPtr = CreateValidationProperty(
-		DeactivationHealthLostThreshold,
-		EGameModeCategory::General);
+		DeactivationHealthLostThreshold, EGameModeCategory::General);
 	FValidationPropertyPtr ExpirationHealthPenaltyPtr = CreateValidationProperty(ExpirationHealthPenalty,
 		EGameModeCategory::General);
 	FValidationPropertyPtr FloorDistancePtr = CreateValidationProperty(FloorDistance, EGameModeCategory::SpawnArea);
@@ -672,25 +657,21 @@ void UBSGameModeValidator::FPrivate::SetupValidationChecks()
 
 	const FPropertyHash StartBoundsX = CreatePropertyHash<FBSConfig>(DynamicSpawnAreaName,
 	                                                                 GET_MEMBER_NAME_CHECKED(
-		                                                                 FBS_Dynamic_SpawnArea,
-		                                                                 StartBounds),
+		                                                                 FBS_Dynamic_SpawnArea, StartBounds),
 	                                                                 FVectorXName);
 	const FPropertyHash StartBoundsY = CreatePropertyHash<FBSConfig>(DynamicSpawnAreaName,
 	                                                                 GET_MEMBER_NAME_CHECKED(
-		                                                                 FBS_Dynamic_SpawnArea,
-		                                                                 StartBounds),
+		                                                                 FBS_Dynamic_SpawnArea, StartBounds),
 	                                                                 FVectorYName);
 	const FPropertyHash StartBoundsZ = CreatePropertyHash<FBSConfig>(DynamicSpawnAreaName,
 	                                                                 GET_MEMBER_NAME_CHECKED(
-		                                                                 FBS_Dynamic_SpawnArea,
-		                                                                 StartBounds),
+		                                                                 FBS_Dynamic_SpawnArea, StartBounds),
 	                                                                 FVectorZName);
 	const FPropertyHash StartThresholdSpawnArea = CreatePropertyHash<FBSConfig>(DynamicSpawnAreaName,
 		GET_MEMBER_NAME_CHECKED(FBS_Dynamic_SpawnArea, StartThreshold));
 	const FPropertyHash EndThresholdSpawnArea = CreatePropertyHash<FBSConfig>(DynamicSpawnAreaName,
 	                                                                          GET_MEMBER_NAME_CHECKED(
-		                                                                          FBS_Dynamic_SpawnArea,
-		                                                                          EndThreshold));
+		                                                                          FBS_Dynamic_SpawnArea, EndThreshold));
 	const FPropertyHash IsCubicInterpolationSpawnArea = CreatePropertyHash<FBSConfig>(DynamicSpawnAreaName,
 		GET_MEMBER_NAME_CHECKED(FBS_Dynamic_SpawnArea, bIsCubicInterpolation));
 	const FPropertyHash DecrementAmountSpawnArea = CreatePropertyHash<FBSConfig>(DynamicSpawnAreaName,
@@ -718,8 +699,7 @@ void UBSGameModeValidator::FPrivate::SetupValidationChecks()
 		                                                                         StartThreshold));
 	const FPropertyHash EndThresholdTarget = CreatePropertyHash<FBSConfig>(DynamicTargetScalingName,
 	                                                                       GET_MEMBER_NAME_CHECKED(
-		                                                                       FBS_Dynamic_SpawnArea,
-		                                                                       EndThreshold));
+		                                                                       FBS_Dynamic_SpawnArea, EndThreshold));
 	const FPropertyHash IsCubicInterpolationTarget = CreatePropertyHash<FBSConfig>(DynamicTargetScalingName,
 		GET_MEMBER_NAME_CHECKED(FBS_Dynamic_SpawnArea, bIsCubicInterpolation));
 	const FPropertyHash DecrementAmountTarget = CreatePropertyHash<FBSConfig>(DynamicTargetScalingName,
@@ -744,15 +724,12 @@ void UBSGameModeValidator::FPrivate::SetupValidationChecks()
 		return !(Config->TargetConfig.bSpawnEveryOtherTargetInCenter && Config->TargetConfig.bUseBatchSpawning);
 	};
 
-	CheckPtr = CreateValidationCheck(SpawnEveryOtherTargetInCenterPtr,
-	                                 EGameModeWarningType::Warning,
+	CheckPtr = CreateValidationCheck(SpawnEveryOtherTargetInCenterPtr, EGameModeWarningType::Warning,
 	                                 SpawnEveryOtherAndBatchLambda);
 	AddValidationCheckData(CheckPtr, TEXT("Invalid_SpawnEveryOtherTargetInCenter_BatchSpawning"));
 	BatchSpawningPtr->AddDependent(SpawnEveryOtherTargetInCenterPtr, CheckPtr);
 
-	CheckPtr = CreateValidationCheck(BatchSpawningPtr,
-	                                 EGameModeWarningType::Warning,
-	                                 SpawnEveryOtherAndBatchLambda,
+	CheckPtr = CreateValidationCheck(BatchSpawningPtr, EGameModeWarningType::Warning, SpawnEveryOtherAndBatchLambda,
 	                                 nullptr);
 	AddValidationCheckData(CheckPtr, TEXT("Invalid_SpawnEveryOtherTargetInCenter_BatchSpawning2"));
 	SpawnEveryOtherTargetInCenterPtr->AddDependent(BatchSpawningPtr, CheckPtr);
@@ -764,23 +741,18 @@ void UBSGameModeValidator::FPrivate::SetupValidationChecks()
 		         bAllowSpawnWithoutActivation);
 	};
 
-	CheckPtr = CreateValidationCheck(SpawnEveryOtherTargetInCenterPtr,
-	                                 EGameModeWarningType::Warning,
-	                                 SpawnEveryOtherAndAllowSpawnLambda,
-	                                 nullptr);
+	CheckPtr = CreateValidationCheck(SpawnEveryOtherTargetInCenterPtr, EGameModeWarningType::Warning,
+	                                 SpawnEveryOtherAndAllowSpawnLambda, nullptr);
 	AddValidationCheckData(CheckPtr, TEXT("Invalid_SpawnEveryOtherTargetInCenter_AllowSpawnWithoutActivation"));
 	AllowSpawnWithoutActivationPtr->AddDependent(SpawnEveryOtherTargetInCenterPtr, CheckPtr);
 
-	CheckPtr = CreateValidationCheck(AllowSpawnWithoutActivationPtr,
-	                                 EGameModeWarningType::Warning,
-	                                 SpawnEveryOtherAndAllowSpawnLambda,
-	                                 nullptr);
+	CheckPtr = CreateValidationCheck(AllowSpawnWithoutActivationPtr, EGameModeWarningType::Warning,
+	                                 SpawnEveryOtherAndAllowSpawnLambda, nullptr);
 	AddValidationCheckData(CheckPtr, TEXT("Invalid_SpawnEveryOtherTargetInCenter_AllowSpawnWithoutActivation2"));
 	SpawnEveryOtherTargetInCenterPtr->AddDependent(AllowSpawnWithoutActivationPtr, CheckPtr);
 
 	// Moving Target Direction Mode & Target Spawn/Activation/Deactivation Responses
-	auto VelocityCheckPtr = CreateValidationCheck(MovingTargetDirectionModePtr,
-	                                              EGameModeWarningType::Caution,
+	auto VelocityCheckPtr = CreateValidationCheck(MovingTargetDirectionModePtr, EGameModeWarningType::Caution,
 	                                              [](const TSharedPtr<FBSConfig>& Config, FValidationCheckData& Data)
 	                                              {
 		                                              return !(Config->TargetConfig.MovingTargetDirectionMode ==
@@ -794,10 +766,8 @@ void UBSGameModeValidator::FPrivate::SetupValidationChecks()
 			                                                       || Config->TargetConfig.TargetDeactivationResponses.
 			                                                                  Contains(
 				                                                                  ETargetDeactivationResponse::ChangeVelocity)));
-	                                              },
-	                                              nullptr);
-	auto DirectionCheckPtr = CreateValidationCheck(MovingTargetDirectionModePtr,
-	                                               EGameModeWarningType::Caution,
+	                                              }, nullptr);
+	auto DirectionCheckPtr = CreateValidationCheck(MovingTargetDirectionModePtr, EGameModeWarningType::Caution,
 	                                               [](const TSharedPtr<FBSConfig>& Config, FValidationCheckData& Data)
 	                                               {
 		                                               return !(Config->TargetConfig.MovingTargetDirectionMode ==
@@ -811,65 +781,52 @@ void UBSGameModeValidator::FPrivate::SetupValidationChecks()
 			                                                        || Config->TargetConfig.TargetDeactivationResponses.
 			                                                                   Contains(
 				                                                                   ETargetDeactivationResponse::ChangeDirection)));
-	                                               },
-	                                               nullptr);
+	                                               }, nullptr);
 	AddValidationCheckData(VelocityCheckPtr, TEXT("Invalid_Velocity_MTDM_None_2"));
 	AddValidationCheckData(DirectionCheckPtr, TEXT("Invalid_Direction_MTDM_None_2"));
 
 	// Target Spawn Responses
 	TargetSpawnResponsesPtr->AddDependent(MovingTargetDirectionModePtr, VelocityCheckPtr);
-	CheckPtr = CreateValidationCheck(TargetSpawnResponsesPtr,
-	                                 EGameModeWarningType::Caution,
+	CheckPtr = CreateValidationCheck(TargetSpawnResponsesPtr, EGameModeWarningType::Caution,
 	                                 CreateValidationFunction(&FBS_TargetConfig::TargetSpawnResponses,
-	                                                          ETargetSpawnResponse::ChangeVelocity),
-	                                 nullptr);
+	                                                          ETargetSpawnResponse::ChangeVelocity), nullptr);
 	AddValidationCheckData(CheckPtr, TEXT("Invalid_Velocity_MTDM_None"));
 	MovingTargetDirectionModePtr->AddDependent(TargetSpawnResponsesPtr, CheckPtr);
 
 	TargetSpawnResponsesPtr->AddDependent(MovingTargetDirectionModePtr, DirectionCheckPtr);
-	CheckPtr = CreateValidationCheck(TargetSpawnResponsesPtr,
-	                                 EGameModeWarningType::Caution,
+	CheckPtr = CreateValidationCheck(TargetSpawnResponsesPtr, EGameModeWarningType::Caution,
 	                                 CreateValidationFunction(&FBS_TargetConfig::TargetSpawnResponses,
-	                                                          ETargetSpawnResponse::ChangeDirection),
-	                                 nullptr);
+	                                                          ETargetSpawnResponse::ChangeDirection), nullptr);
 	AddValidationCheckData(CheckPtr, TEXT("Invalid_Direction_MTDM_None"));
 	MovingTargetDirectionModePtr->AddDependent(TargetSpawnResponsesPtr, CheckPtr);
 
 	// Target Activation Responses
 	TargetActivationResponsesPtr->AddDependent(MovingTargetDirectionModePtr, VelocityCheckPtr);
-	CheckPtr = CreateValidationCheck(TargetActivationResponsesPtr,
-	                                 EGameModeWarningType::Caution,
+	CheckPtr = CreateValidationCheck(TargetActivationResponsesPtr, EGameModeWarningType::Caution,
 	                                 CreateValidationFunction(&FBS_TargetConfig::TargetActivationResponses,
-	                                                          ETargetActivationResponse::ChangeVelocity),
-	                                 nullptr);
+	                                                          ETargetActivationResponse::ChangeVelocity), nullptr);
 	AddValidationCheckData(CheckPtr, TEXT("Invalid_Velocity_MTDM_None"));
 	MovingTargetDirectionModePtr->AddDependent(TargetActivationResponsesPtr, CheckPtr);
 
 	TargetActivationResponsesPtr->AddDependent(MovingTargetDirectionModePtr, DirectionCheckPtr);
-	CheckPtr = CreateValidationCheck(TargetActivationResponsesPtr,
-	                                 EGameModeWarningType::Caution,
+	CheckPtr = CreateValidationCheck(TargetActivationResponsesPtr, EGameModeWarningType::Caution,
 	                                 CreateValidationFunction(&FBS_TargetConfig::TargetActivationResponses,
-	                                                          ETargetActivationResponse::ChangeDirection),
-	                                 nullptr);
+	                                                          ETargetActivationResponse::ChangeDirection), nullptr);
 	AddValidationCheckData(CheckPtr, TEXT("Invalid_Direction_MTDM_None"));
 	MovingTargetDirectionModePtr->AddDependent(TargetActivationResponsesPtr, CheckPtr);
 
 	// Target Deactivation Responses
 	TargetDeactivationResponsesPtr->AddDependent(MovingTargetDirectionModePtr, VelocityCheckPtr);
-	CheckPtr = CreateValidationCheck(TargetDeactivationResponsesPtr,
-	                                 EGameModeWarningType::Caution,
+	CheckPtr = CreateValidationCheck(TargetDeactivationResponsesPtr, EGameModeWarningType::Caution,
 	                                 CreateValidationFunction(&FBS_TargetConfig::TargetDeactivationResponses,
-	                                                          ETargetDeactivationResponse::ChangeVelocity),
-	                                 nullptr);
+	                                                          ETargetDeactivationResponse::ChangeVelocity), nullptr);
 	AddValidationCheckData(CheckPtr, TEXT("Invalid_Velocity_MTDM_None"));
 	MovingTargetDirectionModePtr->AddDependent(TargetDeactivationResponsesPtr, CheckPtr);
 
 	TargetDeactivationResponsesPtr->AddDependent(MovingTargetDirectionModePtr, DirectionCheckPtr);
-	CheckPtr = CreateValidationCheck(TargetDeactivationResponsesPtr,
-	                                 EGameModeWarningType::Caution,
+	CheckPtr = CreateValidationCheck(TargetDeactivationResponsesPtr, EGameModeWarningType::Caution,
 	                                 CreateValidationFunction(&FBS_TargetConfig::TargetDeactivationResponses,
-	                                                          ETargetDeactivationResponse::ChangeDirection),
-	                                 nullptr);
+	                                                          ETargetDeactivationResponse::ChangeDirection), nullptr);
 	AddValidationCheckData(CheckPtr, TEXT("Invalid_Direction_MTDM_None"));
 	MovingTargetDirectionModePtr->AddDependent(TargetDeactivationResponsesPtr, CheckPtr);
 
@@ -880,9 +837,7 @@ void UBSGameModeValidator::FPrivate::SetupValidationChecks()
 		         EMovingTargetDirectionMode::ForwardOnly);
 	};
 
-	CheckPtr = CreateValidationCheck(MovingTargetDirectionModePtr,
-	                                 EGameModeWarningType::Caution,
-	                                 BoxBoundsLambda,
+	CheckPtr = CreateValidationCheck(MovingTargetDirectionModePtr, EGameModeWarningType::Caution, BoxBoundsLambda,
 	                                 nullptr);
 	AddValidationCheckData(CheckPtr, TEXT("Caution_ZeroForwardDistance_MTDM_ForwardOnly"));
 	BoxBoundsXPtr->AddDependent(MovingTargetDirectionModePtr, CheckPtr);
@@ -897,8 +852,7 @@ void UBSGameModeValidator::FPrivate::SetupValidationChecks()
 		return Config->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::Grid;
 	};
 
-	CheckPtr = CreateValidationCheck(NumHorizontalGridTargetsPtr,
-	                                 EGameModeWarningType::Warning,
+	CheckPtr = CreateValidationCheck(NumHorizontalGridTargetsPtr, EGameModeWarningType::Warning,
 	                                 [](const TSharedPtr<FBSConfig>& Config, FValidationCheckData& Data)
 	                                 {
 		                                 const int32 MaxAllowed = GetMaxAllowedNumHorizontalTargets(Config);
@@ -910,19 +864,14 @@ void UBSGameModeValidator::FPrivate::SetupValidationChecks()
 		                                 Data.CalculatedValues.Add(MaxAllowed);
 
 		                                 return MaxAllowed >= Config->GridConfig.NumHorizontalGridTargets;
-	                                 },
-	                                 GridTargetDistributionPolicyPrerequisite);
-	AddValidationCheckData(CheckPtr,
-	                       TEXT("Invalid_Grid_NumHorizontalTargets_Fallback"),
-	                       TEXT("Invalid_Grid_NumHorizontalTargets"),
-	                       0,
-	                       true);
+	                                 }, GridTargetDistributionPolicyPrerequisite);
+	AddValidationCheckData(CheckPtr, TEXT("Invalid_Grid_NumHorizontalTargets_Fallback"),
+	                       TEXT("Invalid_Grid_NumHorizontalTargets"), 0, true);
 	TargetDistributionPolicyPtr->AddDependent(NumHorizontalGridTargetsPtr, CheckPtr);
 	GridSpacingXPtr->AddDependent(NumHorizontalGridTargetsPtr, CheckPtr);
 	MaxSpawnedTargetScalePtr->AddDependent(NumHorizontalGridTargetsPtr, CheckPtr);
 
-	CheckPtr = CreateValidationCheck(NumVerticalGridTargetsPtr,
-	                                 EGameModeWarningType::Warning,
+	CheckPtr = CreateValidationCheck(NumVerticalGridTargetsPtr, EGameModeWarningType::Warning,
 	                                 [](const TSharedPtr<FBSConfig>& Config, FValidationCheckData& Data)
 	                                 {
 		                                 const int32 MaxAllowed = GetMaxAllowedNumVerticalTargets(Config);
@@ -933,19 +882,14 @@ void UBSGameModeValidator::FPrivate::SetupValidationChecks()
 			                                 return false;
 		                                 }
 		                                 return MaxAllowed >= Config->GridConfig.NumVerticalGridTargets;
-	                                 },
-	                                 GridTargetDistributionPolicyPrerequisite);
-	AddValidationCheckData(CheckPtr,
-	                       TEXT("Invalid_Grid_NumVerticalTargets_Fallback"),
-	                       TEXT("Invalid_Grid_NumVerticalTargets"),
-	                       0,
-	                       true);
+	                                 }, GridTargetDistributionPolicyPrerequisite);
+	AddValidationCheckData(CheckPtr, TEXT("Invalid_Grid_NumVerticalTargets_Fallback"),
+	                       TEXT("Invalid_Grid_NumVerticalTargets"), 0, true);
 	TargetDistributionPolicyPtr->AddDependent(NumVerticalGridTargetsPtr, CheckPtr);
 	GridSpacingYPtr->AddDependent(NumVerticalGridTargetsPtr, CheckPtr);
 	MaxSpawnedTargetScalePtr->AddDependent(NumVerticalGridTargetsPtr, CheckPtr);
 
-	CheckPtr = CreateValidationCheck(GridSpacingXPtr,
-	                                 EGameModeWarningType::Warning,
+	CheckPtr = CreateValidationCheck(GridSpacingXPtr, EGameModeWarningType::Warning,
 	                                 [](const TSharedPtr<FBSConfig>& Config, FValidationCheckData& Data)
 	                                 {
 		                                 const float MaxAllowed = GetMaxAllowedHorizontalSpacing(Config);
@@ -956,19 +900,14 @@ void UBSGameModeValidator::FPrivate::SetupValidationChecks()
 			                                 return false;
 		                                 }
 		                                 return MaxAllowed >= Config->GridConfig.GridSpacing.X;
-	                                 },
-	                                 GridTargetDistributionPolicyPrerequisite);
-	AddValidationCheckData(CheckPtr,
-	                       TEXT("Invalid_Grid_HorizontalSpacing_Fallback"),
-	                       TEXT("Invalid_Grid_HorizontalSpacing"),
-	                       10,
-	                       false);
+	                                 }, GridTargetDistributionPolicyPrerequisite);
+	AddValidationCheckData(CheckPtr, TEXT("Invalid_Grid_HorizontalSpacing_Fallback"),
+	                       TEXT("Invalid_Grid_HorizontalSpacing"), 10, false);
 	TargetDistributionPolicyPtr->AddDependent(GridSpacingXPtr, CheckPtr);
 	NumHorizontalGridTargetsPtr->AddDependent(GridSpacingXPtr, CheckPtr);
 	MaxSpawnedTargetScalePtr->AddDependent(GridSpacingXPtr, CheckPtr);
 
-	CheckPtr = CreateValidationCheck(GridSpacingYPtr,
-	                                 EGameModeWarningType::Warning,
+	CheckPtr = CreateValidationCheck(GridSpacingYPtr, EGameModeWarningType::Warning,
 	                                 [](const TSharedPtr<FBSConfig>& Config, FValidationCheckData& Data)
 	                                 {
 		                                 const float MaxAllowed = GetMaxAllowedVerticalSpacing(Config);
@@ -979,19 +918,14 @@ void UBSGameModeValidator::FPrivate::SetupValidationChecks()
 			                                 return false;
 		                                 }
 		                                 return MaxAllowed >= Config->GridConfig.GridSpacing.Y;
-	                                 },
-	                                 GridTargetDistributionPolicyPrerequisite);
-	AddValidationCheckData(CheckPtr,
-	                       TEXT("Invalid_Grid_VerticalSpacing_Fallback"),
-	                       TEXT("Invalid_Grid_VerticalSpacing"),
-	                       10,
-	                       false);
+	                                 }, GridTargetDistributionPolicyPrerequisite);
+	AddValidationCheckData(CheckPtr, TEXT("Invalid_Grid_VerticalSpacing_Fallback"),
+	                       TEXT("Invalid_Grid_VerticalSpacing"), 10, false);
 	TargetDistributionPolicyPtr->AddDependent(GridSpacingYPtr, CheckPtr);
 	NumVerticalGridTargetsPtr->AddDependent(GridSpacingYPtr, CheckPtr);
 	MaxSpawnedTargetScalePtr->AddDependent(GridSpacingYPtr, CheckPtr);
 
-	CheckPtr = CreateValidationCheck(MaxSpawnedTargetScalePtr,
-	                                 EGameModeWarningType::Warning,
+	CheckPtr = CreateValidationCheck(MaxSpawnedTargetScalePtr, EGameModeWarningType::Warning,
 	                                 [](const TSharedPtr<FBSConfig>& Config, FValidationCheckData& Data)
 	                                 {
 		                                 const float MaxAllowed = GetMaxAllowedTargetScale(Config);
@@ -1003,13 +937,9 @@ void UBSGameModeValidator::FPrivate::SetupValidationChecks()
 		                                 }
 		                                 return MaxAllowed >= FMath::Max(Config->TargetConfig.MinSpawnedTargetScale,
 		                                                                 Config->TargetConfig.MaxSpawnedTargetScale);
-	                                 },
-	                                 GridTargetDistributionPolicyPrerequisite);
-	AddValidationCheckData(CheckPtr,
-	                       TEXT("Invalid_Grid_MaxSpawnedTargetScale_Fallback"),
-	                       TEXT("Invalid_Grid_MaxSpawnedTargetScale"),
-	                       0,
-	                       false);
+	                                 }, GridTargetDistributionPolicyPrerequisite);
+	AddValidationCheckData(CheckPtr, TEXT("Invalid_Grid_MaxSpawnedTargetScale_Fallback"),
+	                       TEXT("Invalid_Grid_MaxSpawnedTargetScale"), 0, false);
 	TargetDistributionPolicyPtr->AddDependent(MaxSpawnedTargetScalePtr, CheckPtr);
 	NumVerticalGridTargetsPtr->AddDependent(MaxSpawnedTargetScalePtr, CheckPtr);
 	NumHorizontalGridTargetsPtr->AddDependent(MaxSpawnedTargetScalePtr, CheckPtr);
@@ -1023,17 +953,13 @@ void UBSGameModeValidator::FPrivate::SetupValidationChecks()
 		         Config->AIConfig.bEnableReinforcementLearning);
 	};
 
-	CheckPtr = CreateValidationCheck(TargetDistributionPolicyPtr,
-	                                 EGameModeWarningType::Warning,
-	                                 InvalidHeadshotAILambda,
-	                                 nullptr);
+	CheckPtr = CreateValidationCheck(TargetDistributionPolicyPtr, EGameModeWarningType::Warning,
+	                                 InvalidHeadshotAILambda, nullptr);
 	AddValidationCheckData(CheckPtr, TEXT("Invalid_HeadshotHeightOnly_AI"));
 	EnableReinforcementLearningPtr->AddDependent(TargetDistributionPolicyPtr, CheckPtr);
 
-	CheckPtr = CreateValidationCheck(EnableReinforcementLearningPtr,
-	                                 EGameModeWarningType::Warning,
-	                                 InvalidHeadshotAILambda,
-	                                 nullptr);
+	CheckPtr = CreateValidationCheck(EnableReinforcementLearningPtr, EGameModeWarningType::Warning,
+	                                 InvalidHeadshotAILambda, nullptr);
 	AddValidationCheckData(CheckPtr, TEXT("Invalid_HeadshotHeightOnly_AI"));
 	TargetDistributionPolicyPtr->AddDependent(EnableReinforcementLearningPtr, CheckPtr);
 
@@ -1044,16 +970,12 @@ void UBSGameModeValidator::FPrivate::SetupValidationChecks()
 		         ETargetDamageType::Tracking);
 	};
 
-	CheckPtr = CreateValidationCheck(EnableReinforcementLearningPtr,
-	                                 EGameModeWarningType::Warning,
-	                                 InvalidTrackingAILambda,
-	                                 nullptr);
+	CheckPtr = CreateValidationCheck(EnableReinforcementLearningPtr, EGameModeWarningType::Warning,
+	                                 InvalidTrackingAILambda, nullptr);
 	AddValidationCheckData(CheckPtr, TEXT("Invalid_Tracking_AI"));
 	TargetDamageTypePtr->AddDependent(EnableReinforcementLearningPtr, CheckPtr);
 
-	CheckPtr = CreateValidationCheck(TargetDamageTypePtr,
-	                                 EGameModeWarningType::Warning,
-	                                 InvalidTrackingAILambda,
+	CheckPtr = CreateValidationCheck(TargetDamageTypePtr, EGameModeWarningType::Warning, InvalidTrackingAILambda,
 	                                 nullptr);
 	AddValidationCheckData(CheckPtr, TEXT("Invalid_Tracking_AI"));
 	EnableReinforcementLearningPtr->AddDependent(TargetDamageTypePtr, CheckPtr);

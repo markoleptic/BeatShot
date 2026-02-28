@@ -33,11 +33,9 @@ ATimeOfDayManager::ATimeOfDayManager()
 	TimeOfDay_Editor = ETimeOfDay::Day;
 	TimeOfDay = ETimeOfDay::Day;
 	LastLerpRotation = 0;
-	NighttimeLeftRoofLocation = DaytimeLeftRoofLocation + FVector(DayToNightRoofXTravelDistance,
-	                                                              0,
+	NighttimeLeftRoofLocation = DaytimeLeftRoofLocation + FVector(DayToNightRoofXTravelDistance, 0,
 	                                                              DayToNightRoofZTravelDistance);
-	NighttimeRightRoofLocation = DaytimeRightRoofLocation + FVector(DayToNightRoofXTravelDistance,
-	                                                                0,
+	NighttimeRightRoofLocation = DaytimeRightRoofLocation + FVector(DayToNightRoofXTravelDistance, 0,
 	                                                                DayToNightRoofZTravelDistance);
 }
 
@@ -72,8 +70,8 @@ void ATimeOfDayManager::PostInitializeComponents()
 
 	if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
 	{
-		GI->RegisterPlayerSettingsSubscriber<ATimeOfDayManager, FPlayerSettings_Game>(this,
-			&ATimeOfDayManager::OnPlayerSettingsChanged);
+		GI->RegisterPlayerSettingsSubscriber<ATimeOfDayManager, FPlayerSettings_Game>(
+			this, &ATimeOfDayManager::OnPlayerSettingsChanged);
 		GI->SetTimeOfDayManager(this);
 
 		// Initialize the time of day
@@ -207,8 +205,7 @@ void ATimeOfDayManager::SetTimeOfDay(const ETimeOfDay InTimeOfDay)
 		// Need to add world rotation instead of setting so things don't get weird
 		if (FMath::IsNearlyEqual(
 			static_cast<float>(DayDirectionalLight->GetLightComponent()->GetComponentRotation().GetNormalized().Roll),
-			0.f,
-			0.1f))
+			0.f, 0.1f))
 		{
 			DayDirectionalLight->GetLightComponent()->AddWorldRotation(FRotator(0, 0, 180));
 		}
@@ -231,8 +228,7 @@ void ATimeOfDayManager::SetTimeOfDay(const ETimeOfDay InTimeOfDay)
 		// Need to add world rotation instead of setting so things don't get weird
 		if (FMath::IsNearlyEqual(
 			static_cast<float>(DayDirectionalLight->GetLightComponent()->GetComponentRotation().GetNormalized().Roll),
-			180.f,
-			0.1f))
+			180.f, 0.1f))
 		{
 			DayDirectionalLight->GetLightComponent()->AddWorldRotation(FRotator(0, 0, 180));
 		}
@@ -340,22 +336,18 @@ void ATimeOfDayManager::TransitionTimeOfDay(const float Value)
 	{
 		PositionAlpha = UKismetMathLibrary::Lerp(0, 1, Value);
 		NightAlpha = UKismetMathLibrary::Lerp(0, 1, Value);
-		MoonlightIntensity = UKismetMathLibrary::Lerp(0,
-		                                              NightDirectionalLightIntensity,
+		MoonlightIntensity = UKismetMathLibrary::Lerp(0, NightDirectionalLightIntensity,
 		                                              MoonlightCurve->GetFloatValue(Value));
 		SkylightIntensity = bUsingLowGISettings
 		                    ? LowGISettingSkyLightIntensity
-		                    : UKismetMathLibrary::Lerp(DaySkylightIntensity,
-		                                               NightSkylightIntensity,
+		                    : UKismetMathLibrary::Lerp(DaySkylightIntensity, NightSkylightIntensity,
 		                                               SkyLightCurve->GetFloatValue(Value));
 		SpotlightIntensity = bUseSpotlight
-		                     ? UKismetMathLibrary::Lerp(DaySpotlightIntensity,
-		                                                NightSpotlightIntensity,
+		                     ? UKismetMathLibrary::Lerp(DaySpotlightIntensity, NightSpotlightIntensity,
 		                                                SecondaryLightCurve->GetFloatValue(Value))
 		                     : 0.f;
 		RectLightIntensity = bUseRectLight
-		                     ? UKismetMathLibrary::Lerp(DayRectLightIntensity,
-		                                                NightRectLightIntensity,
+		                     ? UKismetMathLibrary::Lerp(DayRectLightIntensity, NightRectLightIntensity,
 		                                                SecondaryLightCurve->GetFloatValue(Value))
 		                     : 0.f;
 	}
@@ -363,22 +355,18 @@ void ATimeOfDayManager::TransitionTimeOfDay(const float Value)
 	{
 		PositionAlpha = UKismetMathLibrary::Lerp(1, 0, Value);
 		NightAlpha = UKismetMathLibrary::Lerp(1, 0, Value);
-		MoonlightIntensity = UKismetMathLibrary::Lerp(NightDirectionalLightIntensity,
-		                                              0,
+		MoonlightIntensity = UKismetMathLibrary::Lerp(NightDirectionalLightIntensity, 0,
 		                                              MoonlightCurve->GetFloatValue(Value));
 		SkylightIntensity = bUsingLowGISettings
 		                    ? LowGISettingSkyLightIntensity
-		                    : UKismetMathLibrary::Lerp(NightSkylightIntensity,
-		                                               DaySkylightIntensity,
+		                    : UKismetMathLibrary::Lerp(NightSkylightIntensity, DaySkylightIntensity,
 		                                               SkyLightCurve->GetFloatValue(Value));
 		SpotlightIntensity = bUseSpotlight
-		                     ? UKismetMathLibrary::Lerp(NightSpotlightIntensity,
-		                                                DaySpotlightIntensity,
+		                     ? UKismetMathLibrary::Lerp(NightSpotlightIntensity, DaySpotlightIntensity,
 		                                                SecondaryLightCurve->GetFloatValue(Value))
 		                     : 0.f;
 		RectLightIntensity = bUseRectLight
-		                     ? UKismetMathLibrary::Lerp(NightRectLightIntensity,
-		                                                DayRectLightIntensity,
+		                     ? UKismetMathLibrary::Lerp(NightRectLightIntensity, DayRectLightIntensity,
 		                                                SecondaryLightCurve->GetFloatValue(Value))
 		                     : 0.f;
 	}
@@ -386,9 +374,7 @@ void ATimeOfDayManager::TransitionTimeOfDay(const float Value)
 	if (PositionAlpha <= 0.2f)
 	{
 		const float CurrentRoofZTravelDistance = UKismetMathLibrary::Lerp(
-			0,
-			DayToNightRoofZTravelDistance,
-			PositionAlpha / 0.2f);
+			0, DayToNightRoofZTravelDistance, PositionAlpha / 0.2f);
 		LeftWindowCover->GetStaticMeshComponent()->SetRelativeLocation(
 			DaytimeLeftRoofLocation + FVector(0, 0, CurrentRoofZTravelDistance));
 		RightWindowCover->GetStaticMeshComponent()->SetRelativeLocation(
@@ -397,9 +383,7 @@ void ATimeOfDayManager::TransitionTimeOfDay(const float Value)
 	else
 	{
 		const float CurrentRoofXTravelDistance = UKismetMathLibrary::Lerp(
-			0,
-			DayToNightRoofXTravelDistance,
-			(PositionAlpha - 0.2f) / (0.8f));
+			0, DayToNightRoofXTravelDistance, (PositionAlpha - 0.2f) / (0.8f));
 		LeftWindowCover->GetStaticMeshComponent()->SetRelativeLocation(
 			DaytimeLeftRoofLocation + FVector(CurrentRoofXTravelDistance, 0, DayToNightRoofZTravelDistance));
 		RightWindowCover->GetStaticMeshComponent()->SetRelativeLocation(

@@ -336,11 +336,7 @@ private:
 
 		for (int i = 0; i < Combined.Num(); i++)
 		{
-			UE_LOG(LogTemp,
-			       Display,
-			       TEXT("ZIndex: %d YIndex: %d Value: %f"),
-			       Combined[i].X,
-			       Combined[i].Y,
+			UE_LOG(LogTemp, Display, TEXT("ZIndex: %d YIndex: %d Value: %f"), Combined[i].X, Combined[i].Y,
 			       AccuracyRows[Combined[i].X].Accuracy[Combined[i].Y]);
 			const float Value = AccuracyRows[Combined[i].X].Accuracy[Combined[i].Y];
 			Temp.Add(Value);

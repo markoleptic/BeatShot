@@ -42,8 +42,7 @@ void AStaticCubeVisualizer::CreateCubeInstances()
 	case EVisualizerLightSpawningMethod::SpawnUsingPositionOffsets:
 		{
 			// Default Start Location
-			FTransform CurrentOffsetTransform(FRotator::ZeroRotator,
-			                                  FVector(0),
+			FTransform CurrentOffsetTransform(FRotator::ZeroRotator, FVector(0),
 			                                  GetFastDef().OffsetScale * GetFastDef().MeshScale);
 
 			// If growing from center, start location will be offset by half the total length, growing in the positive direction
@@ -51,8 +50,7 @@ void AStaticCubeVisualizer::CreateCubeInstances()
 			{
 				FVector LocationOffset = -GetFastDef().OffsetLocation * FVector(
 					                         static_cast<float>(GetFastDef().NumVisualizerLightsToSpawn - 1) / 2);
-				CurrentOffsetTransform = FTransform(FRotator::ZeroRotator,
-				                                    LocationOffset,
+				CurrentOffsetTransform = FTransform(FRotator::ZeroRotator, LocationOffset,
 				                                    CurrentOffsetTransform.GetScale3D());
 			}
 
@@ -72,8 +70,7 @@ void AStaticCubeVisualizer::CreateCubeInstances()
 			const TArray<FVector> SplineLocations = GetSplinePointLocations();
 			for (int i = 0; i < SplineLocations.Num(); i++)
 			{
-				SpawnTransforms.Emplace(GetFastDef().SplineActorRotationOffset,
-				                        SplineLocations[i],
+				SpawnTransforms.Emplace(GetFastDef().SplineActorRotationOffset, SplineLocations[i],
 				                        GetFastDef().OffsetScale * GetFastDef().MeshScale);
 			}
 			break;
@@ -140,10 +137,7 @@ void AStaticCubeVisualizer::SetActivationState(const bool bActivate)
 
 float AStaticCubeVisualizer::GetScaledHeight(const float SpectrumValue) const
 {
-	return UKismetMathLibrary::MapRangeClamped(SpectrumValue,
-	                                           0,
-	                                           1,
-	                                           GetFastDef().MinCubeVisualizerHeightScale,
+	return UKismetMathLibrary::MapRangeClamped(SpectrumValue, 0, 1, GetFastDef().MinCubeVisualizerHeightScale,
 	                                           GetFastDef().MaxCubeVisualizerHeightScale);
 }
 
@@ -158,10 +152,8 @@ FTransform AStaticCubeVisualizer::GetTopMeshTransform(const int32 Index, const f
 {
 	const FTransform* Found = IndexTransformMap.Find(Index);
 	return FTransform(Found->GetRotation(),
-	                  Found->GetLocation() + FVector(0,
-	                                                 0,
-	                                                 GetFastDef().CubeHeight * (GetScaledHeight(SpectrumValue) - 1)),
-	                  GetScale3D(1.f));
+	                  Found->GetLocation() + FVector(
+		                  0, 0, GetFastDef().CubeHeight * (GetScaledHeight(SpectrumValue) - 1)), GetScale3D(1.f));
 }
 
 FTransform AStaticCubeVisualizer::GetSideAndBaseTransform(const int32 Index, const float SpectrumValue)

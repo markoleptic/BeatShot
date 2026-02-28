@@ -6,6 +6,7 @@
 #include "GameModes/CreatorViewWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "Menus/GameModeMenuWidget.h"
+#include "Score/CommonScoreInfo.h"
 #include "Target/TargetManagerPreview.h"
 
 AMainMenuGameMode::AMainMenuGameMode()
@@ -16,8 +17,8 @@ void AMainMenuGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	GI->RegisterPlayerSettingsSubscriber<AMainMenuGameMode, FPlayerSettings_Game>(this,
-		&AMainMenuGameMode::OnPlayerSettingsChanged);
+	GI->RegisterPlayerSettingsSubscriber<AMainMenuGameMode, FPlayerSettings_Game>(
+		this, &AMainMenuGameMode::OnPlayerSettingsChanged);
 }
 
 void AMainMenuGameMode::OnPlayerSettingsChanged(const FPlayerSettings_Game& GameSettings)
@@ -29,14 +30,13 @@ void AMainMenuGameMode::SetupTargetManager(UGameModeMenuWidget* GameModesWidget)
 {
 	PlayerSettings_Game = LoadPlayerSettings().Game;
 	BSConfig = GameModesWidget->GetBSConfig();
-	TargetManager = GetWorld()->SpawnActor<ATargetManagerPreview>(TargetManagerClass,
-	                                                              FVector::Zero(),
+	TargetManager = GetWorld()->SpawnActor<ATargetManagerPreview>(TargetManagerClass, FVector::Zero(),
 	                                                              FRotator::ZeroRotator);
 	TargetManager->InitBoxBoundsWidget(GameModesWidget->CustomGameModesWidget_CreatorView->Widget_Preview);
 	TargetManager->Init(BSConfig, FCommonScoreInfo(), PlayerSettings_Game);
 
-	GameModesWidget->RequestSimulateTargetManagerStateChange.AddUObject(this,
-	                                                                    &ThisClass::OnRequestSimulationStateChange);
+	GameModesWidget->RequestSimulateTargetManagerStateChange.AddUObject(
+		this, &ThisClass::OnRequestSimulationStateChange);
 	GameModesWidget->OnGameModeBreakingChange.AddUObject(this, &ThisClass::OnGameModeBreakingChange);
 }
 
@@ -76,12 +76,8 @@ void AMainMenuGameMode::StartSimulation()
 	// Start timers
 	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
 	TimerManager.SetTimer(SimulationTimer, this, &ThisClass::FinishSimulation, SimulationTimerDuration, false);
-	TimerManager.SetTimer(SimulationIntervalTimer,
-	                      this,
-	                      &ThisClass::OnSimulationInterval,
-	                      BSConfig->TargetConfig.TargetSpawnCD,
-	                      true,
-	                      SimulationIntervalTimerInitialDelay);
+	TimerManager.SetTimer(SimulationIntervalTimer, this, &ThisClass::OnSimulationInterval,
+	                      BSConfig->TargetConfig.TargetSpawnCD, true, SimulationIntervalTimerInitialDelay);
 }
 
 void AMainMenuGameMode::OnSimulationInterval()

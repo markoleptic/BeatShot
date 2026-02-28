@@ -8,8 +8,7 @@
 FPlayerSettings IBSPlayerSettingsInterface::LoadPlayerSettings()
 {
 	if (const USaveGamePlayerSettings* SaveGamePlayerSettings = SaveLoadCommon::LoadFromSlot<USaveGamePlayerSettings>(
-		TEXT("SettingsSlot"),
-		0))
+		TEXT("SettingsSlot"), 0))
 	{
 		return SaveGamePlayerSettings->GetPlayerSettings();
 	}
@@ -18,8 +17,8 @@ FPlayerSettings IBSPlayerSettingsInterface::LoadPlayerSettings()
 
 void IBSPlayerSettingsInterface::SavePlayerSettings(const FPlayerSettings_AudioAnalyzer& InSettingsStruct)
 {
-	if (USaveGamePlayerSettings* Settings = SaveLoadCommon::LoadFromSlot<USaveGamePlayerSettings>(TEXT("SettingsSlot"),
-		0))
+	if (USaveGamePlayerSettings* Settings = SaveLoadCommon::LoadFromSlot<USaveGamePlayerSettings>(
+		TEXT("SettingsSlot"), 0))
 	{
 		Settings->SavePlayerSettings(InSettingsStruct);
 		SaveLoadCommon::SaveToSlot(Settings, TEXT("SettingsSlot"), 0);
@@ -29,8 +28,8 @@ void IBSPlayerSettingsInterface::SavePlayerSettings(const FPlayerSettings_AudioA
 
 void IBSPlayerSettingsInterface::SavePlayerSettings(const FPlayerSettings_CrossHair& InSettingsStruct)
 {
-	if (USaveGamePlayerSettings* Settings = SaveLoadCommon::LoadFromSlot<USaveGamePlayerSettings>(TEXT("SettingsSlot"),
-		0))
+	if (USaveGamePlayerSettings* Settings = SaveLoadCommon::LoadFromSlot<USaveGamePlayerSettings>(
+		TEXT("SettingsSlot"), 0))
 	{
 		Settings->SavePlayerSettings(InSettingsStruct);
 		SaveLoadCommon::SaveToSlot(Settings, TEXT("SettingsSlot"), 0);
@@ -40,8 +39,8 @@ void IBSPlayerSettingsInterface::SavePlayerSettings(const FPlayerSettings_CrossH
 
 void IBSPlayerSettingsInterface::SavePlayerSettings(const FPlayerSettings_Game& InSettingsStruct)
 {
-	if (USaveGamePlayerSettings* Settings = SaveLoadCommon::LoadFromSlot<USaveGamePlayerSettings>(TEXT("SettingsSlot"),
-		0))
+	if (USaveGamePlayerSettings* Settings = SaveLoadCommon::LoadFromSlot<USaveGamePlayerSettings>(
+		TEXT("SettingsSlot"), 0))
 	{
 		Settings->SavePlayerSettings(InSettingsStruct);
 		SaveLoadCommon::SaveToSlot(Settings, TEXT("SettingsSlot"), 0);
@@ -51,8 +50,8 @@ void IBSPlayerSettingsInterface::SavePlayerSettings(const FPlayerSettings_Game& 
 
 void IBSPlayerSettingsInterface::SavePlayerSettings(const FPlayerSettings_User& InSettingsStruct)
 {
-	if (USaveGamePlayerSettings* Settings = SaveLoadCommon::LoadFromSlot<USaveGamePlayerSettings>(TEXT("SettingsSlot"),
-		0))
+	if (USaveGamePlayerSettings* Settings = SaveLoadCommon::LoadFromSlot<USaveGamePlayerSettings>(
+		TEXT("SettingsSlot"), 0))
 	{
 		Settings->SavePlayerSettings(InSettingsStruct);
 		SaveLoadCommon::SaveToSlot(Settings, TEXT("SettingsSlot"), 0);

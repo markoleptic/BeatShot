@@ -21,10 +21,7 @@ void UBSGA_TrackGun::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 	OnTargetDataReadyCallbackDelegateHandle = Component->AbilityTargetDataSetDelegate(CurrentSpecHandle,
 		CurrentActivationInfo.GetActivationPredictionKey()).AddUObject(this, &ThisClass::OnTargetDataReadyCallback);
 
-	TickTraceTask = UBSAT_TickTrace::SingleWeaponTrace(this,
-	                                                   NAME_None,
-	                                                   GetBSCharacterFromActorInfo(),
-	                                                   TraceDistance,
+	TickTraceTask = UBSAT_TickTrace::SingleWeaponTrace(this, NAME_None, GetBSCharacterFromActorInfo(), TraceDistance,
 	                                                   false);
 	TickTraceTask->OnTickTraceHit.AddDynamic(this, &UBSGA_TrackGun::OnTickTraceHitResultHit);
 	TickTraceTask->ReadyForActivation();
@@ -42,13 +39,8 @@ void UBSGA_TrackGun::EndAbility(const FGameplayAbilitySpecHandle Handle,
 	{
 		if (ScopeLockCount > 0)
 		{
-			WaitingToExecute.Add(FPostLockDelegate::CreateUObject(this,
-			                                                      &ThisClass::EndAbility,
-			                                                      Handle,
-			                                                      ActorInfo,
-			                                                      ActivationInfo,
-			                                                      bReplicateEndAbility,
-			                                                      bWasCancelled));
+			WaitingToExecute.Add(FPostLockDelegate::CreateUObject(this, &ThisClass::EndAbility, Handle, ActorInfo,
+			                                                      ActivationInfo, bReplicateEndAbility, bWasCancelled));
 			return;
 		}
 
@@ -90,8 +82,7 @@ void UBSGA_TrackGun::OnTargetDataReadyCallback(const FGameplayAbilityTargetDataH
 		{
 			MyAbilityComponent->CallServerSetReplicatedTargetData(CurrentSpecHandle,
 			                                                      CurrentActivationInfo.GetActivationPredictionKey(),
-			                                                      LocalTargetDataHandle,
-			                                                      ApplicationTag,
+			                                                      LocalTargetDataHandle, ApplicationTag,
 			                                                      MyAbilityComponent->ScopedPredictionKey);
 		}
 

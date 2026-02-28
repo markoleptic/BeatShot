@@ -56,8 +56,7 @@ void FTooltipData::SetFormattedTooltipText(const FValidationCheckData& Data)
 	{
 		for (int i = 0; i < Data.CalculatedValues.Num(); i++)
 		{
-			Args.Emplace(TEXT("MaxAllowed"),
-			             FText::AsNumber(
+			Args.Emplace(TEXT("MaxAllowed"), FText::AsNumber(
 				             BSCommon::GridSnapToZero(static_cast<int32>(Data.CalculatedValues[i]), Data.GridSnapSize),
 				             &Data.NumberFormattingOptions));
 		}
@@ -66,17 +65,17 @@ void FTooltipData::SetFormattedTooltipText(const FValidationCheckData& Data)
 	{
 		for (int i = 0; i < Data.CalculatedValues.Num(); i++)
 		{
-			Args.Emplace(TEXT("MaxAllowed"),
-			             FText::AsNumber(BSCommon::GridSnapToZero(Data.CalculatedValues[i], Data.GridSnapSize),
-			                             &Data.NumberFormattingOptions));
+			Args.Emplace(TEXT("MaxAllowed"), FText::AsNumber(
+				             BSCommon::GridSnapToZero(Data.CalculatedValues[i], Data.GridSnapSize),
+				             &Data.NumberFormattingOptions));
 		}
 	}
 	else if (Data.bCalculatedValuesAreIntegers)
 	{
 		for (int i = 0; i < Data.CalculatedValues.Num(); i++)
 		{
-			Args.Emplace(TEXT("MaxAllowed"),
-			             FText::AsNumber(static_cast<int32>(Data.CalculatedValues[i]), &Data.NumberFormattingOptions));
+			Args.Emplace(TEXT("MaxAllowed"), FText::AsNumber(static_cast<int32>(Data.CalculatedValues[i]),
+			                                                 &Data.NumberFormattingOptions));
 		}
 	}
 	else

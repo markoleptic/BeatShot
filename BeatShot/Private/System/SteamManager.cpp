@@ -14,9 +14,11 @@ TMap<const char*, FSteamStat> g_Stats = {
 	// Number of games played MultiBeat
 	{
 		"NumGamesPlayed_GM1",
-		FSteamStat("NumGamesPlayed_GM1",
-		           Stat_Int,
-		           {EBaseGameMode::MultiBeat, EBaseGameMode::MultiBeatPrecision, EBaseGameMode::MultiBeatSpeed})
+		FSteamStat("NumGamesPlayed_GM1", Stat_Int, {
+			           EBaseGameMode::MultiBeat,
+			           EBaseGameMode::MultiBeatPrecision,
+			           EBaseGameMode::MultiBeatSpeed
+		           })
 	},
 	// Number of games played SingleBeat
 	{"NumGamesPlayed_GM2", FSteamStat("NumGamesPlayed_GM2", Stat_Int, {EBaseGameMode::SingleBeat})},
@@ -102,25 +104,23 @@ void USteamManager::OnSteamOverlayActive(GameOverlayActivated_t* pParam)
 	const bool bIsCurrentOverlayActive = pParam->m_bActive != 0;
 	if (bIsCurrentOverlayActive)
 	{
-		AsyncTask(ENamedThreads::GameThread,
-		          [this]
-		          {
-			          if (DefaultGameInstance.IsValid())
-			          {
-				          DefaultGameInstance->OnSteamOverlayIsOn();
-			          }
-		          });
+		AsyncTask(ENamedThreads::GameThread, [this]
+		{
+			if (DefaultGameInstance.IsValid())
+			{
+				DefaultGameInstance->OnSteamOverlayIsOn();
+			}
+		});
 	}
 	else
 	{
-		AsyncTask(ENamedThreads::GameThread,
-		          [this]
-		          {
-			          if (DefaultGameInstance.IsValid())
-			          {
-				          DefaultGameInstance->OnSteamOverlayIsOff();
-			          }
-		          });
+		AsyncTask(ENamedThreads::GameThread, [this]
+		{
+			if (DefaultGameInstance.IsValid())
+			{
+				DefaultGameInstance->OnSteamOverlayIsOff();
+			}
+		});
 	}
 }
 
@@ -304,26 +304,19 @@ void USteamManager::UpdateStat(const char* StatAPIName, T Value)
 
 	if (MinNotYetAchieved)
 	{
-		SteamUserStats()->IndicateAchievementProgress(MinNotYetAchieved->APIName,
-		                                              FoundSteamStat->IntValue,
+		SteamUserStats()->IndicateAchievementProgress(MinNotYetAchieved->APIName, FoundSteamStat->IntValue,
 		                                              MinMaxProgressLimit);
 	}
 
 	switch (FoundSteamStat->StatType)
 	{
-	case Stat_Int: UE_LOG(LogSteamManager,
-	                      Warning,
-	                      TEXT("Updated Stat %s Old Value: %d New Value: %d"),
-	                      *FString(FoundSteamStat->APIName),
-	                      FoundSteamStat->IntValue - Value,
+	case Stat_Int: UE_LOG(LogSteamManager, Warning, TEXT("Updated Stat %s Old Value: %d New Value: %d"),
+	                      *FString(FoundSteamStat->APIName), FoundSteamStat->IntValue - Value,
 	                      FoundSteamStat->IntValue);
 		break;
 	case Stat_Float:
-	case Stat_AvgRate: UE_LOG(LogSteamManager,
-	                          Warning,
-	                          TEXT("Updated Stat %s Old Value: %.2f New Value: %.2f"),
-	                          *FString(FoundSteamStat->APIName),
-	                          FoundSteamStat->FloatValue - Value,
+	case Stat_AvgRate: UE_LOG(LogSteamManager, Warning, TEXT("Updated Stat %s Old Value: %.2f New Value: %.2f"),
+	                          *FString(FoundSteamStat->APIName), FoundSteamStat->FloatValue - Value,
 	                          FoundSteamStat->FloatValue);
 		break;
 	}

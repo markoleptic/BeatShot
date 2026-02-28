@@ -28,14 +28,11 @@ void UBSAT_MontageEventWait::Activate()
 		if (AnimInstance != nullptr)
 		{
 			// Bind to event callback
-			EventHandle = BSAbilitySystemComponent->AddGameplayEventTagContainerDelegate(EventTags,
-				FGameplayEventTagMulticastDelegate::FDelegate::CreateUObject(this,
-				                                                             &UBSAT_MontageEventWait::OnGameplayEvent));
+			EventHandle = BSAbilitySystemComponent->AddGameplayEventTagContainerDelegate(
+				EventTags, FGameplayEventTagMulticastDelegate::FDelegate::CreateUObject(
+					this, &UBSAT_MontageEventWait::OnGameplayEvent));
 
-			if (BSAbilitySystemComponent->PlayMontage(Ability,
-			                                          Ability->GetCurrentActivationInfo(),
-			                                          MontageToPlay,
-			                                          Rate,
+			if (BSAbilitySystemComponent->PlayMontage(Ability, Ability->GetCurrentActivationInfo(), MontageToPlay, Rate,
 			                                          StartSection) > 0.f)
 			{
 				// Playing a montage could potentially fire off a callback into game code which could kill this ability! Early out if we are  pending kill.
@@ -44,8 +41,8 @@ void UBSAT_MontageEventWait::Activate()
 					return;
 				}
 
-				CancelledHandle = Ability->OnGameplayAbilityCancelled.AddUObject(this,
-					&UBSAT_MontageEventWait::OnAbilityCancelled);
+				CancelledHandle = Ability->OnGameplayAbilityCancelled.AddUObject(
+					this, &UBSAT_MontageEventWait::OnAbilityCancelled);
 
 				BlendingOutDelegate.BindUObject(this, &UBSAT_MontageEventWait::OnMontageBlendingOut);
 				AnimInstance->Montage_SetBlendingOutDelegate(BlendingOutDelegate, MontageToPlay);
@@ -70,21 +67,16 @@ void UBSAT_MontageEventWait::Activate()
 	}
 	else
 	{
-		UE_LOG(LogTemp,
-		       Warning,
+		UE_LOG(LogTemp, Warning,
 		       TEXT("UGDAbilityTask_PlayMontageAndWaitForEvent called on invalid AbilitySystemComponent"));
 	}
 
 	if (!bPlayedMontage)
 	{
-		UE_LOG(LogTemp,
-		       Warning,
+		UE_LOG(LogTemp, Warning,
 		       TEXT(
 			       "UGDAbilityTask_PlayMontageAndWaitForEvent called in Ability %s failed to play montage %s; Task Instance Name %s."
-		       ),
-		       *Ability->GetName(),
-		       *GetNameSafe(MontageToPlay),
-		       *InstanceName.ToString());
+		       ), *Ability->GetName(), *GetNameSafe(MontageToPlay), *InstanceName.ToString());
 		if (ShouldBroadcastAbilityTaskDelegates())
 		{
 			OnCancelled.Broadcast(FGameplayTag(), FGameplayEventData());
@@ -114,9 +106,9 @@ FString UBSAT_MontageEventWait::GetDebugString() const
 			                 : AnimInstance->GetCurrentActiveMontage();
 		}
 	}
-	return FString::Printf(TEXT("PlayMontageAndWaitForEvent. MontageToPlay: %s  (Currently Playing): %s"),
-	                       *GetNameSafe(MontageToPlay),
-	                       *GetNameSafe(PlayingMontage));
+	return FString::Printf(
+		TEXT("PlayMontageAndWaitForEvent. MontageToPlay: %s  (Currently Playing): %s"), *GetNameSafe(MontageToPlay),
+		*GetNameSafe(PlayingMontage));
 }
 
 void UBSAT_MontageEventWait::OnDestroy(bool AbilityEnded)

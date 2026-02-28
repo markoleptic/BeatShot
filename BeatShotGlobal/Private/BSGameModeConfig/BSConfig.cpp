@@ -126,10 +126,7 @@ void FBSConfig::InitColors(const bool bUseSeparateOutlineColor,
 FString FBSConfig::ToString() const
 {
 	const TSharedPtr<FJsonObject> JsonObject = FJsonObjectConverter::UStructToJsonObject<FBSConfig>(
-		*this,
-		0,
-		CPF_Transient | CPF_SkipSerialization,
-		nullptr);
+		*this, 0, CPF_Transient | CPF_SkipSerialization, nullptr);
 	if (JsonObject.IsValid())
 	{
 		FString JsonString;
@@ -156,11 +153,8 @@ bool FBSConfig::FromString(const FString& JsonString, FBSConfig& OutConfig, FTex
 	const TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(JsonString);
 	if (FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid())
 	{
-		return FJsonObjectConverter::JsonObjectToUStruct<FBSConfig>(JsonObject.ToSharedRef(),
-		                                                            &OutConfig,
-		                                                            0,
-		                                                            CPF_Transient | CPF_SkipSerialization,
-		                                                            false,
+		return FJsonObjectConverter::JsonObjectToUStruct<FBSConfig>(JsonObject.ToSharedRef(), &OutConfig, 0,
+		                                                            CPF_Transient | CPF_SkipSerialization, false,
 		                                                            OutFailReason);
 	}
 	return false;

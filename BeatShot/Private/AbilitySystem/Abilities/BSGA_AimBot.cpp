@@ -73,10 +73,7 @@ void UBSGA_AimBot::CheckTargetQueue()
 		return;
 	}
 
-	UBSAT_AimToTarget* AimToTarget = UBSAT_AimToTarget::AimToTarget(this,
-	                                                                FName(),
-	                                                                SmoothingCurve,
-	                                                                ActiveTarget,
+	UBSAT_AimToTarget* AimToTarget = UBSAT_AimToTarget::AimToTarget(this, FName(), SmoothingCurve, ActiveTarget,
 	                                                                1.f / ActiveTarget->GetSpawnBeatDelay());
 	AimToTarget->OnCancelled.AddDynamic(this, &ThisClass::OnAimToTargetCancelled);
 	AimToTarget->OnCompleted.AddDynamic(this, &ThisClass::OnAimToTargetCompleted);

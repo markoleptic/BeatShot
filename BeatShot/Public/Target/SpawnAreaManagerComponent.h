@@ -182,11 +182,8 @@ struct FSubRectangle
 
 	FString ToString() const
 	{
-		return FString::Printf(TEXT("Index: [%d, %d] Size: %dx%d"),
-		                       BoundingIndices.StartIndex,
-		                       BoundingIndices.EndIndex,
-		                       Dimensions.Width,
-		                       Dimensions.Height);
+		return FString::Printf(TEXT("Index: [%d, %d] Size: %dx%d"), BoundingIndices.StartIndex,
+		                       BoundingIndices.EndIndex, Dimensions.Width, Dimensions.Height);
 	}
 
 	FORCEINLINE bool operator==(const FSubRectangle& Other) const

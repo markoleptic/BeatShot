@@ -65,8 +65,7 @@ void UCustomGameModeCategoryWidget::HandlePropertyValidation(
 		}
 		if (const TWeakObjectPtr<UMenuOptionWidget>* Found = PropertyMenuOptionWidgetMap.Find(Elem.OwningPropertyHash))
 		{
-			(*Found)->UpdateDynamicTooltipIcon(GetTypeHash(*Elem.ValidationCheckPtr.Get()),
-			                                   Elem.bSuccess,
+			(*Found)->UpdateDynamicTooltipIcon(GetTypeHash(*Elem.ValidationCheckPtr.Get()), Elem.bSuccess,
 			                                   Elem.ValidationCheckPtr->ValidationCheckData);
 		}
 	}
@@ -215,8 +214,7 @@ bool UCustomGameModeCategoryWidget::UpdateValuesIfDifferent(const UDualRangeInpu
 	}
 
 	const bool bMinDifferent = !FMath::IsNearlyEqual(Widget->GetMinSliderValue(false), Min) || !FMath::IsNearlyEqual(
-		                           Widget->GetMinEditableTextBoxValue(false),
-		                           Min);
+		                           Widget->GetMinEditableTextBoxValue(false), Min);
 	if (bMinDifferent)
 	{
 		Widget->SetValue_Min(Min);
@@ -224,8 +222,7 @@ bool UCustomGameModeCategoryWidget::UpdateValuesIfDifferent(const UDualRangeInpu
 	bDifferent = bMinDifferent || bDifferent;
 
 	const bool bMaxDifferent = !FMath::IsNearlyEqual(Widget->GetMaxSliderValue(false), Max) || !FMath::IsNearlyEqual(
-		                           Widget->GetMaxEditableTextBoxValue(false),
-		                           Max);
+		                           Widget->GetMaxEditableTextBoxValue(false), Max);
 	if (bMaxDifferent)
 	{
 		Widget->SetValue_Max(Max);
@@ -257,8 +254,7 @@ bool UCustomGameModeCategoryWidget::UpdateValuesIfDifferent(const UToggleableSin
 	}
 
 	const bool bValueDiff = !FMath::IsNearlyEqual(Widget->GetSliderValue(), Value) || !FMath::IsNearlyEqual(
-		                        Widget->GetEditableTextBoxValue(),
-		                        Value);
+		                        Widget->GetEditableTextBoxValue(), Value);
 
 	if (bValueDiff)
 	{

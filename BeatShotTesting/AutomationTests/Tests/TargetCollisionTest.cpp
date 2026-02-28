@@ -46,7 +46,7 @@ protected:
 
 namespace
 {
-	FTargetCollisionTest FTargetCollisionTestAutomationTestInstance(L"FTargetCollisionTest");
+FTargetCollisionTest FTargetCollisionTestAutomationTestInstance(L"FTargetCollisionTest");
 }
 
 void FTargetCollisionTest::GetTests(TArray<FString>& OutBeautifiedNames, TArray<FString>& OutTestCommands) const
@@ -104,8 +104,8 @@ bool FTargetCollisionTest::RunTest(const FString& Parameters)
 	AddInfo(FString::Printf(TEXT("Total targets spawned: %d"), TotalTargetsSpawned));
 	AddInfo(FString::Printf(TEXT("Total collisions: %d"), TotalCollisions));
 	AddInfo(FString::Printf(TEXT("Min Distance between two spheres: %.4lf"), MinDistance));
-	AddInfo(FString::Printf(TEXT("Total time spent executing GetTargetSpawnParams: %.4lf"),
-	                        TargetSpawnParamsExecutionTime));
+	AddInfo(FString::Printf(
+		TEXT("Total time spent executing GetTargetSpawnParams: %.4lf"), TargetSpawnParamsExecutionTime));
 
 	ResetTestVariables();
 	CleanUpWorld();
@@ -128,13 +128,7 @@ void FTargetCollisionTest::TestIntersection(const FSphere& SphereOne, const FSph
 
 	const FString What = FString::Printf(
 		TEXT("Sphere at (%.2f, %.2f) w/ R=%.2lf intersecting sphere at (%.2f, %.2f) w/ R=%.2lf by %.2lf"),
-		SphereOne.Center.Y,
-		SphereOne.Center.Z,
-		SphereOne.W,
-		SphereTwo.Center.Y,
-		SphereTwo.Center.Z,
-		SphereTwo.W,
-		Dist);
+		SphereOne.Center.Y, SphereOne.Center.Z, SphereOne.W, SphereTwo.Center.Y, SphereTwo.Center.Z, SphereTwo.W, Dist);
 	TestFalse(What, bIntersects);
 }
 

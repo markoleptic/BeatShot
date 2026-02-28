@@ -14,14 +14,12 @@ struct BSDamageStatics
 	BSDamageStatics()
 	{
 		HitDamageDef = FGameplayEffectAttributeCaptureDefinition(UBSAttributeSetBase::GetHitDamageAttribute(),
-		                                                         EGameplayEffectAttributeCaptureSource::Source,
-		                                                         true);
+		                                                         EGameplayEffectAttributeCaptureSource::Source, true);
 		TrackingDamageDef = FGameplayEffectAttributeCaptureDefinition(UBSAttributeSetBase::GetTrackingDamageAttribute(),
 		                                                              EGameplayEffectAttributeCaptureSource::Source,
 		                                                              true);
 		SelfDamageDef = FGameplayEffectAttributeCaptureDefinition(UBSAttributeSetBase::GetSelfDamageAttribute(),
-		                                                          EGameplayEffectAttributeCaptureSource::Source,
-		                                                          true);
+		                                                          EGameplayEffectAttributeCaptureSource::Source, true);
 
 		// Capture the Target's Health. Don't snapshot.
 		//HealthDef = FGameplayEffectAttributeCaptureDefinition(UBSAttributeSetBase::GetHealthAttribute(), EGameplayEffectAttributeCaptureSource::Target, false);
@@ -57,8 +55,7 @@ void UBSDamageExecCalc::Execute_Implementation(const FGameplayEffectCustomExecut
 	float HitDamage = 0.0f;
 	if (!TargetTags->HasTag(BSGameplayTags::Target_State_Immune_HitDamage))
 	{
-		ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().HitDamageDef,
-		                                                           EvaluationParameters,
+		ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().HitDamageDef, EvaluationParameters,
 		                                                           HitDamage);
 	}
 
@@ -66,40 +63,32 @@ void UBSDamageExecCalc::Execute_Implementation(const FGameplayEffectCustomExecut
 	if (!TargetTags->HasTag(BSGameplayTags::Target_State_Immune_TrackingDamage))
 	{
 		ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().TrackingDamageDef,
-		                                                           EvaluationParameters,
-		                                                           TrackingDamage);
+		                                                           EvaluationParameters, TrackingDamage);
 	}
 
 	float SelfDamage = 0.0f;
-	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().SelfDamageDef,
-	                                                           EvaluationParameters,
+	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().SelfDamageDef, EvaluationParameters,
 	                                                           SelfDamage);
 
 	if (HitDamage > 0.0f)
 	{
 		// Set the Target's Incoming Hit Damage meta attribute, this gets turned into - health on the target
 		OutExecutionOutput.AddOutputModifier(FGameplayModifierEvaluatedData(
-			UBSAttributeSetBase::GetIncomingHitDamageAttribute(),
-			EGameplayModOp::Additive,
-			HitDamage));
+			UBSAttributeSetBase::GetIncomingHitDamageAttribute(), EGameplayModOp::Additive, HitDamage));
 	}
 
 	if (TrackingDamage > 0.0f)
 	{
 		// Set the Target's Incoming Tracking Damage meta attribute, this gets turned into - health on the target
 		OutExecutionOutput.AddOutputModifier(FGameplayModifierEvaluatedData(
-			UBSAttributeSetBase::GetIncomingTrackingDamageAttribute(),
-			EGameplayModOp::Additive,
-			TrackingDamage));
+			UBSAttributeSetBase::GetIncomingTrackingDamageAttribute(), EGameplayModOp::Additive, TrackingDamage));
 	}
 
 	if (TrackingDamage <= 0.0f && HitDamage <= 0.0f && SelfDamage > 0.0f)
 	{
 		// Set the Target's Self Damage meta attribute, this gets turned into - health on the target
 		OutExecutionOutput.AddOutputModifier(FGameplayModifierEvaluatedData(
-			UBSAttributeSetBase::GetIncomingSelfDamageAttribute(),
-			EGameplayModOp::Additive,
-			SelfDamage));
+			UBSAttributeSetBase::GetIncomingSelfDamageAttribute(), EGameplayModOp::Additive, SelfDamage));
 	}
 	// OutExecutionOutput.AddOutputModifier(
 	//		FGameplayModifierEvaluatedData(

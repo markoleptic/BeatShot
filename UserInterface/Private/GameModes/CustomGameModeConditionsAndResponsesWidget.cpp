@@ -42,27 +42,27 @@ void UCustomGameModeConditionsAndResponsesWidget::NativeConstruct()
 		                                GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, TargetDestructionConditions)),
 	                                ComboBoxOption_TargetDestructionConditions);
 
-	ComboBoxOption_TargetSpawnResponses->ComboBox->OnSelectionChanged.AddUniqueDynamic(this,
-		&ThisClass::OnSelectionChanged_TargetSpawnResponses);
-	ComboBoxOption_TargetActivationResponses->ComboBox->OnSelectionChanged.AddUniqueDynamic(this,
-		&ThisClass::OnSelectionChanged_TargetActivationResponses);
-	ComboBoxOption_TargetDeactivationConditions->ComboBox->OnSelectionChanged.AddUniqueDynamic(this,
-		&ThisClass::OnSelectionChanged_TargetDeactivationConditions);
-	ComboBoxOption_TargetDeactivationResponses->ComboBox->OnSelectionChanged.AddUniqueDynamic(this,
-		&ThisClass::OnSelectionChanged_TargetDeactivationResponses);
-	ComboBoxOption_TargetDestructionConditions->ComboBox->OnSelectionChanged.AddUniqueDynamic(this,
-		&ThisClass::OnSelectionChanged_TargetDestructionConditions);
+	ComboBoxOption_TargetSpawnResponses->ComboBox->OnSelectionChanged.AddUniqueDynamic(
+		this, &ThisClass::OnSelectionChanged_TargetSpawnResponses);
+	ComboBoxOption_TargetActivationResponses->ComboBox->OnSelectionChanged.AddUniqueDynamic(
+		this, &ThisClass::OnSelectionChanged_TargetActivationResponses);
+	ComboBoxOption_TargetDeactivationConditions->ComboBox->OnSelectionChanged.AddUniqueDynamic(
+		this, &ThisClass::OnSelectionChanged_TargetDeactivationConditions);
+	ComboBoxOption_TargetDeactivationResponses->ComboBox->OnSelectionChanged.AddUniqueDynamic(
+		this, &ThisClass::OnSelectionChanged_TargetDeactivationResponses);
+	ComboBoxOption_TargetDestructionConditions->ComboBox->OnSelectionChanged.AddUniqueDynamic(
+		this, &ThisClass::OnSelectionChanged_TargetDestructionConditions);
 
-	ComboBoxOption_TargetSpawnResponses->GetComboBoxEntryTooltipStringTableKey.BindUObject(this,
-		&ThisClass::GetComboBoxEntryTooltipStringTableKey_TargetSpawnResponses);
-	ComboBoxOption_TargetActivationResponses->GetComboBoxEntryTooltipStringTableKey.BindUObject(this,
-		&ThisClass::GetComboBoxEntryTooltipStringTableKey_TargetActivationResponses);
-	ComboBoxOption_TargetDeactivationConditions->GetComboBoxEntryTooltipStringTableKey.BindUObject(this,
-		&ThisClass::GetComboBoxEntryTooltipStringTableKey_TargetDeactivationConditions);
-	ComboBoxOption_TargetDeactivationResponses->GetComboBoxEntryTooltipStringTableKey.BindUObject(this,
-		&ThisClass::GetComboBoxEntryTooltipStringTableKey_TargetDeactivationResponses);
-	ComboBoxOption_TargetDestructionConditions->GetComboBoxEntryTooltipStringTableKey.BindUObject(this,
-		&ThisClass::GetComboBoxEntryTooltipStringTableKey_TargetDestructionConditions);
+	ComboBoxOption_TargetSpawnResponses->GetComboBoxEntryTooltipStringTableKey.BindUObject(
+		this, &ThisClass::GetComboBoxEntryTooltipStringTableKey_TargetSpawnResponses);
+	ComboBoxOption_TargetActivationResponses->GetComboBoxEntryTooltipStringTableKey.BindUObject(
+		this, &ThisClass::GetComboBoxEntryTooltipStringTableKey_TargetActivationResponses);
+	ComboBoxOption_TargetDeactivationConditions->GetComboBoxEntryTooltipStringTableKey.BindUObject(
+		this, &ThisClass::GetComboBoxEntryTooltipStringTableKey_TargetDeactivationConditions);
+	ComboBoxOption_TargetDeactivationResponses->GetComboBoxEntryTooltipStringTableKey.BindUObject(
+		this, &ThisClass::GetComboBoxEntryTooltipStringTableKey_TargetDeactivationResponses);
+	ComboBoxOption_TargetDestructionConditions->GetComboBoxEntryTooltipStringTableKey.BindUObject(
+		this, &ThisClass::GetComboBoxEntryTooltipStringTableKey_TargetDestructionConditions);
 
 	ComboBoxOption_TargetSpawnResponses->ComboBox->ClearOptions();
 	ComboBoxOption_TargetActivationResponses->ComboBox->ClearOptions();
@@ -168,8 +168,9 @@ void UCustomGameModeConditionsAndResponsesWidget::OnSelectionChanged_TargetActiv
 
 	UpdateDependentOptions_TargetActivationResponses(BSConfig->TargetConfig.TargetActivationResponses);
 	OnPropertyChanged.Execute({
-		UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-		                                           GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, TargetActivationResponses))
+		UBSGameModeValidator::FindBSConfigProperty(
+			GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+			GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, TargetActivationResponses))
 	});
 	UpdateBrushColors();
 }
@@ -195,8 +196,9 @@ void UCustomGameModeConditionsAndResponsesWidget::OnSelectionChanged_TargetSpawn
 
 	UpdateDependentOptions_TargetSpawnResponses(BSConfig->TargetConfig.TargetSpawnResponses);
 	OnPropertyChanged.Execute({
-		UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-		                                           GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, TargetSpawnResponses))
+		UBSGameModeValidator::FindBSConfigProperty(
+			GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+			GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, TargetSpawnResponses))
 	});
 	UpdateBrushColors();
 }
@@ -220,10 +222,9 @@ void UCustomGameModeConditionsAndResponsesWidget::OnSelectionChanged_TargetDeact
 			ETargetDeactivationCondition>(Selected);
 	}
 	OnPropertyChanged.Execute({
-		UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-		                                           GET_MEMBER_NAME_CHECKED(
-			                                           FBS_TargetConfig,
-			                                           TargetDeactivationConditions))
+		UBSGameModeValidator::FindBSConfigProperty(
+			GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+			GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, TargetDeactivationConditions))
 	});
 	UpdateBrushColors();
 }
@@ -248,10 +249,9 @@ void UCustomGameModeConditionsAndResponsesWidget::OnSelectionChanged_TargetDeact
 	}
 	UpdateDependentOptions_TargetDeactivationResponses(BSConfig->TargetConfig.TargetDeactivationResponses);
 	OnPropertyChanged.Execute({
-		UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-		                                           GET_MEMBER_NAME_CHECKED(
-			                                           FBS_TargetConfig,
-			                                           TargetDeactivationResponses))
+		UBSGameModeValidator::FindBSConfigProperty(
+			GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+			GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, TargetDeactivationResponses))
 	});
 	UpdateBrushColors();
 }
@@ -275,10 +275,9 @@ void UCustomGameModeConditionsAndResponsesWidget::OnSelectionChanged_TargetDestr
 	}
 
 	OnPropertyChanged.Execute({
-		UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-		                                           GET_MEMBER_NAME_CHECKED(
-			                                           FBS_TargetConfig,
-			                                           TargetDestructionConditions))
+		UBSGameModeValidator::FindBSConfigProperty(
+			GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+			GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, TargetDestructionConditions))
 	});
 	UpdateBrushColors();
 }

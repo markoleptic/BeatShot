@@ -33,13 +33,8 @@ void UBSGA_FireGun::EndAbility(const FGameplayAbilitySpecHandle Handle,
 	{
 		if (ScopeLockCount > 0)
 		{
-			WaitingToExecute.Add(FPostLockDelegate::CreateUObject(this,
-			                                                      &ThisClass::EndAbility,
-			                                                      Handle,
-			                                                      ActorInfo,
-			                                                      ActivationInfo,
-			                                                      bReplicateEndAbility,
-			                                                      bWasCancelled));
+			WaitingToExecute.Add(FPostLockDelegate::CreateUObject(this, &ThisClass::EndAbility, Handle, ActorInfo,
+			                                                      ActivationInfo, bReplicateEndAbility, bWasCancelled));
 			return;
 		}
 
@@ -74,8 +69,7 @@ void UBSGA_FireGun::OnTargetDataReadyCallback(const FGameplayAbilityTargetDataHa
 		{
 			MyAbilityComponent->CallServerSetReplicatedTargetData(CurrentSpecHandle,
 			                                                      CurrentActivationInfo.GetActivationPredictionKey(),
-			                                                      LocalTargetDataHandle,
-			                                                      ApplicationTag,
+			                                                      LocalTargetDataHandle, ApplicationTag,
 			                                                      MyAbilityComponent->ScopedPredictionKey);
 		}
 

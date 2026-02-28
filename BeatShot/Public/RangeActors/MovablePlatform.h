@@ -21,8 +21,7 @@ enum class EPlatformTransitionType : uint8
 	MoveDownByStepOff UMETA(DisplayName="MoveDownByStepOff")
 };
 
-ENUM_RANGE_BY_FIRST_AND_LAST(EPlatformTransitionType,
-                             EPlatformTransitionType::None,
+ENUM_RANGE_BY_FIRST_AND_LAST(EPlatformTransitionType, EPlatformTransitionType::None,
                              EPlatformTransitionType::MoveDownByStepOff);
 
 /** A movable portion of ground that allows the player to rise vertically. */

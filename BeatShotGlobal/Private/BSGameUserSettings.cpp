@@ -17,8 +17,7 @@
 
 DEFINE_LOG_CATEGORY(LogBSGameUserSettings);
 
-ENUM_RANGE_BY_FIRST_AND_LAST(UDLSSSupport,
-                             UDLSSSupport::Supported,
+ENUM_RANGE_BY_FIRST_AND_LAST(UDLSSSupport, UDLSSSupport::Supported,
                              UDLSSSupport::NotSupportedIncompatibleAPICaptureToolActive);
 
 ENUM_RANGE_BY_FIRST_AND_LAST(UDLSSMode, UDLSSMode::Off, UDLSSMode::UltraPerformance);
@@ -36,110 +35,100 @@ TMulticastDelegate<void(const UBSGameUserSettings*)> UBSGameUserSettings::OnSett
 
 namespace
 {
-	/** Applies the value of AntiAliasingMethod to the global GEngine ini. */
-	void ApplyAntiAliasingMethod(const TEnumAsByte<EAntiAliasingMethod> AntiAliasingMethod)
+/** Applies the value of AntiAliasingMethod to the global GEngine ini. */
+void ApplyAntiAliasingMethod(const TEnumAsByte<EAntiAliasingMethod> AntiAliasingMethod)
+{
+	if (IConsoleVariable* CVarAntiAliasingMethod = IConsoleManager::Get().FindConsoleVariable(
+		TEXT("r.AntiAliasingMethod")))
 	{
-		if (IConsoleVariable* CVarAntiAliasingMethod = IConsoleManager::Get().FindConsoleVariable(
-			TEXT("r.AntiAliasingMethod")))
+		if (CVarAntiAliasingMethod->GetInt() == AntiAliasingMethod)
 		{
-			if (CVarAntiAliasingMethod->GetInt() == AntiAliasingMethod)
-			{
-				return;
-			}
-			CVarAntiAliasingMethod->Set(AntiAliasingMethod, ECVF_SetByGameOverride);
+			return;
 		}
-		if (GConfig)
+		CVarAntiAliasingMethod->Set(AntiAliasingMethod, ECVF_SetByGameOverride);
+	}
+	if (GConfig)
+	{
+		const FString Value = FString::FromInt(AntiAliasingMethod);
+		GConfig->SetString(TEXT("/Script/Engine.RendererSettings"), TEXT("r.AntiAliasingMethod"), *Value, GEngineIni);
+		GConfig->Flush(false, GEngineIni);
+	}
+}
+
+/** Applies the value of DisplayGamma to the game engine. */
+void ApplyDisplayGamma(const float DisplayGamma)
+{
+	if (GEngine)
+	{
+		GEngine->DisplayGamma = DisplayGamma;
+	}
+}
+
+/** Applies the DLSS Mode and sets the screen percentage CVar. */
+bool ApplyDLSSMode(const UDLSSMode DLSSMode, const FIntPoint& ScreenRes, const bool bRestoreFullResWhenDisabled = true)
+{
+	bool bShouldEnable = false;
+	float ScreenPercentage = 100.f;
+
+	if (UDLSSLibrary::IsDLSSSupported())
+	{
+		bool bIsSupported;
+		float OptimalScreenPercentage;
+		bool bIsFixedScreenPercentage;
+		float MinScreenPercentage;
+		float MaxScreenPercentage;
+		float OptimalSharpness;
+
+		UDLSSLibrary::GetDLSSModeInformation(DLSSMode, FVector2D(ScreenRes.X, ScreenRes.Y), bIsSupported,
+		                                     OptimalScreenPercentage, bIsFixedScreenPercentage, MinScreenPercentage,
+		                                     MaxScreenPercentage, OptimalSharpness);
+
+		bIsSupported = bIsSupported || DLSSMode == UDLSSMode::Auto;
+		const bool bIsDLAA = DLSSMode == UDLSSMode::DLAA;
+		bShouldEnable = (DLSSMode != UDLSSMode::Off || bIsDLAA) && bIsSupported;
+		const bool bValidScreenPercentage = OptimalScreenPercentage > 0.f && bIsSupported;
+
+		// Enable/Disable DLSS
+		if (bShouldEnable != UDLSSLibrary::IsDLSSEnabled())
 		{
-			const FString Value = FString::FromInt(AntiAliasingMethod);
-			GConfig->SetString(TEXT("/Script/Engine.RendererSettings"),
-			                   TEXT("r.AntiAliasingMethod"),
-			                   *Value,
-			                   GEngineIni);
-			GConfig->Flush(false, GEngineIni);
+			UDLSSLibrary::EnableDLSS(bShouldEnable);
+		}
+
+		// Set screen percentage to 100 if DLAA mode or invalid screen percentage
+		ScreenPercentage = bIsDLAA || !bValidScreenPercentage ? 100.f : OptimalScreenPercentage;
+	}
+
+	if (bShouldEnable || bRestoreFullResWhenDisabled)
+	{
+		if (static IConsoleVariable* CVarScreenPercentage = IConsoleManager::Get().FindConsoleVariable(
+			TEXT("r.ScreenPercentage")))
+		{
+			if (!FMath::IsNearlyEqual(CVarScreenPercentage->GetFloat(), ScreenPercentage))
+			{
+				CVarScreenPercentage->Set(ScreenPercentage);
+			}
 		}
 	}
 
-	/** Applies the value of DisplayGamma to the game engine. */
-	void ApplyDisplayGamma(const float DisplayGamma)
+	return bShouldEnable;
+}
+
+/** Attempts to load a control bus from a soft object path. */
+USoundControlBus* TryLoadControlBus(const FSoftObjectPath& Path,
+                                    TMap<FName, TObjectPtr<USoundControlBus>>& Map,
+                                    const FName& Key)
+{
+	if (UObject* ObjPath = Path.TryLoad(); ensureMsgf(ObjPath, TEXT("Failed to load Control Bus.")))
 	{
-		if (GEngine)
+		if (USoundControlBus* SoundControlBus = Cast<USoundControlBus>(ObjPath); ensureMsgf(SoundControlBus,
+			TEXT("Control Bus reference missing from Audio Settings.")))
 		{
-			GEngine->DisplayGamma = DisplayGamma;
+			Map.Add(Key, SoundControlBus);
+			return SoundControlBus;
 		}
 	}
-
-	/** Applies the DLSS Mode and sets the screen percentage CVar. */
-	bool ApplyDLSSMode(const UDLSSMode DLSSMode,
-	                   const FIntPoint& ScreenRes,
-	                   const bool bRestoreFullResWhenDisabled = true)
-	{
-		bool bShouldEnable = false;
-		float ScreenPercentage = 100.f;
-
-		if (UDLSSLibrary::IsDLSSSupported())
-		{
-			bool bIsSupported;
-			float OptimalScreenPercentage;
-			bool bIsFixedScreenPercentage;
-			float MinScreenPercentage;
-			float MaxScreenPercentage;
-			float OptimalSharpness;
-
-			UDLSSLibrary::GetDLSSModeInformation(DLSSMode,
-			                                     FVector2D(ScreenRes.X, ScreenRes.Y),
-			                                     bIsSupported,
-			                                     OptimalScreenPercentage,
-			                                     bIsFixedScreenPercentage,
-			                                     MinScreenPercentage,
-			                                     MaxScreenPercentage,
-			                                     OptimalSharpness);
-
-			bIsSupported = bIsSupported || DLSSMode == UDLSSMode::Auto;
-			const bool bIsDLAA = DLSSMode == UDLSSMode::DLAA;
-			bShouldEnable = (DLSSMode != UDLSSMode::Off || bIsDLAA) && bIsSupported;
-			const bool bValidScreenPercentage = OptimalScreenPercentage > 0.f && bIsSupported;
-
-			// Enable/Disable DLSS
-			if (bShouldEnable != UDLSSLibrary::IsDLSSEnabled())
-			{
-				UDLSSLibrary::EnableDLSS(bShouldEnable);
-			}
-
-			// Set screen percentage to 100 if DLAA mode or invalid screen percentage
-			ScreenPercentage = bIsDLAA || !bValidScreenPercentage ? 100.f : OptimalScreenPercentage;
-		}
-
-		if (bShouldEnable || bRestoreFullResWhenDisabled)
-		{
-			if (static IConsoleVariable* CVarScreenPercentage = IConsoleManager::Get().FindConsoleVariable(
-				TEXT("r.ScreenPercentage")))
-			{
-				if (!FMath::IsNearlyEqual(CVarScreenPercentage->GetFloat(), ScreenPercentage))
-				{
-					CVarScreenPercentage->Set(ScreenPercentage);
-				}
-			}
-		}
-
-		return bShouldEnable;
-	}
-
-	/** Attempts to load a control bus from a soft object path. */
-	USoundControlBus* TryLoadControlBus(const FSoftObjectPath& Path,
-	                                    TMap<FName, TObjectPtr<USoundControlBus>>& Map,
-	                                    const FName& Key)
-	{
-		if (UObject* ObjPath = Path.TryLoad(); ensureMsgf(ObjPath, TEXT("Failed to load Control Bus.")))
-		{
-			if (USoundControlBus* SoundControlBus = Cast<USoundControlBus>(ObjPath); ensureMsgf(SoundControlBus,
-				TEXT("Control Bus reference missing from Audio Settings.")))
-			{
-				Map.Add(Key, SoundControlBus);
-				return SoundControlBus;
-			}
-		}
-		return nullptr;
-	}
+	return nullptr;
+}
 }
 
 UBSGameUserSettings::UBSGameUserSettings() : bInMenu(false)
@@ -338,44 +327,32 @@ void UBSGameUserSettings::LoadUserControlBusMix(const UWorld* World)
 
 		ControlBusMap.Empty();
 
-		USoundControlBus* OverallControlBus = TryLoadControlBus(BSAudioSettings->OverallVolumeControlBus,
-		                                                        ControlBusMap,
+		USoundControlBus* OverallControlBus = TryLoadControlBus(BSAudioSettings->OverallVolumeControlBus, ControlBusMap,
 		                                                        TEXT("Overall"));
-		USoundControlBus* MenuControlBus = TryLoadControlBus(BSAudioSettings->MenuVolumeControlBus,
-		                                                     ControlBusMap,
+		USoundControlBus* MenuControlBus = TryLoadControlBus(BSAudioSettings->MenuVolumeControlBus, ControlBusMap,
 		                                                     TEXT("Menu"));
-		USoundControlBus* MusicControlBus = TryLoadControlBus(BSAudioSettings->MusicVolumeControlBus,
-		                                                      ControlBusMap,
+		USoundControlBus* MusicControlBus = TryLoadControlBus(BSAudioSettings->MusicVolumeControlBus, ControlBusMap,
 		                                                      TEXT("Music"));
-		USoundControlBus* SoundFXControlBus = TryLoadControlBus(BSAudioSettings->SoundFXVolumeControlBus,
-		                                                        ControlBusMap,
+		USoundControlBus* SoundFXControlBus = TryLoadControlBus(BSAudioSettings->SoundFXVolumeControlBus, ControlBusMap,
 		                                                        TEXT("SoundFX"));
 
-		if (UObject* ObjPath = BSAudioSettings->UserSettingsControlBusMix.TryLoad(); ensureMsgf(ObjPath,
-			TEXT("Failed to load Control Bus Mix.")))
+		if (UObject* ObjPath = BSAudioSettings->UserSettingsControlBusMix.TryLoad(); ensureMsgf(
+			ObjPath, TEXT("Failed to load Control Bus Mix.")))
 		{
-			if (USoundControlBusMix* SoundControlBusMix = Cast<USoundControlBusMix>(ObjPath); ensureMsgf(ObjPath,
-				TEXT("User Settings Control Bus Mix reference missing.")))
+			if (USoundControlBusMix* SoundControlBusMix = Cast<USoundControlBusMix>(ObjPath); ensureMsgf(
+				ObjPath, TEXT("User Settings Control Bus Mix reference missing.")))
 			{
 				ControlBusMix = SoundControlBusMix;
 				UAudioModulationStatics::ActivateBusMix(World, SoundControlBusMix);
 
 				const FSoundControlBusMixStage OverallControlBusMixStage = UAudioModulationStatics::CreateBusMixStage(
-					World,
-					OverallControlBus,
-					OverallVolume / 100.0);
+					World, OverallControlBus, OverallVolume / 100.0);
 				const FSoundControlBusMixStage MenuControlBusMixStage = UAudioModulationStatics::CreateBusMixStage(
-					World,
-					MenuControlBus,
-					MenuVolume / 100.0);
+					World, MenuControlBus, MenuVolume / 100.0);
 				const FSoundControlBusMixStage MusicControlBusMixStage = UAudioModulationStatics::CreateBusMixStage(
-					World,
-					MusicControlBus,
-					MusicVolume / 100.0);
+					World, MusicControlBus, MusicVolume / 100.0);
 				const FSoundControlBusMixStage SoundFXControlBusMixStage = UAudioModulationStatics::CreateBusMixStage(
-					World,
-					SoundFXControlBus,
-					SoundFXVolume / 100.0);
+					World, SoundFXControlBus, SoundFXVolume / 100.0);
 
 				TArray<FSoundControlBusMixStage> ControlBusMixStageArray;
 				ControlBusMixStageArray.Add(OverallControlBusMixStage);
@@ -682,8 +659,7 @@ float UBSGameUserSettings::GetPostProcessBiasFromBrightness() const
 {
 	return FMath::GetMappedRangeValueClamped(FVector2D(Constants::MinValue_Brightness, Constants::MaxValue_Brightness),
 	                                         FVector2D(Constants::MinValue_ExposureCompensation,
-	                                                   Constants::MaxValue_ExposureCompensation),
-	                                         Brightness);
+	                                                   Constants::MaxValue_ExposureCompensation), Brightness);
 }
 
 void UBSGameUserSettings::SetInMenu(const bool bIsInMenu)

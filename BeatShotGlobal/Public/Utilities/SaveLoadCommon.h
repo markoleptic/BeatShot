@@ -8,11 +8,11 @@ class USaveGameCustomGameMode;
 
 namespace SaveLoadCommon
 {
-	template <typename T>
-	T* LoadFromSlot(const FString& InSlotName, const int32 InSlotIndex);
+template <typename T>
+T* LoadFromSlot(const FString& InSlotName, const int32 InSlotIndex);
 
-	template <typename T>
-	bool SaveToSlot(T* SaveGameClass, const FString& InSlotName, const int32 InSlotIndex);
+template <typename T>
+bool SaveToSlot(T* SaveGameClass, const FString& InSlotName, const int32 InSlotIndex);
 }
 
 template bool SaveLoadCommon::SaveToSlot(USaveGameCustomGameMode* SaveGameClass,

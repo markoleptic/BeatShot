@@ -67,15 +67,11 @@ bool UBSAT_PerformWeaponTraceSingle::LineTraceSingle(FHitResult& HitResult) cons
 	const FVector RotatedVector1 = UKismetMathLibrary::RotateAngleAxis(RecoilComponent->GetForwardVector(),
 	                                                                   CurrentRecoilRotation.Pitch,
 	                                                                   RecoilComponent->GetRightVector());
-	const FVector RotatedVector2 = UKismetMathLibrary::RotateAngleAxis(RotatedVector1,
-	                                                                   CurrentRecoilRotation.Yaw,
+	const FVector RotatedVector2 = UKismetMathLibrary::RotateAngleAxis(RotatedVector1, CurrentRecoilRotation.Yaw,
 	                                                                   RecoilComponent->GetUpVector());
 	const FVector EndTrace = RecoilComponent->GetComponentLocation() + RotatedVector2 * TraceDistance;
 	const FCollisionQueryParams TraceParams(SCENE_QUERY_STAT(WeaponTrace), true);
-	GetWorld()->LineTraceSingleByChannel(HitResult,
-	                                     RecoilComponent->GetComponentLocation(),
-	                                     EndTrace,
-	                                     BS_TraceChannel_Weapon,
-	                                     TraceParams);
+	GetWorld()->LineTraceSingleByChannel(HitResult, RecoilComponent->GetComponentLocation(), EndTrace,
+	                                     BS_TraceChannel_Weapon, TraceParams);
 	return true;
 }

@@ -49,39 +49,33 @@ void UCustomGameModeMovementWidget::NativeConstruct()
 		                                GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, MovingTargetDirectionMode)),
 	                                ComboBoxOption_MovingTargetDirectionMode);
 
-	AddWatchedProperty(UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-	                                                              GET_MEMBER_NAME_CHECKED(
-		                                                              FBS_TargetConfig,
-		                                                              TargetSpawnResponses)));
-	AddWatchedProperty(UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-	                                                              GET_MEMBER_NAME_CHECKED(
-		                                                              FBS_TargetConfig,
-		                                                              TargetActivationResponses)));
-	AddWatchedProperty(UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-	                                                              GET_MEMBER_NAME_CHECKED(
-		                                                              FBS_TargetConfig,
-		                                                              TargetDeactivationResponses)));
+	AddWatchedProperty(UBSGameModeValidator::FindBSConfigProperty(
+		GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+		GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, TargetSpawnResponses)));
+	AddWatchedProperty(UBSGameModeValidator::FindBSConfigProperty(
+		GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+		GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, TargetActivationResponses)));
+	AddWatchedProperty(UBSGameModeValidator::FindBSConfigProperty(
+		GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+		GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, TargetDeactivationResponses)));
 
-	MenuOption_SpawnedTargetVelocity->SetValues(Constants::MinValue_TargetSpeed,
-	                                            Constants::MaxValue_TargetSpeed,
+	MenuOption_SpawnedTargetVelocity->SetValues(Constants::MinValue_TargetSpeed, Constants::MaxValue_TargetSpeed,
 	                                            Constants::SnapSize_TargetSpeed);
-	MenuOption_ActivatedTargetVelocity->SetValues(Constants::MinValue_TargetSpeed,
-	                                              Constants::MaxValue_TargetSpeed,
+	MenuOption_ActivatedTargetVelocity->SetValues(Constants::MinValue_TargetSpeed, Constants::MaxValue_TargetSpeed,
 	                                              Constants::SnapSize_TargetSpeed);
-	MenuOption_DeactivatedTargetVelocity->SetValues(Constants::MinValue_TargetSpeed,
-	                                                Constants::MaxValue_TargetSpeed,
+	MenuOption_DeactivatedTargetVelocity->SetValues(Constants::MinValue_TargetSpeed, Constants::MaxValue_TargetSpeed,
 	                                                Constants::SnapSize_TargetSpeed);
 
 	MenuOption_SpawnedTargetVelocity->OnMinMaxMenuOptionChanged.AddUObject(this, &ThisClass::OnMinMaxMenuOptionChanged);
-	MenuOption_ActivatedTargetVelocity->OnMinMaxMenuOptionChanged.AddUObject(this,
-	                                                                         &ThisClass::OnMinMaxMenuOptionChanged);
-	MenuOption_DeactivatedTargetVelocity->OnMinMaxMenuOptionChanged.AddUObject(this,
-	                                                                           &ThisClass::OnMinMaxMenuOptionChanged);
+	MenuOption_ActivatedTargetVelocity->OnMinMaxMenuOptionChanged.AddUObject(
+		this, &ThisClass::OnMinMaxMenuOptionChanged);
+	MenuOption_DeactivatedTargetVelocity->OnMinMaxMenuOptionChanged.AddUObject(
+		this, &ThisClass::OnMinMaxMenuOptionChanged);
 
-	ComboBoxOption_MovingTargetDirectionMode->ComboBox->OnSelectionChanged.AddUniqueDynamic(this,
-		&ThisClass::OnSelectionChanged_MovingTargetDirectionMode);
-	ComboBoxOption_MovingTargetDirectionMode->GetComboBoxEntryTooltipStringTableKey.BindUObject(this,
-		&ThisClass::GetComboBoxEntryTooltipStringTableKey_MovingTargetDirectionMode);
+	ComboBoxOption_MovingTargetDirectionMode->ComboBox->OnSelectionChanged.AddUniqueDynamic(
+		this, &ThisClass::OnSelectionChanged_MovingTargetDirectionMode);
+	ComboBoxOption_MovingTargetDirectionMode->GetComboBoxEntryTooltipStringTableKey.BindUObject(
+		this, &ThisClass::GetComboBoxEntryTooltipStringTableKey_MovingTargetDirectionMode);
 	ComboBoxOption_MovingTargetDirectionMode->ComboBox->ClearOptions();
 
 	TArray<FString> Options;
@@ -108,16 +102,12 @@ void UCustomGameModeMovementWidget::UpdateOptionsFromConfig()
 	const bool bConstantDeactivatedSpeed = BSConfig->TargetConfig.MinDeactivatedTargetSpeed == BSConfig->TargetConfig.
 	                                       MaxDeactivatedTargetSpeed;
 
-	UpdateValuesIfDifferent(MenuOption_SpawnedTargetVelocity,
-	                        bConstantSpawnedSpeed,
-	                        BSConfig->TargetConfig.MinSpawnedTargetSpeed,
-	                        BSConfig->TargetConfig.MaxSpawnedTargetSpeed);
-	UpdateValuesIfDifferent(MenuOption_ActivatedTargetVelocity,
-	                        bConstantActivatedSpeed,
+	UpdateValuesIfDifferent(MenuOption_SpawnedTargetVelocity, bConstantSpawnedSpeed,
+	                        BSConfig->TargetConfig.MinSpawnedTargetSpeed, BSConfig->TargetConfig.MaxSpawnedTargetSpeed);
+	UpdateValuesIfDifferent(MenuOption_ActivatedTargetVelocity, bConstantActivatedSpeed,
 	                        BSConfig->TargetConfig.MinActivatedTargetSpeed,
 	                        BSConfig->TargetConfig.MaxActivatedTargetSpeed);
-	UpdateValuesIfDifferent(MenuOption_DeactivatedTargetVelocity,
-	                        bConstantDeactivatedSpeed,
+	UpdateValuesIfDifferent(MenuOption_DeactivatedTargetVelocity, bConstantDeactivatedSpeed,
 	                        BSConfig->TargetConfig.MinDeactivatedTargetSpeed,
 	                        BSConfig->TargetConfig.MaxDeactivatedTargetSpeed);
 
@@ -135,10 +125,9 @@ void UCustomGameModeMovementWidget::UpdateOptionsFromConfig()
 
 void UCustomGameModeMovementWidget::HandleWatchedPropertyChanged(const uint32 PropertyHash)
 {
-	if (PropertyHash == UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-	                                                               GET_MEMBER_NAME_CHECKED(
-		                                                               FBS_TargetConfig,
-		                                                               TargetSpawnResponses)))
+	if (PropertyHash == UBSGameModeValidator::FindBSConfigProperty(
+		    GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+		    GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, TargetSpawnResponses)))
 	{
 		const bool bConstantSpawnedSpeed = BSConfig->TargetConfig.MinSpawnedTargetSpeed == BSConfig->TargetConfig.
 		                                   MaxSpawnedTargetSpeed;
@@ -221,8 +210,9 @@ void UCustomGameModeMovementWidget::OnSelectionChanged_MovingTargetDirectionMode
 	BSConfig->TargetConfig.MovingTargetDirectionMode = GetEnumFromString_FromTagMap<
 		EMovingTargetDirectionMode>(Selected[0]);
 	OnPropertyChanged.Execute({
-		UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-		                                           GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, MovingTargetDirectionMode))
+		UBSGameModeValidator::FindBSConfigProperty(
+			GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+			GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, MovingTargetDirectionMode))
 	});
 }
 
@@ -236,12 +226,12 @@ void UCustomGameModeMovementWidget::OnMinMaxMenuOptionChanged(UDualRangeInputWid
 		BSConfig->TargetConfig.MinSpawnedTargetSpeed = MinOrConstant;
 		BSConfig->TargetConfig.MaxSpawnedTargetSpeed = bChecked ? MinOrConstant : Max;
 		OnPropertyChanged.Execute({
-			UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-			                                           GET_MEMBER_NAME_CHECKED(
-				                                           FBS_TargetConfig,
-				                                           MinSpawnedTargetSpeed)),
-			UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-			                                           GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, MaxSpawnedTargetSpeed))
+			UBSGameModeValidator::FindBSConfigProperty(
+				GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+				GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, MinSpawnedTargetSpeed)),
+			UBSGameModeValidator::FindBSConfigProperty(
+				GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+				GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, MaxSpawnedTargetSpeed))
 		});
 	}
 	else if (Widget == MenuOption_ActivatedTargetVelocity)
@@ -249,14 +239,12 @@ void UCustomGameModeMovementWidget::OnMinMaxMenuOptionChanged(UDualRangeInputWid
 		BSConfig->TargetConfig.MinActivatedTargetSpeed = MinOrConstant;
 		BSConfig->TargetConfig.MaxActivatedTargetSpeed = bChecked ? MinOrConstant : Max;
 		OnPropertyChanged.Execute({
-			UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-			                                           GET_MEMBER_NAME_CHECKED(
-				                                           FBS_TargetConfig,
-				                                           MinActivatedTargetSpeed)),
-			UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-			                                           GET_MEMBER_NAME_CHECKED(
-				                                           FBS_TargetConfig,
-				                                           MaxActivatedTargetSpeed))
+			UBSGameModeValidator::FindBSConfigProperty(
+				GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+				GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, MinActivatedTargetSpeed)),
+			UBSGameModeValidator::FindBSConfigProperty(
+				GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+				GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, MaxActivatedTargetSpeed))
 		});
 	}
 	else if (Widget == MenuOption_DeactivatedTargetVelocity)
@@ -264,14 +252,12 @@ void UCustomGameModeMovementWidget::OnMinMaxMenuOptionChanged(UDualRangeInputWid
 		BSConfig->TargetConfig.MinDeactivatedTargetSpeed = MinOrConstant;
 		BSConfig->TargetConfig.MaxDeactivatedTargetSpeed = bChecked ? MinOrConstant : Max;
 		OnPropertyChanged.Execute({
-			UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-			                                           GET_MEMBER_NAME_CHECKED(
-				                                           FBS_TargetConfig,
-				                                           MinDeactivatedTargetSpeed)),
-			UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-			                                           GET_MEMBER_NAME_CHECKED(
-				                                           FBS_TargetConfig,
-				                                           MaxDeactivatedTargetSpeed))
+			UBSGameModeValidator::FindBSConfigProperty(
+				GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+				GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, MinDeactivatedTargetSpeed)),
+			UBSGameModeValidator::FindBSConfigProperty(
+				GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+				GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, MaxDeactivatedTargetSpeed))
 		});
 	}
 	UpdateBrushColors();

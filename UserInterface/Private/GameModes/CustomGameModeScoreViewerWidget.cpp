@@ -72,8 +72,8 @@ void UCustomGameModeScoreViewerWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	GameModeComboBoxWidget->ComboBox->OnSelectionChanged.AddUniqueDynamic(this,
-	                                                                      &ThisClass::OnSelectionChanged_GameMode);
+	GameModeComboBoxWidget->ComboBox->OnSelectionChanged.
+	                        AddUniqueDynamic(this, &ThisClass::OnSelectionChanged_GameMode);
 	SongComboBoxWidget->ComboBox->OnSelectionChanged.AddUniqueDynamic(this, &ThisClass::OnSelectionChanged_Song);
 }
 

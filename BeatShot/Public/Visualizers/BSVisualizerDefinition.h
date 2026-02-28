@@ -23,8 +23,7 @@ enum class EVisualizerLightSpawningMethod : uint8
 	AddExistingLightsFromLevel UMETA(DisplayName="Add Existing Lights From Level"),
 };
 
-ENUM_RANGE_BY_FIRST_AND_LAST(EVisualizerLightSpawningMethod,
-                             EVisualizerLightSpawningMethod::SpawnUsingPositionOffsets,
+ENUM_RANGE_BY_FIRST_AND_LAST(EVisualizerLightSpawningMethod, EVisualizerLightSpawningMethod::SpawnUsingPositionOffsets,
                              EVisualizerLightSpawningMethod::AddExistingLightsFromLevel);
 
 /** How to assign AudioAnalyzer channels to lights if there is an uneven number between the two. */
@@ -47,8 +46,7 @@ enum class ELightVisualizerAssignmentMethod : uint8
 	SinglePairsOnly UMETA(DisplayName="Single Pairs Only")
 };
 
-ENUM_RANGE_BY_FIRST_AND_LAST(ELightVisualizerAssignmentMethod,
-                             ELightVisualizerAssignmentMethod::None,
+ENUM_RANGE_BY_FIRST_AND_LAST(ELightVisualizerAssignmentMethod, ELightVisualizerAssignmentMethod::None,
                              ELightVisualizerAssignmentMethod::SinglePairsOnly);
 
 /** How to group AudioAnalyzer channels and lights together if there is an uneven number between the two. */
@@ -63,8 +61,7 @@ enum class ELightVisualizerGroupingMethod : uint8
 	Repeat UMETA(DisplayName="Repeat")
 };
 
-ENUM_RANGE_BY_FIRST_AND_LAST(ELightVisualizerGroupingMethod,
-                             ELightVisualizerGroupingMethod::CombineByProximity,
+ENUM_RANGE_BY_FIRST_AND_LAST(ELightVisualizerGroupingMethod, ELightVisualizerGroupingMethod::CombineByProximity,
                              ELightVisualizerGroupingMethod::Repeat);
 
 /** Each instance of this struct represents an AudioAnalyzer channel index, containing 0-multiple visualizer indices. */

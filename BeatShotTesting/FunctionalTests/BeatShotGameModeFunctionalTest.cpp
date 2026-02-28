@@ -61,9 +61,7 @@ void ABeatShotGameModeFunctionalTest::ImportDefaultGameModes()
 				const FString GameModeString = UEnum::GetDisplayValueAsText(GameMode).ToString();
 				const FString DifString = UEnum::GetDisplayValueAsText(Difficulty).ToString();
 				AddWarning(FString::Printf(
-					TEXT("Failed to import default game mode: %s %s"),
-					*GameModeString,
-					*DifString));
+					TEXT("Failed to import default game mode: %s %s"), *GameModeString, *DifString));
 			}
 		}
 	}
@@ -121,11 +119,10 @@ void ABeatShotGameModeFunctionalTest::OnAudioAnalyzerBeat()
 	const int32 NumManaged = TargetManager->SpawnAreaManager->GetNumManaged();
 	AssertEqual_Bool(NumActivated <= NumManaged, true, "Activated <= Managed");
 
-	GetWorldTimerManager().SetTimerForNextTick(FTimerDelegate::CreateWeakLambda(this,
-		[&]
-		{
-			DestroyTargets();
-		}));
+	GetWorldTimerManager().SetTimerForNextTick(FTimerDelegate::CreateWeakLambda(this, [&]
+	{
+		DestroyTargets();
+	}));
 }
 
 void ABeatShotGameModeFunctionalTest::StartGameMode()
@@ -146,11 +143,7 @@ void ABeatShotGameModeFunctionalTest::StartGameMode()
 	TargetManager->Init(GameModeConfig, FCommonScoreInfo(), PlayerSettings_Game);
 	TargetManager->SetShouldSpawn(true);
 	GetWorldTimerManager().SetTimer(GameModeTimer, this, &ThisClass::StopGameMode, GameModeDuration, false);
-	GetWorldTimerManager().SetTimer(BeatTimer,
-	                                this,
-	                                &ThisClass::OnAudioAnalyzerBeat,
-	                                BeatFrequency,
-	                                true,
+	GetWorldTimerManager().SetTimer(BeatTimer, this, &ThisClass::OnAudioAnalyzerBeat, BeatFrequency, true,
 	                                InitialDelay);
 }
 

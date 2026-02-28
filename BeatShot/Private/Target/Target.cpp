@@ -216,14 +216,12 @@ void ATarget::PostInitializeComponents()
 		{
 		case ETargetDamageType::None:
 		case ETargetDamageType::Hit:
-			ActiveGE_TrackingImmunity = ASC->ApplyGameplayEffectToSelf(GE_TrackingImmunity.GetDefaultObject(),
-			                                                           1.f,
+			ActiveGE_TrackingImmunity = ASC->ApplyGameplayEffectToSelf(GE_TrackingImmunity.GetDefaultObject(), 1.f,
 			                                                           GetAbilitySystemComponent()->
 			                                                           MakeEffectContext());
 			break;
 		case ETargetDamageType::Tracking:
-			ActiveGE_HitImmunity = ASC->ApplyGameplayEffectToSelf(GE_HitImmunity.GetDefaultObject(),
-			                                                      1.f,
+			ActiveGE_HitImmunity = ASC->ApplyGameplayEffectToSelf(GE_HitImmunity.GetDefaultObject(), 1.f,
 			                                                      GetAbilitySystemComponent()->MakeEffectContext());
 			break;
 		case ETargetDamageType::Combined:
@@ -366,8 +364,7 @@ void ATarget::ApplyImmunityEffect()
 	}
 
 	const FActiveGameplayEffectHandle Handle = Comp->ApplyGameplayEffectToSelf(GE_TargetImmunity.GetDefaultObject(),
-	                                                                           1.f,
-	                                                                           Comp->MakeEffectContext());
+	                                                                           1.f, Comp->MakeEffectContext());
 	if (Handle.WasSuccessfullyApplied())
 	{
 		ActiveGE_TargetImmunity = Handle;
@@ -438,8 +435,7 @@ void ATarget::DamageSelf(const bool bTreatAsExternalDamage)
 	{
 		FGameplayEffectContextHandle EffectContextHandle = Comp->MakeEffectContext();
 		EffectContextHandle.Get()->AddInstigator(this, this);
-		const FGameplayEffectSpecHandle Handle = Comp->MakeOutgoingSpec(GE_ExpirationHealthPenalty,
-		                                                                1.f,
+		const FGameplayEffectSpecHandle Handle = Comp->MakeOutgoingSpec(GE_ExpirationHealthPenalty, 1.f,
 		                                                                EffectContextHandle);
 		FGameplayEffectSpec* Spec = Handle.Data.Get();
 		if (bTreatAsExternalDamage)
@@ -591,8 +587,7 @@ void ATarget::InterpShrinkQuickAndGrowSlow(const float Alpha)
 {
 	SetTargetScale(
 		FVector(UKismetMathLibrary::Lerp(Constants::MinShrinkTargetScale, GetTargetScale_Activation().X, Alpha)));
-	const FLinearColor Color = UKismetMathLibrary::LinearColorLerp(ColorWhenDamageTaken,
-	                                                               Config.InactiveTargetColor,
+	const FLinearColor Color = UKismetMathLibrary::LinearColorLerp(ColorWhenDamageTaken, Config.InactiveTargetColor,
 	                                                               ShrinkQuickAndGrowSlowTimeline.
 	                                                               GetPlaybackPosition());
 	SetTargetColor(Color);
@@ -698,9 +693,8 @@ void ATarget::PlayExplosionEffect(const FVector& ExplosionLocation,
 #endif
 	if (TargetExplosion && Config.TargetDamageType == ETargetDamageType::Hit)
 	{
-		if (UNiagaraComponent* ExplosionComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(),
-			TargetExplosion,
-			ExplosionLocation))
+		if (UNiagaraComponent* ExplosionComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+			GetWorld(), TargetExplosion, ExplosionLocation))
 		{
 			ExplosionComp->SetFloatParameter(TargetExplosionSphereRadiusParameterName, SphereRadius);
 			ExplosionComp->SetColorParameter(TargetExplosionColorParameterName, InColorWhenDestroyed);

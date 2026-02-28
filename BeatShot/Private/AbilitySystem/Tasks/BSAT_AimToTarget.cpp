@@ -32,8 +32,8 @@ UBSAT_AimToTarget* UBSAT_AimToTarget::AimToTarget(UBSGameplayAbility* OwningAbil
 	MyObj->AimBotTimeline.SetTimelineFinishedFunc(MyObj->OnTimelineEvent);
 	MyObj->AimBotTimeline.SetPlayRate(TimelinePlaybackRate);
 
-	MyObj->CancelledHandle = OwningAbility->OnGameplayAbilityCancelled.AddUObject(MyObj,
-		&UBSAT_AimToTarget::OnAbilityCancelled);
+	MyObj->CancelledHandle = OwningAbility->OnGameplayAbilityCancelled.AddUObject(
+		MyObj, &UBSAT_AimToTarget::OnAbilityCancelled);
 
 	return MyObj;
 }
@@ -91,12 +91,9 @@ void UBSAT_AimToTarget::OnTimelineTick(const float Alpha) const
 {
 	const FVector Loc = Camera->GetComponentLocation();
 	const FRotator Rot = Controller->GetControlRotation();
-	Controller->SetControlRotation(UKismetMathLibrary::RLerp(Rot,
-	                                                         UKismetMathLibrary::FindLookAtRotation(
-		                                                         Loc,
-		                                                         Target->GetActorLocation()),
-	                                                         Alpha,
-	                                                         true));
+	Controller->SetControlRotation(
+		UKismetMathLibrary::RLerp(Rot, UKismetMathLibrary::FindLookAtRotation(Loc, Target->GetActorLocation()), Alpha,
+		                          true));
 }
 
 void UBSAT_AimToTarget::OnTimelineCompleted()

@@ -42,15 +42,13 @@ void UBSAbilitySystemComponent::CancelAbilitiesByFunc(TShouldCancelAbilityFunc S
 				{
 					if (BSAbilityInstance->CanBeCanceled())
 					{
-						BSAbilityInstance->CancelAbility(AbilitySpec.Handle,
-						                                 AbilityActorInfo.Get(),
+						BSAbilityInstance->CancelAbility(AbilitySpec.Handle, AbilityActorInfo.Get(),
 						                                 BSAbilityInstance->GetCurrentActivationInfo(),
 						                                 bReplicateCancelAbility);
 					}
 					else
 					{
-						UE_LOG(LogTemp,
-						       Error,
+						UE_LOG(LogTemp, Error,
 						       TEXT("CancelAbilitiesByFunc: Can't cancel ability [%s] because CanBeCanceled is false."),
 						       *BSAbilityInstance->GetName());
 					}
@@ -64,9 +62,7 @@ void UBSAbilitySystemComponent::CancelAbilitiesByFunc(TShouldCancelAbilityFunc S
 			{
 				// Non-instanced abilities can always be canceled.
 				check(AbilityCDO->CanBeCanceled());
-				AbilityCDO->CancelAbility(AbilitySpec.Handle,
-				                          AbilityActorInfo.Get(),
-				                          FGameplayAbilityActivationInfo(),
+				AbilityCDO->CancelAbility(AbilitySpec.Handle, AbilityActorInfo.Get(), FGameplayAbilityActivationInfo(),
 				                          bReplicateCancelAbility);
 			}
 		}
@@ -127,13 +123,11 @@ void UBSAbilitySystemComponent::AddAbilityToActivationGroup(EBSAbilityActivation
 
 	case EBSAbilityActivationGroup::Exclusive_Replaceable:
 	case EBSAbilityActivationGroup::Exclusive_Blocking:
-		CancelActivationGroupAbilities(EBSAbilityActivationGroup::Exclusive_Replaceable,
-		                               Ability,
+		CancelActivationGroupAbilities(EBSAbilityActivationGroup::Exclusive_Replaceable, Ability,
 		                               bReplicateCancelAbility);
 		break;
 
-	default: checkf(false,
-	                TEXT("AddAbilityToActivationGroup: Invalid ActivationGroup [%d]\n"),
+	default: checkf(false, TEXT("AddAbilityToActivationGroup: Invalid ActivationGroup [%d]\n"),
 	                static_cast<uint8>(Group));
 		break;
 	}

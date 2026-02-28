@@ -74,14 +74,14 @@ void ABSPlayerController::BeginPlay()
 	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 
 	// Load and bind to all types even if not used in this class because of GetPlayerSettings()
-	GI->RegisterPlayerSettingsSubscriber<ABSPlayerController, FPlayerSettings_AudioAnalyzer>(this,
-		&ABSPlayerController::OnPlayerSettingsChanged);
-	GI->RegisterPlayerSettingsSubscriber<ABSPlayerController, FPlayerSettings_CrossHair>(this,
-		&ABSPlayerController::OnPlayerSettingsChanged);
-	GI->RegisterPlayerSettingsSubscriber<ABSPlayerController, FPlayerSettings_Game>(this,
-		&ABSPlayerController::OnPlayerSettingsChanged);
-	GI->RegisterPlayerSettingsSubscriber<ABSPlayerController, FPlayerSettings_User>(this,
-		&ABSPlayerController::OnPlayerSettingsChanged);
+	GI->RegisterPlayerSettingsSubscriber<ABSPlayerController, FPlayerSettings_AudioAnalyzer>(
+		this, &ABSPlayerController::OnPlayerSettingsChanged);
+	GI->RegisterPlayerSettingsSubscriber<ABSPlayerController, FPlayerSettings_CrossHair>(
+		this, &ABSPlayerController::OnPlayerSettingsChanged);
+	GI->RegisterPlayerSettingsSubscriber<ABSPlayerController, FPlayerSettings_Game>(
+		this, &ABSPlayerController::OnPlayerSettingsChanged);
+	GI->RegisterPlayerSettingsSubscriber<ABSPlayerController, FPlayerSettings_User>(
+		this, &ABSPlayerController::OnPlayerSettingsChanged);
 	GI->RegisterPlayerSettingsUpdaters(OnPlayerSettingsChangedDelegate_User);
 
 	if (!PlayerSettings.User.bNightModeUnlocked)
@@ -172,14 +172,12 @@ void ABSPlayerController::ShowMainMenu()
 
 	MainMenuWidget = CreateWidget<UMainMenuWidget>(this, MainMenuClass);
 	MainMenuWidget->GetGameModesWidget()->OnGameModeStateChanged.BindUObject(
-		GI,
-		&UBSGameInstance::HandleGameModeTransition);
+		GI, &UBSGameInstance::HandleGameModeTransition);
 	const auto* SettingsMenuWidget = MainMenuWidget->GetSettingsMenuWidget();
 	GI->RegisterPlayerSettingsUpdaters(SettingsMenuWidget->GetGameDelegate(),
 	                                   SettingsMenuWidget->GetCrossHairDelegate(),
 	                                   SettingsMenuWidget->GetAudioAnalyzerDelegate(),
-	                                   SettingsMenuWidget->GetUserDelegate(),
-	                                   MainMenuWidget->GetUserDelegate());
+	                                   SettingsMenuWidget->GetUserDelegate(), MainMenuWidget->GetUserDelegate());
 
 	MainMenuWidget->AddToViewport();
 
@@ -578,10 +576,7 @@ void ABSPlayerController::ShowCombatText(const int32 Streak, const FTransform& T
 	    == 0)
 	{
 		AFloatingTextActor* CombatText = GetWorld()->SpawnActorDeferred<AFloatingTextActor>(FloatingTextActorClass,
-			FTransform(),
-			this,
-			nullptr,
-			ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+			FTransform(), this, nullptr, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
 		CombatText->SetText(FText::FromString(FString::FromInt(Streak)));
 		CombatText->FinishSpawning(CombatText->GetTextTransform(Transform, true), false);
 	}
@@ -607,10 +602,7 @@ void ABSPlayerController::ShowAccuracyText(const float TimeOffset, const FTransf
 		AccuracyString = "Oof";
 	}
 	AFloatingTextActor* CombatText = GetWorld()->SpawnActorDeferred<AFloatingTextActor>(FloatingTextActorClass,
-		FTransform(),
-		this,
-		nullptr,
-		ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+		FTransform(), this, nullptr, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
 	CombatText->SetText(FText::FromString(AccuracyString));
 	CombatText->FinishSpawning(CombatText->GetTextTransform(Transform, false), false);
 }

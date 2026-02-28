@@ -62,9 +62,7 @@ struct FBSInventoryList : public FFastArraySerializer
 	bool NetDeltaSerialize(FNetDeltaSerializeInfo& DeltaParms)
 	{
 		return FFastArraySerializer::FastArrayDeltaSerialize<FBSInventoryEntry, FBSInventoryList>(
-			Items,
-			DeltaParms,
-			*this);
+			Items, DeltaParms, *this);
 	}
 
 	UBSInventoryItemInstance* AddEntry(TSubclassOf<UBSInventoryItemDefinition> ItemDef, int32 StackCount);

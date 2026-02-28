@@ -11,17 +11,17 @@
 
 namespace
 {
-	const FTextFormat& GetPercentFormat()
-	{
-		static const FTextFormat Format = FTextFormat::FromString("{0}%");
-		return Format;
-	}
+const FTextFormat& GetPercentFormat()
+{
+	static const FTextFormat Format = FTextFormat::FromString("{0}%");
+	return Format;
+}
 
-	const FTextFormat& GetMillisecondFormat()
-	{
-		static const FTextFormat Format = FTextFormat::FromString("{0}ms");
-		return Format;
-	}
+const FTextFormat& GetMillisecondFormat()
+{
+	static const FTextFormat Format = FTextFormat::FromString("{0}ms");
+	return Format;
+}
 }
 
 void UGameModeScoreViewerWidget::SetSaveGamePlayerScore(USaveGamePlayerScore* InSaveGamePlayerScore)
@@ -33,8 +33,8 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	const auto ShortDateXAxisFormatter = TDelegate<FText(int32, float)>::CreateUObject(this,
-		&ThisClass::HandleShortDateXAxisFormatter);
+	const auto ShortDateXAxisFormatter = TDelegate<FText(int32, float)>::CreateUObject(
+		this, &ThisClass::HandleShortDateXAxisFormatter);
 	const auto ZeroDecimalFormatter = TDelegate<FText(int32, float)>::CreateLambda([](int32, const float Value)
 	{
 		FNumberFormattingOptions NumberFormattingOptions;
@@ -174,34 +174,22 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 		});
 
 
-	const auto GenericDateValueTextDelegate = TDelegate<FText(int32, int32)>::CreateUObject(this,
-		&ThisClass::HandleGenericDateValueText);
+	const auto GenericDateValueTextDelegate = TDelegate<FText(int32, int32)>::CreateUObject(
+		this, &ThisClass::HandleGenericDateValueText);
 
-	ScoreVsTime->SetData(ScoreVsTimeData,
-	                     ScoreVsTimeAxisData,
-	                     GenericDateValueTextDelegate,
+	ScoreVsTime->SetData(ScoreVsTimeData, ScoreVsTimeAxisData, GenericDateValueTextDelegate,
 	                     ScoreVsTimeValueTextGetter);
-	StreakVsTime->SetData(StreakVsTimeData,
-	                      StreakVsTimeAxisData,
-	                      GenericDateValueTextDelegate,
+	StreakVsTime->SetData(StreakVsTimeData, StreakVsTimeAxisData, GenericDateValueTextDelegate,
 	                      StreakVsTimeValueTextGetter);
-	AverageReactionTime->SetData(AverageReactionTimeData,
-	                             AverageReactionTimeAxisData,
-	                             GenericDateValueTextDelegate,
+	AverageReactionTime->SetData(AverageReactionTimeData, AverageReactionTimeAxisData, GenericDateValueTextDelegate,
 	                             AverageReactionTimeValueTextGetter);
-	AverageTargetsDestroyed->SetData(AverageTargetsDestroyedData,
-	                                 AverageTargetsDestroyedAxisData,
-	                                 GenericDateValueTextDelegate,
-	                                 GenericPercentValueTextDelegate);
-	AccuracyVsTime->SetData(AccuracyVsTimeData,
-	                        AccuracyVsTimeAxisData,
-	                        GenericDateValueTextDelegate,
+	AverageTargetsDestroyed->SetData(AverageTargetsDestroyedData, AverageTargetsDestroyedAxisData,
+	                                 GenericDateValueTextDelegate, GenericPercentValueTextDelegate);
+	AccuracyVsTime->SetData(AccuracyVsTimeData, AccuracyVsTimeAxisData, GenericDateValueTextDelegate,
 	                        GenericPercentValueTextDelegate);
-	LocationAccuracy->SetData(LocationAccuracyData,
-	                          LocationAccuracyAxisData,
+	LocationAccuracy->SetData(LocationAccuracyData, LocationAccuracyAxisData,
 	                          TDelegate<FText(int32, int32)>::CreateUObject(
-		                          this,
-		                          &ThisClass::HandleLocationAccuracyDisplayText),
+		                          this, &ThisClass::HandleLocationAccuracyDisplayText),
 	                          LocationAccuracyValueTextGetter);
 }
 
@@ -262,8 +250,7 @@ void UGameModeScoreViewerWidget::UpdateDataVisualization()
 		                                              FText::AsNumber(BestAccuracy * 100.f, &NumberFormattingOptions)));
 		TextBlock_BestTargetsDestroyed->SetText(FText::Format(PercentFormat,
 		                                                      FText::AsNumber(
-			                                                      BestCompletion * 100.f,
-			                                                      &NumberFormattingOptions)));
+			                                                      BestCompletion * 100.f, &NumberFormattingOptions)));
 
 
 		float TotalScore = 0.0f;
@@ -290,8 +277,7 @@ void UGameModeScoreViewerWidget::UpdateDataVisualization()
 		TextBlock_AverageScore->SetText(FText::AsNumber(AverageScore, &NumberFormattingOptions));
 		TextBlock_AverageReactionTime->SetText(FText::Format(GetMillisecondFormat(),
 		                                                     FText::AsNumber(
-			                                                     AvgReactionTime,
-			                                                     &NumberFormattingOptions)));
+			                                                     AvgReactionTime, &NumberFormattingOptions)));
 		TextBlock_AverageStreak->SetText(FText::AsNumber(AverageStreak, &NumberFormattingOptions));
 		NumberFormattingOptions.MaximumFractionalDigits = 1;
 		NumberFormattingOptions.MinimumFractionalDigits = 1;
@@ -299,8 +285,7 @@ void UGameModeScoreViewerWidget::UpdateDataVisualization()
 		                                                 FText::AsNumber(AverageAccuracy, &NumberFormattingOptions)));
 		TextBlock_AverageTargetsDestroyed->SetText(FText::Format(PercentFormat,
 		                                                         FText::AsNumber(
-			                                                         AvgTargetsDestroyed,
-			                                                         &NumberFormattingOptions)));
+			                                                         AvgTargetsDestroyed, &NumberFormattingOptions)));
 
 		FLineChartSeries ScoreVsTimeLineChartSeries;
 		FLineChartSeries StreakVsTimeLineChartSeries;

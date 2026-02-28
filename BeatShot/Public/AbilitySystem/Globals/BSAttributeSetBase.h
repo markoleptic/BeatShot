@@ -56,12 +56,8 @@ struct FDamageEventData
 };
 
 /** Delegate used to broadcast attribute events. */
-DECLARE_MULTICAST_DELEGATE_SixParams(FBSAttributeEvent,
-                                     AActor* EffectInstigator,
-                                     AActor* EffectCauser,
-                                     const FGameplayEffectSpec* EffectSpec,
-                                     float EffectMagnitude,
-                                     float OldValue,
+DECLARE_MULTICAST_DELEGATE_SixParams(FBSAttributeEvent, AActor* EffectInstigator, AActor* EffectCauser,
+                                     const FGameplayEffectSpec* EffectSpec, float EffectMagnitude, float OldValue,
                                      float NewValue);
 
 /** Delegate used to broadcast incoming damage attribute events. */
@@ -182,30 +178,22 @@ private:
 	/** Second Health, when 0 we expect owner to die unless prevented by an ability. Capped by MaxHealth. Positive
 	 *  changes can directly use this. Negative changes to Health should go through
 	 *  Hit/Tracking Damage meta attribute. */
-	UPROPERTY(BlueprintReadOnly,
-		Category = "Health",
-		ReplicatedUsing = OnRep_Health,
+	UPROPERTY(BlueprintReadOnly, Category = "Health", ReplicatedUsing = OnRep_Health,
 		Meta = (AllowPrivateAccess = true))
 	FGameplayAttributeData Health;
 
 	/** MaxHealth is its own attribute since GameplayEffects may modify it. */
-	UPROPERTY(BlueprintReadOnly,
-		Category = "Health",
-		ReplicatedUsing = OnRep_MaxHealth,
+	UPROPERTY(BlueprintReadOnly, Category = "Health", ReplicatedUsing = OnRep_MaxHealth,
 		Meta = (AllowPrivateAccess = true))
 	FGameplayAttributeData MaxHealth;
 
 	/** HitDamage is the amount of Hit-Based damage a player can deal in a single damage execution. */
-	UPROPERTY(BlueprintReadOnly,
-		Category = "Damage",
-		ReplicatedUsing = OnRep_HitDamage,
+	UPROPERTY(BlueprintReadOnly, Category = "Damage", ReplicatedUsing = OnRep_HitDamage,
 		Meta = (AllowPrivateAccess = true))
 	FGameplayAttributeData HitDamage;
 
 	/** TrackingDamage is the amount of Tracking-Based damage a player can deal in a single damage execution. */
-	UPROPERTY(BlueprintReadOnly,
-		Category = "Damage",
-		ReplicatedUsing = OnRep_TrackingDamage,
+	UPROPERTY(BlueprintReadOnly, Category = "Damage", ReplicatedUsing = OnRep_TrackingDamage,
 		Meta = (AllowPrivateAccess = true))
 	FGameplayAttributeData TrackingDamage;
 

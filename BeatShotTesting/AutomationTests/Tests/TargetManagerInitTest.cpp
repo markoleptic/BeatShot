@@ -8,9 +8,7 @@
 
 
 /** All this does is initialize the target manager with all default game modes. */
-IMPLEMENT_CUSTOM_COMPLEX_AUTOMATION_TEST(FTestInit,
-                                         FTargetManagerTestWithWorld,
-                                         "TargetManager.Init",
+IMPLEMENT_CUSTOM_COMPLEX_AUTOMATION_TEST(FTestInit, FTargetManagerTestWithWorld, "TargetManager.Init",
                                          EAutomationTestFlags::CommandletContext | EAutomationTestFlags::EditorContext |
                                          EAutomationTestFlags_HighPriorityAndAbove | EAutomationTestFlags::
                                          ProductFilter);

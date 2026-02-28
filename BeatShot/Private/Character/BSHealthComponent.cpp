@@ -46,20 +46,17 @@ void UBSHealthComponent::InitializeWithAbilitySystem(UBSAbilitySystemComponent* 
 
 	if (AbilitySystemComponent)
 	{
-		UE_LOG(LogTemp,
-		       Error,
+		UE_LOG(LogTemp, Error,
 		       TEXT(
 			       "BSHealthComponent: Health component for owner [%s] has already been initialized with an ability system."
-		       ),
-		       *GetNameSafe(Owner));
+		       ), *GetNameSafe(Owner));
 		return;
 	}
 
 	AbilitySystemComponent = InASC;
 	if (!AbilitySystemComponent)
 	{
-		UE_LOG(LogTemp,
-		       Error,
+		UE_LOG(LogTemp, Error,
 		       TEXT("BSHealthComponent: Cannot initialize health component for owner [%s] with NULL ability system."),
 		       *GetNameSafe(Owner));
 		return;
@@ -68,12 +65,10 @@ void UBSHealthComponent::InitializeWithAbilitySystem(UBSAbilitySystemComponent* 
 	AttributeSetBase = AbilitySystemComponent->GetSet<UBSAttributeSetBase>();
 	if (!AttributeSetBase)
 	{
-		UE_LOG(LogTemp,
-		       Error,
+		UE_LOG(LogTemp, Error,
 		       TEXT(
 			       "BSHealthComponent: Cannot initialize health component for owner [%s] with NULL health set on the ability system."
-		       ),
-		       *GetNameSafe(Owner));
+		       ), *GetNameSafe(Owner));
 		return;
 	}
 	AttributeSetBase->OnHealthChanged.AddUObject(this, &ThisClass::OnHealthAttributeChanged);

@@ -16,8 +16,7 @@ enum class EReinforcementLearningMode : uint8
 	ActiveAgent UMETA(DisplayName="ActiveAgent")
 };
 
-ENUM_RANGE_BY_FIRST_AND_LAST(EReinforcementLearningMode,
-                             EReinforcementLearningMode::None,
+ENUM_RANGE_BY_FIRST_AND_LAST(EReinforcementLearningMode, EReinforcementLearningMode::None,
                              EReinforcementLearningMode::ActiveAgent);
 
 /** Enum representing auto or custom hyper-parameters. */
@@ -29,8 +28,7 @@ enum class EReinforcementLearningHyperParameterMode: uint8
 	Custom UMETA(DisplayName="Custom")
 };
 
-ENUM_RANGE_BY_FIRST_AND_LAST(EReinforcementLearningHyperParameterMode,
-                             EReinforcementLearningHyperParameterMode::Auto,
+ENUM_RANGE_BY_FIRST_AND_LAST(EReinforcementLearningHyperParameterMode, EReinforcementLearningHyperParameterMode::Auto,
                              EReinforcementLearningHyperParameterMode::Custom);
 
 USTRUCT(BlueprintType)

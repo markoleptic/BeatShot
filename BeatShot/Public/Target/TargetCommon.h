@@ -62,31 +62,31 @@ ENUM_RANGE_BY_FIRST_AND_LAST(EGridIndexType, EGridIndexType::TopLeftCorner, EGri
 
 namespace DirectionTypes
 {
-	/** Cardinal direction Index types that are valid to use when searching for GridBlocks. */
-	inline const TSet GridBlock = {
-		EAdjacentDirection::Left,
-		EAdjacentDirection::Right,
-		EAdjacentDirection::Up,
-		EAdjacentDirection::Down
-	};
+/** Cardinal direction Index types that are valid to use when searching for GridBlocks. */
+inline const TSet GridBlock = {
+	EAdjacentDirection::Left,
+	EAdjacentDirection::Right,
+	EAdjacentDirection::Up,
+	EAdjacentDirection::Down
+};
 
-	/** Up-Down only index types. */
-	inline const TSet Vertical = {EAdjacentDirection::Up, EAdjacentDirection::Down};
+/** Up-Down only index types. */
+inline const TSet Vertical = {EAdjacentDirection::Up, EAdjacentDirection::Down};
 
-	/** Left-right only index types. */
-	inline const TSet Horizontal = {EAdjacentDirection::Left, EAdjacentDirection::Right};
+/** Left-right only index types. */
+inline const TSet Horizontal = {EAdjacentDirection::Left, EAdjacentDirection::Right};
 
-	/** All index types. */
-	inline const TSet All = {
-		EAdjacentDirection::UpLeft,
-		EAdjacentDirection::UpRight,
-		EAdjacentDirection::DownLeft,
-		EAdjacentDirection::DownRight,
-		EAdjacentDirection::Left,
-		EAdjacentDirection::Right,
-		EAdjacentDirection::Up,
-		EAdjacentDirection::Down
-	};
+/** All index types. */
+inline const TSet All = {
+	EAdjacentDirection::UpLeft,
+	EAdjacentDirection::UpRight,
+	EAdjacentDirection::DownLeft,
+	EAdjacentDirection::DownRight,
+	EAdjacentDirection::Left,
+	EAdjacentDirection::Right,
+	EAdjacentDirection::Up,
+	EAdjacentDirection::Down
+};
 }
 
 /** Contains the minimum and maximum of a Box, i.e. the bottom left corner location and top right corner location. */
@@ -134,9 +134,7 @@ struct FAreaKey
 		return FMath::IsNearlyEqual(Vertex_BottomLeft.Y, Other.Vertex_BottomLeft.Y, 0.01f) &&
 		       FMath::IsNearlyEqual(Vertex_BottomLeft.Z, Other.Vertex_BottomLeft.Z, 0.01f) &&
 		       FMath::IsNearlyEqual(Vertex_TopRight.Y, Other.Vertex_TopRight.Y, 0.01f) && FMath::IsNearlyEqual(
-			       Vertex_TopRight.Z,
-			       Other.Vertex_TopRight.Z,
-			       0.01f);
+			       Vertex_TopRight.Z, Other.Vertex_TopRight.Z, 0.01f);
 	}
 
 	friend FORCEINLINE uint32 GetTypeHash(const FAreaKey& AreaKey)

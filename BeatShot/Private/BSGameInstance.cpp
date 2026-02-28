@@ -178,10 +178,8 @@ void UBSGameInstance::HandleGameModeTransition(const FGameModeTransitionState& N
 			// Can exit immediately if not saving scores, otherwise SavePlayerScoresToDatabase will handle it
 			if (!NewGameModeTransitionState.bSaveCurrentScores)
 			{
-				UKismetSystemLibrary::QuitGame(GetWorld(),
-				                               GetFirstLocalPlayerController(GetWorld()),
-				                               EQuitPreference::Quit,
-				                               false);
+				UKismetSystemLibrary::QuitGame(GetWorld(), GetFirstLocalPlayerController(GetWorld()),
+				                               EQuitPreference::Quit, false);
 			}
 		}
 		break;
@@ -213,13 +211,7 @@ void UBSGameInstance::InitializeAudioComponent(const UWorld* World)
 	}
 	if (LoadingScreenSound)
 	{
-		LoadingScreenAudioComponent = UGameplayStatics::CreateSound2D(World,
-		                                                              LoadingScreenSound,
-		                                                              1,
-		                                                              1,
-		                                                              0,
-		                                                              nullptr,
-		                                                              true,
+		LoadingScreenAudioComponent = UGameplayStatics::CreateSound2D(World, LoadingScreenSound, 1, 1, 0, nullptr, true,
 		                                                              true);
 	}
 }

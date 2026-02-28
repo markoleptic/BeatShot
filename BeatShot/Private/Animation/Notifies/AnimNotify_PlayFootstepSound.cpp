@@ -50,11 +50,9 @@ void UAnimNotify_PlayFootstepSound::Notify(USkeletalMeshComponent* MeshComp,
 
 				if (UWorld* World = OwningActor->GetWorld())
 				{
-					World->LineTraceSingleByChannel(HitResult,
-					                                TraceStart,
+					World->LineTraceSingleByChannel(HitResult, TraceStart,
 					                                (TraceStart + TraceProperties.EndTraceLocationOffset),
-					                                TraceProperties.TraceChannel,
-					                                QueryParams,
+					                                TraceProperties.TraceChannel, QueryParams,
 					                                FCollisionResponseParams::DefaultResponseParam);
 				}
 			}
@@ -85,14 +83,9 @@ void UAnimNotify_PlayFootstepSound::Notify(USkeletalMeshComponent* MeshComp,
 			{
 				// If the object is still valid, Execute the AnimMotionEffect Event on it, passing in relevant data
 				IBSMovementSoundInterface::Execute_PlayMovementSound(ImplementingObject,
-				                                                     bAttached ? SocketName : FName("None"),
-				                                                     Effect,
-				                                                     MeshComp,
-				                                                     LocationOffset,
-				                                                     RotationOffset,
-				                                                     Animation,
-				                                                     HitResult,
-				                                                     Context,
+				                                                     bAttached ? SocketName : FName("None"), Effect,
+				                                                     MeshComp, LocationOffset, RotationOffset,
+				                                                     Animation, HitResult, Context,
 				                                                     AudioProperties.VolumeMultiplier,
 				                                                     AudioProperties.PitchMultiplier);
 			}

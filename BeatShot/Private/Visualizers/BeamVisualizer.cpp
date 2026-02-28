@@ -70,8 +70,7 @@ void ABeamVisualizer::InitializeVisualizer(const FPlayerSettings_AudioAnalyzer& 
 
 	if (!GetFastDef().VisualizerLightClass)
 	{
-		UE_LOG(LogTemp,
-		       Warning,
+		UE_LOG(LogTemp, Warning,
 		       TEXT("A class was not provided in the Visualizer Light Class property of a Beam Visualizer's definition"
 		       ));
 		return;
@@ -80,8 +79,7 @@ void ABeamVisualizer::InitializeVisualizer(const FPlayerSettings_AudioAnalyzer& 
 	for (int i = 0; i < SpawnTransforms.Num(); i++)
 	{
 		ASimpleBeamLight* Light = GetWorld()->SpawnActorDeferred<ASimpleBeamLight>(GetFastDef().VisualizerLightClass,
-			SpawnTransforms[i],
-			this);
+			SpawnTransforms[i], this);
 		FSimpleBeamLightConfig Config;
 		Config.bUseSpotlight = GetFastDef().bUseSpotlight;
 		Config.LightDuration = GetFastDef().LightDuration;

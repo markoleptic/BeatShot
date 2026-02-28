@@ -32,11 +32,7 @@ void USingleRangeInputWidget::OnSliderChanged_Slider(const float Value)
 
 void USingleRangeInputWidget::OnTextCommitted_EditableTextBox(const FText& Text, ETextCommit::Type CommitType)
 {
-	IBSWidgetInterface::OnEditableTextBoxChanged(Text,
-	                                             EditableTextBox,
-	                                             Slider,
-	                                             GridSnapSize,
-	                                             Slider->GetMinValue(),
+	IBSWidgetInterface::OnEditableTextBoxChanged(Text, EditableTextBox, Slider, GridSnapSize, Slider->GetMinValue(),
 	                                             Slider->GetMaxValue());
 }
 
@@ -50,12 +46,8 @@ void USingleRangeInputWidget::SetValues(const float Min, const float Max, const 
 
 void USingleRangeInputWidget::SetValue(const float Value) const
 {
-	IBSWidgetInterface::SetSliderAndEditableTextBoxValues(Value,
-	                                                      EditableTextBox,
-	                                                      Slider,
-	                                                      GridSnapSize,
-	                                                      Slider->GetMinValue(),
-	                                                      Slider->GetMaxValue());
+	IBSWidgetInterface::SetSliderAndEditableTextBoxValues(Value, EditableTextBox, Slider, GridSnapSize,
+	                                                      Slider->GetMinValue(), Slider->GetMaxValue());
 }
 
 float USingleRangeInputWidget::GetSliderValue() const
@@ -66,11 +58,8 @@ float USingleRangeInputWidget::GetSliderValue() const
 float USingleRangeInputWidget::GetEditableTextBoxValue() const
 {
 	const FString StringTextValue = EditableTextBox->GetText().ToString().Replace(
-		*FString(","),
-		*FString(),
-		ESearchCase::IgnoreCase);
-	const float ClampedValue = FMath::Clamp(FCString::Atof(*StringTextValue),
-	                                        Slider->GetMinValue(),
+		*FString(","), *FString(), ESearchCase::IgnoreCase);
+	const float ClampedValue = FMath::Clamp(FCString::Atof(*StringTextValue), Slider->GetMinValue(),
 	                                        Slider->GetMaxValue());
 	const float SnappedValue = FMath::GridSnap(ClampedValue, GridSnapSize);
 	return SnappedValue;

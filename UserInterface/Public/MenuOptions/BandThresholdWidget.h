@@ -7,9 +7,7 @@
 #include "BandThresholdWidget.generated.h"
 
 class UBandThresholdWidget;
-DECLARE_DELEGATE_ThreeParams(FOnThresholdValueCommitted,
-                             const UBandThresholdWidget* BandThreshold,
-                             const int32 Index,
+DECLARE_DELEGATE_ThreeParams(FOnThresholdValueCommitted, const UBandThresholdWidget* BandThreshold, const int32 Index,
                              const float NewValue);
 
 class UBorder;

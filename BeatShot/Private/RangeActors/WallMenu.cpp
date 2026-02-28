@@ -38,11 +38,8 @@ AWallMenu::AWallMenu()
 	Box_LightVisualizers_On = CreateDefaultSubobject<UBoxComponent>(FName("Box Light Visualizers On"));
 	Box_LightVisualizers_Off = CreateDefaultSubobject<UBoxComponent>(FName("Box Light Visualizers Off"));
 
-	SetupToggleText(MainText_Enable_LightVisualizers,
-	                ToggleText_LightVisualizers_On,
-	                ToggleText_LightVisualizers_Off,
-	                Box_LightVisualizers_On,
-	                Box_LightVisualizers_Off);
+	SetupToggleText(MainText_Enable_LightVisualizers, ToggleText_LightVisualizers_On, ToggleText_LightVisualizers_Off,
+	                Box_LightVisualizers_On, Box_LightVisualizers_Off);
 
 	// Front Beam Visualizer
 	MainText_Enable_LVFrontBeam = CreateDefaultSubobject<UText3DComponent>(FName("Enable Front Beam"));
@@ -53,19 +50,12 @@ AWallMenu::AWallMenu()
 	Box_LVFrontBeam_On = CreateDefaultSubobject<UBoxComponent>(FName("Box Front Beam On"));
 	Box_LVFrontBeam_Off = CreateDefaultSubobject<UBoxComponent>(FName("Box Front Beam Off"));
 
-	SetupToggleText(MainText_Enable_LVFrontBeam,
-	                ToggleText_LVFrontBeam_On,
-	                ToggleText_LVFrontBeam_Off,
-	                Box_LVFrontBeam_On,
-	                Box_LVFrontBeam_Off,
-	                -Indent);
+	SetupToggleText(MainText_Enable_LVFrontBeam, ToggleText_LVFrontBeam_On, ToggleText_LVFrontBeam_Off,
+	                Box_LVFrontBeam_On, Box_LVFrontBeam_Off, -Indent);
 
 	// Top Beam Visualizer
 	MainText_EnableLV_TopBeam = CreateDefaultSubobject<UText3DComponent>(FName("Enable Top Beam"));
-	SetupMainText(MainText_EnableLV_TopBeam,
-	              MainText_Enable_LightVisualizers,
-	              false,
-	              "WallMenu_LVTopBeam",
+	SetupMainText(MainText_EnableLV_TopBeam, MainText_Enable_LightVisualizers, false, "WallMenu_LVTopBeam",
 	              Offset_MainText + Indent);
 
 	ToggleText_LV_TopBeam_On = CreateDefaultSubobject<UText3DComponent>(FName("Top Beam On"));
@@ -73,19 +63,12 @@ AWallMenu::AWallMenu()
 	Box_LV_TopBeam_On = CreateDefaultSubobject<UBoxComponent>(FName("Box Top Beam On"));
 	Box_LV_TopBeam_Off = CreateDefaultSubobject<UBoxComponent>(FName("Box Top Beam Off"));
 
-	SetupToggleText(MainText_EnableLV_TopBeam,
-	                ToggleText_LV_TopBeam_On,
-	                ToggleText_LV_TopBeam_Off,
-	                Box_LV_TopBeam_On,
-	                Box_LV_TopBeam_Off,
-	                -Indent);
+	SetupToggleText(MainText_EnableLV_TopBeam, ToggleText_LV_TopBeam_On, ToggleText_LV_TopBeam_Off, Box_LV_TopBeam_On,
+	                Box_LV_TopBeam_Off, -Indent);
 
 	// Left Beam Visualizer
 	MainText_Enable_LVLeftBeam = CreateDefaultSubobject<UText3DComponent>(FName("Enable Left Beam"));
-	SetupMainText(MainText_Enable_LVLeftBeam,
-	              MainText_Enable_LightVisualizers,
-	              false,
-	              "WallMenu_LVLeftBeam",
+	SetupMainText(MainText_Enable_LVLeftBeam, MainText_Enable_LightVisualizers, false, "WallMenu_LVLeftBeam",
 	              (Offset_MainText * 2) + Indent);
 
 	ToggleText_LVLeftBeam_On = CreateDefaultSubobject<UText3DComponent>(FName("Left Beam On"));
@@ -93,19 +76,12 @@ AWallMenu::AWallMenu()
 	Box_LVLeftBeam_On = CreateDefaultSubobject<UBoxComponent>(FName("Box Left Beam On"));
 	Box_LVLeftBeam_Off = CreateDefaultSubobject<UBoxComponent>(FName("Box Left Beam Off"));
 
-	SetupToggleText(MainText_Enable_LVLeftBeam,
-	                ToggleText_LVLeftBeam_On,
-	                ToggleText_LVLeftBeam_Off,
-	                Box_LVLeftBeam_On,
-	                Box_LVLeftBeam_Off,
-	                -Indent);
+	SetupToggleText(MainText_Enable_LVLeftBeam, ToggleText_LVLeftBeam_On, ToggleText_LVLeftBeam_Off, Box_LVLeftBeam_On,
+	                Box_LVLeftBeam_Off, -Indent);
 
 	// Right Beam Visualizer
 	MainText_Enable_LVRightBeam = CreateDefaultSubobject<UText3DComponent>(FName("Enable Right Beam"));
-	SetupMainText(MainText_Enable_LVRightBeam,
-	              MainText_Enable_LightVisualizers,
-	              false,
-	              "WallMenu_LVRightBeam",
+	SetupMainText(MainText_Enable_LVRightBeam, MainText_Enable_LightVisualizers, false, "WallMenu_LVRightBeam",
 	              (Offset_MainText * 3) + Indent);
 
 	ToggleText_LVRightBeam_On = CreateDefaultSubobject<UText3DComponent>(FName("Right Beam On"));
@@ -113,19 +89,12 @@ AWallMenu::AWallMenu()
 	Box_LVRightBeam_On = CreateDefaultSubobject<UBoxComponent>(FName("Box Right Beam On"));
 	Box_LVRightBeam_Off = CreateDefaultSubobject<UBoxComponent>(FName("Box Right Beam Off"));
 
-	SetupToggleText(MainText_Enable_LVRightBeam,
-	                ToggleText_LVRightBeam_On,
-	                ToggleText_LVRightBeam_Off,
-	                Box_LVRightBeam_On,
-	                Box_LVRightBeam_Off,
-	                -Indent);
+	SetupToggleText(MainText_Enable_LVRightBeam, ToggleText_LVRightBeam_On, ToggleText_LVRightBeam_Off,
+	                Box_LVRightBeam_On, Box_LVRightBeam_Off, -Indent);
 
 	// Left Cube Visualizer
 	MainText_EnableLV_LeftCube = CreateDefaultSubobject<UText3DComponent>(FName("Enable Left Cube"));
-	SetupMainText(MainText_EnableLV_LeftCube,
-	              MainText_Enable_LightVisualizers,
-	              false,
-	              "WallMenu_LVLeftCube",
+	SetupMainText(MainText_EnableLV_LeftCube, MainText_Enable_LightVisualizers, false, "WallMenu_LVLeftCube",
 	              (Offset_MainText * 4) + Indent);
 
 	ToggleText_LV_LeftCube_On = CreateDefaultSubobject<UText3DComponent>(FName("Left Cube On"));
@@ -133,19 +102,12 @@ AWallMenu::AWallMenu()
 	Box_LV_LeftCube_On = CreateDefaultSubobject<UBoxComponent>(FName("Box Left Cube On"));
 	Box_LV_LeftCube_Off = CreateDefaultSubobject<UBoxComponent>(FName("Box Left Cube Off"));
 
-	SetupToggleText(MainText_EnableLV_LeftCube,
-	                ToggleText_LV_LeftCube_On,
-	                ToggleText_LV_LeftCube_Off,
-	                Box_LV_LeftCube_On,
-	                Box_LV_LeftCube_Off,
-	                -Indent);
+	SetupToggleText(MainText_EnableLV_LeftCube, ToggleText_LV_LeftCube_On, ToggleText_LV_LeftCube_Off,
+	                Box_LV_LeftCube_On, Box_LV_LeftCube_Off, -Indent);
 
 	// Right Cube Visualizer
 	MainText_EnableLV_RightCube = CreateDefaultSubobject<UText3DComponent>(FName("Enable Right Cube"));
-	SetupMainText(MainText_EnableLV_RightCube,
-	              MainText_Enable_LightVisualizers,
-	              false,
-	              "WallMenu_LVRightCube",
+	SetupMainText(MainText_EnableLV_RightCube, MainText_Enable_LightVisualizers, false, "WallMenu_LVRightCube",
 	              (Offset_MainText * 5) + Indent);
 
 	ToggleText_LV_RightCube_On = CreateDefaultSubobject<UText3DComponent>(FName("Right Cube On"));
@@ -153,20 +115,13 @@ AWallMenu::AWallMenu()
 	Box_LV_RightCube_On = CreateDefaultSubobject<UBoxComponent>(FName("Box Right Cube On"));
 	Box_LV_RightCube_Off = CreateDefaultSubobject<UBoxComponent>(FName("Box Right Cube Off"));
 
-	SetupToggleText(MainText_EnableLV_RightCube,
-	                ToggleText_LV_RightCube_On,
-	                ToggleText_LV_RightCube_Off,
-	                Box_LV_RightCube_On,
-	                Box_LV_RightCube_Off,
-	                -Indent);
+	SetupToggleText(MainText_EnableLV_RightCube, ToggleText_LV_RightCube_On, ToggleText_LV_RightCube_Off,
+	                Box_LV_RightCube_On, Box_LV_RightCube_Off, -Indent);
 
 
 	// Night Mode Enable
 	MainText_Enable_NightMode = CreateDefaultSubobject<UText3DComponent>(FName("Enable Night Mode"));
-	SetupMainText(MainText_Enable_NightMode,
-	              MainText_Enable_LightVisualizers,
-	              false,
-	              "WallMenu_NightMode",
+	SetupMainText(MainText_Enable_NightMode, MainText_Enable_LightVisualizers, false, "WallMenu_NightMode",
 	              Offset_MainText * 6);
 
 	ToggleText_NightMode_On = CreateDefaultSubobject<UText3DComponent>(FName("Night Mode On"));
@@ -174,10 +129,7 @@ AWallMenu::AWallMenu()
 	Box_NightMode_On = CreateDefaultSubobject<UBoxComponent>(FName("Box Night Mode On"));
 	Box_NightMode_Off = CreateDefaultSubobject<UBoxComponent>(FName("Box Night Mode Off"));
 
-	SetupToggleText(MainText_Enable_NightMode,
-	                ToggleText_NightMode_On,
-	                ToggleText_NightMode_Off,
-	                Box_NightMode_On,
+	SetupToggleText(MainText_Enable_NightMode, ToggleText_NightMode_On, ToggleText_NightMode_Off, Box_NightMode_On,
 	                Box_NightMode_Off);
 }
 
@@ -188,8 +140,8 @@ void AWallMenu::PostInitializeComponents()
 	if (GetAbilitySystemComponent())
 	{
 		GetAbilitySystemComponent()->InitAbilityActorInfo(this, nullptr);
-		GetAbilitySystemComponent()->OnGameplayEffectAppliedDelegateToSelf.AddUObject(this,
-			&ThisClass::OnGameplayEffectAppliedToSelf);
+		GetAbilitySystemComponent()->OnGameplayEffectAppliedDelegateToSelf.AddUObject(
+			this, &ThisClass::OnGameplayEffectAppliedToSelf);
 	}
 }
 
@@ -211,125 +163,63 @@ void AWallMenu::BeginPlay()
 		TimeOfDayManager->OnTimeOfDayTransitionCompleted.BindUObject(this, &ThisClass::OnTimeOfDayChangeCompleted);
 	}
 
-	BoxToTextMap.Add(Box_LightVisualizers_On,
-	                 FText3DToggle(MainText_Enable_LightVisualizers,
-	                               Box_LightVisualizers_On,
-	                               ToggleText_LightVisualizers_On,
-	                               ToggleText_LightVisualizers_Off,
-	                               true,
-	                               "bShowLightVisualizers"));
-	BoxToTextMap.Add(Box_LightVisualizers_Off,
-	                 FText3DToggle(MainText_Enable_LightVisualizers,
-	                               Box_LightVisualizers_Off,
-	                               ToggleText_LightVisualizers_On,
-	                               ToggleText_LightVisualizers_Off,
-	                               false,
-	                               "bShowLightVisualizers"));
+	BoxToTextMap.Add(Box_LightVisualizers_On, FText3DToggle(MainText_Enable_LightVisualizers, Box_LightVisualizers_On,
+	                                                        ToggleText_LightVisualizers_On,
+	                                                        ToggleText_LightVisualizers_Off, true,
+	                                                        "bShowLightVisualizers"));
+	BoxToTextMap.Add(Box_LightVisualizers_Off, FText3DToggle(MainText_Enable_LightVisualizers, Box_LightVisualizers_Off,
+	                                                         ToggleText_LightVisualizers_On,
+	                                                         ToggleText_LightVisualizers_Off, false,
+	                                                         "bShowLightVisualizers"));
 
-	BoxToTextMap.Add(Box_LVFrontBeam_On,
-	                 FText3DToggle(MainText_Enable_LVFrontBeam,
-	                               Box_LVFrontBeam_On,
-	                               ToggleText_LVFrontBeam_On,
-	                               ToggleText_LVFrontBeam_Off,
-	                               true,
-	                               "bShow_LVFrontBeam"));
-	BoxToTextMap.Add(Box_LVFrontBeam_Off,
-	                 FText3DToggle(MainText_Enable_LVFrontBeam,
-	                               Box_LVFrontBeam_Off,
-	                               ToggleText_LVFrontBeam_On,
-	                               ToggleText_LVFrontBeam_Off,
-	                               false,
-	                               "bShow_LVFrontBeam"));
+	BoxToTextMap.Add(Box_LVFrontBeam_On, FText3DToggle(MainText_Enable_LVFrontBeam, Box_LVFrontBeam_On,
+	                                                   ToggleText_LVFrontBeam_On, ToggleText_LVFrontBeam_Off, true,
+	                                                   "bShow_LVFrontBeam"));
+	BoxToTextMap.Add(Box_LVFrontBeam_Off, FText3DToggle(MainText_Enable_LVFrontBeam, Box_LVFrontBeam_Off,
+	                                                    ToggleText_LVFrontBeam_On, ToggleText_LVFrontBeam_Off, false,
+	                                                    "bShow_LVFrontBeam"));
 
-	BoxToTextMap.Add(Box_LVLeftBeam_On,
-	                 FText3DToggle(MainText_Enable_LVLeftBeam,
-	                               Box_LVLeftBeam_On,
-	                               ToggleText_LVLeftBeam_On,
-	                               ToggleText_LVLeftBeam_Off,
-	                               true,
-	                               "bShow_LVLeftBeam"));
-	BoxToTextMap.Add(Box_LVLeftBeam_Off,
-	                 FText3DToggle(MainText_Enable_LVLeftBeam,
-	                               Box_LVLeftBeam_Off,
-	                               ToggleText_LVLeftBeam_On,
-	                               ToggleText_LVLeftBeam_Off,
-	                               false,
-	                               "bShow_LVLeftBeam"));
+	BoxToTextMap.Add(Box_LVLeftBeam_On, FText3DToggle(MainText_Enable_LVLeftBeam, Box_LVLeftBeam_On,
+	                                                  ToggleText_LVLeftBeam_On, ToggleText_LVLeftBeam_Off, true,
+	                                                  "bShow_LVLeftBeam"));
+	BoxToTextMap.Add(Box_LVLeftBeam_Off, FText3DToggle(MainText_Enable_LVLeftBeam, Box_LVLeftBeam_Off,
+	                                                   ToggleText_LVLeftBeam_On, ToggleText_LVLeftBeam_Off, false,
+	                                                   "bShow_LVLeftBeam"));
 
-	BoxToTextMap.Add(Box_LVRightBeam_On,
-	                 FText3DToggle(MainText_Enable_LVRightBeam,
-	                               Box_LVRightBeam_On,
-	                               ToggleText_LVRightBeam_On,
-	                               ToggleText_LVRightBeam_Off,
-	                               true,
-	                               "bShow_LVRightBeam"));
-	BoxToTextMap.Add(Box_LVRightBeam_Off,
-	                 FText3DToggle(MainText_Enable_LVRightBeam,
-	                               Box_LVRightBeam_Off,
-	                               ToggleText_LVRightBeam_On,
-	                               ToggleText_LVRightBeam_Off,
-	                               false,
-	                               "bShow_LVRightBeam"));
+	BoxToTextMap.Add(Box_LVRightBeam_On, FText3DToggle(MainText_Enable_LVRightBeam, Box_LVRightBeam_On,
+	                                                   ToggleText_LVRightBeam_On, ToggleText_LVRightBeam_Off, true,
+	                                                   "bShow_LVRightBeam"));
+	BoxToTextMap.Add(Box_LVRightBeam_Off, FText3DToggle(MainText_Enable_LVRightBeam, Box_LVRightBeam_Off,
+	                                                    ToggleText_LVRightBeam_On, ToggleText_LVRightBeam_Off, false,
+	                                                    "bShow_LVRightBeam"));
 
-	BoxToTextMap.Add(Box_LV_TopBeam_On,
-	                 FText3DToggle(MainText_EnableLV_TopBeam,
-	                               Box_LV_TopBeam_On,
-	                               ToggleText_LV_TopBeam_On,
-	                               ToggleText_LV_TopBeam_Off,
-	                               true,
-	                               "bShow_LVTopBeam"));
-	BoxToTextMap.Add(Box_LV_TopBeam_Off,
-	                 FText3DToggle(MainText_EnableLV_TopBeam,
-	                               Box_LV_TopBeam_Off,
-	                               ToggleText_LV_TopBeam_On,
-	                               ToggleText_LV_TopBeam_Off,
-	                               false,
-	                               "bShow_LVTopBeam"));
+	BoxToTextMap.Add(Box_LV_TopBeam_On, FText3DToggle(MainText_EnableLV_TopBeam, Box_LV_TopBeam_On,
+	                                                  ToggleText_LV_TopBeam_On, ToggleText_LV_TopBeam_Off, true,
+	                                                  "bShow_LVTopBeam"));
+	BoxToTextMap.Add(Box_LV_TopBeam_Off, FText3DToggle(MainText_EnableLV_TopBeam, Box_LV_TopBeam_Off,
+	                                                   ToggleText_LV_TopBeam_On, ToggleText_LV_TopBeam_Off, false,
+	                                                   "bShow_LVTopBeam"));
 
-	BoxToTextMap.Add(Box_LV_LeftCube_On,
-	                 FText3DToggle(MainText_EnableLV_LeftCube,
-	                               Box_LV_LeftCube_On,
-	                               ToggleText_LV_LeftCube_On,
-	                               ToggleText_LV_LeftCube_Off,
-	                               true,
-	                               "bShow_LVLeftCube"));
-	BoxToTextMap.Add(Box_LV_LeftCube_Off,
-	                 FText3DToggle(MainText_EnableLV_LeftCube,
-	                               Box_LV_LeftCube_Off,
-	                               ToggleText_LV_LeftCube_On,
-	                               ToggleText_LV_LeftCube_Off,
-	                               false,
-	                               "bShow_LVLeftCube"));
+	BoxToTextMap.Add(Box_LV_LeftCube_On, FText3DToggle(MainText_EnableLV_LeftCube, Box_LV_LeftCube_On,
+	                                                   ToggleText_LV_LeftCube_On, ToggleText_LV_LeftCube_Off, true,
+	                                                   "bShow_LVLeftCube"));
+	BoxToTextMap.Add(Box_LV_LeftCube_Off, FText3DToggle(MainText_EnableLV_LeftCube, Box_LV_LeftCube_Off,
+	                                                    ToggleText_LV_LeftCube_On, ToggleText_LV_LeftCube_Off, false,
+	                                                    "bShow_LVLeftCube"));
 
-	BoxToTextMap.Add(Box_LV_RightCube_On,
-	                 FText3DToggle(MainText_EnableLV_RightCube,
-	                               Box_LV_RightCube_On,
-	                               ToggleText_LV_RightCube_On,
-	                               ToggleText_LV_RightCube_Off,
-	                               true,
-	                               "bShow_LVRightCube"));
-	BoxToTextMap.Add(Box_LV_RightCube_Off,
-	                 FText3DToggle(MainText_EnableLV_RightCube,
-	                               Box_LV_RightCube_Off,
-	                               ToggleText_LV_RightCube_On,
-	                               ToggleText_LV_RightCube_Off,
-	                               false,
-	                               "bShow_LVRightCube"));
+	BoxToTextMap.Add(Box_LV_RightCube_On, FText3DToggle(MainText_EnableLV_RightCube, Box_LV_RightCube_On,
+	                                                    ToggleText_LV_RightCube_On, ToggleText_LV_RightCube_Off, true,
+	                                                    "bShow_LVRightCube"));
+	BoxToTextMap.Add(Box_LV_RightCube_Off, FText3DToggle(MainText_EnableLV_RightCube, Box_LV_RightCube_Off,
+	                                                     ToggleText_LV_RightCube_On, ToggleText_LV_RightCube_Off, false,
+	                                                     "bShow_LVRightCube"));
 
-	BoxToTextMap.Add(Box_NightMode_On,
-	                 FText3DToggle(MainText_Enable_NightMode,
-	                               Box_NightMode_On,
-	                               ToggleText_NightMode_On,
-	                               ToggleText_NightMode_Off,
-	                               true,
-	                               "bNightModeSelected"));
-	BoxToTextMap.Add(Box_NightMode_Off,
-	                 FText3DToggle(MainText_Enable_NightMode,
-	                               Box_NightMode_Off,
-	                               ToggleText_NightMode_On,
-	                               ToggleText_NightMode_Off,
-	                               false,
-	                               "bNightModeSelected"));
+	BoxToTextMap.Add(Box_NightMode_On, FText3DToggle(MainText_Enable_NightMode, Box_NightMode_On,
+	                                                 ToggleText_NightMode_On, ToggleText_NightMode_Off, true,
+	                                                 "bNightModeSelected"));
+	BoxToTextMap.Add(Box_NightMode_Off, FText3DToggle(MainText_Enable_NightMode, Box_NightMode_Off,
+	                                                  ToggleText_NightMode_On, ToggleText_NightMode_Off, false,
+	                                                  "bNightModeSelected"));
 
 	for (TPair<TObjectPtr<UBoxComponent>, FText3DToggle>& Pair : BoxToTextMap)
 	{

@@ -134,22 +134,14 @@ void UDualRangeInputWidget::SetValues(const float Min, const float Max, const fl
 
 void UDualRangeInputWidget::SetValue_Min(const float Value) const
 {
-	IBSWidgetInterface::SetSliderAndEditableTextBoxValues(Value,
-	                                                      EditableTextBox_Min,
-	                                                      Slider_Min,
-	                                                      GridSnapSize,
-	                                                      Slider_Min->GetMinValue(),
-	                                                      Slider_Min->GetMaxValue());
+	IBSWidgetInterface::SetSliderAndEditableTextBoxValues(Value, EditableTextBox_Min, Slider_Min, GridSnapSize,
+	                                                      Slider_Min->GetMinValue(), Slider_Min->GetMaxValue());
 }
 
 void UDualRangeInputWidget::SetValue_Max(const float Value) const
 {
-	IBSWidgetInterface::SetSliderAndEditableTextBoxValues(Value,
-	                                                      EditableTextBox_Max,
-	                                                      Slider_Max,
-	                                                      GridSnapSize,
-	                                                      Slider_Max->GetMinValue(),
-	                                                      Slider_Max->GetMaxValue());
+	IBSWidgetInterface::SetSliderAndEditableTextBoxValues(Value, EditableTextBox_Max, Slider_Max, GridSnapSize,
+	                                                      Slider_Max->GetMinValue(), Slider_Max->GetMaxValue());
 }
 
 void UDualRangeInputWidget::SetValue_Constant(const float Value) const
@@ -195,8 +187,7 @@ float UDualRangeInputWidget::GetMinSliderValue(const bool bClamped) const
 		return Slider_Min->GetValue();
 	}
 
-	const float ClampedValue = FMath::Clamp(Slider_Min->GetValue(),
-	                                        Slider_Min->GetMinValue(),
+	const float ClampedValue = FMath::Clamp(Slider_Min->GetValue(), Slider_Min->GetMinValue(),
 	                                        Slider_Min->GetMaxValue());
 	const float SnappedValue = FMath::GridSnap(ClampedValue, GridSnapSize);
 	return SnappedValue;
@@ -209,8 +200,7 @@ float UDualRangeInputWidget::GetMaxSliderValue(const bool bClamped) const
 		return Slider_Max->GetValue();
 	}
 
-	const float ClampedValue = FMath::Clamp(Slider_Max->GetValue(),
-	                                        Slider_Max->GetMinValue(),
+	const float ClampedValue = FMath::Clamp(Slider_Max->GetValue(), Slider_Max->GetMinValue(),
 	                                        Slider_Max->GetMaxValue());
 	const float SnappedValue = FMath::GridSnap(ClampedValue, GridSnapSize);
 	return SnappedValue;
@@ -228,17 +218,14 @@ float UDualRangeInputWidget::GetConstantSliderValue(const bool bClamped) const
 float UDualRangeInputWidget::GetMinEditableTextBoxValue(const bool bClamped) const
 {
 	const FString StringTextValue = EditableTextBox_Min->GetText().ToString().Replace(
-		*FString(","),
-		*FString(),
-		ESearchCase::IgnoreCase);
+		*FString(","), *FString(), ESearchCase::IgnoreCase);
 
 	if (!bClamped)
 	{
 		return FCString::Atof(*StringTextValue);
 	}
 
-	const float ClampedValue = FMath::Clamp(FCString::Atof(*StringTextValue),
-	                                        Slider_Min->GetMinValue(),
+	const float ClampedValue = FMath::Clamp(FCString::Atof(*StringTextValue), Slider_Min->GetMinValue(),
 	                                        Slider_Min->GetMaxValue());
 	const float SnappedValue = FMath::GridSnap(ClampedValue, GridSnapSize);
 	return SnappedValue;
@@ -247,17 +234,14 @@ float UDualRangeInputWidget::GetMinEditableTextBoxValue(const bool bClamped) con
 float UDualRangeInputWidget::GetMaxEditableTextBoxValue(const bool bClamped) const
 {
 	const FString StringTextValue = EditableTextBox_Max->GetText().ToString().Replace(
-		*FString(","),
-		*FString(),
-		ESearchCase::IgnoreCase);
+		*FString(","), *FString(), ESearchCase::IgnoreCase);
 
 	if (!bClamped)
 	{
 		return FCString::Atof(*StringTextValue);
 	}
 
-	const float ClampedValue = FMath::Clamp(FCString::Atof(*StringTextValue),
-	                                        Slider_Max->GetMinValue(),
+	const float ClampedValue = FMath::Clamp(FCString::Atof(*StringTextValue), Slider_Max->GetMinValue(),
 	                                        Slider_Max->GetMaxValue());
 	const float SnappedValue = FMath::GridSnap(ClampedValue, GridSnapSize);
 	return SnappedValue;
@@ -345,22 +329,14 @@ void UDualRangeInputWidget::OnSliderChanged_Max(const float Value)
 
 void UDualRangeInputWidget::OnTextCommitted_Min(const FText& Text, ETextCommit::Type CommitType)
 {
-	IBSWidgetInterface::OnEditableTextBoxChanged(Text,
-	                                             EditableTextBox_Min,
-	                                             Slider_Min,
-	                                             GridSnapSize,
-	                                             Slider_Min->GetMinValue(),
-	                                             Slider_Min->GetMaxValue());
+	IBSWidgetInterface::OnEditableTextBoxChanged(Text, EditableTextBox_Min, Slider_Min, GridSnapSize,
+	                                             Slider_Min->GetMinValue(), Slider_Min->GetMaxValue());
 }
 
 void UDualRangeInputWidget::OnTextCommitted_Max(const FText& Text, ETextCommit::Type CommitType)
 {
-	IBSWidgetInterface::OnEditableTextBoxChanged(Text,
-	                                             EditableTextBox_Max,
-	                                             Slider_Max,
-	                                             GridSnapSize,
-	                                             Slider_Max->GetMinValue(),
-	                                             Slider_Max->GetMaxValue());
+	IBSWidgetInterface::OnEditableTextBoxChanged(Text, EditableTextBox_Max, Slider_Max, GridSnapSize,
+	                                             Slider_Max->GetMinValue(), Slider_Max->GetMaxValue());
 }
 
 void UDualRangeInputWidget::OnCheckStateChanged_CheckBox(const bool bChecked)

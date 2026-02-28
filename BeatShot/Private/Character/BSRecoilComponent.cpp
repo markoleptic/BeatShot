@@ -84,9 +84,7 @@ void UBSRecoilComponent::Recoil(const float FireRate)
 void UBSRecoilComponent::SetRecoilRotation(float DeltaTime)
 {
 	const FRotator Current = GetRelativeRotation();
-	const FRotator UpdatedRotation = UKismetMathLibrary::RInterpTo(Current,
-	                                                               CurrentShotCameraRecoilRotation,
-	                                                               DeltaTime,
+	const FRotator UpdatedRotation = UKismetMathLibrary::RInterpTo(Current, CurrentShotCameraRecoilRotation, DeltaTime,
 	                                                               CameraRecoilInterpSpeed);
 	SetRelativeRotation(UpdatedRotation + FRotator(KickbackAngle, 0, 0));
 

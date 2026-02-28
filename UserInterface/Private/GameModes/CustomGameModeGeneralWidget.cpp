@@ -67,24 +67,20 @@ void UCustomGameModeGeneralWidget::NativeConstruct()
 	                                CheckBoxOption_EnableAI);
 	AssociatePropertyWithMenuOption(UBSGameModeValidator::FindBSConfigProperty(
 		                                GET_MEMBER_NAME_CHECKED(FBSConfig, AIConfig),
-		                                GET_MEMBER_NAME_CHECKED(FBS_AIConfig, Alpha)),
-	                                SliderTextBoxOption_Alpha);
+		                                GET_MEMBER_NAME_CHECKED(FBS_AIConfig, Alpha)), SliderTextBoxOption_Alpha);
 	AssociatePropertyWithMenuOption(UBSGameModeValidator::FindBSConfigProperty(
 		                                GET_MEMBER_NAME_CHECKED(FBSConfig, AIConfig),
-		                                GET_MEMBER_NAME_CHECKED(FBS_AIConfig, Epsilon)),
-	                                SliderTextBoxOption_Epsilon);
+		                                GET_MEMBER_NAME_CHECKED(FBS_AIConfig, Epsilon)), SliderTextBoxOption_Epsilon);
 	AssociatePropertyWithMenuOption(UBSGameModeValidator::FindBSConfigProperty(
 		                                GET_MEMBER_NAME_CHECKED(FBSConfig, AIConfig),
-		                                GET_MEMBER_NAME_CHECKED(FBS_AIConfig, Gamma)),
-	                                SliderTextBoxOption_Gamma);
+		                                GET_MEMBER_NAME_CHECKED(FBS_AIConfig, Gamma)), SliderTextBoxOption_Gamma);
 	AssociatePropertyWithMenuOption(UBSGameModeValidator::FindBSConfigProperty(
 		                                GET_MEMBER_NAME_CHECKED(FBSConfig, AIConfig),
 		                                GET_MEMBER_NAME_CHECKED(FBS_AIConfig, HyperParameterMode)),
 	                                ComboBoxOption_HyperParameterMode);
 	AssociatePropertyWithMenuOption(UBSGameModeValidator::FindBSConfigProperty(
 		                                GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-		                                GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, MaxHealth)),
-	                                MenuOption_TargetHealth);
+		                                GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, MaxHealth)), MenuOption_TargetHealth);
 	AssociatePropertyWithMenuOption(UBSGameModeValidator::FindBSConfigProperty(
 		                                GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
 		                                GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, TargetMaxLifeSpan)),
@@ -98,20 +94,17 @@ void UCustomGameModeGeneralWidget::NativeConstruct()
 		                                GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, TargetDamageType)),
 	                                ComboBoxOption_DamageType);
 
-	AddWatchedProperty(UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-	                                                              GET_MEMBER_NAME_CHECKED(
-		                                                              FBS_TargetConfig,
-		                                                              RecentTargetMemoryPolicy)));
-	AddWatchedProperty(UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-	                                                              GET_MEMBER_NAME_CHECKED(
-		                                                              FBS_TargetConfig,
-		                                                              TargetDeactivationConditions)));
+	AddWatchedProperty(UBSGameModeValidator::FindBSConfigProperty(
+		GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+		GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, RecentTargetMemoryPolicy)));
+	AddWatchedProperty(UBSGameModeValidator::FindBSConfigProperty(
+		GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+		GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, TargetDeactivationConditions)));
 
 	SliderTextBoxOption_SpawnBeatDelay->SetValues(MinValue_PlayerDelay, MaxValue_PlayerDelay, SnapSize_PlayerDelay);
 	SliderTextBoxOption_TargetSpawnCD->
 		SetValues(MinValue_TargetSpawnCD, MaxValue_TargetSpawnCD, SnapSize_TargetSpawnCD);
-	SliderTextBoxOption_MaxNumRecentTargets->SetValues(MinValue_MaxNumRecentTargets,
-	                                                   MaxValue_MaxNumRecentTargets,
+	SliderTextBoxOption_MaxNumRecentTargets->SetValues(MinValue_MaxNumRecentTargets, MaxValue_MaxNumRecentTargets,
 	                                                   SnapSize_MaxNumRecentTargets);
 	SliderTextBoxOption_RecentTargetTimeLength->SetValues(MinValue_RecentTargetTimeLength,
 	                                                      MaxValue_RecentTargetTimeLength,
@@ -128,42 +121,42 @@ void UCustomGameModeGeneralWidget::NativeConstruct()
 	MenuOption_TargetHealth->SetValues(MinValue_MaxHealth, MaxValue_MaxHealth, SnapSize_MaxHealth);
 	MenuOption_TargetLifespan->SetValues(MinValue_Lifespan, MaxValue_Lifespan, SnapSize_Lifespan);
 
-	SliderTextBoxOption_SpawnBeatDelay->OnSliderTextBoxValueChanged.AddUObject(this,
-	                                                                           &ThisClass::OnSliderTextBoxValueChanged);
-	SliderTextBoxOption_TargetSpawnCD->OnSliderTextBoxValueChanged.AddUObject(this,
-	                                                                          &ThisClass::OnSliderTextBoxValueChanged);
-	SliderTextBoxOption_MaxNumRecentTargets->OnSliderTextBoxValueChanged.AddUObject(this,
-		&ThisClass::OnSliderTextBoxValueChanged);
-	SliderTextBoxOption_RecentTargetTimeLength->OnSliderTextBoxValueChanged.AddUObject(this,
-		&ThisClass::OnSliderTextBoxValueChanged);
-	SliderTextBoxOption_ExpirationHealthPenalty->OnSliderTextBoxValueChanged.AddUObject(this,
-		&ThisClass::OnSliderTextBoxValueChanged);
-	SliderTextBoxOption_DeactivationHealthLostThreshold->OnSliderTextBoxValueChanged.AddUObject(this,
-		&ThisClass::OnSliderTextBoxValueChanged);
+	SliderTextBoxOption_SpawnBeatDelay->OnSliderTextBoxValueChanged.AddUObject(
+		this, &ThisClass::OnSliderTextBoxValueChanged);
+	SliderTextBoxOption_TargetSpawnCD->OnSliderTextBoxValueChanged.AddUObject(
+		this, &ThisClass::OnSliderTextBoxValueChanged);
+	SliderTextBoxOption_MaxNumRecentTargets->OnSliderTextBoxValueChanged.AddUObject(
+		this, &ThisClass::OnSliderTextBoxValueChanged);
+	SliderTextBoxOption_RecentTargetTimeLength->OnSliderTextBoxValueChanged.AddUObject(
+		this, &ThisClass::OnSliderTextBoxValueChanged);
+	SliderTextBoxOption_ExpirationHealthPenalty->OnSliderTextBoxValueChanged.AddUObject(
+		this, &ThisClass::OnSliderTextBoxValueChanged);
+	SliderTextBoxOption_DeactivationHealthLostThreshold->OnSliderTextBoxValueChanged.AddUObject(
+		this, &ThisClass::OnSliderTextBoxValueChanged);
 	SliderTextBoxOption_Alpha->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
 	SliderTextBoxOption_Epsilon->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
 	SliderTextBoxOption_Gamma->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
-	MenuOption_TargetHealth->OnSliderTextBoxCheckBoxOptionChanged.AddUObject(this,
-	                                                                         &ThisClass::OnSliderTextBoxCheckBoxOptionChanged);
-	MenuOption_TargetLifespan->OnSliderTextBoxCheckBoxOptionChanged.AddUObject(this,
-	                                                                           &ThisClass::OnSliderTextBoxCheckBoxOptionChanged);
+	MenuOption_TargetHealth->OnSliderTextBoxCheckBoxOptionChanged.AddUObject(
+		this, &ThisClass::OnSliderTextBoxCheckBoxOptionChanged);
+	MenuOption_TargetLifespan->OnSliderTextBoxCheckBoxOptionChanged.AddUObject(
+		this, &ThisClass::OnSliderTextBoxCheckBoxOptionChanged);
 
-	CheckBoxOption_EnableAI->CheckBox->OnCheckStateChanged.AddUniqueDynamic(this,
-	                                                                        &ThisClass::OnCheckStateChanged_EnableAI);
+	CheckBoxOption_EnableAI->CheckBox->OnCheckStateChanged.AddUniqueDynamic(
+		this, &ThisClass::OnCheckStateChanged_EnableAI);
 
-	ComboBoxOption_RecentTargetMemoryPolicy->ComboBox->OnSelectionChanged.AddUniqueDynamic(this,
-		&ThisClass::OnSelectionChanged_RecentTargetMemoryPolicy);
-	ComboBoxOption_DamageType->ComboBox->OnSelectionChanged.AddUniqueDynamic(this,
-	                                                                         &ThisClass::OnSelectionChanged_DamageType);
-	ComboBoxOption_HyperParameterMode->ComboBox->OnSelectionChanged.AddUniqueDynamic(this,
-		&ThisClass::OnSelectionChanged_HyperParameterMode);
+	ComboBoxOption_RecentTargetMemoryPolicy->ComboBox->OnSelectionChanged.AddUniqueDynamic(
+		this, &ThisClass::OnSelectionChanged_RecentTargetMemoryPolicy);
+	ComboBoxOption_DamageType->ComboBox->OnSelectionChanged.AddUniqueDynamic(
+		this, &ThisClass::OnSelectionChanged_DamageType);
+	ComboBoxOption_HyperParameterMode->ComboBox->OnSelectionChanged.AddUniqueDynamic(
+		this, &ThisClass::OnSelectionChanged_HyperParameterMode);
 
-	ComboBoxOption_RecentTargetMemoryPolicy->GetComboBoxEntryTooltipStringTableKey.BindUObject(this,
-		&ThisClass::GetComboBoxEntryTooltipStringTableKey_TargetActivationSelectionPolicy);
-	ComboBoxOption_DamageType->GetComboBoxEntryTooltipStringTableKey.BindUObject(this,
-		&ThisClass::GetComboBoxEntryTooltipStringTableKey_DamageType);
-	ComboBoxOption_HyperParameterMode->GetComboBoxEntryTooltipStringTableKey.BindUObject(this,
-		&ThisClass::GetComboBoxEntryTooltipStringTableKey_HyperParameterMode);
+	ComboBoxOption_RecentTargetMemoryPolicy->GetComboBoxEntryTooltipStringTableKey.BindUObject(
+		this, &ThisClass::GetComboBoxEntryTooltipStringTableKey_TargetActivationSelectionPolicy);
+	ComboBoxOption_DamageType->GetComboBoxEntryTooltipStringTableKey.BindUObject(
+		this, &ThisClass::GetComboBoxEntryTooltipStringTableKey_DamageType);
+	ComboBoxOption_HyperParameterMode->GetComboBoxEntryTooltipStringTableKey.BindUObject(
+		this, &ThisClass::GetComboBoxEntryTooltipStringTableKey_HyperParameterMode);
 
 	ComboBoxOption_RecentTargetMemoryPolicy->ComboBox->ClearOptions();
 	ComboBoxOption_DamageType->ComboBox->ClearOptions();
@@ -215,11 +208,9 @@ void UCustomGameModeGeneralWidget::UpdateOptionsFromConfig()
 	UpdateValueIfDifferent(SliderTextBoxOption_Alpha, BSConfig->AIConfig.Alpha);
 	UpdateValueIfDifferent(SliderTextBoxOption_Epsilon, BSConfig->AIConfig.Epsilon);
 	UpdateValueIfDifferent(SliderTextBoxOption_Gamma, BSConfig->AIConfig.Gamma);
-	UpdateValuesIfDifferent(MenuOption_TargetHealth,
-	                        BSConfig->TargetConfig.MaxHealth <= 0.f,
+	UpdateValuesIfDifferent(MenuOption_TargetHealth, BSConfig->TargetConfig.MaxHealth <= 0.f,
 	                        BSConfig->TargetConfig.MaxHealth);
-	UpdateValuesIfDifferent(MenuOption_TargetLifespan,
-	                        BSConfig->TargetConfig.TargetMaxLifeSpan <= 0.f,
+	UpdateValuesIfDifferent(MenuOption_TargetLifespan, BSConfig->TargetConfig.TargetMaxLifeSpan <= 0.f,
 	                        BSConfig->TargetConfig.TargetMaxLifeSpan);
 
 	UpdateValueIfDifferent(ComboBoxOption_HyperParameterMode,
@@ -241,10 +232,9 @@ void UCustomGameModeGeneralWidget::UpdateOptionsFromConfig()
 
 void UCustomGameModeGeneralWidget::HandleWatchedPropertyChanged(const uint32 PropertyHash)
 {
-	if (PropertyHash == UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-	                                                               GET_MEMBER_NAME_CHECKED(
-		                                                               FBS_TargetConfig,
-		                                                               RecentTargetMemoryPolicy)))
+	if (PropertyHash == UBSGameModeValidator::FindBSConfigProperty(
+		    GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+		    GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, RecentTargetMemoryPolicy)))
 	{
 		UpdateDependentOptions_RecentTargetMemoryPolicy(BSConfig->TargetConfig.RecentTargetMemoryPolicy);
 	}
@@ -288,8 +278,7 @@ void UCustomGameModeGeneralWidget::UpdateDependentOptions_DeactivationConditions
 	else
 	{
 		SliderTextBoxOption_DeactivationHealthLostThreshold->SetMenuOptionEnabledState(
-			EMenuOptionEnabledState::DependentMissing,
-			GetTooltipTextFromKey("DM_DeactivationHealthLostThreshold"));
+			EMenuOptionEnabledState::DependentMissing, GetTooltipTextFromKey("DM_DeactivationHealthLostThreshold"));
 	}
 }
 
@@ -357,8 +346,9 @@ void UCustomGameModeGeneralWidget::OnCheckStateChanged_EnableAI(const bool bChec
 	UpdateDependentOptions_EnableAI(BSConfig->AIConfig.bEnableReinforcementLearning,
 	                                BSConfig->AIConfig.HyperParameterMode);
 	OnPropertyChanged.Execute({
-		UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, AIConfig),
-		                                           GET_MEMBER_NAME_CHECKED(FBS_AIConfig, bEnableReinforcementLearning))
+		UBSGameModeValidator::FindBSConfigProperty(
+			GET_MEMBER_NAME_CHECKED(FBSConfig, AIConfig),
+			GET_MEMBER_NAME_CHECKED(FBS_AIConfig, bEnableReinforcementLearning))
 	});
 	UpdateBrushColors();
 }
@@ -369,78 +359,78 @@ void UCustomGameModeGeneralWidget::OnSliderTextBoxValueChanged(USingleRangeInput
 	{
 		BSConfig->TargetConfig.SpawnBeatDelay = Value;
 		OnPropertyChanged.Execute({
-			UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-			                                           GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, SpawnBeatDelay))
+			UBSGameModeValidator::FindBSConfigProperty(
+				GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+				GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, SpawnBeatDelay))
 		});
 	}
 	else if (Widget == SliderTextBoxOption_TargetSpawnCD)
 	{
 		BSConfig->TargetConfig.TargetSpawnCD = Value;
 		OnPropertyChanged.Execute({
-			UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-			                                           GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, TargetSpawnCD))
+			UBSGameModeValidator::FindBSConfigProperty(
+				GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+				GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, TargetSpawnCD))
 		});
 	}
 	else if (Widget == SliderTextBoxOption_MaxNumRecentTargets)
 	{
 		BSConfig->TargetConfig.MaxNumRecentTargets = Value;
 		OnPropertyChanged.Execute({
-			UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-			                                           GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, MaxNumRecentTargets))
+			UBSGameModeValidator::FindBSConfigProperty(
+				GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+				GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, MaxNumRecentTargets))
 		});
 	}
 	else if (Widget == SliderTextBoxOption_RecentTargetTimeLength)
 	{
 		BSConfig->TargetConfig.RecentTargetTimeLength = Value;
 		OnPropertyChanged.Execute({
-			UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-			                                           GET_MEMBER_NAME_CHECKED(
-				                                           FBS_TargetConfig,
-				                                           RecentTargetTimeLength))
+			UBSGameModeValidator::FindBSConfigProperty(
+				GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+				GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, RecentTargetTimeLength))
 		});
 	}
 	else if (Widget == SliderTextBoxOption_Alpha)
 	{
 		BSConfig->AIConfig.Alpha = Value;
 		OnPropertyChanged.Execute({
-			UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, AIConfig),
-			                                           GET_MEMBER_NAME_CHECKED(FBS_AIConfig, Alpha))
+			UBSGameModeValidator::FindBSConfigProperty(
+				GET_MEMBER_NAME_CHECKED(FBSConfig, AIConfig), GET_MEMBER_NAME_CHECKED(FBS_AIConfig, Alpha))
 		});
 	}
 	else if (Widget == SliderTextBoxOption_Epsilon)
 	{
 		BSConfig->AIConfig.Epsilon = Value;
 		OnPropertyChanged.Execute({
-			UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, AIConfig),
-			                                           GET_MEMBER_NAME_CHECKED(FBS_AIConfig, Epsilon))
+			UBSGameModeValidator::FindBSConfigProperty(
+				GET_MEMBER_NAME_CHECKED(FBSConfig, AIConfig), GET_MEMBER_NAME_CHECKED(FBS_AIConfig, Epsilon))
 		});
 	}
 	else if (Widget == SliderTextBoxOption_Gamma)
 	{
 		BSConfig->AIConfig.Gamma = Value;
 		OnPropertyChanged.Execute({
-			UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, AIConfig),
-			                                           GET_MEMBER_NAME_CHECKED(FBS_AIConfig, Gamma))
+			UBSGameModeValidator::FindBSConfigProperty(
+				GET_MEMBER_NAME_CHECKED(FBSConfig, AIConfig), GET_MEMBER_NAME_CHECKED(FBS_AIConfig, Gamma))
 		});
 	}
 	else if (Widget == SliderTextBoxOption_ExpirationHealthPenalty)
 	{
 		BSConfig->TargetConfig.ExpirationHealthPenalty = Value;
 		OnPropertyChanged.Execute({
-			UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-			                                           GET_MEMBER_NAME_CHECKED(
-				                                           FBS_TargetConfig,
-				                                           ExpirationHealthPenalty))
+			UBSGameModeValidator::FindBSConfigProperty(
+				GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+				GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, ExpirationHealthPenalty))
 		});
 	}
 	else if (Widget == SliderTextBoxOption_DeactivationHealthLostThreshold)
 	{
 		BSConfig->TargetConfig.DeactivationHealthLostThreshold = Value;
 		OnPropertyChanged.Execute({
-			UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-			                                           GET_MEMBER_NAME_CHECKED(
-				                                           FBS_TargetConfig,
-				                                           DeactivationHealthLostThreshold))
+			UBSGameModeValidator::FindBSConfigProperty(
+				GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+				GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, DeactivationHealthLostThreshold))
 		});
 	}
 }
@@ -453,16 +443,17 @@ void UCustomGameModeGeneralWidget::OnSliderTextBoxCheckBoxOptionChanged(UTogglea
 	{
 		BSConfig->TargetConfig.MaxHealth = bChecked ? -1.f : Value;
 		OnPropertyChanged.Execute({
-			UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-			                                           GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, MaxHealth))
+			UBSGameModeValidator::FindBSConfigProperty(
+				GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig), GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, MaxHealth))
 		});
 	}
 	else if (Widget == MenuOption_TargetLifespan)
 	{
 		BSConfig->TargetConfig.TargetMaxLifeSpan = bChecked ? -1.f : Value;
 		OnPropertyChanged.Execute({
-			UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-			                                           GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, TargetMaxLifeSpan))
+			UBSGameModeValidator::FindBSConfigProperty(
+				GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+				GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, TargetMaxLifeSpan))
 		});
 	}
 }
@@ -479,8 +470,9 @@ void UCustomGameModeGeneralWidget::OnSelectionChanged_RecentTargetMemoryPolicy(c
 		ERecentTargetMemoryPolicy>(Selected[0]);
 	UpdateDependentOptions_RecentTargetMemoryPolicy(BSConfig->TargetConfig.RecentTargetMemoryPolicy);
 	OnPropertyChanged.Execute({
-		UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-		                                           GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, RecentTargetMemoryPolicy))
+		UBSGameModeValidator::FindBSConfigProperty(
+			GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+			GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, RecentTargetMemoryPolicy))
 	});
 	UpdateBrushColors();
 }
@@ -495,8 +487,9 @@ void UCustomGameModeGeneralWidget::OnSelectionChanged_DamageType(const TArray<FS
 
 	BSConfig->TargetConfig.TargetDamageType = GetEnumFromString_FromTagMap<ETargetDamageType>(Selected[0]);
 	OnPropertyChanged.Execute({
-		UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-		                                           GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, TargetDamageType))
+		UBSGameModeValidator::FindBSConfigProperty(
+			GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+			GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, TargetDamageType))
 	});
 }
 
@@ -513,8 +506,8 @@ void UCustomGameModeGeneralWidget::OnSelectionChanged_HyperParameterMode(const T
 	UpdateDependentOptions_EnableAI(BSConfig->AIConfig.bEnableReinforcementLearning,
 	                                BSConfig->AIConfig.HyperParameterMode);
 	OnPropertyChanged.Execute({
-		UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, AIConfig),
-		                                           GET_MEMBER_NAME_CHECKED(FBS_AIConfig, HyperParameterMode))
+		UBSGameModeValidator::FindBSConfigProperty(
+			GET_MEMBER_NAME_CHECKED(FBSConfig, AIConfig), GET_MEMBER_NAME_CHECKED(FBS_AIConfig, HyperParameterMode))
 	});
 
 	UpdateBrushColors();
