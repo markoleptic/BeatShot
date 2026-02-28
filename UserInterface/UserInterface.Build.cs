@@ -7,8 +7,8 @@ public class UserInterface : ModuleRules
 	public UserInterface(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PublicDependencyModuleNames.AddRange([
-			"Core", "ApplicationCore", "CoreUObject", "Engine", "UMG", "Slate", "SlateCore", "WebBrowserWidget",
-			"WebBrowser", "BeatShotGlobal", "GameplayTags", "InputCore", "CommonUI", "MoviePlayer"
+			"Core", "ApplicationCore", "CoreUObject", "Engine", "UMG", "Slate", "SlateCore", "BeatShotGlobal",
+			"GameplayTags", "InputCore", "CommonUI", "MoviePlayer"
 		]);
 
 		PrivateDependencyModuleNames.AddRange([
