@@ -84,11 +84,12 @@ void ABSPlayerController::BeginPlay()
 		this, &ABSPlayerController::OnPlayerSettingsChanged);
 	GI->RegisterPlayerSettingsUpdaters(OnPlayerSettingsChangedDelegate_User);
 
+	SaveGamePlayerScore = USaveGamePlayerScore::LoadFromSlot();
 	if (!PlayerSettings.User.bNightModeUnlocked)
 	{
-		for (const TArray<FPlayerScore>& PlayerScores = LoadPlayerScores(); const FPlayerScore& Score : PlayerScores)
+		for (const auto& Score : SaveGamePlayerScore->GetPlayerScoresPtr())
 		{
-			if (Score.Streak > 50)
+			if (Score->Streak > 50)
 			{
 				PlayerSettings.User.bNightModeUnlocked = true;
 				SavePlayerSettings(PlayerSettings.User);
@@ -178,7 +179,7 @@ void ABSPlayerController::ShowMainMenu()
 	                                   SettingsMenuWidget->GetCrossHairDelegate(),
 	                                   SettingsMenuWidget->GetAudioAnalyzerDelegate(),
 	                                   SettingsMenuWidget->GetUserDelegate(), MainMenuWidget->GetUserDelegate());
-
+	MainMenuWidget->SetSaveGamePlayerScore(SaveGamePlayerScore);
 	MainMenuWidget->AddToViewport();
 
 	if (AMainMenuGameMode* GameMode = Cast<AMainMenuGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
@@ -345,12 +346,11 @@ void ABSPlayerController::ShowPostGameMenu()
 
 	PostGameMenuWidget = CreateWidget<UPostGameMenuWidget>(this, PostGameMenuWidgetClass);
 	PostGameMenuWidget->OnGameModeStateChanged.BindUObject(GI, &UBSGameInstance::HandleGameModeTransition);
-
 	GI->RegisterPlayerSettingsUpdaters(PostGameMenuWidget->SettingsMenuWidget->GetGameDelegate(),
 	                                   PostGameMenuWidget->SettingsMenuWidget->GetCrossHairDelegate(),
 	                                   PostGameMenuWidget->SettingsMenuWidget->GetAudioAnalyzerDelegate(),
 	                                   PostGameMenuWidget->SettingsMenuWidget->GetUserDelegate());
-
+	PostGameMenuWidget->SetSaveGamePlayerScore(SaveGamePlayerScore);
 	PostGameMenuWidget->AddToViewport();
 
 	SetInputMode(FInputModeUIOnly());
@@ -434,6 +434,11 @@ void ABSPlayerController::OnPossess(APawn* InPawn)
 void ABSPlayerController::OnRep_PlayerState()
 {
 	Super::OnRep_PlayerState();
+}
+
+TObjectPtr<USaveGamePlayerScore> ABSPlayerController::GetSaveGamePlayerScore() const
+{
+	return SaveGamePlayerScore;
 }
 
 void ABSPlayerController::HidePostGameMenu()

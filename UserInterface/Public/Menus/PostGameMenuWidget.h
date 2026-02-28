@@ -7,6 +7,7 @@
 #include "Utilities/GameModeTransitionState.h"
 #include "PostGameMenuWidget.generated.h"
 
+class USaveGamePlayerScore;
 class UAudioSelectWidget;
 class UMenuStyle;
 class UWidgetSwitcher;
@@ -35,6 +36,8 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	USettingsMenuWidget* SettingsMenuWidget;
+
+	void SetSaveGamePlayerScore(USaveGamePlayerScore* InSaveGamePlayerScore);
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
@@ -99,4 +102,7 @@ protected:
 	void OnButtonClicked_BSButton(const UBSButton* Button);
 
 	TWeakObjectPtr<UMenuButton> LastMenuButton;
+
+	UPROPERTY()
+	TObjectPtr<USaveGamePlayerScore> SaveGamePlayerScore;
 };

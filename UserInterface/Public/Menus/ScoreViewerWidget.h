@@ -140,7 +140,7 @@ private:
 	FText FormatTime(float Minutes);
 
 	UPROPERTY()
-	USaveGamePlayerScore* SaveGamePlayerScore;
+	TObjectPtr<USaveGamePlayerScore> SaveGamePlayerScore;
 
 	FDateTime StartDate;
 

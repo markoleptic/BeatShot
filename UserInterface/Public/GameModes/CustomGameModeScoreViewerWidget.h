@@ -20,10 +20,10 @@ class USERINTERFACE_API UCustomGameModeScoreViewerWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	/** Adds a reference to the save game and calls @link RepopulatePlayerScoreByGameModeAndSong. */
+	/** Adds a reference to the save game and calls RepopulatePlayerScoreByGameModeAndSong. */
 	void SetSaveGamePlayerScore(USaveGamePlayerScore* InSaveGamePlayerScore);
 
-	/** Filters the active scores based on @param CustomGameModeName and @param SongTitle . Always updates the song
+	/** Filters the active scores based on CustomGameModeName and SongTitle. Always updates the song
 	 *  combo box and all data visualizations. */
 	void SetActiveScores(const FString& CustomGameModeName, const FString& SongTitle);
 
@@ -55,7 +55,7 @@ protected:
 	UGameModeScoreViewerWidget* GameModeScoreViewerWidget;
 
 	UPROPERTY()
-	USaveGamePlayerScore* SaveGamePlayerScore;
+	TObjectPtr<USaveGamePlayerScore> SaveGamePlayerScore;
 
 	TMap<FString, TMap<FString, TArray<TSharedPtr<FPlayerScore>>>> PlayerScoreByGameModeAndSong;
 };

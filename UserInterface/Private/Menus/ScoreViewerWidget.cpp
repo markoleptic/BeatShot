@@ -152,7 +152,12 @@ void UScoreViewerWidget::NativeConstruct()
 
 void UScoreViewerWidget::LoadScores(USaveGamePlayerScore* InSaveGamePlayerScore, const bool SwitchToMostRecent)
 {
-	SaveGamePlayerScore = InSaveGamePlayerScore;
+	if (!SaveGamePlayerScore)
+	{
+		SaveGamePlayerScore = InSaveGamePlayerScore;
+		InSaveGamePlayerScore->OnScoresDeleted.AddUObject(this, &UScoreViewerWidget::LoadScores,
+		                                                  SaveGamePlayerScore.Get(), false);
+	}
 	DefaultGameModeScoreViewerWidget->SetSaveGamePlayerScore(SaveGamePlayerScore);
 	CustomGameModeScoreViewerWidget->SetSaveGamePlayerScore(SaveGamePlayerScore);
 	ScoreTable->SetListItems(SaveGamePlayerScore->GetPlayerScoresPtr());
@@ -309,7 +314,7 @@ void UScoreViewerWidget::OnButtonClicked_DeleteSelectedScoresButton(const UBSBut
 	if (!SelectedItems.IsEmpty())
 	{
 		SaveGamePlayerScore->DeletePlayerScores(SelectedItems);
-		LoadScores(SaveGamePlayerScore, false);
+		// Should trigger LoadScores from USaveGamePlayerScore::OnScoresDeleted
 	}
 }
 

@@ -83,6 +83,8 @@ public:
 	/** Returns BSConfig. */
 	TSharedPtr<FBSConfig> GetBSConfig() const { return BSConfig; }
 
+	void SetSaveGamePlayerScore(USaveGamePlayerScore* InSaveGamePlayerScore);
+
 	/** Ends the game mode preview. */
 	void StopGameModePreview();
 
@@ -312,16 +314,30 @@ private:
 	/** Properties that should refresh the game mode preview any time they are changed. */
 	TSet<uint32> ForceRefreshProperties;
 
+	UPROPERTY()
+	TObjectPtr<USaveGamePlayerScore> SaveGamePlayerScore;
+
 	FTextFormat CustomGameModeImportSuccessFormattedText;
 	FTextFormat CustomGameModeImportFailureFormattedText;
+
+	FTextFormat CustomGameModeImportInvalidStringFormattedText;
+
 	FTextFormat ResetAIHistoryContentFormattedText;
 	FTextFormat ResetAIHistorySuccessFormattedText;
+
 	FTextFormat CustomGameModeUpToDateFormattedText;
 	FTextFormat CustomGameModeUpdatedFormattedText;
+
 	FTextFormat CustomGameModeRemovalContentFormattedText;
 	FTextFormat CustomGameModeRemovalSuccessFormattedText;
+
 	FTextFormat CustomGameModeRemoveAllSuccessFormattedText;
+
 	FTextFormat CustomGameModeSaveSuccessFormattedText;
 	FTextFormat CustomGameModeSaveFailureFormattedText;
-	FTextFormat CustomGameModeImportInvalidStringFormattedText;
+
+	FTextFormat CustomGameModeAndScoresRemovalSuccessFormattedText;
+	FTextFormat CustomGameModesAndScoresRemovalSuccessFormattedText;
+
+	FDelegateHandle ScoresDeletedExternalHandle;
 };

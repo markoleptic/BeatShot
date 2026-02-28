@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BSPlayerScoreInterface.h"
 #include "BSPlayerSettingsInterface.h"
 #include "MetasoundGeneratorHandle.h"
 #include "Engine/GameInstance.h"
@@ -23,9 +22,7 @@ class USteamManager;
 
 /** Base GameInstance for this game. */
 UCLASS()
-class BEATSHOT_API UBSGameInstance : public UGameInstance,
-                                     public IBSPlayerSettingsInterface,
-                                     public IBSPlayerScoreInterface
+class BEATSHOT_API UBSGameInstance : public UGameInstance, public IBSPlayerSettingsInterface
 {
 	GENERATED_BODY()
 
@@ -97,8 +94,7 @@ public:
 	 *  called any time an updater broadcasts their delegate. */
 	template <typename UserClass, typename StructType>
 	void RegisterPlayerSettingsSubscriber(UserClass* InUserObject,
-	                                      typename TMemFunPtrType<false, UserClass, void (const StructType&)>::Type
-	                                      InFunc);
+	                                      TMemFunPtrType<false, UserClass, void (const StructType&)>::Type InFunc);
 
 protected:
 	void SetBSConfig(const FBSConfig& InConfig);

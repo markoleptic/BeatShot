@@ -2,226 +2,18 @@
 
 
 #include "SaveGames/SaveGamePlayerScore.h"
+#include "Utilities/SaveLoadCommon.h"
 
-
-USaveGamePlayerScore::USaveGamePlayerScore()
+namespace
 {
-	PercentFormat.MaximumFractionalDigits = 0;
-	PercentFormat.MaximumIntegralDigits = 3;
-	PercentFormat.MinimumIntegralDigits = 1;
-
-	QTableFormat.MinimumFractionalDigits = 2;
-	QTableFormat.MaximumFractionalDigits = 2;
-	QTableFormat.MaximumIntegralDigits = 1;
-	QTableFormat.MinimumIntegralDigits = 1;
-
-	TrainingSamplesFormat.MinimumFractionalDigits = 0;
-	TrainingSamplesFormat.MaximumFractionalDigits = 0;
-	TrainingSamplesFormat.MaximumIntegralDigits = 4;
-	TrainingSamplesFormat.MinimumIntegralDigits = 1;
-}
-
-void USaveGamePlayerScore::BuildRuntimeData()
-{
-	PlayerScoreArrayPtr.Empty();
-	PlayerScoreArrayPtr.Reserve(PlayerScoreArray.Num());
-	for (const auto& PlayerScore : PlayerScoreArray)
-	{
-		PlayerScoreArrayPtr.Add(MakeShared<FPlayerScore>(PlayerScore));
-	}
-	CommonScoreInfoPtr = MakeShared<TMap<FBS_DefiningConfig, FCommonScoreInfo>>(CommonScoreInfo);
-}
-
-void USaveGamePlayerScore::CommitRuntimeData()
-{
-	PlayerScoreArray.Empty();
-	for (const TSharedPtr<FPlayerScore>& Ptr : PlayerScoreArrayPtr)
-	{
-		PlayerScoreArray.Add(*Ptr);
-	}
-
-	CommonScoreInfo.Empty();
-	for (const auto& [Key, Value] : *CommonScoreInfoPtr)
-	{
-		CommonScoreInfo.Add(Key, Value);
-	}
-}
-
-TArray<FPlayerScore> USaveGamePlayerScore::GetPlayerScores() const
-{
-	TArray<FPlayerScore> Temp;
-	for (const TSharedPtr<FPlayerScore>& Ptr : PlayerScoreArrayPtr)
-	{
-		Temp.Add(*Ptr);
-	}
-	return Temp;
-}
-
-const TArray<TSharedPtr<FPlayerScore>>& USaveGamePlayerScore::GetPlayerScoresPtr() const
-{
-	return PlayerScoreArrayPtr;
-}
-
-TArray<FPlayerScore> USaveGamePlayerScore::GetPlayerScores_UnsavedToDatabase() const
-{
-	TArray<FPlayerScore> UnsavedScores;
-	for (const TSharedPtr<FPlayerScore>& Score : PlayerScoreArrayPtr)
-	{
-		if (!Score->bSavedToDatabase)
-		{
-			UnsavedScores.Add(*Score);
-		}
-	}
-	return UnsavedScores;
-}
-
-void USaveGamePlayerScore::AddPlayerScoreInstance(const FPlayerScore& InPlayerScore)
-{
-	if (!ContainsExistingTime(InPlayerScore))
-	{
-		PlayerScoreArrayPtr.Add(MakeShared<FPlayerScore>(InPlayerScore));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Display, TEXT("Existing Score with the same Time found"));
-	}
-}
-
-void USaveGamePlayerScore::DeletePlayerScores(const TArray<TSharedPtr<FPlayerScore>>& ScoresToDelete)
-{
-	for (const auto& Score : ScoresToDelete)
-	{
-		PlayerScoreArrayPtr.Remove(Score);
-	}
-}
-
-void USaveGamePlayerScore::SetAllScoresSavedToDatabase()
-{
-	for (const TSharedPtr<FPlayerScore>& Score : PlayerScoreArrayPtr)
-	{
-		Score->bSavedToDatabase = true;
-	}
-}
-
-bool USaveGamePlayerScore::ContainsExistingTime(const FPlayerScore& InPlayerScore)
-{
-	const TSharedPtr<FPlayerScore>* Found = PlayerScoreArrayPtr.FindByPredicate(
-		[&InPlayerScore](const TSharedPtr<FPlayerScore>& CompareScore)
-		{
-			return InPlayerScore.Time.Equals(CompareScore->Time);
-		});
-	return Found ? true : false;
-}
-
-TMap<FBS_DefiningConfig, FCommonScoreInfo> USaveGamePlayerScore::GetCommonScoreInfo() const
-{
-	return CommonScoreInfo;
-}
-
-TSharedPtr<TMap<FBS_DefiningConfig, FCommonScoreInfo>> USaveGamePlayerScore::GetCommonScoreInfoPtr() const
-{
-	return CommonScoreInfoPtr;
-}
-
-void USaveGamePlayerScore::FindOrAddCommonScoreInfo(const FBS_DefiningConfig& InDefiningConfig,
-                                                    FCommonScoreInfo& OutCommonScoreInfo)
-{
-	OutCommonScoreInfo = CommonScoreInfoPtr->FindOrAdd(InDefiningConfig);
-}
-
-void USaveGamePlayerScore::SaveCommonScoreInfo(const FBS_DefiningConfig& InDefiningConfig,
-                                               const FCommonScoreInfo& InCommonScoreInfo)
-{
-	CommonScoreInfoPtr->FindOrAdd(InDefiningConfig) = InCommonScoreInfo;
-
-#if !UE_BUILD_SHIPPING
-	if (InCommonScoreInfo.NumQTableRows != 0 && InCommonScoreInfo.QTable.Num() > 0)
-	{
-		PrintAccuracy(InDefiningConfig, InCommonScoreInfo, PercentFormat);
-		PrintQTable(InDefiningConfig, InCommonScoreInfo, QTableFormat);
-		PrintTrainingSamples(InDefiningConfig, InCommonScoreInfo, TrainingSamplesFormat);
-	}
-#endif
-}
-
-int32 USaveGamePlayerScore::ResetQTable(const FBS_DefiningConfig& InDefiningConfig)
-{
-	FCommonScoreInfo* Found = CommonScoreInfoPtr->Find(InDefiningConfig);
-
-	if (!Found)
-	{
-		return 0;
-	}
-
-	Found->ResetQTable();
-	return 1;
-}
-
-int32 USaveGamePlayerScore::RemoveCommonScoreInfo(const FBS_DefiningConfig& InDefiningConfig)
-{
-	return CommonScoreInfoPtr->Remove(InDefiningConfig);
-}
-
-int32 USaveGamePlayerScore::RemoveAllCustomGameModeCommonScoreInfo()
-{
-	int32 NumRemoved = 0;
-	TMap<FBS_DefiningConfig, FCommonScoreInfo> FilteredMap = CommonScoreInfoPtr->FilterByPredicate(
-		[](const TPair<FBS_DefiningConfig, FCommonScoreInfo>& Pair)
-		{
-			return Pair.Key.GameModeType == EGameModeType::Custom;
-		});
-	for (const TPair<FBS_DefiningConfig, FCommonScoreInfo>& Pair : FilteredMap)
-	{
-		NumRemoved += CommonScoreInfoPtr->Remove(Pair.Key);
-	}
-	return NumRemoved;
-}
-
-void USaveGamePlayerScore::PrintQTable(const FBS_DefiningConfig& InDefiningConfig,
-                                       const FCommonScoreInfo& InCommonScoreInfo,
-                                       const FNumberFormattingOptions& Options)
-{
-	FString GameModeString;
-
-	if (InDefiningConfig.CustomGameModeName.IsEmpty())
-	{
-		GameModeString = UEnum::GetDisplayValueAsText(InDefiningConfig.BaseGameMode).ToString() + " " +
-		                 UEnum::GetDisplayValueAsText(InDefiningConfig.Difficulty).ToString();
-	}
-	else
-	{
-		GameModeString = InDefiningConfig.CustomGameModeName;
-	}
-	UE_LOG(LogTemp, Display, TEXT("Full QTable for %s:"), *GameModeString);
-
-	FString Line;
-	for (int i = 0; i < InCommonScoreInfo.QTable.Num(); i++)
-	{
-		const float Value = InCommonScoreInfo.QTable[i];
-		FString LineValue = FText::AsNumber(Value, &Options).ToString();
-
-		if (Value == 0.f)
-		{
-			LineValue = " " + LineValue;
-		}
-		else if (Value > 0.f)
-		{
-			LineValue = "+" + LineValue;
-		}
-
-		Line += LineValue + "  ";
-
-		if (i > 1 && (i + 1) % InCommonScoreInfo.NumQTableRows == 0)
-		{
-			UE_LOG(LogTemp, Display, TEXT("\t %s"), *Line);
-			Line.Empty();
-		}
-	}
-}
-
-void USaveGamePlayerScore::PrintAccuracy(const FBS_DefiningConfig& InDefiningConfig,
-                                         const FCommonScoreInfo& InCommonScoreInfo,
-                                         const FNumberFormattingOptions& Options)
+/** Prints 5x5 accuracy to log/console.
+ *  @param InDefiningConfig defining config
+ * 	@param InCommonScoreInfo CommonScoreInfo to print out
+ * 	@param Options number formatting options
+ */
+void PrintAccuracy(const FBS_DefiningConfig& InDefiningConfig,
+                   const FCommonScoreInfo& InCommonScoreInfo,
+                   const FNumberFormattingOptions& Options)
 {
 	int32 TotalSpawns = 0;
 	int32 TotalHits = 0;
@@ -271,9 +63,14 @@ void USaveGamePlayerScore::PrintAccuracy(const FBS_DefiningConfig& InDefiningCon
 	UE_LOG(LogTemp, Display, TEXT("Total Hits: %d Total Spawns: %d"), TotalHits, TotalSpawns);
 }
 
-void USaveGamePlayerScore::PrintTrainingSamples(const FBS_DefiningConfig& InDefiningConfig,
-                                                const FCommonScoreInfo& InCommonScoreInfo,
-                                                const FNumberFormattingOptions& Options)
+/** Prints full TrainingSamples array to log/console.
+ *  @param InDefiningConfig defining config
+ * 	@param InCommonScoreInfo CommonScoreInfo to print out
+ * 	@param Options number formatting options
+ */
+void PrintTrainingSamples(const FBS_DefiningConfig& InDefiningConfig,
+                          const FCommonScoreInfo& InCommonScoreInfo,
+                          const FNumberFormattingOptions& Options)
 {
 	FString GameModeString;
 	FString Line;
@@ -321,4 +118,268 @@ void USaveGamePlayerScore::PrintTrainingSamples(const FBS_DefiningConfig& InDefi
 	}
 
 	UE_LOG(LogTemp, Display, TEXT("Total Training Samples: %lld"), InCommonScoreInfo.TotalTrainingSamples);
+}
+}
+
+USaveGamePlayerScore* USaveGamePlayerScore::LoadFromSlot()
+{
+	USaveGamePlayerScore* SaveGamePlayerScore = SaveLoadCommon::LoadFromSlot<
+		USaveGamePlayerScore>(TEXT("ScoreSlot"), 1);
+	SaveGamePlayerScore->BuildRuntimeData();
+	return SaveGamePlayerScore;
+}
+
+void USaveGamePlayerScore::SaveToSlot()
+{
+	CommitRuntimeData();
+	SaveLoadCommon::SaveToSlot(this, TEXT("ScoreSlot"), 1);
+}
+
+USaveGamePlayerScore::USaveGamePlayerScore()
+{
+	PercentFormat.MaximumFractionalDigits = 0;
+	PercentFormat.MaximumIntegralDigits = 3;
+	PercentFormat.MinimumIntegralDigits = 1;
+
+	QTableFormat.MinimumFractionalDigits = 2;
+	QTableFormat.MaximumFractionalDigits = 2;
+	QTableFormat.MaximumIntegralDigits = 1;
+	QTableFormat.MinimumIntegralDigits = 1;
+
+	TrainingSamplesFormat.MinimumFractionalDigits = 0;
+	TrainingSamplesFormat.MaximumFractionalDigits = 0;
+	TrainingSamplesFormat.MaximumIntegralDigits = 4;
+	TrainingSamplesFormat.MinimumIntegralDigits = 1;
+}
+
+void USaveGamePlayerScore::BuildRuntimeData()
+{
+	PlayerScoreArrayPtr.Empty();
+	PlayerScoreArrayPtr.Reserve(PlayerScoreArray.Num());
+	for (const auto& PlayerScore : PlayerScoreArray)
+	{
+		PlayerScoreArrayPtr.Add(MakeShared<FPlayerScore>(PlayerScore));
+	}
+}
+
+void USaveGamePlayerScore::CommitRuntimeData()
+{
+	PlayerScoreArray.Empty(PlayerScoreArrayPtr.Num());
+	for (const TSharedPtr<FPlayerScore>& Ptr : PlayerScoreArrayPtr)
+	{
+		PlayerScoreArray.Add(*Ptr);
+	}
+}
+
+float USaveGamePlayerScore::GetHighScore(const FPlayerScore& PlayerScoreToMatch) const
+{
+	float HighScore = PlayerScoreToMatch.Score;
+
+	for (const TSharedPtr<FPlayerScore>& PlayerScore : PlayerScoreArrayPtr)
+	{
+		if (PlayerScore->HasMatchingDefiningConfigAndSong(PlayerScoreToMatch))
+		{
+			HighScore = FMath::Max(HighScore, PlayerScoreToMatch.Score);
+		}
+	}
+
+	return HighScore;
+}
+
+const TArray<TSharedPtr<FPlayerScore>>& USaveGamePlayerScore::GetPlayerScoresPtr() const
+{
+	return PlayerScoreArrayPtr;
+}
+
+void USaveGamePlayerScore::AddPlayerScoreInstance(const FPlayerScore& InPlayerScore)
+{
+	if (!ContainsExistingTime(InPlayerScore))
+	{
+		PlayerScoreArrayPtr.Add(MakeShared<FPlayerScore>(InPlayerScore));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Display, TEXT("Existing Score with the same Time found"));
+	}
+}
+
+void USaveGamePlayerScore::DeletePlayerScores(const TArray<TSharedPtr<FPlayerScore>>& ScoresToDelete)
+{
+	if (DeletePlayerScoresInternal(ScoresToDelete) > 0)
+	{
+		SaveToSlot();
+		OnScoresDeleted.Broadcast();
+	}
+}
+
+bool USaveGamePlayerScore::ContainsExistingTime(const FPlayerScore& InPlayerScore)
+{
+	const TSharedPtr<FPlayerScore>* Found = PlayerScoreArrayPtr.FindByPredicate(
+		[&InPlayerScore](const TSharedPtr<FPlayerScore>& CompareScore)
+		{
+			return InPlayerScore.Time.Equals(CompareScore->Time);
+		});
+	return Found ? true : false;
+}
+
+int32 USaveGamePlayerScore::DeletePlayerScoresInternal(const TArray<TSharedPtr<FPlayerScore>>& ScoresToDelete)
+{
+	int RemovedScores = 0;
+	for (const auto& Score : ScoresToDelete)
+	{
+		RemovedScores += PlayerScoreArrayPtr.Remove(Score);
+	}
+	return RemovedScores;
+}
+
+TMap<FBS_DefiningConfig, FCommonScoreInfo> USaveGamePlayerScore::GetCommonScoreInfo() const
+{
+	return CommonScoreInfo;
+}
+
+FCommonScoreInfo USaveGamePlayerScore::FindOrAddCommonScoreInfo(const FBS_DefiningConfig& InDefiningConfig)
+{
+	return CommonScoreInfo.FindOrAdd(InDefiningConfig);
+}
+
+void USaveGamePlayerScore::SetOrAddCommonScoreInfo(const FBS_DefiningConfig& InDefiningConfig,
+                                                   const FCommonScoreInfo& InCommonScoreInfo)
+{
+	CommonScoreInfo.FindOrAdd(InDefiningConfig) = InCommonScoreInfo;
+
+#if !UE_BUILD_SHIPPING
+	if (InCommonScoreInfo.NumQTableRows != 0 && InCommonScoreInfo.QTable.Num() > 0)
+	{
+		PrintAccuracy(InDefiningConfig, InCommonScoreInfo, PercentFormat);
+		PrintQTable(InDefiningConfig, InCommonScoreInfo, QTableFormat);
+		PrintTrainingSamples(InDefiningConfig, InCommonScoreInfo, TrainingSamplesFormat);
+	}
+#endif
+}
+
+bool USaveGamePlayerScore::ResetQTable(const FBS_DefiningConfig& InDefiningConfig)
+{
+	FCommonScoreInfo* Found = CommonScoreInfo.Find(InDefiningConfig);
+
+	if (!Found)
+	{
+		return false;
+	}
+
+	Found->ResetQTable();
+	SaveToSlot();
+	return true;
+}
+
+int32 USaveGamePlayerScore::RemoveCommonScoreInfoAndMatchingPlayerScores(const FBS_DefiningConfig& InDefiningConfig)
+{
+	TArray<TSharedPtr<FPlayerScore>> ScoresToDelete;
+	for (const auto& PlayerScore : PlayerScoreArrayPtr)
+	{
+		if (PlayerScore->DefiningConfig == InDefiningConfig)
+		{
+			ScoresToDelete.Add(PlayerScore);
+		}
+	}
+	const int32 NumScoresRemoved = DeletePlayerScoresInternal(ScoresToDelete);
+	const int32 NumCommonScoreInfosRemoved = CommonScoreInfo.Remove(InDefiningConfig);
+	if (NumScoresRemoved > 0 || NumCommonScoreInfosRemoved > 0)
+	{
+		SaveToSlot();
+		if (NumScoresRemoved > 0)
+		{
+			OnScoresDeleted.Broadcast();
+		}
+	}
+	UE_LOG(LogTemp, Display, TEXT("%d Common Score Infos removed when removing a custom game mode."),
+	       NumCommonScoreInfosRemoved);
+	UE_LOG(LogTemp, Display, TEXT("%d matching scores removed when removing a custom game mode."), NumScoresRemoved);
+	return NumScoresRemoved;
+}
+
+int32 USaveGamePlayerScore::RemoveAllCommonScoreInfoAndMatchingPlayerScores()
+{
+	TMap<FBS_DefiningConfig, FCommonScoreInfo> CommonScoreInfoToRemove = CommonScoreInfo.FilterByPredicate(
+		[](const TPair<FBS_DefiningConfig, FCommonScoreInfo>& Pair)
+		{
+			return Pair.Key.GameModeType == EGameModeType::Custom;
+		});
+	for (const TPair<FBS_DefiningConfig, FCommonScoreInfo>& Pair : CommonScoreInfoToRemove)
+	{
+		CommonScoreInfo.Remove(Pair.Key);
+	}
+	TArray<TSharedPtr<FPlayerScore>> ScoresToDelete;
+	for (const auto& PlayerScore : PlayerScoreArrayPtr)
+	{
+		if (CommonScoreInfoToRemove.Contains(PlayerScore->DefiningConfig))
+		{
+			ScoresToDelete.Add(PlayerScore);
+		}
+	}
+	const int32 NumScoresRemoved = DeletePlayerScoresInternal(ScoresToDelete);
+	const int32 NumCommonScoreInfosRemoved = CommonScoreInfoToRemove.Num();
+	if (NumScoresRemoved > 0 || NumCommonScoreInfosRemoved > 0)
+	{
+		SaveToSlot();
+		if (NumScoresRemoved > 0)
+		{
+			OnScoresDeleted.Broadcast();
+		}
+	}
+	UE_LOG(LogTemp, Display, TEXT("%d Common Score Infos removed when removing a custom game mode."),
+	       NumCommonScoreInfosRemoved);
+	UE_LOG(LogTemp, Display, TEXT("%d matching scores removed when removing a custom game mode."), NumScoresRemoved);
+	return NumScoresRemoved;
+}
+
+TMap<FString, float> USaveGamePlayerScore::CreateSongDurationMap() const
+{
+	TMap<FString, float> Map;
+	for (const TSharedPtr<FPlayerScore>& Score : PlayerScoreArrayPtr)
+	{
+		Map.Add(Score->SongTitle, Score->SongLength);
+	}
+	return Map;
+}
+
+void USaveGamePlayerScore::PrintQTable(const FBS_DefiningConfig& InDefiningConfig,
+                                       const FCommonScoreInfo& InCommonScoreInfo,
+                                       const FNumberFormattingOptions& Options)
+{
+	FString GameModeString;
+
+	if (InDefiningConfig.CustomGameModeName.IsEmpty())
+	{
+		GameModeString = UEnum::GetDisplayValueAsText(InDefiningConfig.BaseGameMode).ToString() + " " +
+		                 UEnum::GetDisplayValueAsText(InDefiningConfig.Difficulty).ToString();
+	}
+	else
+	{
+		GameModeString = InDefiningConfig.CustomGameModeName;
+	}
+	UE_LOG(LogTemp, Display, TEXT("Full QTable for %s:"), *GameModeString);
+
+	FString Line;
+	for (int i = 0; i < InCommonScoreInfo.QTable.Num(); i++)
+	{
+		const float Value = InCommonScoreInfo.QTable[i];
+		FString LineValue = FText::AsNumber(Value, &Options).ToString();
+
+		if (Value == 0.f)
+		{
+			LineValue = " " + LineValue;
+		}
+		else if (Value > 0.f)
+		{
+			LineValue = "+" + LineValue;
+		}
+
+		Line += LineValue + "  ";
+
+		if (i > 1 && (i + 1) % InCommonScoreInfo.NumQTableRows == 0)
+		{
+			UE_LOG(LogTemp, Display, TEXT("\t %s"), *Line);
+			Line.Empty();
+		}
+	}
 }

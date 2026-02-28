@@ -6,6 +6,7 @@
 #include "UObject/Interface.h"
 #include "BSGameModeInterface.generated.h"
 
+class USaveGamePlayerScore;
 class UBSGameModeDataAsset;
 class USaveGameCustomGameMode;
 enum class EBaseGameMode : uint8;
@@ -20,6 +21,12 @@ enum class ECustomGameModeImportResult : uint8
 	DefaultGameMode,
 	EmptyCustomGameModeName,
 	Existing
+};
+
+struct FRemoveAllCustomGameModesResult
+{
+	int32 NumCustomGameModesRemoved = 0;
+	int32 NumScoresRemoved = 0;
 };
 
 UINTERFACE()
@@ -51,16 +58,17 @@ public:
 
 	/** Removes a custom game mode and saves to slot. Optionally removes scores and FCommonScoreInfo.
 	 *  @param ConfigToRemove Configuration to search for
-	 *  @param bRemoveScores If true, also removes scores
+	 *  @param SaveGamePlayerScore If provided removes scores and saves to slot.
 	 *  @return Number of score entries that were removed
 	 */
-	static int32 RemoveCustomGameMode(const FBSConfig& ConfigToRemove, bool bRemoveScores);
+	static int32 RemoveCustomGameMode(const FBSConfig& ConfigToRemove, USaveGamePlayerScore* SaveGamePlayerScore);
 
 	/** Removes all custom game modes and saves to slot. Also removes the FCommonScoreInfos for all custom game modes
 	 *  from SaveGamePlayerScore.
-	 *  @return number of custom game modes removed
+	*  @param SaveGamePlayerScore If provided removes scores and saves to slot.
+	 *  @return number of custom game modes / scores removed
 	 */
-	static int32 RemoveAllCustomGameModes();
+	static FRemoveAllCustomGameModesResult RemoveAllCustomGameModes(USaveGamePlayerScore* SaveGamePlayerScore);
 
 	/**
 	 *  @param GameModeName game mode name to search for

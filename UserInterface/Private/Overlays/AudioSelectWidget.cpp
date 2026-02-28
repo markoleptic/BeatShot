@@ -61,26 +61,6 @@ void UAudioSelectWidget::NativeConstruct()
 		ComboBox_InAudioDevices->AddOption(AudioDevice);
 	}
 
-	for (const FPlayerScore& SavedScoreObj : LoadPlayerScores())
-	{
-		SongDurationMap.Add(SavedScoreObj.SongTitle, SavedScoreObj.SongLength);
-	}
-
-	TArray<FString> Songs;
-	for (const auto& [Key, Value] : SongDurationMap)
-	{
-		Songs.Add(Key);
-	}
-	Songs.Sort();
-
-	ComboBox_SongTitle->AddOption("");
-	ComboBox_SongTitle->SetSelectedOption("");
-
-	for (const FString& Song : Songs)
-	{
-		ComboBox_SongTitle->AddOption(Song);
-	}
-
 	Box_AudioDevice->SetVisibility(ESlateVisibility::Collapsed);
 	Box_SongTitleLength->SetVisibility(ESlateVisibility::Collapsed);
 
@@ -100,6 +80,25 @@ void UAudioSelectWidget::FadeOut()
 	FadeOutDelegate.BindDynamic(this, &UAudioSelectWidget::OnFadeOutFinish);
 	PlayAnimationForward(FadeOutAnim);
 	OnExitAudioSelect.ExecuteIfBound();
+}
+
+void UAudioSelectWidget::SetSongs(const TMap<FString, float>& InSongDurationMap)
+{
+	SongDurationMap = InSongDurationMap;
+	TArray<FString> Songs;
+	for (const auto& [Key, Value] : SongDurationMap)
+	{
+		Songs.Add(Key);
+	}
+	Songs.Sort();
+
+	ComboBox_SongTitle->AddOption("");
+	ComboBox_SongTitle->SetSelectedOption("");
+
+	for (const FString& Song : Songs)
+	{
+		ComboBox_SongTitle->AddOption(Song);
+	}
 }
 
 void UAudioSelectWidget::OnFadeOutFinish()

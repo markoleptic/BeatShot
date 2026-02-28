@@ -4,7 +4,6 @@
 #include "AudioAnalyzerManager.h"
 #include "BSGameInstance.h"
 #include "BSGameUserSettings.h"
-#include "BSPlayerScoreInterface.h"
 #include "RuntimeAudioImporterLibrary.h"
 #include "AbilitySystem/BSAbilitySystemComponent.h"
 #include "AbilitySystem/Abilities/BSGA_AimBot.h"
@@ -71,6 +70,10 @@ void ABSGameMode::PostLogin(APlayerController* NewPlayer)
 	{
 		Controllers.Add(NewBSPlayer);
 		CurrentPlayerScores.Add(NewBSPlayer, FPlayerScore());
+		if (NewBSPlayer->IsLocalController())
+		{
+			LocalPlayerController = NewBSPlayer;
+		}
 	}
 	SpawnPlayer(NewPlayer);
 }
@@ -153,8 +156,12 @@ void ABSGameMode::InitializeGameMode(const TSharedPtr<FBSConfig>& InConfig)
 		TargetManager->OnTargetActivated.AddUObject(this, &ABSGameMode::UpdateTargetsSpawned);
 		TargetManager->PostTargetDamageEvent.AddUObject(this, &ABSGameMode::HandlePostTargetDamageEvent);
 	}
-	const FCommonScoreInfo CommonScoreInfo =
-		IBSPlayerScoreInterface::FindOrAddCommonScoreInfo(BSConfig->DefiningConfig);
+
+	check(LocalPlayerController);
+
+
+	const FCommonScoreInfo CommonScoreInfo = LocalPlayerController->GetSaveGamePlayerScore()->FindOrAddCommonScoreInfo(
+		BSConfig->DefiningConfig);
 	TargetManager->Init(BSConfig, CommonScoreInfo, PlayerSettings.Game);
 
 	if (!VisualizerManager)
@@ -212,12 +219,12 @@ void ABSGameMode::InitializeGameMode(const TSharedPtr<FBSConfig>& InConfig)
 
 void ABSGameMode::StartGameMode()
 {
-	for (auto& CurrentPlayerScore : CurrentPlayerScores)
+	for (auto& [Controller, CurrentPlayerScore] : CurrentPlayerScores)
 	{
-		CurrentPlayerScore.Key->ShowCrossHair();
-		CurrentPlayerScore.Key->ShowPlayerHUD();
-		CurrentPlayerScore.Key->HideCountdown();
-		CurrentPlayerScore.Key->UpdatePlayerHUD(CurrentPlayerScore.Value, -1.f, -1.f);
+		Controller->ShowCrossHair();
+		Controller->ShowPlayerHUD();
+		Controller->HideCountdown();
+		Controller->UpdatePlayerHUD(CurrentPlayerScore, -1.f, -1.f);
 	}
 
 	StartGameModeTimers();
@@ -588,31 +595,14 @@ void ABSGameMode::LoadMatchingPlayerScores()
 		                                TargetSpawnCD);
 	}
 
-	for (auto& CurrentPlayerScore : CurrentPlayerScores)
+	for (auto& [Controller, CurrentPlayerScore] : CurrentPlayerScores)
 	{
-		CurrentPlayerScore.Value = FPlayerScore();
-		CurrentPlayerScore.Value.DefiningConfig = BSConfig->DefiningConfig;
-		CurrentPlayerScore.Value.SongTitle = BSConfig->AudioConfig.SongTitle;
-		CurrentPlayerScore.Value.SongLength = BSConfig->AudioConfig.SongLength;
-		CurrentPlayerScore.Value.TotalPossibleDamage = 0.f;
-
-		const TArray<FPlayerScore> PlayerScores = CurrentPlayerScore.Key->LoadPlayerScores().FilterByPredicate(
-			[&](const FPlayerScore& PlayerScore)
-			{
-				if (PlayerScore.HasMatchingDefiningConfigAndSong(CurrentPlayerScore.Value))
-				{
-					return true;
-				}
-				return false;
-			});
-
-		for (const FPlayerScore& ScoreObject : PlayerScores)
-		{
-			if (ScoreObject.Score > CurrentPlayerScore.Value.HighScore)
-			{
-				CurrentPlayerScore.Value.HighScore = ScoreObject.Score;
-			}
-		}
+		CurrentPlayerScore = FPlayerScore();
+		CurrentPlayerScore.DefiningConfig = BSConfig->DefiningConfig;
+		CurrentPlayerScore.SongTitle = BSConfig->AudioConfig.SongTitle;
+		CurrentPlayerScore.SongLength = BSConfig->AudioConfig.SongLength;
+		CurrentPlayerScore.TotalPossibleDamage = 0.f;
+		CurrentPlayerScore.HighScore = Controller->GetSaveGamePlayerScore()->GetHighScore(CurrentPlayerScore);
 	}
 }
 
@@ -622,13 +612,14 @@ void ABSGameMode::HandleScoreSaving()
 	const TObjectPtr<USteamManager> SteamManager = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))
 		->GetSteamManager();
 
-	for (auto& CurrentPlayerScore : CurrentPlayerScores)
+	for (auto& [Controller, CurrentPlayerScore] : CurrentPlayerScores)
 	{
 		// Update location accuracy for the current player score
-		CurrentPlayerScore.Value.LocationAccuracy = AccuracyData.AccuracyRows;
+		CurrentPlayerScore.LocationAccuracy = AccuracyData.AccuracyRows;
 
 		// Find or add a Common Score Info instance
-		FCommonScoreInfo ScoreInfoInst = CurrentPlayerScore.Key->FindOrAddCommonScoreInfo(BSConfig->DefiningConfig);
+		const auto SaveGamePlayerScore = Controller->GetSaveGamePlayerScore();
+		FCommonScoreInfo ScoreInfoInst = SaveGamePlayerScore->FindOrAddCommonScoreInfo(BSConfig->DefiningConfig);
 
 		// Update the Common Score Info Accuracy Data
 		ScoreInfoInst.UpdateAccuracy(AccuracyData);
@@ -639,32 +630,32 @@ void ABSGameMode::HandleScoreSaving()
 			TargetManager->UpdateCommonScoreInfoQTable(ScoreInfoInst);
 		}
 
-		const bool bValidToSave = CurrentPlayerScore.Value.IsValidToSave();
-		if (bValidToSave)
+		if (CurrentPlayerScore.IsValidToSave())
 		{
 			// Update Steam Stat for Game Mode
 #if UE_BUILD_SHIPPING
 			if (TimePlayedGameMode > Constants::MinStatRequirement_Duration_NumGamesPlayed)
 			{
-				GI->GetSteamManager()->UpdateStat_NumGamesPlayed(
+				SteamManager->UpdateStat_NumGamesPlayed(
 					CurrentPlayerScore.Value.DefiningConfig.GameModeType == EGameModeType::Custom
 					? EBaseGameMode::None
 					: CurrentPlayerScore.Value.DefiningConfig.BaseGameMode, 1);
 			}
 #else // !UE_BUILD_SHIPPING
 			SteamManager->UpdateStat_NumGamesPlayed(
-				CurrentPlayerScore.Value.DefiningConfig.GameModeType == EGameModeType::Custom
+				CurrentPlayerScore.DefiningConfig.GameModeType == EGameModeType::Custom
 				? EBaseGameMode::None
-				: CurrentPlayerScore.Value.DefiningConfig.BaseGameMode, 1);
+				: CurrentPlayerScore.DefiningConfig.BaseGameMode, 1);
 #endif // UE_BUILD_SHIPPING
 
 			// Save common score info and completed scores locally
-			CurrentPlayerScore.Key->SaveCommonScoreInfo(BSConfig->DefiningConfig, ScoreInfoInst);
-			FinalizePlayerScore(CurrentPlayerScore.Value);
-			CurrentPlayerScore.Key->SavePlayerScoreInstance(CurrentPlayerScore.Value);
+			SaveGamePlayerScore->SetOrAddCommonScoreInfo(BSConfig->DefiningConfig, ScoreInfoInst);
+			FinalizePlayerScore(CurrentPlayerScore);
+			SaveGamePlayerScore->AddPlayerScoreInstance(CurrentPlayerScore);
+			SaveGamePlayerScore->SaveToSlot();
 		}
 
-		CurrentPlayerScore.Value = FPlayerScore();
+		CurrentPlayerScore = FPlayerScore();
 	}
 }
 

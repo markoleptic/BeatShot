@@ -38,8 +38,6 @@ void UMainMenuWidget::NativeConstruct()
 	MenuButton_PatchNotes->SetActive();
 	MainMenuSwitcher->SetActiveWidget(MenuButton_PatchNotes->GetAssociatedWidget());
 	LastMenuButton = MakeWeakObjectPtr(MenuButton_PatchNotes);
-
-	ScoreViewerWidget->LoadScores(LoadSaveGamePlayerScore(), false);
 }
 
 void UMainMenuWidget::NativePreConstruct()
@@ -65,6 +63,13 @@ USettingsMenuWidget* UMainMenuWidget::GetSettingsMenuWidget() const
 
 void UMainMenuWidget::OnPlayerSettingsChanged(const FPlayerSettings_User& UserSettings)
 {
+}
+
+void UMainMenuWidget::SetSaveGamePlayerScore(USaveGamePlayerScore* InSaveGamePlayerScore)
+{
+	SaveGamePlayerScore = InSaveGamePlayerScore;
+	GameModesWidget->SetSaveGamePlayerScore(InSaveGamePlayerScore);
+	ScoreViewerWidget->LoadScores(SaveGamePlayerScore, false);
 }
 
 void UMainMenuWidget::OnMenuButtonClicked_BSButton(const UBSButton* Button)

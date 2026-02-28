@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BSPlayerScoreInterface.h"
 #include "BSPlayerSettingsInterface.h"
 #include "Blueprint/UserWidget.h"
 #include "BSGameModeConfig/AudioConfig.h"
@@ -28,8 +27,7 @@ class UWidgetAnimation;
 UCLASS()
 class USERINTERFACE_API UAudioSelectWidget : public UUserWidget,
                                              public IBSPlayerSettingsInterface,
-                                             public IBSWidgetInterface,
-                                             public IBSPlayerScoreInterface
+                                             public IBSWidgetInterface
 {
 	GENERATED_BODY()
 
@@ -46,6 +44,8 @@ public:
 
 	/** Broadcasts to parent so it can slide menu button back to starting position. */
 	TDelegate<void()> OnExitAudioSelect;
+
+	void SetSongs(const TMap<FString, float>& InSongDurationMap);
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Audio Select Widget | Classes")

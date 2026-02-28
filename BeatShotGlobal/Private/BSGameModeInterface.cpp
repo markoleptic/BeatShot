@@ -42,7 +42,8 @@ void IBSGameModeInterface::SaveCustomGameMode(const FBSConfig& ConfigToSave)
 	}
 }
 
-int32 IBSGameModeInterface::RemoveCustomGameMode(const FBSConfig& ConfigToRemove, const bool bRemoveScores)
+int32 IBSGameModeInterface::RemoveCustomGameMode(const FBSConfig& ConfigToRemove,
+                                                 USaveGamePlayerScore* SaveGamePlayerScore)
 {
 	int32 NumScoresRemoved = 0;
 	if (USaveGameCustomGameMode* SaveGameCustomGameMode = SaveLoadCommon::LoadFromSlot<USaveGameCustomGameMode>(
@@ -51,58 +52,29 @@ int32 IBSGameModeInterface::RemoveCustomGameMode(const FBSConfig& ConfigToRemove
 		SaveGameCustomGameMode->RemoveCustomGameMode(ConfigToRemove);
 		SaveLoadCommon::SaveToSlot(SaveGameCustomGameMode, TEXT("CustomGameModesSlot"), 3);
 	}
-	if (bRemoveScores)
+	if (SaveGamePlayerScore)
 	{
-		if (USaveGamePlayerScore* SaveGamePlayerScore = SaveLoadCommon::LoadFromSlot<USaveGamePlayerScore>(
-			TEXT("ScoreSlot"), 1))
-		{
-			SaveGamePlayerScore->BuildRuntimeData();
-
-			TArray<TSharedPtr<FPlayerScore>> ScoresToDelete;
-			for (const auto& PlayerScore : SaveGamePlayerScore->GetPlayerScoresPtr())
-			{
-				if (PlayerScore->DefiningConfig == ConfigToRemove.DefiningConfig)
-				{
-					ScoresToDelete.Add(PlayerScore);
-				}
-			}
-			SaveGamePlayerScore->DeletePlayerScores(ScoresToDelete);
-			NumScoresRemoved = ScoresToDelete.Num();
-			const int32 NumCommonScoreInfosRemoved = SaveGamePlayerScore->RemoveCommonScoreInfo(
-				ConfigToRemove.DefiningConfig);
-
-			SaveGamePlayerScore->CommitRuntimeData();
-			SaveLoadCommon::SaveToSlot(SaveGamePlayerScore, TEXT("ScoreSlot"), 1);
-
-			UE_LOG(LogTemp, Display, TEXT("%d Common Score Infos removed when removing a custom game mode."),
-			       NumCommonScoreInfosRemoved);
-			UE_LOG(LogTemp, Display, TEXT("%d matching scores removed when removing a custom game mode."),
-			       NumScoresRemoved);
-		}
+		SaveGamePlayerScore->RemoveCommonScoreInfoAndMatchingPlayerScores(ConfigToRemove.DefiningConfig);
 	}
 	return NumScoresRemoved;
 }
 
-int32 IBSGameModeInterface::RemoveAllCustomGameModes()
+FRemoveAllCustomGameModesResult IBSGameModeInterface::RemoveAllCustomGameModes(
+	USaveGamePlayerScore* SaveGamePlayerScore)
 {
-	int32 NumCustomGameModesRemoved = 0;
+	FRemoveAllCustomGameModesResult RemoveAllCustomGameModesResult;
 	if (USaveGameCustomGameMode* SaveGameCustomGameMode = SaveLoadCommon::LoadFromSlot<USaveGameCustomGameMode>(
 		TEXT("CustomGameModesSlot"), 3))
 	{
-		NumCustomGameModesRemoved = SaveGameCustomGameMode->RemoveAll();
+		RemoveAllCustomGameModesResult.NumCustomGameModesRemoved = SaveGameCustomGameMode->RemoveAll();
 		SaveLoadCommon::SaveToSlot(SaveGameCustomGameMode, TEXT("CustomGameModesSlot"), 3);
 	}
-	if (USaveGamePlayerScore* SaveGamePlayerScore = SaveLoadCommon::LoadFromSlot<USaveGamePlayerScore>(
-		TEXT("ScoreSlot"), 1))
+	if (SaveGamePlayerScore)
 	{
-		SaveGamePlayerScore->BuildRuntimeData();
-		const int32 NumCommonScoreInfosRemoved = SaveGamePlayerScore->RemoveAllCustomGameModeCommonScoreInfo();
-		UE_LOG(LogTemp, Display, TEXT("%d Common Score Infos removed when removing all custom game modes."),
-		       NumCommonScoreInfosRemoved);
-		SaveGamePlayerScore->CommitRuntimeData();
-		SaveLoadCommon::SaveToSlot(SaveGamePlayerScore, TEXT("ScoreSlot"), 1);
+		RemoveAllCustomGameModesResult.NumScoresRemoved = SaveGamePlayerScore->
+			RemoveAllCommonScoreInfoAndMatchingPlayerScores();
 	}
-	return NumCustomGameModesRemoved;
+	return RemoveAllCustomGameModesResult;
 }
 
 bool IBSGameModeInterface::IsCustomGameMode(const FString& GameModeName)

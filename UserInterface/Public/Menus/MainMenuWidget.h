@@ -3,11 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BSPlayerScoreInterface.h"
 #include "BSPlayerSettingsInterface.h"
 #include "Blueprint/UserWidget.h"
 #include "MainMenuWidget.generated.h"
 
+class USaveGamePlayerScore;
 class UScoreViewerWidget;
 class UBSButton;
 class UMenuStyle;
@@ -22,9 +22,7 @@ class UMenuButton;
 
 /** Widget that is the entry point into the game, holding most other widgets that aren't MenuWidgets. */
 UCLASS()
-class USERINTERFACE_API UMainMenuWidget : public UUserWidget,
-                                          public IBSPlayerSettingsInterface,
-                                          public IBSPlayerScoreInterface
+class USERINTERFACE_API UMainMenuWidget : public UUserWidget, public IBSPlayerSettingsInterface
 {
 	GENERATED_BODY()
 
@@ -41,6 +39,8 @@ public:
 
 	/** Called when another class saves User settings. */
 	virtual void OnPlayerSettingsChanged(const FPlayerSettings_User& UserSettings) override;
+
+	void SetSaveGamePlayerScore(USaveGamePlayerScore* InSaveGamePlayerScore);
 
 protected:
 	virtual void NativeConstruct() override;
@@ -102,4 +102,7 @@ private:
 	void OnMenuButtonClicked_BSButton(const UBSButton* Button);
 
 	TWeakObjectPtr<UMenuButton> LastMenuButton;
+
+	UPROPERTY()
+	TObjectPtr<USaveGamePlayerScore> SaveGamePlayerScore;
 };

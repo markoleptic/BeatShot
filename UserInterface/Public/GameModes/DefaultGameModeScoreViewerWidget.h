@@ -18,10 +18,10 @@ class USERINTERFACE_API UDefaultGameModeScoreViewerWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	/** Adds a reference to the save game and calls @link RepopulatePlayerScoreByGameModeSongAndDifficulty \endlink . */
+	/** Adds a reference to the save game and calls RepopulatePlayerScoreByGameModeSongAndDifficulty. */
 	void SetSaveGamePlayerScore(USaveGamePlayerScore* InSaveGamePlayerScore);
 
-	/** Filters the active scores based on @param BaseGameMode @param SongTitle @param Difficulty . Always updates the
+	/** Filters the active scores based on BaseGameMode, SongTitle, and Difficulty. Always updates the
 	 *  song and difficulty combo boxes and all data visualizations. */
 	void SetActiveScores(EBaseGameMode BaseGameMode, const FString& SongTitle, EGameModeDifficulty Difficulty);
 
@@ -68,7 +68,7 @@ protected:
 	UGameModeScoreViewerWidget* GameModeScoreViewerWidget;
 
 	UPROPERTY()
-	USaveGamePlayerScore* SaveGamePlayerScore;
+	TObjectPtr<USaveGamePlayerScore> SaveGamePlayerScore;
 
 	TMap<EBaseGameMode, FText> BaseGameModeText;
 

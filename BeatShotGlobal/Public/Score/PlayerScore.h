@@ -78,10 +78,6 @@ struct BEATSHOTGLOBAL_API FPlayerScore
 	UPROPERTY()
 	TArray<FAccuracyRow> LocationAccuracy;
 
-	/** whether this instance has been saved to the database yet. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BeatShot|PlayerScore")
-	bool bSavedToDatabase;
-
 	FPlayerScore()
 	{
 		DefiningConfig = FBS_DefiningConfig();
@@ -99,7 +95,6 @@ struct BEATSHOTGLOBAL_API FPlayerScore
 		TotalPossibleDamage = 0.f;
 		Streak = 0;
 		LocationAccuracy = TArray<FAccuracyRow>();
-		bSavedToDatabase = false;
 	}
 
 	/** Verifies that the score is greater than zero and that if the mode is custom, that the Custom Game Mode Name

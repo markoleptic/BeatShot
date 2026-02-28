@@ -4,12 +4,13 @@
 
 
 #include "CoreMinimal.h"
-#include "BSPlayerScoreInterface.h"
 #include "BSPlayerSettingsInterface.h"
 #include "SaveGames/SaveGamePlayerSettings.h"
 #include "Target/ReinforcementLearningComponent.h"
 #include "BSPlayerController.generated.h"
 
+struct FPlayerScore;
+class USaveGamePlayerScore;
 class UBSGameUserSettings;
 class AFloatingTextActor;
 class UQTableWidget;
@@ -30,9 +31,7 @@ DECLARE_DELEGATE(FOnScreenFadeToBlackFinish);
 /** Base PlayerController class for this game. Responsible for adding any main widget from the UserInterface module
  *  to the viewport (MainMenuWidget, PauseMenu, PostGameModeMenu), and several other overlay widgets. */
 UCLASS()
-class BEATSHOT_API ABSPlayerController : public APlayerController,
-                                         public IBSPlayerSettingsInterface,
-                                         public IBSPlayerScoreInterface
+class BEATSHOT_API ABSPlayerController : public APlayerController, public IBSPlayerSettingsInterface
 {
 	GENERATED_BODY()
 
@@ -145,6 +144,8 @@ public:
 	/** Server only */
 	virtual void OnRep_PlayerState() override;
 
+	TObjectPtr<USaveGamePlayerScore> GetSaveGamePlayerScore() const;
+
 	/** Delegate that executes when the screen fade widget completes its animation.  */
 	FOnScreenFadeToBlackFinish OnScreenFadeToBlackFinish;
 
@@ -228,4 +229,7 @@ private:
 
 	UPROPERTY()
 	const UBSGameUserSettings* GameUserSettings;
+
+	UPROPERTY()
+	TObjectPtr<USaveGamePlayerScore> SaveGamePlayerScore;
 };

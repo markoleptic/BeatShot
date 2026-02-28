@@ -32,8 +32,6 @@ void UPostGameMenuWidget::NativeConstruct()
 
 	FadeInWidgetDelegate.BindDynamic(this, &UPostGameMenuWidget::SetScoresWidgetVisibility);
 
-	ScoreViewerWidget->LoadScores(IBSPlayerScoreInterface::LoadSaveGamePlayerScore(), false);
-
 	BindToAnimationFinished(FadeInWidget, FadeInWidgetDelegate);
 	PlayFadeInWidget();
 }
@@ -44,6 +42,13 @@ void UPostGameMenuWidget::NativePreConstruct()
 	SetStyles();
 }
 
+void UPostGameMenuWidget::SetSaveGamePlayerScore(USaveGamePlayerScore* InSaveGamePlayerScore)
+{
+	SaveGamePlayerScore = InSaveGamePlayerScore;
+	GameModesWidget->SetSaveGamePlayerScore(InSaveGamePlayerScore);
+	ScoreViewerWidget->LoadScores(SaveGamePlayerScore, true);
+}
+
 void UPostGameMenuWidget::SetStyles()
 {
 	MenuStyle = IBSWidgetInterface::GetStyleCDO(MenuStyleClass);
@@ -52,7 +57,7 @@ void UPostGameMenuWidget::SetStyles()
 void UPostGameMenuWidget::ShowAudioFormatSelect()
 {
 	auto* AudioSelectWidget = CreateWidget<UAudioSelectWidget>(this, AudioSelectClass);
-
+	AudioSelectWidget->SetSongs(SaveGamePlayerScore->CreateSongDurationMap());
 	AudioSelectWidget->OnStartButtonClickedDelegate.BindLambda([&](const FBS_AudioConfig& AudioConfig)
 	{
 		FGameModeTransitionState GameModeTransitionState;

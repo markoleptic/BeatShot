@@ -46,18 +46,22 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+
 	virtual void Tick(float DeltaSeconds) override;
+
 	virtual void PostLogin(APlayerController* NewPlayer) override;
+
 	virtual void PostLoad() override;
+
 	virtual void Logout(AController* Exiting) override;
+
 	ACharacter* SpawnPlayer(APlayerController* PlayerController);
+
 	void HandleAudioImporterResult(URuntimeAudioImporterLibrary* Importer,
 	                               UImportedSoundWave* SoundWave,
 	                               ERuntimeImportStatus Status);
-	void HandleGetAvailableAudioInputDevices(const TArray<FRuntimeAudioInputDeviceInfo>& DeviceInfo);
 
-	UPROPERTY()
-	TArray<ABSPlayerController*> Controllers;
+	void HandleGetAvailableAudioInputDevices(const TArray<FRuntimeAudioInputDeviceInfo>& DeviceInfo);
 
 	/* The TargetManager class to spawn. */
 	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Classes")
@@ -99,6 +103,12 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<UCapturableSoundWave> AudioCapturer;
+
+	UPROPERTY()
+	TArray<TObjectPtr<ABSPlayerController>> Controllers;
+
+	UPROPERTY()
+	TObjectPtr<ABSPlayerController> LocalPlayerController;
 
 	/** Granted data about the TrackGun ability. */
 	FBSGrantedAbilitySet TrackGunAbilityGrantedHandles;
@@ -224,7 +234,7 @@ private:
 	float TimePlayedGameMode;
 
 	/** The "live" player score objects, which start fresh and import high score from SavedPlayerScores. */
-	TMap<ABSPlayerController*, FPlayerScore> CurrentPlayerScores;
+	TMap<TObjectPtr<ABSPlayerController>, FPlayerScore> CurrentPlayerScores;
 
 	/* Locally stored AASettings since they must be accessed frequently in OnTick(). */
 	UPROPERTY()

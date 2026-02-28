@@ -2,7 +2,6 @@
 // ReSharper disable CppMemberFunctionMayBeConst
 
 
-#include "BSPlayerScoreInterface.h"
 #include "CommonWidgetCarousel.h"
 #include "Blueprint/WidgetTree.h"
 #include "BSGameModeConfig/BSGameModeValidator.h"
@@ -17,6 +16,7 @@
 #include "Menus/GameModeMenuWidget.h"
 #include "Overlays/AudioSelectWidget.h"
 #include "Overlays/GameModeSharingWidget.h"
+#include "SaveGames/SaveGamePlayerScore.h"
 #include "Utilities/SavedTextWidget.h"
 #include "Utilities/Buttons/MenuButton.h"
 #include "Windows/WindowsPlatformApplicationMisc.h"
@@ -42,6 +42,10 @@ void UGameModeMenuWidget::NativeConstruct()
 	CustomGameModeSaveFailureFormattedText = FTextFormat(GetWidgetTextFromKey("GM_CustomGameModeSaveFailure"));
 	CustomGameModeImportInvalidStringFormattedText = FTextFormat(
 		GetWidgetTextFromKey("GM_CustomGameModeImportInvalidString"));
+	CustomGameModeAndScoresRemovalSuccessFormattedText = FTextFormat(
+		GetWidgetTextFromKey("GM_RemoveGameModesAndScoresSuccess"));
+	CustomGameModesAndScoresRemovalSuccessFormattedText = FTextFormat(
+		GetWidgetTextFromKey("GM_RemoveAllGameModeAndScoresSuccess"));
 
 
 	GameModeValidator = NewObject<UBSGameModeValidator>();
@@ -443,7 +447,7 @@ void UGameModeMenuWidget::OnButtonClicked_ClearRLHistory()
 	Buttons[1]->OnBSButtonPressed.AddLambda([&](const UBSButton* /*Button*/)
 	{
 		PopupMessageWidget->FadeOut();
-		if (IBSPlayerScoreInterface::ResetQTable(BSConfig->DefiningConfig))
+		if (SaveGamePlayerScore->ResetQTable(BSConfig->DefiningConfig))
 		{
 			SetAndPlaySavedText(FText::Format(ResetAIHistorySuccessFormattedText, {
 				                                  {
@@ -633,15 +637,15 @@ void UGameModeMenuWidget::OnButtonClicked_RemoveSelectedCustom()
 
 	auto* PopupMessageWidget = CreateWidget<UPopupMessageWidget>(this, PopupMessageClass);
 	TArray<UBSButton*> Buttons = PopupMessageWidget->InitPopup(GetWidgetTextFromKey("GM_CustomGameModeRemovalTitle"),
-	                                                           FText::Format(
-		                                                           CustomGameModeRemovalContentFormattedText, {
-			                                                           {
-				                                                           TEXT("GameMode"),
-				                                                           FText::FromString(
-					                                                           BSConfig->DefiningConfig.
-					                                                           CustomGameModeName)
-			                                                           }
-		                                                           }), 3);
+	                                                           FText::Format(CustomGameModeRemovalContentFormattedText,
+	                                                                         {
+		                                                                         {
+			                                                                         TEXT("GameMode"),
+			                                                                         FText::FromString(
+				                                                                         BSConfig->DefiningConfig.
+				                                                                         CustomGameModeName)
+		                                                                         }
+	                                                                         }), 3);
 
 	Buttons[0]->SetButtonText(GetWidgetTextFromKey("G_Cancel"));
 	Buttons[0]->SetWrapTextAt(350.f);
@@ -658,7 +662,7 @@ void UGameModeMenuWidget::OnButtonClicked_RemoveSelectedCustom()
 		const FString RemovedGameModeName = BSConfig->DefiningConfig.CustomGameModeName;
 		if (FBSConfig Found; FindCustomGameMode(RemovedGameModeName, Found))
 		{
-			RemoveCustomGameMode(Found, false);
+			RemoveCustomGameMode(Found, nullptr);
 			SetAndPlaySavedText(FText::Format(CustomGameModeRemovalSuccessFormattedText,
 			                                  {{TEXT("GameMode"), FText::FromString(RemovedGameModeName)}}));
 			RefreshGameModes();
@@ -679,11 +683,11 @@ void UGameModeMenuWidget::OnButtonClicked_RemoveSelectedCustom()
 		const FString GameModeNameToRemove = BSConfig->DefiningConfig.CustomGameModeName;
 		if (FBSConfig Found; FindCustomGameMode(GameModeNameToRemove, Found))
 		{
-			const int NumRemoved = RemoveCustomGameMode(Found, true);
+			const int NumRemoved = RemoveCustomGameMode(Found, SaveGamePlayerScore);
 			FFormatNamedArguments Args;
 			Args.Add(TEXT("GameMode"), FText::FromString(GameModeNameToRemove));
 			Args.Add(TEXT("NumRemoved"), FText::AsNumber(NumRemoved));
-			SetAndPlaySavedText(FText::Format(CustomGameModeRemovalSuccessFormattedText, Args));
+			SetAndPlaySavedText(FText::Format(CustomGameModeAndScoresRemovalSuccessFormattedText, Args));
 			RefreshGameModes();
 
 			if (FBSConfig DefaultConfig; FindPresetGameMode(EBaseGameMode::MultiBeat, EGameModeDifficulty::Normal,
@@ -704,23 +708,49 @@ void UGameModeMenuWidget::OnButtonClicked_RemoveAllCustom()
 	auto* PopupMessageWidget = CreateWidget<UPopupMessageWidget>(this, PopupMessageClass);
 	TArray<UBSButton*> Buttons = PopupMessageWidget->InitPopup(GetWidgetTextFromKey("GM_CustomGameModeRemovalTitle"),
 	                                                           GetWidgetTextFromKey(
-		                                                           "GM_CustomGameModeRemoveAllContent"), 2);
+		                                                           "GM_CustomGameModeRemoveAllContent"), 3);
 
-	Buttons[0]->SetButtonText(GetWidgetTextFromKey("G_No"));
+	Buttons[0]->SetButtonText(GetWidgetTextFromKey("G_Cancel"));
+	Buttons[0]->SetWrapTextAt(350.f);
 	Buttons[0]->OnBSButtonPressed.AddLambda([&](const UBSButton* /*Button*/)
 	{
 		PopupMessageWidget->FadeOut();
 	});
 
-	Buttons[1]->SetButtonText(GetWidgetTextFromKey("G_Yes"));
+	Buttons[1]->SetButtonText(GetWidgetTextFromKey("GM_OnlyRemoveGameModes"));
+	Buttons[1]->SetWrapTextAt(350.f);
 	Buttons[1]->OnBSButtonPressed.AddLambda([&](const UBSButton* /*Button*/)
 	{
 		PopupMessageWidget->FadeOut();
-		if (const int32 NumRemoved = RemoveAllCustomGameModes(); NumRemoved >= 1)
+		const auto RemoveResult = RemoveAllCustomGameModes(nullptr);
+		if (RemoveResult.NumCustomGameModesRemoved > 0)
 		{
 			FFormatNamedArguments Args;
-			Args.Add(TEXT("NumRemoved"), FText::AsNumber(NumRemoved));
+			Args.Add(TEXT("NumRemoved"), FText::AsNumber(RemoveResult.NumCustomGameModesRemoved));
 			SetAndPlaySavedText(FText::Format(CustomGameModeRemoveAllSuccessFormattedText, Args));
+			RefreshGameModes();
+		}
+
+		if (FBSConfig DefaultConfig; FindPresetGameMode(EBaseGameMode::MultiBeat, EGameModeDifficulty::Normal,
+		                                                GameModeDataAsset.Get(), DefaultConfig))
+		{
+			PopulateGameModeOptions(DefaultConfig);
+		}
+		UpdateSaveStartButtonStates();
+	});
+
+	Buttons[2]->SetButtonText(GetWidgetTextFromKey("GM_RemoveGameModesAndScores"));
+	Buttons[2]->SetWrapTextAt(350.f);
+	Buttons[2]->OnBSButtonPressed.AddLambda([&](const UBSButton* /*Button*/)
+	{
+		PopupMessageWidget->FadeOut();
+		const auto RemoveResult = RemoveAllCustomGameModes(SaveGamePlayerScore);
+		if (RemoveResult.NumCustomGameModesRemoved > 0 || RemoveResult.NumScoresRemoved > 0)
+		{
+			FFormatNamedArguments Args;
+			Args.Add(TEXT("NumGameModes"), FText::AsNumber(RemoveResult.NumCustomGameModesRemoved));
+			Args.Add(TEXT("NumScores"), FText::AsNumber(RemoveResult.NumScoresRemoved));
+			SetAndPlaySavedText(FText::Format(CustomGameModesAndScoresRemovalSuccessFormattedText, Args));
 			RefreshGameModes();
 		}
 
@@ -871,7 +901,7 @@ void UGameModeMenuWidget::UpdateSaveStartButtonStates()
 void UGameModeMenuWidget::ShowAudioFormatSelect(const bool bStartFromDefaultGameMode)
 {
 	auto* AudioSelectWidget = CreateWidget<UAudioSelectWidget>(this, AudioSelectClass);
-
+	AudioSelectWidget->SetSongs(SaveGamePlayerScore->CreateSongDurationMap());
 	AudioSelectWidget->OnStartButtonClickedDelegate.BindLambda([&](const FBS_AudioConfig& AudioConfig)
 	{
 		FGameModeTransitionState GameModeTransitionState;
@@ -1134,6 +1164,11 @@ UCustomGameModeStartWidget* UGameModeMenuWidget::GetCurrentStartWidget() const
 UCustomGameModeStartWidget* UGameModeMenuWidget::GetNotCurrentStartWidget() const
 {
 	return NotCurrentCustomGameModesWidget->GetStartWidget();
+}
+
+void UGameModeMenuWidget::SetSaveGamePlayerScore(USaveGamePlayerScore* InSaveGamePlayerScore)
+{
+	SaveGamePlayerScore = InSaveGamePlayerScore;
 }
 
 void UGameModeMenuWidget::StopGameModePreview()
