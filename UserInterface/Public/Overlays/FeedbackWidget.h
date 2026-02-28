@@ -12,7 +12,7 @@ class UTextBlock;
 class UBSButton;
 class UEditableTextBox;
 
-/** Simple pop-up widget that sends feedback using a http request. */
+/** Simple pop-up widget that sends feedback using an http request. */
 UCLASS()
 class USERINTERFACE_API UFeedbackWidget : public UUserWidget
 {

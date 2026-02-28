@@ -9,7 +9,6 @@
 #include "Menus/GameModeMenuWidget.h"
 #include "Menus/ScoreViewerWidget.h"
 #include "Overlays/FeedbackWidget.h"
-#include "Overlays/LoginWidget.h"
 #include "Styles/MenuStyle.h"
 #include "Utilities/BSWidgetInterface.h"
 #include "Utilities/Buttons/MenuButton.h"

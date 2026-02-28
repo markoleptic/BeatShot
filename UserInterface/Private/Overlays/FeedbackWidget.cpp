@@ -2,10 +2,10 @@
 
 
 #include "Overlays/FeedbackWidget.h"
-#include "HttpRequestInterface.h"
 #include "Components/EditableTextBox.h"
 #include "Components/MultiLineEditableTextBox.h"
 #include "Components/TextBlock.h"
+#include "Utilities/HttpRequestHelpers.h"
 #include "Utilities/Buttons/BSButton.h"
 
 void UFeedbackWidget::ShowFeedbackWidget()
@@ -82,7 +82,7 @@ void UFeedbackWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 			}
 			PlayFadeInResponse();
 		});
-		IHttpRequestInterface::PostFeedback(Feedback, Response);
+		HttpRequestHelpers::PostFeedback(Feedback, Response);
 		PlayFadeOut();
 	}
 	else if (Button == Button_Okay)
