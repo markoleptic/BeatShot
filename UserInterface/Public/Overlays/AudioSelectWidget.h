@@ -44,6 +44,9 @@ public:
 
 	TDelegate<void(const FBS_AudioConfig& AudioConfig)> OnStartButtonClickedDelegate;
 
+	/** Broadcasts to parent so it can slide menu button back to starting position. */
+	TDelegate<void()> OnExitAudioSelect;
+
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Audio Select Widget | Classes")
 	TSubclassOf<UPopupMessageWidget> PopupMessageClass;
@@ -118,11 +121,11 @@ private:
 	UFUNCTION()
 	void OnValueChanged_Seconds(const FText& NewSeconds, ETextCommit::Type CommitType);
 	UFUNCTION()
-	void OnSelectionChanged_InAudioDevice(const FString SelectedInAudioDevice, const ESelectInfo::Type SelectionType);
+	void OnSelectionChanged_InAudioDevice(const FString SelectedInAudioDevice, ESelectInfo::Type SelectionType);
 	UFUNCTION()
-	void OnSelectionChanged_SongTitle(const FString NewSongTitle, const ESelectInfo::Type SelectionType);
+	void OnSelectionChanged_SongTitle(const FString NewSongTitle, ESelectInfo::Type SelectionType);
 	UFUNCTION()
-	void OnCheckStateChanged_PlaybackAudio(const bool bIsChecked);
+	void OnCheckStateChanged_PlaybackAudio(bool bIsChecked);
 
 	/** Displays an error message upon failed AudioAnalyzer initialization. */
 	UFUNCTION()

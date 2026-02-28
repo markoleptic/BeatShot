@@ -190,11 +190,11 @@ private:
 	void OnSelectionChanged_OutputAudioDevice(const TArray<FString>& SelectedOptions, ESelectInfo::Type SelectionType);
 
 	UFUNCTION()
-	void OnCheckStateChanged_VSyncEnabled(const bool bIsChecked);
+	void OnCheckStateChanged_VSyncEnabled(bool bIsChecked);
 	UFUNCTION()
-	void OnCheckStateChanged_HDREnabled(const bool bIsChecked);
+	void OnCheckStateChanged_HDREnabled(bool bIsChecked);
 	UFUNCTION()
-	void OnCheckStateChanged_FPSCounter(const bool bIsChecked);
+	void OnCheckStateChanged_FPSCounter(bool bIsChecked);
 	UFUNCTION()
 	void OnTextCommitted_FPSLimitMenu(const FText& Text, ETextCommit::Type CommitType);
 	UFUNCTION()

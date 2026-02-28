@@ -35,7 +35,7 @@ protected:
 	void UpdateDependentOptions_TargetDistributionPolicy(const ETargetDistributionPolicy& Policy);
 
 	UFUNCTION()
-	void OnCheckStateChanged_AllowActivationWhileActivated(const bool bChecked);
+	void OnCheckStateChanged_AllowActivationWhileActivated(bool bChecked);
 
 	void OnSliderTextBoxValueChanged(USingleRangeInputWidget* Widget, const float Value);
 
@@ -46,7 +46,7 @@ protected:
 
 	UFUNCTION()
 	void OnSelectionChanged_TargetActivationSelectionPolicy(const TArray<FString>& Selected,
-	                                                        const ESelectInfo::Type SelectionType);
+	                                                        ESelectInfo::Type SelectionType);
 
 	FString GetComboBoxEntryTooltipStringTableKey_TargetActivationSelectionPolicy(const FString& EnumString);
 

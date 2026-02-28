@@ -56,7 +56,7 @@ DECLARE_DYNAMIC_DELEGATE_RetVal_TwoParams(UWidget*,
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnMultiSelectionChangedEvent,
                                              const TArray<FString>&,
                                              ActiveSelections,
-                                             const ESelectInfo::Type,
+                                             ESelectInfo::Type,
                                              SelectionType);
 
 UCLASS(meta=( DisplayName="BSComboBox (String) C++"))
@@ -276,8 +276,7 @@ protected:
 	virtual TSharedRef<SWidget> HandleGenerateWidget(TSharedPtr<FString> Item) const;
 
 	/** Called by slate when the underlying combobox selection changes. Handles both single select and multi-select. */
-	virtual void HandleSelectionChanged(const TArray<TSharedPtr<FString>>& Items,
-	                                    const ESelectInfo::Type SelectionType);
+	virtual void HandleSelectionChanged(const TArray<TSharedPtr<FString>>& Items, ESelectInfo::Type SelectionType);
 
 	/** Generates a widget for the combobox content that is selected. */
 	virtual TSharedRef<SWidget> HandleSelectionChangedGenerateWidget(

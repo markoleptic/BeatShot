@@ -163,11 +163,8 @@ void UQuitMenuWidget::SetSaveMenuTitleDesktop()
 
 void UQuitMenuWidget::InitializeExit()
 {
-	PlayAnimationForward(FadeOutBackgroundBlur);
-	FadeOutWidgetDelegate.BindDynamic(this, &UQuitMenuWidget::CollapseWidget);
+	FadeOutWidgetDelegate.BindDynamic(this, &UQuitMenuWidget::RemoveFromParent);
 	BindToAnimationFinished(FadeOutBackgroundBlur, FadeOutWidgetDelegate);
-	if (!OnExitQuitMenu.ExecuteIfBound())
-	{
-		UE_LOG(LogTemp, Display, TEXT("OnExitQuitMenu not bound."));
-	}
+	PlayAnimationForward(FadeOutBackgroundBlur);
+	OnExitQuitMenu.ExecuteIfBound();
 }

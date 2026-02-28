@@ -44,7 +44,7 @@ protected:
 	                                               const EReinforcementLearningHyperParameterMode HyperParameterMode);
 
 	UFUNCTION()
-	void OnCheckStateChanged_EnableAI(const bool bChecked);
+	void OnCheckStateChanged_EnableAI(bool bChecked);
 
 	void OnSliderTextBoxValueChanged(USingleRangeInputWidget* Widget, const float Value);
 
@@ -53,14 +53,13 @@ protected:
 	                                          const float Value);
 
 	UFUNCTION()
-	void OnSelectionChanged_RecentTargetMemoryPolicy(const TArray<FString>& Selected,
-	                                                 const ESelectInfo::Type SelectionType);
+	void OnSelectionChanged_RecentTargetMemoryPolicy(const TArray<FString>& Selected, ESelectInfo::Type SelectionType);
 
 	UFUNCTION()
-	void OnSelectionChanged_DamageType(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
+	void OnSelectionChanged_DamageType(const TArray<FString>& Selected, ESelectInfo::Type SelectionType);
 
 	UFUNCTION()
-	void OnSelectionChanged_HyperParameterMode(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
+	void OnSelectionChanged_HyperParameterMode(const TArray<FString>& Selected, ESelectInfo::Type SelectionType);
 
 	FString GetComboBoxEntryTooltipStringTableKey_TargetActivationSelectionPolicy(const FString& EnumString);
 

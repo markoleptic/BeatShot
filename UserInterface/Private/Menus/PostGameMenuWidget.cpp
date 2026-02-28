@@ -53,22 +53,31 @@ void UPostGameMenuWidget::ShowAudioFormatSelect()
 {
 	auto* AudioSelectWidget = CreateWidget<UAudioSelectWidget>(this, AudioSelectClass);
 
-	AudioSelectWidget->OnStartButtonClickedDelegate.BindLambda(
-		[this, AudioSelectWidget](const FBS_AudioConfig& AudioConfig)
+	AudioSelectWidget->OnStartButtonClickedDelegate.BindLambda([&](const FBS_AudioConfig& AudioConfig)
+	{
+		FGameModeTransitionState GameModeTransitionState;
+		GameModeTransitionState.TransitionState = ETransitionState::PlayAgain;
+		GameModeTransitionState.bSaveCurrentScores = false;
+		GameModeTransitionState.BSConfig.AudioConfig.SongTitle = AudioConfig.SongTitle;
+		GameModeTransitionState.BSConfig.AudioConfig.SongLength = AudioConfig.SongLength;
+		GameModeTransitionState.BSConfig.AudioConfig.InAudioDevice = AudioConfig.InAudioDevice;
+		GameModeTransitionState.BSConfig.AudioConfig.SongPath = AudioConfig.SongPath;
+		GameModeTransitionState.BSConfig.AudioConfig.bPlaybackAudio = AudioConfig.bPlaybackAudio;
+		GameModeTransitionState.BSConfig.AudioConfig.AudioFormat = AudioConfig.AudioFormat;
+		OnGameModeStateChanged.ExecuteIfBound(GameModeTransitionState);
+		AudioSelectWidget->FadeOut();
+	});
+	AudioSelectWidget->OnExitAudioSelect.BindLambda([&]
+	{
+		if (auto* LastMenuButtonLock = LastMenuButton.Get())
 		{
-			FGameModeTransitionState GameModeTransitionState;
-			GameModeTransitionState.TransitionState = ETransitionState::PlayAgain;
-			GameModeTransitionState.bSaveCurrentScores = false;
-			GameModeTransitionState.BSConfig.AudioConfig.SongTitle = AudioConfig.SongTitle;
-			GameModeTransitionState.BSConfig.AudioConfig.SongLength = AudioConfig.SongLength;
-			GameModeTransitionState.BSConfig.AudioConfig.InAudioDevice = AudioConfig.InAudioDevice;
-			GameModeTransitionState.BSConfig.AudioConfig.SongPath = AudioConfig.SongPath;
-			GameModeTransitionState.BSConfig.AudioConfig.bPlaybackAudio = AudioConfig.bPlaybackAudio;
-			GameModeTransitionState.BSConfig.AudioConfig.AudioFormat = AudioConfig.AudioFormat;
-			OnGameModeStateChanged.ExecuteIfBound(GameModeTransitionState);
-			AudioSelectWidget->FadeOut();
-		});
-
+			if (const auto AssociatedWidget = LastMenuButtonLock->GetAssociatedWidget())
+			{
+				LastMenuButtonLock->SetActive();
+				MenuSwitcher->SetActiveWidget(AssociatedWidget);
+			}
+		}
+	});
 	AudioSelectWidget->AddToViewport();
 	AudioSelectWidget->FadeIn();
 }
@@ -102,11 +111,16 @@ void UPostGameMenuWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 		{
 			OnGameModeStateChanged.ExecuteIfBound(Forward<decltype(Args)>(Args)...);
 		});
-		QuitMenuWidget->OnExitQuitMenu.BindLambda([this, QuitMenuWidget]
+		QuitMenuWidget->OnExitQuitMenu.BindLambda([&]
 		{
-			MenuButton_PlayAgain->SetInActive();
-			MenuButton_Quit->SetInActive();
-			QuitMenuWidget->RemoveFromParent();
+			if (auto* LastMenuButtonLock = LastMenuButton.Get())
+			{
+				if (const auto AssociatedWidget = LastMenuButtonLock->GetAssociatedWidget())
+				{
+					LastMenuButtonLock->SetActive();
+					MenuSwitcher->SetActiveWidget(AssociatedWidget);
+				}
+			}
 		});
 		QuitMenuWidget->AddToViewport();
 		QuitMenuWidget->PlayInitialFadeInMenu();
@@ -119,5 +133,9 @@ void UPostGameMenuWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 	if (const auto AssociatedWidget = MenuButton->GetAssociatedWidget())
 	{
 		MenuSwitcher->SetActiveWidget(AssociatedWidget);
+		if (Button != MenuButton_Quit && Button != MenuButton_PlayAgain)
+		{
+			LastMenuButton = MakeWeakObjectPtr(const_cast<UMenuButton*>(MenuButton));
+		}
 	}
 }

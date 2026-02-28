@@ -38,7 +38,7 @@
 
 DECLARE_DELEGATE(FOnComboBoxOpening)
 /** Delegate that executes on selection changed with all current selections. */
-DECLARE_DELEGATE_TwoParams(FOnMultiSelectionChanged, const TArray<TSharedPtr<FString>>&, const ESelectInfo::Type);
+DECLARE_DELEGATE_TwoParams(FOnMultiSelectionChanged, const TArray<TSharedPtr<FString>>&, ESelectInfo::Type);
 
 template <typename OptionType>
 class SBSComboRow : public SBSTableRow<OptionType>

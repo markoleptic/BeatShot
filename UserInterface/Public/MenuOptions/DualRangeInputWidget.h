@@ -109,7 +109,7 @@ protected:
 	UFUNCTION()
 	void OnTextCommitted_Max(const FText& Text, ETextCommit::Type CommitType);
 	UFUNCTION()
-	void OnCheckStateChanged_CheckBox(const bool bChecked);
+	void OnCheckStateChanged_CheckBox(bool bChecked);
 
 	float GridSnapSize = 1.f;
 

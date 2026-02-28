@@ -81,7 +81,7 @@ private:
 	UFUNCTION()
 	void OnColorChanged_CrossHairOutline(const FLinearColor& NewColor);
 	UFUNCTION()
-	void OnCheckStateChanged_MenuOption_ShowCrossHairDot(const bool bIsChecked);
+	void OnCheckStateChanged_MenuOption_ShowCrossHairDot(bool bIsChecked);
 
 	UFUNCTION()
 	void OnButtonClicked_Reset();

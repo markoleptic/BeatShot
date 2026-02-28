@@ -115,12 +115,6 @@ protected:
 	TMap<EBaseGameMode, FDefaultGameModeParams> DefaultGameModesParams;
 
 	UPROPERTY()
-	TObjectPtr<UPopupMessageWidget> PopupMessageWidget;
-	UPROPERTY()
-	TObjectPtr<UAudioSelectWidget> AudioSelectWidget;
-	UPROPERTY()
-	TObjectPtr<UGameModeSharingWidget> GameModeSharingWidget;
-	UPROPERTY()
 	TObjectPtr<UBSGameModeValidator> GameModeValidator;
 
 public:

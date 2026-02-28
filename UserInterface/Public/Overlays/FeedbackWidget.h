@@ -21,8 +21,8 @@ class USERINTERFACE_API UFeedbackWidget : public UUserWidget
 public:
 	void ShowFeedbackWidget();
 
-	/** Broadcast when the widget is hidden after animations have completed. */
-	TDelegate<void()> OnExitAnimationCompletedDelegate;
+	/** Broadcasts to parent so it can slide menu button back to starting position. */
+	TDelegate<void()> OnExitFeedback;
 
 protected:
 	virtual void NativeConstruct() override;

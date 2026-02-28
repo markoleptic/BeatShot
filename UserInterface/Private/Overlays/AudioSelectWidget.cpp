@@ -100,6 +100,7 @@ void UAudioSelectWidget::FadeOut()
 {
 	FadeOutDelegate.BindDynamic(this, &UAudioSelectWidget::OnFadeOutFinish);
 	PlayAnimationForward(FadeOutAnim);
+	OnExitAudioSelect.ExecuteIfBound();
 }
 
 void UAudioSelectWidget::OnFadeOutFinish()

@@ -96,18 +96,19 @@ void UFeedbackWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 		if (Value_Title->GetText().IsEmpty() && Value_Content->GetText().IsEmpty())
 		{
 			FadeOutResponseDelegate.BindDynamic(this, &ThisClass::SetCollapsedAndUnbindDelegates);
+			OnExitFeedback.ExecuteIfBound();
 		}
 		else
 		{
 			FadeOutResponseDelegate.BindDynamic(this, &ThisClass::PlayFadeIn);
 		}
 		BindToAnimationFinished(FadeOutResponse, FadeOutResponseDelegate);
-
 		PlayFadeOutResponse();
 	}
 	else if (Button == Button_Back)
 	{
 		FadeOutDelegate.BindDynamic(this, &ThisClass::SetCollapsedAndUnbindDelegates);
+		OnExitFeedback.ExecuteIfBound();
 		BindToAnimationFinished(FadeOut, FadeOutDelegate);
 		PlayFadeOut();
 	}
@@ -141,6 +142,6 @@ void UFeedbackWidget::SetCollapsedAndUnbindDelegates()
 		UnbindFromAnimationFinished(FadeOutResponse, FadeOutResponseDelegate);
 		FadeOutResponseDelegate.Unbind();
 	}
-	OnExitAnimationCompletedDelegate.ExecuteIfBound();
-	SetVisibility(ESlateVisibility::Collapsed);
+
+	RemoveFromParent();
 }

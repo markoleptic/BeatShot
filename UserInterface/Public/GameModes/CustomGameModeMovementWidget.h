@@ -37,8 +37,7 @@ protected:
 	                                                  const bool bConstant);
 
 	UFUNCTION()
-	void OnSelectionChanged_MovingTargetDirectionMode(const TArray<FString>& Selected,
-	                                                  const ESelectInfo::Type SelectionType);
+	void OnSelectionChanged_MovingTargetDirectionMode(const TArray<FString>& Selected, ESelectInfo::Type SelectionType);
 
 	void OnMinMaxMenuOptionChanged(UDualRangeInputWidget* Widget,
 	                               const bool bChecked,

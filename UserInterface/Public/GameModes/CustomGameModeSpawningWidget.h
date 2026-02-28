@@ -26,26 +26,25 @@ protected:
 	void UpdateDependentOptions_TargetSpawningPolicy(const ETargetSpawningPolicy& InTargetSpawningPolicy);
 
 	UFUNCTION()
-	void OnCheckStateChanged_AllowSpawnWithoutActivation(const bool bChecked);
+	void OnCheckStateChanged_AllowSpawnWithoutActivation(bool bChecked);
 
 	UFUNCTION()
-	void OnCheckStateChanged_BatchSpawning(const bool bChecked);
+	void OnCheckStateChanged_BatchSpawning(bool bChecked);
 
 	UFUNCTION()
-	void OnCheckStateChanged_SpawnAtOriginWheneverPossible(const bool bChecked);
+	void OnCheckStateChanged_SpawnAtOriginWheneverPossible(bool bChecked);
 
 	UFUNCTION()
-	void OnCheckStateChanged_SpawnEveryOtherTargetInCenter(const bool bChecked);
+	void OnCheckStateChanged_SpawnEveryOtherTargetInCenter(bool bChecked);
 
-	void OnSliderTextBoxValueChanged(USingleRangeInputWidget* Widget, const float Value);
+	void OnSliderTextBoxValueChanged(USingleRangeInputWidget* Widget, float Value);
 
 	UFUNCTION()
 	void OnSelectionChanged_RuntimeTargetSpawningLocationSelectionMode(const TArray<FString>& Selected,
-	                                                                   const ESelectInfo::Type SelectionType);
+	                                                                   ESelectInfo::Type SelectionType);
 
 	UFUNCTION()
-	void OnSelectionChanged_TargetSpawningPolicy(const TArray<FString>& Selected,
-	                                             const ESelectInfo::Type SelectionType);
+	void OnSelectionChanged_TargetSpawningPolicy(const TArray<FString>& Selected, ESelectInfo::Type SelectionType);
 
 	FString GetComboBoxEntryTooltipStringTableKey_TargetSpawningPolicy(const FString& EnumString);
 

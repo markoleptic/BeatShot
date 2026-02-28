@@ -35,10 +35,10 @@ protected:
 	void OnSliderTextBoxOptionChanged(USingleRangeInputWidget* Widget, const float Value);
 
 	/** If true, collapses Slider and TextBox. Otherwise, sets them visible. */
-	void UpdateCheckBoxDependencies(const bool bConstant) const;
+	void UpdateCheckBoxDependencies(bool bConstant) const;
 
 	UFUNCTION()
-	void OnCheckStateChanged_CheckBox(const bool bChecked);
+	void OnCheckStateChanged_CheckBox(bool bChecked);
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBox* CheckBox;

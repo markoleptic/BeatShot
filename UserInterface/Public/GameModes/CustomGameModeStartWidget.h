@@ -66,13 +66,13 @@ protected:
 	virtual void NativeConstruct() override;
 
 	UFUNCTION()
-	void OnCheckStateChanged_UseTemplate(const bool bChecked);
+	void OnCheckStateChanged_UseTemplate(bool bChecked);
 	UFUNCTION()
 	void OnTextChanged_CustomGameModeName(const FText& Text);
 	UFUNCTION()
-	void OnSelectionChanged_GameModeTemplates(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
+	void OnSelectionChanged_GameModeTemplates(const TArray<FString>& Selected, ESelectInfo::Type SelectionType);
 	UFUNCTION()
-	void OnSelectionChanged_GameModeDifficulty(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
+	void OnSelectionChanged_GameModeDifficulty(const TArray<FString>& Selected, ESelectInfo::Type SelectionType);
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBoxWidget* CheckBoxOption_UseTemplate;

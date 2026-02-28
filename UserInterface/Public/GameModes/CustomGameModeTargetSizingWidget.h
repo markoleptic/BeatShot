@@ -45,7 +45,7 @@ protected:
 
 	UFUNCTION()
 	void OnSelectionChanged_ConsecutiveTargetScalePolicy(const TArray<FString>& Selected,
-	                                                     const ESelectInfo::Type SelectionType);
+	                                                     ESelectInfo::Type SelectionType);
 
 	FString GetComboBoxEntryTooltipStringTableKey_ConsecutiveTargetScalePolicy(const FString& EnumString);
 

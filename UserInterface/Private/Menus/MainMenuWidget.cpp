@@ -37,6 +37,7 @@ void UMainMenuWidget::NativeConstruct()
 
 	MenuButton_PatchNotes->SetActive();
 	MainMenuSwitcher->SetActiveWidget(MenuButton_PatchNotes->GetAssociatedWidget());
+	LastMenuButton = MakeWeakObjectPtr(MenuButton_PatchNotes);
 
 	ScoreViewerWidget->LoadScores(LoadSaveGamePlayerScore(), false);
 }
@@ -84,10 +85,17 @@ void UMainMenuWidget::OnMenuButtonClicked_BSButton(const UBSButton* Button)
 	if (Button == Button_Feedback)
 	{
 		auto* FeedbackWidget = CreateWidget<UFeedbackWidget>(this, FeedbackWidgetClass);
-		FeedbackWidget->OnExitAnimationCompletedDelegate.BindLambda([this, FeedbackWidget]
+		FeedbackWidget->OnExitFeedback.BindLambda([this]
 		{
 			Button_Feedback->SetInActive();
-			FeedbackWidget->RemoveFromParent();
+			if (auto* LastMenuButtonLock = LastMenuButton.Get())
+			{
+				if (const auto AssociatedWidget = LastMenuButtonLock->GetAssociatedWidget())
+				{
+					LastMenuButtonLock->SetActive();
+					MainMenuSwitcher->SetActiveWidget(AssociatedWidget);
+				}
+			}
 		});
 		FeedbackWidget->AddToViewport();
 		FeedbackWidget->ShowFeedbackWidget();
@@ -95,6 +103,7 @@ void UMainMenuWidget::OnMenuButtonClicked_BSButton(const UBSButton* Button)
 	else if (const auto AssociatedWidget = MenuButton->GetAssociatedWidget())
 	{
 		MainMenuSwitcher->SetActiveWidget(AssociatedWidget);
+		LastMenuButton = MakeWeakObjectPtr(const_cast<UMenuButton*>(MenuButton));
 	}
 	else if (Button == MenuButton_Quit)
 	{

@@ -98,23 +98,23 @@ protected:
 	void OnColorChanged_NotTakingTrackingDamageColor(const FLinearColor& NewColor);
 
 	UFUNCTION()
-	void OnCheckStateChanged_UseSeparateOutlineColor(const bool bIsChecked);
+	void OnCheckStateChanged_UseSeparateOutlineColor(bool bIsChecked);
 	UFUNCTION()
-	void OnCheckStateChanged_ShowCombatText(const bool bIsChecked);
+	void OnCheckStateChanged_ShowCombatText(bool bIsChecked);
 	UFUNCTION()
-	void OnCheckStateChanged_Recoil(const bool bIsChecked);
+	void OnCheckStateChanged_Recoil(bool bIsChecked);
 	UFUNCTION()
-	void OnCheckStateChanged_AutomaticFire(const bool bIsChecked);
+	void OnCheckStateChanged_AutomaticFire(bool bIsChecked);
 	UFUNCTION()
-	void OnCheckStateChanged_ShowBulletDecals(const bool bIsChecked);
+	void OnCheckStateChanged_ShowBulletDecals(bool bIsChecked);
 	UFUNCTION()
-	void OnCheckStateChanged_ShowBulletTracers(const bool bIsChecked);
+	void OnCheckStateChanged_ShowBulletTracers(bool bIsChecked);
 	UFUNCTION()
-	void OnCheckStateChanged_ShowMuzzleFlash(const bool bIsChecked);
+	void OnCheckStateChanged_ShowMuzzleFlash(bool bIsChecked);
 	UFUNCTION()
-	void OnCheckStateChanged_ShowMesh(const bool bIsChecked);
+	void OnCheckStateChanged_ShowMesh(bool bIsChecked);
 	UFUNCTION()
-	void OnCheckStateChanged_ShowHitTimingWidget(const bool bIsChecked);
+	void OnCheckStateChanged_ShowHitTimingWidget(bool bIsChecked);
 
 	void OnSliderTextBoxValueChanged(USingleRangeInputWidget* Widget, const float Value);
 

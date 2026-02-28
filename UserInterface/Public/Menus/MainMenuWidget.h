@@ -100,4 +100,6 @@ protected:
 
 private:
 	void OnMenuButtonClicked_BSButton(const UBSButton* Button);
+
+	TWeakObjectPtr<UMenuButton> LastMenuButton;
 };

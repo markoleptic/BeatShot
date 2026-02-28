@@ -97,4 +97,6 @@ protected:
 	void SetScoresWidgetVisibility();
 
 	void OnButtonClicked_BSButton(const UBSButton* Button);
+
+	TWeakObjectPtr<UMenuButton> LastMenuButton;
 };

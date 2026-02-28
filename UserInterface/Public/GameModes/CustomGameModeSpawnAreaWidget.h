@@ -70,8 +70,7 @@ protected:
 	void OnMinMaxValueChanged(UDualRangeInputWidget* Widget, const bool bChecked, const float Min, const float Max);
 
 	UFUNCTION()
-	void OnSelectionChanged_TargetDistributionPolicy(const TArray<FString>& Selected,
-	                                                 const ESelectInfo::Type SelectionType);
+	void OnSelectionChanged_TargetDistributionPolicy(const TArray<FString>& Selected, ESelectInfo::Type SelectionType);
 
 	FString GetComboBoxEntryTooltipStringTableKey_TargetDistributionPolicy(const FString& EnumString);
 

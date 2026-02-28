@@ -30,48 +30,46 @@ void UCustomGameModeSpawningWidget::NativeConstruct()
 	Super::NativeConstruct();
 
 	AssociatePropertyWithMenuOption(
-		UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-		                                           GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, MaxNumTargetsAtOnce)),
-		SliderTextBoxOption_MaxNumTargetsAtOnce);
+		UBSGameModeValidator::FindBSConfigProperty(
+			GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+			GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, MaxNumTargetsAtOnce)), SliderTextBoxOption_MaxNumTargetsAtOnce);
 	AssociatePropertyWithMenuOption(
-		UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-		                                           GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, NumUpfrontTargetsToSpawn)),
+		UBSGameModeValidator::FindBSConfigProperty(
+			GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+			GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, NumUpfrontTargetsToSpawn)),
 		SliderTextBoxOption_NumUpfrontTargetsToSpawn);
 	AssociatePropertyWithMenuOption(
-		UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-		                                           GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, NumRuntimeTargetsToSpawn)),
+		UBSGameModeValidator::FindBSConfigProperty(
+			GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+			GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, NumRuntimeTargetsToSpawn)),
 		SliderTextBoxOption_NumRuntimeTargetsToSpawn);
 	AssociatePropertyWithMenuOption(
-		UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-		                                           GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, TargetSpawningPolicy)),
-		ComboBoxOption_TargetSpawningPolicy);
+		UBSGameModeValidator::FindBSConfigProperty(
+			GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+			GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, TargetSpawningPolicy)), ComboBoxOption_TargetSpawningPolicy);
 	AssociatePropertyWithMenuOption(
-		UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-		                                           GET_MEMBER_NAME_CHECKED(
-			                                           FBS_TargetConfig,
-			                                           RuntimeTargetSpawningLocationSelectionMode)),
+		UBSGameModeValidator::FindBSConfigProperty(
+			GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+			GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, RuntimeTargetSpawningLocationSelectionMode)),
 		ComboBoxOption_RuntimeTargetSpawningLocationSelectionMode);
 	AssociatePropertyWithMenuOption(
-		UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-		                                           GET_MEMBER_NAME_CHECKED(
-			                                           FBS_TargetConfig,
-			                                           bAllowSpawnWithoutActivation)),
+		UBSGameModeValidator::FindBSConfigProperty(
+			GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+			GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, bAllowSpawnWithoutActivation)),
 		CheckBoxOption_AllowSpawnWithoutActivation);
 	AssociatePropertyWithMenuOption(
-		UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-		                                           GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, bUseBatchSpawning)),
-		CheckBoxOption_BatchSpawning);
+		UBSGameModeValidator::FindBSConfigProperty(
+			GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+			GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, bUseBatchSpawning)), CheckBoxOption_BatchSpawning);
 	AssociatePropertyWithMenuOption(
-		UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-		                                           GET_MEMBER_NAME_CHECKED(
-			                                           FBS_TargetConfig,
-			                                           bSpawnAtOriginWheneverPossible)),
+		UBSGameModeValidator::FindBSConfigProperty(
+			GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+			GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, bSpawnAtOriginWheneverPossible)),
 		CheckBoxOption_SpawnAtOriginWheneverPossible);
 	AssociatePropertyWithMenuOption(
-		UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-		                                           GET_MEMBER_NAME_CHECKED(
-			                                           FBS_TargetConfig,
-			                                           bSpawnEveryOtherTargetInCenter)),
+		UBSGameModeValidator::FindBSConfigProperty(
+			GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+			GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, bSpawnEveryOtherTargetInCenter)),
 		CheckBoxOption_SpawnEveryOtherTargetInCenter);
 
 	SliderTextBoxOption_MaxNumTargetsAtOnce->SetValues(Constants::MinValue_MaxNumTargetsAtOnce,
@@ -84,32 +82,31 @@ void UCustomGameModeSpawningWidget::NativeConstruct()
 	                                                        Constants::MaxValue_NumRuntimeTargetsToSpawn,
 	                                                        Constants::SnapSize_NumRuntimeTargetsToSpawn);
 
-	SliderTextBoxOption_MaxNumTargetsAtOnce->OnSliderTextBoxValueChanged.AddUObject(this,
-		&ThisClass::OnSliderTextBoxValueChanged);
-	SliderTextBoxOption_NumUpfrontTargetsToSpawn->OnSliderTextBoxValueChanged.AddUObject(this,
-		&ThisClass::OnSliderTextBoxValueChanged);
-	SliderTextBoxOption_NumRuntimeTargetsToSpawn->OnSliderTextBoxValueChanged.AddUObject(this,
-		&ThisClass::OnSliderTextBoxValueChanged);
+	SliderTextBoxOption_MaxNumTargetsAtOnce->OnSliderTextBoxValueChanged.AddUObject(
+		this, &ThisClass::OnSliderTextBoxValueChanged);
+	SliderTextBoxOption_NumUpfrontTargetsToSpawn->OnSliderTextBoxValueChanged.AddUObject(
+		this, &ThisClass::OnSliderTextBoxValueChanged);
+	SliderTextBoxOption_NumRuntimeTargetsToSpawn->OnSliderTextBoxValueChanged.AddUObject(
+		this, &ThisClass::OnSliderTextBoxValueChanged);
 
-	ComboBoxOption_TargetSpawningPolicy->ComboBox->OnSelectionChanged.AddUniqueDynamic(this,
-		&ThisClass::OnSelectionChanged_TargetSpawningPolicy);
-	ComboBoxOption_RuntimeTargetSpawningLocationSelectionMode->ComboBox->OnSelectionChanged.AddUniqueDynamic(this,
-		&ThisClass::OnSelectionChanged_RuntimeTargetSpawningLocationSelectionMode);
+	ComboBoxOption_TargetSpawningPolicy->ComboBox->OnSelectionChanged.AddUniqueDynamic(
+		this, &ThisClass::OnSelectionChanged_TargetSpawningPolicy);
+	ComboBoxOption_RuntimeTargetSpawningLocationSelectionMode->ComboBox->OnSelectionChanged.AddUniqueDynamic(
+		this, &ThisClass::OnSelectionChanged_RuntimeTargetSpawningLocationSelectionMode);
 
-	ComboBoxOption_TargetSpawningPolicy->GetComboBoxEntryTooltipStringTableKey.BindUObject(this,
-		&ThisClass::GetComboBoxEntryTooltipStringTableKey_TargetSpawningPolicy);
-	ComboBoxOption_RuntimeTargetSpawningLocationSelectionMode->GetComboBoxEntryTooltipStringTableKey.BindUObject(this,
-		&ThisClass::GetComboBoxEntryTooltipStringTableKey_RuntimeTargetSpawningLocationSelectionMode);
+	ComboBoxOption_TargetSpawningPolicy->GetComboBoxEntryTooltipStringTableKey.BindUObject(
+		this, &ThisClass::GetComboBoxEntryTooltipStringTableKey_TargetSpawningPolicy);
+	ComboBoxOption_RuntimeTargetSpawningLocationSelectionMode->GetComboBoxEntryTooltipStringTableKey.BindUObject(
+		this, &ThisClass::GetComboBoxEntryTooltipStringTableKey_RuntimeTargetSpawningLocationSelectionMode);
 
-	CheckBoxOption_AllowSpawnWithoutActivation->CheckBox->OnCheckStateChanged.AddDynamic(this,
-		&ThisClass::OnCheckStateChanged_AllowSpawnWithoutActivation);
-	CheckBoxOption_BatchSpawning->CheckBox->OnCheckStateChanged.AddDynamic(this,
-	                                                                       &ThisClass::
-	                                                                       OnCheckStateChanged_BatchSpawning);
-	CheckBoxOption_SpawnAtOriginWheneverPossible->CheckBox->OnCheckStateChanged.AddDynamic(this,
-		&ThisClass::OnCheckStateChanged_SpawnAtOriginWheneverPossible);
-	CheckBoxOption_SpawnEveryOtherTargetInCenter->CheckBox->OnCheckStateChanged.AddDynamic(this,
-		&ThisClass::OnCheckStateChanged_SpawnEveryOtherTargetInCenter);
+	CheckBoxOption_AllowSpawnWithoutActivation->CheckBox->OnCheckStateChanged.AddDynamic(
+		this, &ThisClass::OnCheckStateChanged_AllowSpawnWithoutActivation);
+	CheckBoxOption_BatchSpawning->CheckBox->OnCheckStateChanged.AddDynamic(
+		this, &ThisClass:: OnCheckStateChanged_BatchSpawning);
+	CheckBoxOption_SpawnAtOriginWheneverPossible->CheckBox->OnCheckStateChanged.AddDynamic(
+		this, &ThisClass::OnCheckStateChanged_SpawnAtOriginWheneverPossible);
+	CheckBoxOption_SpawnEveryOtherTargetInCenter->CheckBox->OnCheckStateChanged.AddDynamic(
+		this, &ThisClass::OnCheckStateChanged_SpawnEveryOtherTargetInCenter);
 
 	ComboBoxOption_TargetSpawningPolicy->ComboBox->ClearOptions();
 	ComboBoxOption_RuntimeTargetSpawningLocationSelectionMode->ComboBox->ClearOptions();
@@ -222,26 +219,22 @@ void UCustomGameModeSpawningWidget::UpdateDependentOptions_TargetSpawningPolicy(
 		                                                        GetTooltipTextFromKey(
 			                                                        "DM_RuntimeTargetSpawningExclusive"));
 		CheckBoxOption_SpawnAtOriginWheneverPossible->SetMenuOptionEnabledState(
-			EMenuOptionEnabledState::DependentMissing,
-			GetTooltipTextFromKey("DM_RuntimeTargetSpawningExclusive"));
+			EMenuOptionEnabledState::DependentMissing, GetTooltipTextFromKey("DM_RuntimeTargetSpawningExclusive"));
 		CheckBoxOption_SpawnEveryOtherTargetInCenter->SetMenuOptionEnabledState(
-			EMenuOptionEnabledState::DependentMissing,
-			GetTooltipTextFromKey("DM_RuntimeTargetSpawningExclusive"));
+			EMenuOptionEnabledState::DependentMissing, GetTooltipTextFromKey("DM_RuntimeTargetSpawningExclusive"));
 
 		SliderTextBoxOption_NumUpfrontTargetsToSpawn->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		SliderTextBoxOption_NumRuntimeTargetsToSpawn->SetVisibility(ESlateVisibility::Collapsed);
 
 		ComboBoxOption_RuntimeTargetSpawningLocationSelectionMode->SetMenuOptionEnabledState(
-			EMenuOptionEnabledState::DependentMissing,
-			GetTooltipTextFromKey("DM_RuntimeTargetSpawningExclusive"));
+			EMenuOptionEnabledState::DependentMissing, GetTooltipTextFromKey("DM_RuntimeTargetSpawningExclusive"));
 
 		if (BSConfig->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::Grid)
 		{
 			SliderTextBoxOption_NumUpfrontTargetsToSpawn->SetValue(
 				BSConfig->GridConfig.NumHorizontalGridTargets * BSConfig->GridConfig.NumVerticalGridTargets);
 			SliderTextBoxOption_NumUpfrontTargetsToSpawn->SetMenuOptionEnabledState(
-				EMenuOptionEnabledState::DependentMissing,
-				GetTooltipTextFromKey("DM_NumUpfrontTargetsToSpawn_Grid"));
+				EMenuOptionEnabledState::DependentMissing, GetTooltipTextFromKey("DM_NumUpfrontTargetsToSpawn_Grid"));
 			SliderTextBoxOption_MaxNumTargetsAtOnce->SetValue(-1.f);
 			SliderTextBoxOption_MaxNumTargetsAtOnce->SetMenuOptionEnabledState(
 				EMenuOptionEnabledState::DependentMissing,
@@ -264,10 +257,9 @@ void UCustomGameModeSpawningWidget::OnCheckStateChanged_AllowSpawnWithoutActivat
 {
 	BSConfig->TargetConfig.bAllowSpawnWithoutActivation = bChecked;
 	OnPropertyChanged.Execute({
-		UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-		                                           GET_MEMBER_NAME_CHECKED(
-			                                           FBS_TargetConfig,
-			                                           bAllowSpawnWithoutActivation))
+		UBSGameModeValidator::FindBSConfigProperty(
+			GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+			GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, bAllowSpawnWithoutActivation))
 	});
 }
 
@@ -275,8 +267,9 @@ void UCustomGameModeSpawningWidget::OnCheckStateChanged_BatchSpawning(const bool
 {
 	BSConfig->TargetConfig.bUseBatchSpawning = bChecked;
 	OnPropertyChanged.Execute({
-		UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-		                                           GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, bUseBatchSpawning))
+		UBSGameModeValidator::FindBSConfigProperty(
+			GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+			GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, bUseBatchSpawning))
 	});
 }
 
@@ -284,10 +277,9 @@ void UCustomGameModeSpawningWidget::OnCheckStateChanged_SpawnAtOriginWheneverPos
 {
 	BSConfig->TargetConfig.bSpawnAtOriginWheneverPossible = bChecked;
 	OnPropertyChanged.Execute({
-		UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-		                                           GET_MEMBER_NAME_CHECKED(
-			                                           FBS_TargetConfig,
-			                                           bSpawnAtOriginWheneverPossible))
+		UBSGameModeValidator::FindBSConfigProperty(
+			GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+			GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, bSpawnAtOriginWheneverPossible))
 	});
 }
 
@@ -295,10 +287,9 @@ void UCustomGameModeSpawningWidget::OnCheckStateChanged_SpawnEveryOtherTargetInC
 {
 	BSConfig->TargetConfig.bSpawnEveryOtherTargetInCenter = bChecked;
 	OnPropertyChanged.Execute({
-		UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-		                                           GET_MEMBER_NAME_CHECKED(
-			                                           FBS_TargetConfig,
-			                                           bSpawnEveryOtherTargetInCenter))
+		UBSGameModeValidator::FindBSConfigProperty(
+			GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+			GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, bSpawnEveryOtherTargetInCenter))
 	});
 }
 
@@ -308,28 +299,27 @@ void UCustomGameModeSpawningWidget::OnSliderTextBoxValueChanged(USingleRangeInpu
 	{
 		BSConfig->TargetConfig.MaxNumTargetsAtOnce = Value;
 		OnPropertyChanged.Execute({
-			UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-			                                           GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, MaxNumTargetsAtOnce))
+			UBSGameModeValidator::FindBSConfigProperty(
+				GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+				GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, MaxNumTargetsAtOnce))
 		});
 	}
 	else if (Widget == SliderTextBoxOption_NumUpfrontTargetsToSpawn)
 	{
 		BSConfig->TargetConfig.NumUpfrontTargetsToSpawn = Value;
 		OnPropertyChanged.Execute({
-			UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-			                                           GET_MEMBER_NAME_CHECKED(
-				                                           FBS_TargetConfig,
-				                                           NumUpfrontTargetsToSpawn))
+			UBSGameModeValidator::FindBSConfigProperty(
+				GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+				GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, NumUpfrontTargetsToSpawn))
 		});
 	}
 	else if (Widget == SliderTextBoxOption_NumRuntimeTargetsToSpawn)
 	{
 		BSConfig->TargetConfig.NumRuntimeTargetsToSpawn = Value;
 		OnPropertyChanged.Execute({
-			UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-			                                           GET_MEMBER_NAME_CHECKED(
-				                                           FBS_TargetConfig,
-				                                           NumRuntimeTargetsToSpawn))
+			UBSGameModeValidator::FindBSConfigProperty(
+				GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+				GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, NumRuntimeTargetsToSpawn))
 		});
 	}
 }
@@ -346,10 +336,9 @@ void UCustomGameModeSpawningWidget::OnSelectionChanged_RuntimeTargetSpawningLoca
 	BSConfig->TargetConfig.RuntimeTargetSpawningLocationSelectionMode = GetEnumFromString_FromTagMap<
 		ERuntimeTargetSpawningLocationSelectionMode>(Selected[0]);
 	OnPropertyChanged.Execute({
-		UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-		                                           GET_MEMBER_NAME_CHECKED(
-			                                           FBS_TargetConfig,
-			                                           RuntimeTargetSpawningLocationSelectionMode))
+		UBSGameModeValidator::FindBSConfigProperty(
+			GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+			GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, RuntimeTargetSpawningLocationSelectionMode))
 	});
 	UpdateBrushColors();
 }
@@ -366,8 +355,9 @@ void UCustomGameModeSpawningWidget::OnSelectionChanged_TargetSpawningPolicy(cons
 	UpdateDependentOptions_TargetSpawningPolicy(BSConfig->TargetConfig.TargetSpawningPolicy);
 
 	OnPropertyChanged.Execute({
-		UBSGameModeValidator::FindBSConfigProperty(GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
-		                                           GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, TargetSpawningPolicy))
+		UBSGameModeValidator::FindBSConfigProperty(
+			GET_MEMBER_NAME_CHECKED(FBSConfig, TargetConfig),
+			GET_MEMBER_NAME_CHECKED(FBS_TargetConfig, TargetSpawningPolicy))
 	});
 
 	UpdateBrushColors();
