@@ -179,8 +179,8 @@ void ABSPlayerController::ShowMainMenu()
 	                                   SettingsMenuWidget->GetCrossHairDelegate(),
 	                                   SettingsMenuWidget->GetAudioAnalyzerDelegate(),
 	                                   SettingsMenuWidget->GetUserDelegate(), MainMenuWidget->GetUserDelegate());
-	MainMenuWidget->SetSaveGamePlayerScore(SaveGamePlayerScore);
 	MainMenuWidget->AddToViewport();
+	MainMenuWidget->SetSaveGamePlayerScore(SaveGamePlayerScore);
 
 	if (AMainMenuGameMode* GameMode = Cast<AMainMenuGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
 	{
@@ -350,8 +350,8 @@ void ABSPlayerController::ShowPostGameMenu()
 	                                   PostGameMenuWidget->SettingsMenuWidget->GetCrossHairDelegate(),
 	                                   PostGameMenuWidget->SettingsMenuWidget->GetAudioAnalyzerDelegate(),
 	                                   PostGameMenuWidget->SettingsMenuWidget->GetUserDelegate());
-	PostGameMenuWidget->SetSaveGamePlayerScore(SaveGamePlayerScore);
 	PostGameMenuWidget->AddToViewport();
+	PostGameMenuWidget->SetSaveGamePlayerScore(SaveGamePlayerScore);
 
 	SetInputMode(FInputModeUIOnly());
 	SetShowMouseCursor(true);
@@ -436,8 +436,12 @@ void ABSPlayerController::OnRep_PlayerState()
 	Super::OnRep_PlayerState();
 }
 
-TObjectPtr<USaveGamePlayerScore> ABSPlayerController::GetSaveGamePlayerScore() const
+TObjectPtr<USaveGamePlayerScore> ABSPlayerController::GetSaveGamePlayerScore()
 {
+	if (!SaveGamePlayerScore)
+	{
+		SaveGamePlayerScore = USaveGamePlayerScore::LoadFromSlot();
+	}
 	return SaveGamePlayerScore;
 }
 

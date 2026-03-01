@@ -144,7 +144,7 @@ public:
 	/** Server only */
 	virtual void OnRep_PlayerState() override;
 
-	TObjectPtr<USaveGamePlayerScore> GetSaveGamePlayerScore() const;
+	TObjectPtr<USaveGamePlayerScore> GetSaveGamePlayerScore();
 
 	/** Delegate that executes when the screen fade widget completes its animation.  */
 	FOnScreenFadeToBlackFinish OnScreenFadeToBlackFinish;
