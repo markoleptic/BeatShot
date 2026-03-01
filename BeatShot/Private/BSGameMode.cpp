@@ -273,31 +273,40 @@ void ABSGameMode::EndGameMode(const bool bSaveScores, const ETransitionState Tra
 		VisualizerManager->DeactivateVisualizers();
 	}
 
+	AudioComponent->Stop();
+	AudioComponent->SetSound(nullptr);
+
 	if (AATracker)
 	{
 		AATracker->UnloadCapturerAudio();
 		AATracker->UnloadPlayerAudio();
 		AATracker->MarkAsGarbage();
+		AATracker = nullptr;
 	}
-
 	if (AAPlayer)
 	{
 		AAPlayer->UnloadCapturerAudio();
 		AAPlayer->UnloadPlayerAudio();
 		AAPlayer->MarkAsGarbage();
+		AAPlayer = nullptr;
 	}
-
 	if (AudioImporter)
 	{
 		AudioImporter->MarkAsGarbage();
+		AudioImporter = nullptr;
 	}
 	if (AudioCapturer)
 	{
 		AudioCapturer->StopCapture();
 		AudioCapturer->MarkAsGarbage();
+		AudioCapturer = nullptr;
 	}
-	AudioComponent->Stop();
-	AudioComponent->SetSound(nullptr);
+
+	// Handle saving scores before resetting Target Manager
+	if (bSaveScores)
+	{
+		HandleScoreSaving();
+	}
 
 	bool bQuitToDesktop = false;
 	for (ABSPlayerController* Controller : Controllers)
@@ -339,12 +348,6 @@ void ABSGameMode::EndGameMode(const bool bSaveScores, const ETransitionState Tra
 		case ETransitionState::StartFromMainMenu:
 			break;
 		}
-	}
-
-	// Handle saving scores before resetting Target Manager
-	if (bSaveScores)
-	{
-		HandleScoreSaving();
 	}
 
 	if (bQuitToDesktop)
