@@ -662,6 +662,7 @@ void ABSGameMode::HandleScoreSaving()
 void ABSGameMode::FinalizePlayerScore(FPlayerScore& InScore) const
 {
 	InScore.Time = FDateTime::UtcNow().ToIso8601();
+	InScore.LocalDateTime = FDateTime::Now();
 
 	if (BSConfig->TargetConfig.TargetDamageType == ETargetDamageType::Tracking)
 	{

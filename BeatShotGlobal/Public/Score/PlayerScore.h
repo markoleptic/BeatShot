@@ -70,6 +70,8 @@ struct BEATSHOTGLOBAL_API FPlayerScore
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BeatShot|PlayerScore")
 	FString Time;
 
+	FDateTime LocalDateTime;
+
 	/** The maximum consecutive targets hit in a row. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BeatShot|PlayerScore")
 	int32 Streak;

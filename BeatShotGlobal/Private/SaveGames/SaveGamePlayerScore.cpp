@@ -156,10 +156,16 @@ void USaveGamePlayerScore::BuildRuntimeData()
 {
 	PlayerScoreArrayPtr.Empty();
 	PlayerScoreArrayPtr.Reserve(PlayerScoreArray.Num());
+	const FTimespan UtcOffset = FDateTime::Now() - FDateTime::UtcNow();
 	for (const auto& PlayerScore : PlayerScoreArray)
 	{
-		PlayerScoreArrayPtr.Add(MakeShared<FPlayerScore>(PlayerScore));
+		auto PlayerScorePtr = MakeShared<FPlayerScore>(PlayerScore);
+		FDateTime ParsedTime;
+		FDateTime::ParseIso8601(*PlayerScorePtr->Time, ParsedTime);
+		PlayerScorePtr->LocalDateTime = ParsedTime + UtcOffset;
+		PlayerScoreArrayPtr.Add(PlayerScorePtr);
 	}
+	PlayerScoreArray.Empty();
 }
 
 void USaveGamePlayerScore::CommitRuntimeData()

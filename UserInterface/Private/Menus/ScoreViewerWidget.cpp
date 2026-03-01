@@ -185,17 +185,16 @@ void UScoreViewerWidget::LoadScores(USaveGamePlayerScore* InSaveGamePlayerScore,
 		TSharedPtr<FPlayerScore> MostRecentCustomScore;
 		TMap<EBaseGameMode, FGameModePlayTime> PlayTimeByBaseGameMode;
 		TMap<FString, FGameModePlayTime> PlayTimeByCustomGameModeName;
-		float TotalTimeInAnyGameMode = 0.0f;;
+		float TotalTimeInAnyGameMode = 0.0f;
 
+		const FTimespan UtcOffset = FDateTime::Now() - FDateTime::UtcNow();
 		for (const auto& PlayerScore : PlayerScoresPtr)
 		{
-			FDateTime ParsedTime;
-			FDateTime::ParseIso8601(*PlayerScore->Time, ParsedTime);
-			if (ParsedTime >= StartDate)
+			if (PlayerScore->LocalDateTime >= StartDate)
 			{
-				const int32 DayIndex = (ParsedTime - StartDate).GetTotalDays();
+				const int32 DayIndex = (PlayerScore->LocalDateTime - StartDate).GetTotalDays();
 				const int32 WeekIndex = (StartDow + DayIndex) / 7;
-				const int32 DayOfWeekIndex = static_cast<int32>(ParsedTime.GetDayOfWeek());
+				const int32 DayOfWeekIndex = static_cast<int32>(PlayerScore->LocalDateTime.GetDayOfWeek());
 				PlayFrequencyData->Sections[WeekIndex][DayOfWeekIndex] += PlayerScore->SongLength;
 			}
 
@@ -203,9 +202,9 @@ void UScoreViewerWidget::LoadScores(USaveGamePlayerScore* InSaveGamePlayerScore,
 
 			if (PlayerScore->DefiningConfig.GameModeType == EGameModeType::Preset)
 			{
-				if (ParsedTime > MostRecentDefaultTime)
+				if (PlayerScore->LocalDateTime > MostRecentDefaultTime)
 				{
-					MostRecentDefaultTime = ParsedTime;
+					MostRecentDefaultTime = PlayerScore->LocalDateTime;
 					MostRecentDefaultScore = PlayerScore;
 				}
 				const auto& BaseGameMode = PlayerScore->DefiningConfig.BaseGameMode;
@@ -216,9 +215,9 @@ void UScoreViewerWidget::LoadScores(USaveGamePlayerScore* InSaveGamePlayerScore,
 			}
 			else if (PlayerScore->DefiningConfig.GameModeType == EGameModeType::Custom)
 			{
-				if (ParsedTime > MostRecentCustomTime)
+				if (PlayerScore->LocalDateTime > MostRecentCustomTime)
 				{
-					MostRecentCustomTime = ParsedTime;
+					MostRecentCustomTime = PlayerScore->LocalDateTime;
 					MostRecentCustomScore = PlayerScore;
 				}
 				const auto& CustomGameModeName = PlayerScore->DefiningConfig.CustomGameModeName;

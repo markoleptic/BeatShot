@@ -254,11 +254,7 @@ void UScoreTable::SortItems()
 	{
 		if (Column == SPlayerScoreRow::DateColumnName)
 		{
-			FDateTime ParsedTimeL;
-			FDateTime::ParseIso8601(*L->Time, ParsedTimeL);
-			FDateTime ParsedTimeR;
-			FDateTime::ParseIso8601(*R->Time, ParsedTimeR);
-			return ParsedTimeL < ParsedTimeR;
+			return L->LocalDateTime < R->LocalDateTime;
 		}
 
 		if (Column == SPlayerScoreRow::GameModeColumnName)
@@ -351,12 +347,8 @@ void UScoreTable::SortItems()
 
 		if (PrimarySortedColumn != SPlayerScoreRow::DateColumnName)
 		{
-			FDateTime ParsedTimeA;
-			FDateTime::ParseIso8601(*A->Time, ParsedTimeA);
-			FDateTime ParsedTimeB;
-			FDateTime::ParseIso8601(*B->Time, ParsedTimeB);
-			const bool bDateLess = ParsedTimeA < ParsedTimeB;
-			const bool bDateGreater = ParsedTimeB < ParsedTimeA;
+			const bool bDateLess = A->LocalDateTime < B->LocalDateTime;
+			const bool bDateGreater = B->LocalDateTime < A->LocalDateTime;
 
 			if (bDateLess != bDateGreater)
 			{

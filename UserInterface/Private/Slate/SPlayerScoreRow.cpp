@@ -57,9 +57,7 @@ TSharedRef<SWidget> SPlayerScoreRow::GenerateWidgetForColumn(const FName& Column
 
 	if (ColumnName == DateColumnName)
 	{
-		FDateTime ParsedTime;
-		FDateTime::ParseIso8601(*Item->Time, ParsedTime);
-		const FText Text = FText::FromString(ParsedTime.ToFormattedString(TEXT("%Y-%m-%d, %I:%M%P")));
+		const FText Text = FText::FromString(Item->LocalDateTime.ToFormattedString(TEXT("%Y-%m-%d, %I:%M%P")));
 		return SNew(SBox)
 			.Padding(FMargin(4.0, 0.0))
 			.VAlign(VAlign_Center)

@@ -35,9 +35,7 @@ void UDefaultGameModeScoreViewerWidget::RepopulatePlayerScoreByGameModeSongAndDi
 			PlayerScoreByGameModeSongAndDifficulty.FindOrAdd(PlayerScore->DefiningConfig.BaseGameMode).
 			                                       FindOrAdd(PlayerScore->SongTitle).FindOrAdd(
 				                                       PlayerScore->DefiningConfig.Difficulty).Add(PlayerScore);
-			FDateTime DateTime;
-			FDateTime::ParseIso8601(*PlayerScore->Time, DateTime);
-			TimesByPlayerScore.Add(PlayerScore, DateTime);
+			TimesByPlayerScore.Add(PlayerScore, PlayerScore->LocalDateTime);
 		}
 	}
 
