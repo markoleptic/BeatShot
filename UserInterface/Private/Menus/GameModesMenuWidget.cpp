@@ -438,13 +438,13 @@ void UGameModeMenuWidget::OnButtonClicked_ClearRLHistory()
 	                                                                         }), 2);
 
 	Buttons[0]->SetButtonText(GetWidgetTextFromKey("G_No"));
-	Buttons[0]->OnBSButtonPressed.AddLambda([&](const UBSButton* /*Button*/)
+	Buttons[0]->OnBSButtonPressed.AddLambda([PopupMessageWidget](const UBSButton* /*Button*/)
 	{
 		PopupMessageWidget->FadeOut();
 	});
 
 	Buttons[1]->SetButtonText(GetWidgetTextFromKey("G_Yes"));
-	Buttons[1]->OnBSButtonPressed.AddLambda([&](const UBSButton* /*Button*/)
+	Buttons[1]->OnBSButtonPressed.AddLambda([this, PopupMessageWidget](const UBSButton* /*Button*/)
 	{
 		PopupMessageWidget->FadeOut();
 		if (SaveGamePlayerScore->ResetQTable(BSConfig->DefiningConfig))
@@ -490,12 +490,12 @@ void UGameModeMenuWidget::OnButtonClicked_SaveCustom()
 		                                                           FText::GetEmpty(), 2);
 
 		Buttons[0]->SetButtonText(GetWidgetTextFromKey("G_Cancel"));
-		Buttons[0]->OnBSButtonPressed.AddLambda([&](const UBSButton* /*Button*/)
+		Buttons[0]->OnBSButtonPressed.AddLambda([PopupMessageWidget](const UBSButton* /*Button*/)
 		{
 			PopupMessageWidget->FadeOut();
 		});
 		Buttons[1]->SetButtonText(GetWidgetTextFromKey("G_Confirm"));
-		Buttons[1]->OnBSButtonPressed.AddLambda([&](const UBSButton* /*Button*/)
+		Buttons[1]->OnBSButtonPressed.AddLambda([this, PopupMessageWidget](const UBSButton* /*Button*/)
 		{
 			PopupMessageWidget->FadeOut();
 			SaveCustomGameModeOptionsAndReselect();
@@ -527,13 +527,13 @@ void UGameModeMenuWidget::OnButtonClicked_StartFromCustom()
 		                                                           2);
 
 		Buttons[0]->SetButtonText(GetWidgetTextFromKey("G_No"));
-		Buttons[0]->OnBSButtonPressed.AddLambda([&](const UBSButton* /*Button*/)
+		Buttons[0]->OnBSButtonPressed.AddLambda([PopupMessageWidget](const UBSButton* /*Button*/)
 		{
 			PopupMessageWidget->FadeOut();
 		});
 
 		Buttons[1]->SetButtonText(GetWidgetTextFromKey("G_Yes"));
-		Buttons[1]->OnBSButtonPressed.AddLambda([&](const UBSButton* /*Button*/)
+		Buttons[1]->OnBSButtonPressed.AddLambda([this, PopupMessageWidget](const UBSButton* /*Button*/)
 		{
 			PopupMessageWidget->FadeOut();
 			ShowAudioFormatSelect(false);
@@ -551,13 +551,13 @@ void UGameModeMenuWidget::OnButtonClicked_StartFromCustom()
 			GetWidgetTextFromKey("GM_StartInvalidNoCustomGameModeNameContent"), 2);
 
 		Buttons[0]->SetButtonText(GetWidgetTextFromKey("G_No"));
-		Buttons[0]->OnBSButtonPressed.AddLambda([&](const UBSButton* /*Button*/)
+		Buttons[0]->OnBSButtonPressed.AddLambda([PopupMessageWidget](const UBSButton* /*Button*/)
 		{
 			PopupMessageWidget->FadeOut();
 		});
 
 		Buttons[1]->SetButtonText(GetWidgetTextFromKey("G_Yes"));
-		Buttons[1]->OnBSButtonPressed.AddLambda([&](const UBSButton* /*Button*/)
+		Buttons[1]->OnBSButtonPressed.AddLambda([this, PopupMessageWidget](const UBSButton* /*Button*/)
 		{
 			PopupMessageWidget->FadeOut();
 			PresetSelection_PresetGameMode = BSConfig->DefiningConfig.BaseGameMode;
@@ -600,13 +600,13 @@ void UGameModeMenuWidget::OnButtonClicked_StartFromCustom()
 		                                                           FText::GetEmpty(), 2);
 
 		Buttons[0]->SetButtonText(GetWidgetTextFromKey("G_Cancel"));
-		Buttons[0]->OnBSButtonPressed.AddLambda([&](const UBSButton* /*Button*/)
+		Buttons[0]->OnBSButtonPressed.AddLambda([PopupMessageWidget](const UBSButton* /*Button*/)
 		{
 			PopupMessageWidget->FadeOut();
 		});
 
 		Buttons[1]->SetButtonText(GetWidgetTextFromKey("G_Confirm"));
-		Buttons[1]->OnBSButtonPressed.AddLambda([&](const UBSButton* /*Button*/)
+		Buttons[1]->OnBSButtonPressed.AddLambda([this, PopupMessageWidget](const UBSButton* /*Button*/)
 		{
 			PopupMessageWidget->FadeOut();
 			if (SaveCustomGameModeOptionsAndReselect())
@@ -649,14 +649,14 @@ void UGameModeMenuWidget::OnButtonClicked_RemoveSelectedCustom()
 
 	Buttons[0]->SetButtonText(GetWidgetTextFromKey("G_Cancel"));
 	Buttons[0]->SetWrapTextAt(350.f);
-	Buttons[0]->OnBSButtonPressed.AddLambda([&](const UBSButton* /*Button*/)
+	Buttons[0]->OnBSButtonPressed.AddLambda([PopupMessageWidget](const UBSButton* /*Button*/)
 	{
 		PopupMessageWidget->FadeOut();
 	});
 
 	Buttons[1]->SetButtonText(GetWidgetTextFromKey("GM_OnlyRemoveGameMode"));
 	Buttons[1]->SetWrapTextAt(350.f);
-	Buttons[1]->OnBSButtonPressed.AddLambda([&](const UBSButton* /*Button*/)
+	Buttons[1]->OnBSButtonPressed.AddLambda([this, PopupMessageWidget](const UBSButton* /*Button*/)
 	{
 		PopupMessageWidget->FadeOut();
 		const FString RemovedGameModeName = BSConfig->DefiningConfig.CustomGameModeName;
@@ -677,7 +677,7 @@ void UGameModeMenuWidget::OnButtonClicked_RemoveSelectedCustom()
 
 	Buttons[2]->SetButtonText(GetWidgetTextFromKey("GM_RemoveGameModeAndScores"));
 	Buttons[2]->SetWrapTextAt(350.f);
-	Buttons[2]->OnBSButtonPressed.AddLambda([&](const UBSButton* /*Button*/)
+	Buttons[2]->OnBSButtonPressed.AddLambda([this, PopupMessageWidget](const UBSButton* /*Button*/)
 	{
 		PopupMessageWidget->FadeOut();
 		const FString GameModeNameToRemove = BSConfig->DefiningConfig.CustomGameModeName;
@@ -712,14 +712,14 @@ void UGameModeMenuWidget::OnButtonClicked_RemoveAllCustom()
 
 	Buttons[0]->SetButtonText(GetWidgetTextFromKey("G_Cancel"));
 	Buttons[0]->SetWrapTextAt(350.f);
-	Buttons[0]->OnBSButtonPressed.AddLambda([&](const UBSButton* /*Button*/)
+	Buttons[0]->OnBSButtonPressed.AddLambda([PopupMessageWidget](const UBSButton* /*Button*/)
 	{
 		PopupMessageWidget->FadeOut();
 	});
 
 	Buttons[1]->SetButtonText(GetWidgetTextFromKey("GM_OnlyRemoveGameModes"));
 	Buttons[1]->SetWrapTextAt(350.f);
-	Buttons[1]->OnBSButtonPressed.AddLambda([&](const UBSButton* /*Button*/)
+	Buttons[1]->OnBSButtonPressed.AddLambda([this, PopupMessageWidget](const UBSButton* /*Button*/)
 	{
 		PopupMessageWidget->FadeOut();
 		const auto RemoveResult = RemoveAllCustomGameModes(nullptr);
@@ -741,7 +741,7 @@ void UGameModeMenuWidget::OnButtonClicked_RemoveAllCustom()
 
 	Buttons[2]->SetButtonText(GetWidgetTextFromKey("GM_RemoveGameModesAndScores"));
 	Buttons[2]->SetWrapTextAt(350.f);
-	Buttons[2]->OnBSButtonPressed.AddLambda([&](const UBSButton* /*Button*/)
+	Buttons[2]->OnBSButtonPressed.AddLambda([this, PopupMessageWidget](const UBSButton* /*Button*/)
 	{
 		PopupMessageWidget->FadeOut();
 		const auto RemoveResult = RemoveAllCustomGameModes(SaveGamePlayerScore);
@@ -902,41 +902,42 @@ void UGameModeMenuWidget::ShowAudioFormatSelect(const bool bStartFromDefaultGame
 {
 	auto* AudioSelectWidget = CreateWidget<UAudioSelectWidget>(this, AudioSelectClass);
 	AudioSelectWidget->SetSongs(SaveGamePlayerScore->CreateSongDurationMap());
-	AudioSelectWidget->OnStartButtonClickedDelegate.BindLambda([&](const FBS_AudioConfig& AudioConfig)
-	{
-		FGameModeTransitionState GameModeTransitionState;
-
-		GameModeTransitionState.bSaveCurrentScores = false;
-		GameModeTransitionState.TransitionState = bIsMainMenuChild
-		                                          ? ETransitionState::StartFromMainMenu
-		                                          : ETransitionState::StartFromPostGameMenu;
-
-		if (bStartFromDefaultGameMode)
+	AudioSelectWidget->OnStartButtonClickedDelegate.BindLambda(
+		[this, AudioSelectWidget, bStartFromDefaultGameMode](const FBS_AudioConfig& AudioConfig)
 		{
-			FindPresetGameMode(PresetSelection_PresetGameMode, PresetSelection_Difficulty, GameModeDataAsset.Get(),
-			                   GameModeTransitionState.BSConfig);
-		}
-		else
-		{
-			GameModeTransitionState.BSConfig = GetCustomGameModeOptions();
-		}
+			FGameModeTransitionState GameModeTransitionState;
 
-		GameModeTransitionState.BSConfig.AudioConfig.SongTitle = AudioConfig.SongTitle;
-		GameModeTransitionState.BSConfig.AudioConfig.SongLength = AudioConfig.SongLength;
-		GameModeTransitionState.BSConfig.AudioConfig.InAudioDevice = AudioConfig.InAudioDevice;
-		GameModeTransitionState.BSConfig.AudioConfig.SongPath = AudioConfig.SongPath;
-		GameModeTransitionState.BSConfig.AudioConfig.bPlaybackAudio = AudioConfig.bPlaybackAudio;
-		GameModeTransitionState.BSConfig.AudioConfig.AudioFormat = AudioConfig.AudioFormat;
+			GameModeTransitionState.bSaveCurrentScores = false;
+			GameModeTransitionState.TransitionState = bIsMainMenuChild
+			                                          ? ETransitionState::StartFromMainMenu
+			                                          : ETransitionState::StartFromPostGameMenu;
 
-		GameModeTransitionState.BSConfig.OnCreate();
-		if (!bStartFromDefaultGameMode)
-		{
-			GameModeTransitionState.BSConfig.OnCreate_Custom();
-		}
+			if (bStartFromDefaultGameMode)
+			{
+				FindPresetGameMode(PresetSelection_PresetGameMode, PresetSelection_Difficulty, GameModeDataAsset.Get(),
+				                   GameModeTransitionState.BSConfig);
+			}
+			else
+			{
+				GameModeTransitionState.BSConfig = GetCustomGameModeOptions();
+			}
 
-		OnGameModeStateChanged.ExecuteIfBound(GameModeTransitionState);
-		AudioSelectWidget->FadeOut();
-	});
+			GameModeTransitionState.BSConfig.AudioConfig.SongTitle = AudioConfig.SongTitle;
+			GameModeTransitionState.BSConfig.AudioConfig.SongLength = AudioConfig.SongLength;
+			GameModeTransitionState.BSConfig.AudioConfig.InAudioDevice = AudioConfig.InAudioDevice;
+			GameModeTransitionState.BSConfig.AudioConfig.SongPath = AudioConfig.SongPath;
+			GameModeTransitionState.BSConfig.AudioConfig.bPlaybackAudio = AudioConfig.bPlaybackAudio;
+			GameModeTransitionState.BSConfig.AudioConfig.AudioFormat = AudioConfig.AudioFormat;
+
+			GameModeTransitionState.BSConfig.OnCreate();
+			if (!bStartFromDefaultGameMode)
+			{
+				GameModeTransitionState.BSConfig.OnCreate_Custom();
+			}
+
+			OnGameModeStateChanged.ExecuteIfBound(GameModeTransitionState);
+			AudioSelectWidget->FadeOut();
+		});
 
 	AudioSelectWidget->AddToViewport();
 	AudioSelectWidget->FadeIn();
@@ -960,13 +961,13 @@ void UGameModeMenuWidget::ShowConfirmOverwriteMessage_Import(TSharedPtr<FBSConfi
 	                                                           FText::GetEmpty(), 2);
 
 	Buttons[0]->SetButtonText(GetWidgetTextFromKey("G_Cancel"));
-	Buttons[0]->OnBSButtonPressed.AddLambda([&](const UBSButton* /*Button*/)
+	Buttons[0]->OnBSButtonPressed.AddLambda([PopupMessageWidget](const UBSButton* /*Button*/)
 	{
 		PopupMessageWidget->FadeOut();
 	});
 
 	Buttons[1]->SetButtonText(GetWidgetTextFromKey("G_Confirm"));
-	Buttons[1]->OnBSButtonPressed.AddLambda([&, ImportedConfig](const UBSButton* /*Button*/)
+	Buttons[1]->OnBSButtonPressed.AddLambda([this, PopupMessageWidget, ImportedConfig](const UBSButton* /*Button*/)
 	{
 		PopupMessageWidget->FadeOut();
 		if (ImportedConfig.IsValid())
