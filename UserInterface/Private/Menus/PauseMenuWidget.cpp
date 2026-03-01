@@ -26,7 +26,7 @@ void UPauseMenuWidget::NativeConstruct()
 	MenuButton_FAQ->OnBSButtonPressed.AddUObject(this, &ThisClass::OnButtonClicked_BSButton);
 	MenuButton_RestartCurrentMode->OnBSButtonPressed.AddUObject(this, &ThisClass::OnButtonClicked_BSButton);
 	MenuButton_Quit->OnBSButtonPressed.AddUObject(this, &ThisClass::OnButtonClicked_BSButton);
-	SettingsMenuWidget->OnRestartButtonClicked.BindLambda([&]
+	SettingsMenuWidget->OnRestartButtonClicked.BindLambda([this]
 	{
 		OnButtonClicked_BSButton(MenuButton_RestartCurrentMode);
 	});
@@ -64,7 +64,7 @@ void UPauseMenuWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 		auto* QuitMenuWidget = CreateWidget<UQuitMenuWidget>(this, QuitMenuClass);
 		QuitMenuWidget->SetIsPostGameModeMenuChild(false);
 		QuitMenuWidget->OnExitQuitMenu.BindUObject(this, &ThisClass::SetQuitMenuButtonsInActive);
-		QuitMenuWidget->OnGameModeStateChanged.BindLambda([&](auto&&... Args)
+		QuitMenuWidget->OnGameModeStateChanged.BindLambda([this](auto&&... Args)
 		{
 			OnGameModeStateChanged.ExecuteIfBound(Forward<decltype(Args)>(Args)...);
 		});

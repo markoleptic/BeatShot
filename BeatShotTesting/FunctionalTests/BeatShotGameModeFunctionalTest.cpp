@@ -119,7 +119,7 @@ void ABeatShotGameModeFunctionalTest::OnAudioAnalyzerBeat()
 	const int32 NumManaged = TargetManager->SpawnAreaManager->GetNumManaged();
 	AssertEqual_Bool(NumActivated <= NumManaged, true, "Activated <= Managed");
 
-	GetWorldTimerManager().SetTimerForNextTick(FTimerDelegate::CreateWeakLambda(this, [&]
+	GetWorldTimerManager().SetTimerForNextTick(FTimerDelegate::CreateWeakLambda(this, [this]
 	{
 		DestroyTargets();
 	}));
