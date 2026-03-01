@@ -11,22 +11,23 @@ TSharedRef<SWidget> UScoreTable::RebuildWidget()
 {
 	if (HeaderColumnTextWidth.IsEmpty())
 	{
-		static const auto FontMeasureService = FSlateApplication::Get().GetRenderer()->GetFontMeasureService();
+		const TSharedRef<FSlateFontMeasure> FontMeasure = FSlateApplication::Get().GetRenderer()->
+			GetFontMeasureService();
 		for (const auto& [Name, Text] : HeaderColumnText)
 		{
-			HeaderColumnTextWidth.Add(Name, FontMeasureService->Measure(Text, HeaderFont).X);
+			HeaderColumnTextWidth.Add(Name, FontMeasure->Measure(Text, HeaderFont).X);
 		}
 		for (const auto& [BaseGameMode, Text] : BaseGameModeText)
 		{
-			BaseGameModeCellTextWidth.Add(BaseGameMode, FontMeasureService->Measure(Text, TableCellFont).X);
+			BaseGameModeCellTextWidth.Add(BaseGameMode, FontMeasure->Measure(Text, TableCellFont).X);
 		}
 		for (const auto& [Difficulty, Text] : DifficultyText)
 		{
-			DifficultyCellTextWidth.Add(Difficulty, FontMeasureService->Measure(Text, TableCellFont).X);
+			DifficultyCellTextWidth.Add(Difficulty, FontMeasure->Measure(Text, TableCellFont).X);
 		}
 		{
 			const auto TestText = FText::FromString("8888-88-88, 88:88PM");
-			DateCellTextWidth = FontMeasureService->Measure(TestText, TableCellFont).X;
+			DateCellTextWidth = FontMeasure->Measure(TestText, TableCellFont).X;
 		}
 		{
 			static auto FormattingOptions = FNumberFormattingOptions().SetMinimumFractionalDigits(0).
@@ -34,7 +35,7 @@ TSharedRef<SWidget> UScoreTable::RebuildWidget()
 			                                                           SetMinimumIntegralDigits(6).
 			                                                           SetMaximumIntegralDigits(6);
 			const auto TestText = FText::AsNumber(888888, &FormattingOptions);
-			ScoreCellTextWidth = FontMeasureService->Measure(TestText, TableCellFont).X;
+			ScoreCellTextWidth = FontMeasure->Measure(TestText, TableCellFont).X;
 		}
 		{
 			static const FTextFormat PercentFormat = FTextFormat::FromString("{0}%");
@@ -43,19 +44,19 @@ TSharedRef<SWidget> UScoreTable::RebuildWidget()
 			                                                           SetMinimumIntegralDigits(2).
 			                                                           SetMaximumIntegralDigits(3);
 			const auto TestText = FText::Format(PercentFormat, FText::AsNumber(100.0, &FormattingOptions));
-			PercentCellTextWidth = FontMeasureService->Measure(TestText, TableCellFont).X;
+			PercentCellTextWidth = FontMeasure->Measure(TestText, TableCellFont).X;
 		}
 		{
 			static auto FormattingOptions = FNumberFormattingOptions().SetMinimumFractionalDigits(0).
 			                                                           SetMaximumFractionalDigits(0);
 			const auto TestText = FText::AsNumber(8888, &FormattingOptions);
-			CounterCellTextWidth = FontMeasureService->Measure(TestText, TableCellFont).X;
+			CounterCellTextWidth = FontMeasure->Measure(TestText, TableCellFont).X;
 		}
 		{
 			static auto FormattingOptions = FNumberFormattingOptions().SetMinimumFractionalDigits(0).
 			                                                           SetMaximumFractionalDigits(0);
 			const auto TestText = FText::AsNumber(888888.f, &FormattingOptions);
-			ReactionTimeCellTextWidth = FontMeasureService->Measure(TestText, TableCellFont).X;
+			ReactionTimeCellTextWidth = FontMeasure->Measure(TestText, TableCellFont).X;
 		}
 	}
 
@@ -105,7 +106,8 @@ void UScoreTable::SetListItems(const TArray<TSharedPtr<FPlayerScore>>& InListIte
 	if (SlateWidget)
 	{
 		SortItems();
-		static const auto FontMeasureService = FSlateApplication::Get().GetRenderer()->GetFontMeasureService();
+		const TSharedRef<FSlateFontMeasure> FontMeasure = FSlateApplication::Get().GetRenderer()->
+			GetFontMeasureService();
 		const auto& Columns = Header->GetColumns();
 		for (int i = 0; i < Columns.Num(); i++)
 		{
@@ -175,7 +177,7 @@ void UScoreTable::SetListItems(const TArray<TSharedPtr<FPlayerScore>>& InListIte
 					{
 						Text = FText::FromString(Item->SongTitle);
 					}
-					Width = FMath::Max(FontMeasureService->Measure(Text, TableCellFont).X, Width);
+					Width = FMath::Max(FontMeasure->Measure(Text, TableCellFont).X, Width);
 				}
 			}
 
