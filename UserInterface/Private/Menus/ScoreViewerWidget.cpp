@@ -185,9 +185,8 @@ void UScoreViewerWidget::LoadScores(USaveGamePlayerScore* InSaveGamePlayerScore,
 		TSharedPtr<FPlayerScore> MostRecentCustomScore;
 		TMap<EBaseGameMode, FGameModePlayTime> PlayTimeByBaseGameMode;
 		TMap<FString, FGameModePlayTime> PlayTimeByCustomGameModeName;
-		float TotalTimeInAnyGameMode = 0.0f;
-
-		const FTimespan UtcOffset = FDateTime::Now() - FDateTime::UtcNow();
+		float TotalSecondsInAnyGameMode = 0.0f;
+		
 		for (const auto& PlayerScore : PlayerScoresPtr)
 		{
 			if (PlayerScore->LocalDateTime >= StartDate)
@@ -198,7 +197,7 @@ void UScoreViewerWidget::LoadScores(USaveGamePlayerScore* InSaveGamePlayerScore,
 				PlayFrequencyData->Sections[WeekIndex][DayOfWeekIndex] += PlayerScore->SongLength;
 			}
 
-			TotalTimeInAnyGameMode += PlayerScore->SongLength;
+			TotalSecondsInAnyGameMode += PlayerScore->SongLength;
 
 			if (PlayerScore->DefiningConfig.GameModeType == EGameModeType::Preset)
 			{
@@ -229,7 +228,7 @@ void UScoreViewerWidget::LoadScores(USaveGamePlayerScore* InSaveGamePlayerScore,
 			}
 		}
 
-		UpdateTimeStatistics(PlayTimeByBaseGameMode, PlayTimeByCustomGameModeName, TotalTimeInAnyGameMode);
+		UpdateTimeStatistics(PlayTimeByBaseGameMode, PlayTimeByCustomGameModeName, TotalSecondsInAnyGameMode);
 
 		DefaultGameModePlayTime.Empty(PlayTimeByBaseGameMode.Num());
 		for (const auto& [GameModeType, GameModePlayTime] : PlayTimeByBaseGameMode)
@@ -457,7 +456,7 @@ FText UScoreViewerWidget::HandleMostPlayedDefaultGameModesYAxisFormatter(int32, 
 {
 	FNumberFormattingOptions NumberFormattingOptions;
 	NumberFormattingOptions.SetMaximumFractionalDigits(1);
-	return FText::AsNumber(Value / 60.f, &NumberFormattingOptions);
+	return FText::AsNumber(Value / 3600.f, &NumberFormattingOptions);
 }
 
 FText UScoreViewerWidget::HandleMostPlayedCustomGameModesXAxisFormatter(const int32 Index, float)
@@ -474,19 +473,19 @@ FText UScoreViewerWidget::HandleMostPlayedCustomGameModesYAxisFormatter(const in
 	return HandleMostPlayedDefaultGameModesYAxisFormatter(Index, Value);
 }
 
-FText UScoreViewerWidget::FormatTime(const float Minutes)
+FText UScoreViewerWidget::FormatTime(const float Seconds)
 {
 	FNumberFormattingOptions NumberFormattingOptions;
-	if (Minutes < 60.f)
+	if (Seconds < 3600.f)
 	{
 		NumberFormattingOptions.SetMaximumFractionalDigits(1);
-		return FText::Format(SpaceSeparatedFormat, FText::AsNumber(Minutes, &NumberFormattingOptions),
+		return FText::Format(SpaceSeparatedFormat, FText::AsNumber(Seconds / 60.f, &NumberFormattingOptions),
 		                     FText::FromString("Minutes"));
 	}
 	else
 	{
 		NumberFormattingOptions.SetMaximumFractionalDigits(2);
-		return FText::Format(SpaceSeparatedFormat, FText::AsNumber(Minutes / 60.f, &NumberFormattingOptions),
+		return FText::Format(SpaceSeparatedFormat, FText::AsNumber(Seconds / 3600.f, &NumberFormattingOptions),
 		                     FText::FromString("Hours"));
 	}
 }

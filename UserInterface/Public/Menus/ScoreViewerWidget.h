@@ -137,7 +137,7 @@ private:
 
 	FText HandleMostPlayedCustomGameModesYAxisFormatter(int32, float);
 
-	FText FormatTime(float Minutes);
+	FText FormatTime(float Seconds);
 
 	UPROPERTY()
 	TObjectPtr<USaveGamePlayerScore> SaveGamePlayerScore;
