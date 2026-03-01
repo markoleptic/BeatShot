@@ -166,57 +166,52 @@ void UDefaultGameModeScoreViewerWidget::FilterActiveScores(const EBaseGameMode C
                                                            const EGameModeDifficulty CurrentDifficulty)
 {
 	TSet<FString> SongOptions;
-	TSet<FString> DifficultyOptions;
-
-	bool HasSongTitle = false;
-	bool HasDifficulty = false;
-
-	FString CurrentSongTitleOverride = CurrentSongTitle;
-	EGameModeDifficulty CurrentDifficultyOverride = CurrentDifficulty;
-
 	if (PlayerScoreByGameModeSongAndDifficulty.Contains(CurrentBaseGameMode))
 	{
-		for (const auto& [Song, PlayerScoresForSongs] : PlayerScoreByGameModeSongAndDifficulty[CurrentBaseGameMode])
+		for (const auto& [Song, PlayerScoresForDifficulty] : PlayerScoreByGameModeSongAndDifficulty[
+			     CurrentBaseGameMode])
 		{
 			SongOptions.Add(Song);
-			if (CurrentSongTitle == Song)
+		}
+	}
+	TArray<FString> SongOptionsArray = SongOptions.Array();
+	const FString CurrentSongTitleOverride = SongOptions.Contains(CurrentSongTitle)
+	                                         ? CurrentSongTitle
+	                                         : SongOptions.IsEmpty()
+	                                         ? FString("")
+	                                         : SongOptionsArray[0];
+	SongComboBoxWidget->ComboBox->ClearOptions();
+	SongComboBoxWidget->SortAndAddOptions(SongOptionsArray);
+	const int32 SongOptionIndex = SongComboBoxWidget->ComboBox->GetIndexOfOption(CurrentSongTitleOverride);
+	SongComboBoxWidget->ComboBox->SetSelectedIndex(FMath::Max(SongOptionIndex, 0));
+
+	TSet<FString> DifficultyOptions;
+	bool HasDifficulty = false;
+	if (PlayerScoreByGameModeSongAndDifficulty.Contains(CurrentBaseGameMode))
+	{
+		const auto& PlayerScoreByGameMode = PlayerScoreByGameModeSongAndDifficulty[CurrentBaseGameMode];
+		if (PlayerScoreByGameMode.Contains(CurrentSongTitleOverride))
+		{
+			const auto& PlayerScoreBySong = PlayerScoreByGameMode[CurrentSongTitleOverride];
+			HasDifficulty = PlayerScoreBySong.Contains(CurrentDifficulty);
+			for (const auto& [Difficulty, PlayerScores] : PlayerScoreBySong)
 			{
-				HasSongTitle = true;
-			}
-			for (const auto& [Difficulty, PlayerScoresForDifficulty] : PlayerScoresForSongs)
-			{
-				if (CurrentDifficulty == Difficulty)
-				{
-					HasDifficulty = true;
-				}
 				DifficultyOptions.Add(DifficultyText[Difficulty].ToString());
 			}
 		}
 	}
-
-	TArray<FString> SongOptionsArray = SongOptions.Array();
-	if (!HasSongTitle)
-	{
-		CurrentSongTitleOverride = SongOptionsArray.IsEmpty() ? FString{} : SongOptionsArray[0];
-	}
-	const int32 SongOptionIndex = SongComboBoxWidget->ComboBox->GetIndexOfOption(CurrentSongTitleOverride);
-	SongComboBoxWidget->ComboBox->ClearOptions();
-	SongComboBoxWidget->SortAndAddOptions(SongOptionsArray);
-	SongComboBoxWidget->ComboBox->SetSelectedIndex(FMath::Max(SongOptionIndex, 0));
-
 	TArray<FString> DifficultyOptionsArray = DifficultyOptions.Array();
-	if (!HasDifficulty)
-	{
-		CurrentDifficultyOverride = DifficultyOptionsArray.IsEmpty()
-		                            ? EGameModeDifficulty::None
-		                            : FindGameModeDifficulty(DifficultyOptionsArray[0]);
-	}
+	const EGameModeDifficulty CurrentDifficultyOverride = HasDifficulty
+	                                                      ? CurrentDifficulty
+	                                                      : DifficultyOptions.IsEmpty()
+	                                                      ? EGameModeDifficulty::None
+	                                                      : FindGameModeDifficulty(DifficultyOptionsArray[0]);
+	DifficultyComboBoxWidget->ComboBox->ClearOptions();
+	DifficultyComboBoxWidget->SortAndAddOptions(DifficultyOptionsArray);
 	const int32 DifficultyOptionIndex = CurrentDifficultyOverride == EGameModeDifficulty::None
 	                                    ? 0
 	                                    : DifficultyComboBoxWidget->ComboBox->GetIndexOfOption(
 		                                    DifficultyText[CurrentDifficultyOverride].ToString());
-	DifficultyComboBoxWidget->ComboBox->ClearOptions();
-	DifficultyComboBoxWidget->SortAndAddOptions(DifficultyOptionsArray);
 	DifficultyComboBoxWidget->ComboBox->SetSelectedIndex(FMath::Max(DifficultyOptionIndex, 0));
 
 	if (CurrentBaseGameMode != EBaseGameMode::None && !CurrentSongTitleOverride.IsEmpty() && CurrentDifficultyOverride

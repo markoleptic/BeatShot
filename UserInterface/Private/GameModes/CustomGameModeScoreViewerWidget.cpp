@@ -101,38 +101,24 @@ void UCustomGameModeScoreViewerWidget::FilterActiveScores(const FString& Current
                                                           const FString& CurrentSongTitle)
 {
 	TSet<FString> SongOptions;
-	bool HasSongTitle = false;
-
-	FString CurrentSongTitleOverride = CurrentSongTitle;
-
 	if (PlayerScoreByGameModeAndSong.Contains(CurrentCustomGameModeName))
 	{
-		for (const auto& [Song, PlayerScoresForSongs] : PlayerScoreByGameModeAndSong[CurrentSongTitle])
+		for (const auto& [Song, PlayerScores] : PlayerScoreByGameModeAndSong[CurrentCustomGameModeName])
 		{
-			if (Song == CurrentSongTitle)
-			{
-				HasSongTitle = true;
-			}
 			SongOptions.Add(Song);
 		}
 	}
 
-	SongComboBoxWidget->ComboBox->ClearOptions();
 	TArray<FString> SongOptionsArray = SongOptions.Array();
+	const FString CurrentSongTitleOverride = SongOptions.Contains(CurrentSongTitle)
+	                                         ? CurrentSongTitle
+	                                         : SongOptions.IsEmpty()
+	                                         ? FString("")
+	                                         : SongOptionsArray[0];
+	SongComboBoxWidget->ComboBox->ClearOptions();
 	SongComboBoxWidget->SortAndAddOptions(SongOptionsArray);
-	if (!HasSongTitle)
-	{
-		if (SongOptionsArray.IsEmpty())
-		{
-			CurrentSongTitleOverride.Reset();
-		}
-		else
-		{
-			CurrentSongTitleOverride = SongOptionsArray[0];
-		}
-	}
-	SongComboBoxWidget->ComboBox->SetSelectedIndex(
-		FMath::Max(SongComboBoxWidget->ComboBox->GetIndexOfOption(CurrentSongTitleOverride), 0));
+	const int32 SongOptionIndex = SongComboBoxWidget->ComboBox->GetIndexOfOption(CurrentSongTitleOverride);
+	SongComboBoxWidget->ComboBox->SetSelectedIndex(FMath::Max(SongOptionIndex, 0));
 
 	if (!CurrentCustomGameModeName.IsEmpty() && !CurrentSongTitleOverride.IsEmpty())
 	{
