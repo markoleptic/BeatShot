@@ -32,6 +32,14 @@ struct FGameModePlayTime
 	EBaseGameMode BaseGameMode;
 };
 
+struct FCalculateTimeStatisticsResult
+{
+	TSharedPtr<FPlayerScore> MostRecentPlayerScore;
+	TSharedPtr<FPlayerScore> MostRecentDefaultPlayerScore;
+	TSharedPtr<FPlayerScore> MostRecentCustomPlayerScore;
+	float TotalSecondsInAnyGameMode = 0.f;
+};
+
 UCLASS()
 class USERINTERFACE_API UScoreViewerWidget : public UUserWidget
 {
@@ -111,9 +119,19 @@ private:
 
 	void OnButtonClicked_DeleteSelectedScoresButton(const UBSButton* Button);
 
-	void UpdateTimeStatistics(const TMap<EBaseGameMode, FGameModePlayTime>& PlayTimeByBaseGameMode,
-	                          const TMap<FString, FGameModePlayTime>& PlayTimeByCustomGameModeName,
-	                          float TotalTimeInAnyGameMode);
+	/** Calculates and updates the data for most played default modes, most played custom modes, and play frequency. */
+	FCalculateTimeStatisticsResult CalculateTimeStatistics(const TArray<TSharedPtr<FPlayerScore>>& PlayerScoresPtr,
+	                                                       TMap<EBaseGameMode, FGameModePlayTime>&
+	                                                       PlayTimeByBaseGameMode,
+	                                                       TMap<FString, FGameModePlayTime>&
+	                                                       PlayTimeByCustomGameModeName);
+
+	/** Updates relative play frequency data using absolute play frequency data. */
+	void UpdateRelativePlayFrequency();
+
+	void UpdateUserFacingTimeStatisticsLabels(const TMap<EBaseGameMode, FGameModePlayTime>& PlayTimeByBaseGameMode,
+	                                          const TMap<FString, FGameModePlayTime>& PlayTimeByCustomGameModeName,
+	                                          float TotalTimeInAnyGameMode);
 
 	void OnSelectionChanged_ScoreTable(bool HasSelection);
 
@@ -154,7 +172,11 @@ private:
 
 	const FTextFormat TimeForFormat = FTextFormat::FromString("Time for {0}:");
 
-	TSharedPtr<FHeatMapData> PlayFrequencyData;
+	TArray<TArray<float>> PlayFrequencyData;
+
+	TArray<TArray<float>> InitialPlayFrequencyData;
+
+	TSharedPtr<FHeatMapData> RelativePlayFrequencyData;
 
 	TSharedPtr<FHeatMapAxisLabelOptions> PlayFrequencyAxisData;
 

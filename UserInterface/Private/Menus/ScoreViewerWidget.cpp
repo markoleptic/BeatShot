@@ -2,6 +2,7 @@
 
 
 #include "Menus/ScoreViewerWidget.h"
+#include "Algo/MaxElement.h"
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
 #include "Components/WidgetSwitcher.h"
@@ -16,17 +17,47 @@
 
 namespace
 {
+constexpr int DaysInWeek = 7;
+
 TMap<int32, FText> CreateDaysOfWeekMap(const FDateTime& StartDate)
 {
 	TMap<int32, FText> DaysOfWeek;
 	FDateTime CurrentDate = StartDate;
-	while (DaysOfWeek.Num() != 7)
+	while (DaysOfWeek.Num() != DaysInWeek)
 	{
 		DaysOfWeek.Add(static_cast<int32>(CurrentDate.GetDayOfWeek()),
 		               FText::FromString(CurrentDate.ToFormattedString(TEXT("%a"))));
 		CurrentDate = CurrentDate + FTimespan::FromDays(1);
 	}
 	return DaysOfWeek;
+}
+
+void SortGameModePlayTime(TArray<FGameModePlayTime>& GameModePlayTime)
+{
+	Algo::Sort(GameModePlayTime, [](const FGameModePlayTime& Left, const FGameModePlayTime& Right)
+	{
+		return Left.PlayTime > Right.PlayTime;
+	});
+}
+
+template <typename T>
+void SortAndUpdateGameModePlayTimeData(const TMap<T, FGameModePlayTime>& PlayTimeMap,
+                                       TArray<FGameModePlayTime>& PlayTimeArray,
+                                       TArray<float>& Points)
+{
+	PlayTimeArray.Empty(PlayTimeMap.Num());
+	for (const auto& [Key, GameModePlayTime] : PlayTimeMap)
+	{
+		PlayTimeArray.Add(GameModePlayTime);
+	}
+
+	SortGameModePlayTime(PlayTimeArray);
+
+	Points.Empty(PlayTimeArray.Num());
+	for (const auto& GameModePlayTime : PlayTimeArray)
+	{
+		Points.Add(GameModePlayTime.PlayTime);
+	}
 }
 }
 
@@ -53,10 +84,10 @@ void UScoreViewerWidget::NativeConstruct()
 	MenuButton_CustomModes->SetDefaults(CustomGameModeScoreViewerWidget, MenuButton_History);
 	MenuButton_History->SetDefaults(Box_History, MenuButton_Overview);
 
-	PlayFrequencyData = MakeShared<FHeatMapData>();
-	PlayFrequencyData->Options.bDrawSectionIfValueLessThanZero = false;
-	PlayFrequencyData->Options.bUseCustomTwoColorInterpolation = true;
-	PlayFrequencyData->Options.Padding = {10.f, 10.f, 10.f, 10.f};
+	RelativePlayFrequencyData = MakeShared<FHeatMapData>();
+	RelativePlayFrequencyData->Options.bDrawSectionIfValueLessThanZero = false;
+	RelativePlayFrequencyData->Options.bUseCustomTwoColorInterpolation = true;
+	RelativePlayFrequencyData->Options.Padding = {10.f, 10.f, 10.f, 10.f};
 	PlayFrequencyAxisData = MakeShared<FHeatMapAxisLabelOptions>();
 	PlayFrequencyAxisData->YAxisLabelsDrawIndices = TSet{0, 1, 2, 3, 4, 5, 6};
 
@@ -67,20 +98,20 @@ void UScoreViewerWidget::NativeConstruct()
 	TMap<int32, FText> DaysOfWeek = CreateDaysOfWeekMap(StartDate);
 	TMap<int32, FText> MonthsOfYear;
 
-	const int32 WeekCount = TotalDays / 7 + 1;
-	PlayFrequencyData->Sections.Init({}, WeekCount);
-	for (auto& Week : PlayFrequencyData->Sections)
+	const int32 WeekCount = TotalDays / DaysInWeek + 1;
+	InitialPlayFrequencyData.Init({}, WeekCount);
+	for (int WeekIndex = 0; WeekIndex < WeekCount; WeekIndex++)
 	{
-		Week.Init(-1.f, 7);
+		InitialPlayFrequencyData[WeekIndex].Init(-1.f, DaysInWeek);
 	}
 
 	StartDow = static_cast<int>(StartDate.GetDayOfWeek());
 	for (int32 DayIndex = 0; DayIndex < TotalDays; DayIndex++)
 	{
 		FDateTime Date = StartDate + FTimespan::FromDays(DayIndex);
-		const int32 WeekIndex = (StartDow + DayIndex) / 7;
+		const int32 WeekIndex = (StartDow + DayIndex) / DaysInWeek;
 		const int32 DayOfWeekIndex = static_cast<int>(Date.GetDayOfWeek());
-		PlayFrequencyData->Sections[WeekIndex][DayOfWeekIndex] = 0.f;
+		InitialPlayFrequencyData[WeekIndex][DayOfWeekIndex] = 0.f;
 		if (Date.GetDay() == 1)
 		{
 			MonthsOfYear.FindOrAdd(WeekIndex) = FText::FromString(Date.ToFormattedString(TEXT("%b")));
@@ -97,7 +128,7 @@ void UScoreViewerWidget::NativeConstruct()
 		{
 			return DaysOfWeek[DayOfWeekIndex];
 		});
-	PlayFrequency->SetData(PlayFrequencyData, PlayFrequencyAxisData,
+	PlayFrequency->SetData(RelativePlayFrequencyData, PlayFrequencyAxisData,
 	                       TDelegate<FText
 		                       (int32, int32)>::CreateUObject(this, &ThisClass::HandlePlayFrequencyDisplayText),
 	                       TDelegate<FText(int32, int32, float)>::CreateUObject(
@@ -158,146 +189,60 @@ void UScoreViewerWidget::LoadScores(USaveGamePlayerScore* InSaveGamePlayerScore,
 		InSaveGamePlayerScore->OnScoresDeleted.AddUObject(this, &UScoreViewerWidget::LoadScores,
 		                                                  SaveGamePlayerScore.Get(), false);
 	}
-	DefaultGameModeScoreViewerWidget->SetSaveGamePlayerScore(SaveGamePlayerScore);
-	CustomGameModeScoreViewerWidget->SetSaveGamePlayerScore(SaveGamePlayerScore);
-	ScoreTable->SetListItems(SaveGamePlayerScore->GetPlayerScoresPtr());
+
+	RelativePlayFrequencyData->Sections = InitialPlayFrequencyData;
+	PlayFrequencyData = InitialPlayFrequencyData;
 
 	const auto& PlayerScoresPtr = SaveGamePlayerScore->GetPlayerScoresPtr();
-	if (PlayerScoresPtr.IsEmpty())
+	TMap<EBaseGameMode, FGameModePlayTime> PlayTimeByBaseGameMode;
+	TMap<FString, FGameModePlayTime> PlayTimeByCustomGameModeName;
+	const auto [MostRecentPlayerScore,MostRecentDefaultPlayerScore,MostRecentCustomPlayerScore,
+		TotalSecondsInAnyGameMode] = CalculateTimeStatistics(PlayerScoresPtr, PlayTimeByBaseGameMode,
+		                                                     PlayTimeByCustomGameModeName);
+
+	const bool PlayerScoresEmpty = PlayerScoresPtr.IsEmpty();
+	if (PlayerScoresEmpty)
 	{
 		Switcher->SetActiveWidget(Box_NoScores);
-
 		MenuButton_Overview->SetInActive();
 		MenuButton_DefaultModes->SetInActive();
 		MenuButton_CustomModes->SetInActive();
 		MenuButton_History->SetInActive();
-
-		MenuButton_Overview->SetIsEnabled(false);
-		MenuButton_DefaultModes->SetIsEnabled(false);
-		MenuButton_CustomModes->SetIsEnabled(false);
-		MenuButton_History->SetIsEnabled(false);
 	}
-	else
+	MenuButton_Overview->SetIsEnabled(!PlayerScoresEmpty);
+	MenuButton_DefaultModes->SetIsEnabled(!PlayerScoresEmpty);
+	MenuButton_CustomModes->SetIsEnabled(!PlayerScoresEmpty);
+	MenuButton_History->SetIsEnabled(!PlayerScoresEmpty);
+
+	UpdateUserFacingTimeStatisticsLabels(PlayTimeByBaseGameMode, PlayTimeByCustomGameModeName,
+	                                     TotalSecondsInAnyGameMode);
+	MostPlayedCustomGameModes->Redraw();
+	MostPlayedDefaultGameModes->Redraw();
+	PlayFrequency->Redraw();
+	ScoreTable->SetListItems(PlayerScoresPtr);
+
+	DefaultGameModeScoreViewerWidget->SetSaveGamePlayerScore(SaveGamePlayerScore);
+	CustomGameModeScoreViewerWidget->SetSaveGamePlayerScore(SaveGamePlayerScore);
+
+	if (MostRecentDefaultPlayerScore)
 	{
-		FDateTime MostRecentDefaultTime = FDateTime::MinValue();
-		FDateTime MostRecentCustomTime = FDateTime::MinValue();
-		TSharedPtr<FPlayerScore> MostRecentDefaultScore;
-		TSharedPtr<FPlayerScore> MostRecentCustomScore;
-		TMap<EBaseGameMode, FGameModePlayTime> PlayTimeByBaseGameMode;
-		TMap<FString, FGameModePlayTime> PlayTimeByCustomGameModeName;
-		float TotalSecondsInAnyGameMode = 0.0f;
-		
-		for (const auto& PlayerScore : PlayerScoresPtr)
-		{
-			if (PlayerScore->LocalDateTime >= StartDate)
-			{
-				const int32 DayIndex = (PlayerScore->LocalDateTime - StartDate).GetTotalDays();
-				const int32 WeekIndex = (StartDow + DayIndex) / 7;
-				const int32 DayOfWeekIndex = static_cast<int32>(PlayerScore->LocalDateTime.GetDayOfWeek());
-				PlayFrequencyData->Sections[WeekIndex][DayOfWeekIndex] += PlayerScore->SongLength;
-			}
+		DefaultGameModeScoreViewerWidget->SetActiveScores(MostRecentDefaultPlayerScore->DefiningConfig.BaseGameMode,
+		                                                  MostRecentDefaultPlayerScore->SongTitle,
+		                                                  MostRecentDefaultPlayerScore->DefiningConfig.Difficulty);
+	}
+	if (MostRecentCustomPlayerScore)
+	{
+		CustomGameModeScoreViewerWidget->SetActiveScores(MostRecentCustomPlayerScore->DefiningConfig.CustomGameModeName,
+		                                                 MostRecentCustomPlayerScore->SongTitle);
+	}
 
-			TotalSecondsInAnyGameMode += PlayerScore->SongLength;
-
-			if (PlayerScore->DefiningConfig.GameModeType == EGameModeType::Preset)
-			{
-				if (PlayerScore->LocalDateTime > MostRecentDefaultTime)
-				{
-					MostRecentDefaultTime = PlayerScore->LocalDateTime;
-					MostRecentDefaultScore = PlayerScore;
-				}
-				const auto& BaseGameMode = PlayerScore->DefiningConfig.BaseGameMode;
-				auto& Current = PlayTimeByBaseGameMode.FindOrAdd(BaseGameMode);
-				Current.BaseGameMode = BaseGameMode;
-				Current.GameModeType = PlayerScore->DefiningConfig.GameModeType;
-				Current.PlayTime += PlayerScore->SongLength;
-			}
-			else if (PlayerScore->DefiningConfig.GameModeType == EGameModeType::Custom)
-			{
-				if (PlayerScore->LocalDateTime > MostRecentCustomTime)
-				{
-					MostRecentCustomTime = PlayerScore->LocalDateTime;
-					MostRecentCustomScore = PlayerScore;
-				}
-				const auto& CustomGameModeName = PlayerScore->DefiningConfig.CustomGameModeName;
-				auto& Current = PlayTimeByCustomGameModeName.FindOrAdd(CustomGameModeName);
-				Current.BaseGameMode = EBaseGameMode::None;
-				Current.GameModeType = PlayerScore->DefiningConfig.GameModeType;
-				Current.CustomGameModeName = CustomGameModeName;
-				Current.PlayTime += PlayerScore->SongLength;
-			}
-		}
-
-		UpdateTimeStatistics(PlayTimeByBaseGameMode, PlayTimeByCustomGameModeName, TotalSecondsInAnyGameMode);
-
-		DefaultGameModePlayTime.Empty(PlayTimeByBaseGameMode.Num());
-		for (const auto& [GameModeType, GameModePlayTime] : PlayTimeByBaseGameMode)
-		{
-			DefaultGameModePlayTime.Add(GameModePlayTime);
-		}
-
-		CustomGameModePlayTime.Empty(PlayTimeByCustomGameModeName.Num());
-		for (const auto& [CustomGameModeName, GameModePlayTime] : PlayTimeByCustomGameModeName)
-		{
-			CustomGameModePlayTime.Add(GameModePlayTime);
-		}
-
-		Algo::Sort(DefaultGameModePlayTime, [](const FGameModePlayTime& Left, const FGameModePlayTime& Right)
-		{
-			return Left.PlayTime > Right.PlayTime;
-		});
-		Algo::Sort(CustomGameModePlayTime, [](const FGameModePlayTime& Left, const FGameModePlayTime& Right)
-		{
-			return Left.PlayTime > Right.PlayTime;
-		});
-
-		MostPlayedDefaultGameModesData->Points.Empty(DefaultGameModePlayTime.Num());
-		for (const auto& GameModePlayTime : DefaultGameModePlayTime)
-		{
-			MostPlayedDefaultGameModesData->Points.Add(GameModePlayTime.PlayTime);
-		}
-
-		MostPlayedCustomGameModesData->Points.Empty(CustomGameModePlayTime.Num());
-		for (const auto& GameModePlayTime : CustomGameModePlayTime)
-		{
-			MostPlayedCustomGameModesData->Points.Add(GameModePlayTime.PlayTime);
-		}
-
-		if (MostRecentDefaultScore)
-		{
-			DefaultGameModeScoreViewerWidget->SetActiveScores(MostRecentDefaultScore->DefiningConfig.BaseGameMode,
-			                                                  MostRecentDefaultScore->SongTitle,
-			                                                  MostRecentDefaultScore->DefiningConfig.Difficulty);
-		}
-		if (MostRecentCustomScore)
-		{
-			CustomGameModeScoreViewerWidget->SetActiveScores(MostRecentCustomScore->DefiningConfig.CustomGameModeName,
-			                                                 MostRecentCustomScore->SongTitle);
-		}
-
-		if (SwitchToMostRecent && (MostRecentDefaultScore || MostRecentCustomScore))
-		{
-			bool SwitchToDefault = true;
-			if (MostRecentDefaultScore && MostRecentCustomScore && MostRecentDefaultTime < MostRecentCustomTime)
-			{
-				SwitchToDefault = false;
-			}
-			else if (MostRecentCustomScore)
-			{
-				SwitchToDefault = false;
-			}
-
-			if (SwitchToDefault)
-			{
-				MenuButton_DefaultModes->SetActive();
-				Switcher->SetActiveWidget(MenuButton_DefaultModes->GetAssociatedWidget());
-			}
-			else
-			{
-				MenuButton_CustomModes->SetActive();
-				Switcher->SetActiveWidget(MenuButton_CustomModes->GetAssociatedWidget());
-			}
-		}
+	if (SwitchToMostRecent && MostRecentPlayerScore)
+	{
+		UMenuButton* ButtonToSetActive = MostRecentPlayerScore->DefiningConfig.GameModeType == EGameModeType::Preset
+		                                 ? MenuButton_DefaultModes
+		                                 : MenuButton_CustomModes;
+		ButtonToSetActive->SetActive();
+		Switcher->SetActiveWidget(ButtonToSetActive->GetAssociatedWidget());
 	}
 }
 
@@ -316,9 +261,123 @@ void UScoreViewerWidget::OnButtonClicked_DeleteSelectedScoresButton(const UBSBut
 	}
 }
 
-void UScoreViewerWidget::UpdateTimeStatistics(const TMap<EBaseGameMode, FGameModePlayTime>& PlayTimeByBaseGameMode,
-                                              const TMap<FString, FGameModePlayTime>& PlayTimeByCustomGameModeName,
-                                              const float TotalTimeInAnyGameMode)
+FCalculateTimeStatisticsResult UScoreViewerWidget::CalculateTimeStatistics(
+	const TArray<TSharedPtr<FPlayerScore>>& PlayerScoresPtr,
+	TMap<EBaseGameMode, FGameModePlayTime>& PlayTimeByBaseGameMode,
+	TMap<FString, FGameModePlayTime>& PlayTimeByCustomGameModeName)
+{
+	FCalculateTimeStatisticsResult CalculateTimeStatisticsResult;
+
+	FDateTime MostRecentDefaultTime = FDateTime::MinValue();
+	FDateTime MostRecentCustomTime = FDateTime::MinValue();
+	TSharedPtr<FPlayerScore> MostRecentDefaultScore;
+	TSharedPtr<FPlayerScore> MostRecentCustomScore;
+	float TotalSecondsInAnyGameMode = 0.0f;
+
+	for (const auto& PlayerScore : PlayerScoresPtr)
+	{
+		if (PlayerScore->LocalDateTime >= StartDate)
+		{
+			const int32 DayIndex = (PlayerScore->LocalDateTime - StartDate).GetTotalDays();
+			const int32 WeekIndex = (StartDow + DayIndex) / DaysInWeek;
+			const int32 DayOfWeekIndex = static_cast<int32>(PlayerScore->LocalDateTime.GetDayOfWeek());
+			PlayFrequencyData[WeekIndex][DayOfWeekIndex] += PlayerScore->SongLength;
+		}
+
+		TotalSecondsInAnyGameMode += PlayerScore->SongLength;
+
+		if (PlayerScore->DefiningConfig.GameModeType == EGameModeType::Preset)
+		{
+			if (PlayerScore->LocalDateTime > MostRecentDefaultTime)
+			{
+				MostRecentDefaultTime = PlayerScore->LocalDateTime;
+				MostRecentDefaultScore = PlayerScore;
+			}
+			const auto& BaseGameMode = PlayerScore->DefiningConfig.BaseGameMode;
+			auto& Current = PlayTimeByBaseGameMode.FindOrAdd(BaseGameMode);
+			Current.BaseGameMode = BaseGameMode;
+			Current.GameModeType = PlayerScore->DefiningConfig.GameModeType;
+			Current.PlayTime += PlayerScore->SongLength;
+		}
+		else if (PlayerScore->DefiningConfig.GameModeType == EGameModeType::Custom)
+		{
+			if (PlayerScore->LocalDateTime > MostRecentCustomTime)
+			{
+				MostRecentCustomTime = PlayerScore->LocalDateTime;
+				MostRecentCustomScore = PlayerScore;
+			}
+			const auto& CustomGameModeName = PlayerScore->DefiningConfig.CustomGameModeName;
+			auto& Current = PlayTimeByCustomGameModeName.FindOrAdd(CustomGameModeName);
+			Current.BaseGameMode = EBaseGameMode::None;
+			Current.GameModeType = PlayerScore->DefiningConfig.GameModeType;
+			Current.CustomGameModeName = CustomGameModeName;
+			Current.PlayTime += PlayerScore->SongLength;
+		}
+	}
+
+	UpdateRelativePlayFrequency();
+	SortAndUpdateGameModePlayTimeData(PlayTimeByBaseGameMode, DefaultGameModePlayTime,
+	                                  MostPlayedDefaultGameModesData->Points);
+	SortAndUpdateGameModePlayTimeData(PlayTimeByCustomGameModeName, CustomGameModePlayTime,
+	                                  MostPlayedCustomGameModesData->Points);
+
+	TSharedPtr<FPlayerScore> MostRecentPlayerScore;
+	if (MostRecentDefaultScore && MostRecentCustomScore)
+	{
+		MostRecentPlayerScore = MostRecentDefaultTime > MostRecentCustomTime
+		                        ? MostRecentDefaultScore
+		                        : MostRecentCustomScore;
+	}
+	else if (MostRecentDefaultScore)
+	{
+		MostRecentPlayerScore = MostRecentDefaultScore;
+	}
+	else if (MostRecentCustomScore)
+	{
+		MostRecentPlayerScore = MostRecentCustomScore;
+	}
+
+	return FCalculateTimeStatisticsResult{
+		.MostRecentPlayerScore = MoveTemp(MostRecentPlayerScore),
+		.MostRecentDefaultPlayerScore = MoveTemp(MostRecentDefaultScore),
+		.MostRecentCustomPlayerScore = MoveTemp(MostRecentCustomScore),
+		.TotalSecondsInAnyGameMode = TotalSecondsInAnyGameMode
+	};
+}
+
+
+void UScoreViewerWidget::UpdateRelativePlayFrequency()
+{
+	float MaxPlayTimeInOneDay = 0.0f;
+	for (const auto& Week : PlayFrequencyData)
+	{
+		if (!Week.IsEmpty())
+		{
+			MaxPlayTimeInOneDay = FMath::Max(MaxPlayTimeInOneDay, *Algo::MaxElement(Week));
+		}
+	}
+	if (MaxPlayTimeInOneDay > 0.f)
+	{
+		auto& RelativePlayFrequencySections = RelativePlayFrequencyData->Sections;
+		for (int WeekIndex = 0; WeekIndex < PlayFrequencyData.Num(); WeekIndex++)
+		{
+			const auto& AbsolutePlayFrequencyWeek = PlayFrequencyData[WeekIndex];
+			auto& RelativePlayFrequencyWeek = RelativePlayFrequencySections[WeekIndex];
+			for (int DayOfWeekIndex = 0; DayOfWeekIndex < AbsolutePlayFrequencyWeek.Num(); DayOfWeekIndex++)
+			{
+				const float AbsolutePlayTimeInSeconds = AbsolutePlayFrequencyWeek[DayOfWeekIndex];
+				RelativePlayFrequencyWeek[DayOfWeekIndex] = AbsolutePlayTimeInSeconds > 0.f
+				                                            ? AbsolutePlayTimeInSeconds / MaxPlayTimeInOneDay
+				                                            : AbsolutePlayTimeInSeconds;
+			}
+		}
+	}
+}
+
+void UScoreViewerWidget::UpdateUserFacingTimeStatisticsLabels(
+	const TMap<EBaseGameMode, FGameModePlayTime>& PlayTimeByBaseGameMode,
+	const TMap<FString, FGameModePlayTime>& PlayTimeByCustomGameModeName,
+	const float TotalTimeInAnyGameMode)
 {
 	TextBlock_TotalTimeInAnyGameMode->SetText(FormatTime(TotalTimeInAnyGameMode));
 
@@ -398,8 +457,8 @@ void UScoreViewerWidget::OnSelectionChanged_ScoreTable(const bool HasSelection)
 
 FText UScoreViewerWidget::HandlePlayFrequencyDisplayText(const int32 WeekIndex, const int32 DayOfWeekIndex)
 {
-	const float Value = PlayFrequencyData->Sections[WeekIndex][DayOfWeekIndex];
-	const int32 DayIndex = WeekIndex * 7 + (DayOfWeekIndex - StartDow);
+	const float Value = PlayFrequencyData[WeekIndex][DayOfWeekIndex];
+	const int32 DayIndex = WeekIndex * DaysInWeek + (DayOfWeekIndex - StartDow);
 	const FDateTime Date = StartDate + FTimespan::FromDays(DayIndex);
 	const FText DateText = FText::FromString(Date.ToFormattedString(TEXT("%Y-%m-%d")));
 	return FText::Format(PlayFrequencyDisplayFormat, DateText, FormatTime(Value));
@@ -408,7 +467,7 @@ FText UScoreViewerWidget::HandlePlayFrequencyDisplayText(const int32 WeekIndex, 
 FText UScoreViewerWidget::HandlePlayFrequencyValueText(const int32 WeekIndex, int32, float)
 {
 	float Total = 0.f;
-	for (const float CurrentValue : PlayFrequencyData->Sections[WeekIndex])
+	for (const float CurrentValue : PlayFrequencyData[WeekIndex])
 	{
 		if (CurrentValue > 0.f)
 		{
