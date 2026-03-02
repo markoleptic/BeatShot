@@ -7,7 +7,7 @@
 #include "SaveGames/SaveGamePlayerScore.h"
 #include "CustomGameModeScoreViewerWidget.generated.h"
 
-
+class UDateRangeWidget;
 class UTextBlock;
 class UVerticalBox;
 class UGameModeScoreViewerWidget;
@@ -41,7 +41,12 @@ protected:
 	UFUNCTION()
 	void OnSelectionChanged_Song(const TArray<FString>& ActiveSelections, ESelectInfo::Type SelectionType);
 
-	void FilterActiveScores(const FString& CurrentCustomGameModeName, const FString& CurrentSongTitle);
+	void OnDateChanged(const FDateTime& Start, const FDateTime& End);
+
+	void FilterActiveScores(const FString& CurrentCustomGameModeName,
+	                        const FString& CurrentSongTitle,
+	                        const FDateTime& StartDate = FDateTime::MaxValue(),
+	                        const FDateTime& EndDate = FDateTime::MinValue());
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UVerticalBox* MainBox;
@@ -51,6 +56,8 @@ protected:
 	UComboBoxWidget* GameModeComboBoxWidget;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxWidget* SongComboBoxWidget;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UDateRangeWidget* DateRangeWidget;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UGameModeScoreViewerWidget* GameModeScoreViewerWidget;
 

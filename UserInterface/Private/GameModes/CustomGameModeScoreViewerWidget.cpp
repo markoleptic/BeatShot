@@ -6,6 +6,7 @@
 #include "Components/VerticalBox.h"
 #include "GameModes/GameModeScoreViewerWidget.h"
 #include "MenuOptions/ComboBoxWidget.h"
+#include "MenuOptions/DateRangeWidget.h"
 
 void UCustomGameModeScoreViewerWidget::SetSaveGamePlayerScore(USaveGamePlayerScore* InSaveGamePlayerScore)
 {
@@ -73,6 +74,7 @@ void UCustomGameModeScoreViewerWidget::NativeConstruct()
 	GameModeComboBoxWidget->ComboBox->OnSelectionChanged.
 	                        AddUniqueDynamic(this, &ThisClass::OnSelectionChanged_GameMode);
 	SongComboBoxWidget->ComboBox->OnSelectionChanged.AddUniqueDynamic(this, &ThisClass::OnSelectionChanged_Song);
+	DateRangeWidget->OnMinMaxMenuOptionChanged.BindUObject(this, &ThisClass::OnDateChanged);
 }
 
 void UCustomGameModeScoreViewerWidget::OnSelectionChanged_GameMode(const TArray<FString>& ActiveSelections,
@@ -82,7 +84,8 @@ void UCustomGameModeScoreViewerWidget::OnSelectionChanged_GameMode(const TArray<
 	{
 		return;
 	}
-	FilterActiveScores(ActiveSelections[0], SongComboBoxWidget->ComboBox->GetSelectedOption());
+	const auto [StartDate, EndDate] = DateRangeWidget->GetValues(false);
+	FilterActiveScores(ActiveSelections[0], SongComboBoxWidget->ComboBox->GetSelectedOption(), StartDate, EndDate);
 }
 
 void UCustomGameModeScoreViewerWidget::OnSelectionChanged_Song(const TArray<FString>& ActiveSelections,
@@ -93,13 +96,27 @@ void UCustomGameModeScoreViewerWidget::OnSelectionChanged_Song(const TArray<FStr
 		return;
 	}
 	const FString CurrentCustomGameModeName = GameModeComboBoxWidget->ComboBox->GetSelectedOptions()[0];
-	GameModeScoreViewerWidget->SetActiveScores(
-		PlayerScoreByGameModeAndSong[CurrentCustomGameModeName][ActiveSelections[0]]);
+	const auto [StartDate, EndDate] = DateRangeWidget->GetValues(false);
+	FilterActiveScores(CurrentCustomGameModeName, ActiveSelections[0], StartDate, EndDate);
+}
+
+void UCustomGameModeScoreViewerWidget::OnDateChanged(const FDateTime& Start, const FDateTime& End)
+{
+	const FString CurrentCustomGameModeName = GameModeComboBoxWidget->ComboBox->GetSelectedOptions()[0];
+	const FString CurrentSongTitle = SongComboBoxWidget->ComboBox->GetSelectedOption();
+	FilterActiveScores(CurrentCustomGameModeName, CurrentSongTitle, Start, End);
 }
 
 void UCustomGameModeScoreViewerWidget::FilterActiveScores(const FString& CurrentCustomGameModeName,
-                                                          const FString& CurrentSongTitle)
+                                                          const FString& CurrentSongTitle,
+                                                          const FDateTime& StartDate,
+                                                          const FDateTime& EndDate)
 {
+	FDateTime MinDate = StartDate;
+	FDateTime MaxDate = EndDate;
+
+	const bool SetDates = MinDate == FDateTime::MaxValue() && MaxDate == FDateTime::MinValue();
+
 	TSet<FString> SongOptions;
 	if (PlayerScoreByGameModeAndSong.Contains(CurrentCustomGameModeName))
 	{
@@ -120,10 +137,31 @@ void UCustomGameModeScoreViewerWidget::FilterActiveScores(const FString& Current
 	const int32 SongOptionIndex = SongComboBoxWidget->ComboBox->GetIndexOfOption(CurrentSongTitleOverride);
 	SongComboBoxWidget->ComboBox->SetSelectedIndex(FMath::Max(SongOptionIndex, 0));
 
+
 	if (!CurrentCustomGameModeName.IsEmpty() && !CurrentSongTitleOverride.IsEmpty())
 	{
-		GameModeScoreViewerWidget->SetActiveScores(
-			PlayerScoreByGameModeAndSong[CurrentCustomGameModeName][CurrentSongTitleOverride]);
+		for (const auto& PlayerScore : PlayerScoreByGameModeAndSong[CurrentCustomGameModeName][
+			     CurrentSongTitleOverride])
+		{
+			const auto LocalDateDate = PlayerScore->LocalDateTime.GetDate();
+			MinDate = FMath::Min(MinDate, LocalDateDate);
+			MaxDate = FMath::Max(MaxDate, LocalDateDate);
+		}
+
+		if (SetDates)
+		{
+			DateRangeWidget->SetValues(MinDate, MaxDate, 1.f);
+			DateRangeWidget->SetValue_Min(MinDate);
+			DateRangeWidget->SetValue_Max(MaxDate);
+		}
+
+		const auto Filtered = PlayerScoreByGameModeAndSong[CurrentCustomGameModeName][CurrentSongTitleOverride].
+			FilterByPredicate([&MinDate, &MaxDate](const TSharedPtr<FPlayerScore>& PlayerScore)
+			{
+				const auto LocalDateDate = PlayerScore->LocalDateTime.GetDate();
+				return LocalDateDate >= MinDate && LocalDateDate <= MaxDate;
+			});
+		GameModeScoreViewerWidget->SetActiveScores(Filtered);
 	}
 	else
 	{

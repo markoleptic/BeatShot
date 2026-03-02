@@ -7,6 +7,7 @@
 #include "SaveGames/SaveGamePlayerScore.h"
 #include "DefaultGameModeScoreViewerWidget.generated.h"
 
+class UDateRangeWidget;
 class UTextBlock;
 class UVerticalBox;
 class UGameModeScoreViewerWidget;
@@ -50,9 +51,13 @@ protected:
 
 	EGameModeDifficulty FindGameModeDifficulty(const FString& InGameModeDifficulty);
 
+	void OnDateChanged(const FDateTime& Start, const FDateTime& End);
+
 	void FilterActiveScores(EBaseGameMode CurrentBaseGameMode,
 	                        const FString& CurrentSongTitle,
-	                        EGameModeDifficulty CurrentDifficulty);
+	                        EGameModeDifficulty CurrentDifficulty,
+	                        const FDateTime& StartDate = FDateTime::MaxValue(),
+	                        const FDateTime& EndDate = FDateTime::MinValue());
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UVerticalBox* MainBox;
@@ -64,6 +69,8 @@ protected:
 	UComboBoxWidget* DifficultyComboBoxWidget;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxWidget* SongComboBoxWidget;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UDateRangeWidget* DateRangeWidget;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UGameModeScoreViewerWidget* GameModeScoreViewerWidget;
 

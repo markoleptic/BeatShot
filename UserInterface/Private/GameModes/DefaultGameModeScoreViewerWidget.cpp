@@ -6,6 +6,7 @@
 #include "Components/VerticalBox.h"
 #include "GameModes/GameModeScoreViewerWidget.h"
 #include "MenuOptions/ComboBoxWidget.h"
+#include "MenuOptions/DateRangeWidget.h"
 #include "SaveGames/SaveGamePlayerScore.h"
 
 void UDefaultGameModeScoreViewerWidget::SetSaveGamePlayerScore(USaveGamePlayerScore* InSaveGamePlayerScore)
@@ -93,6 +94,7 @@ void UDefaultGameModeScoreViewerWidget::NativeConstruct()
 	SongComboBoxWidget->ComboBox->OnSelectionChanged.AddUniqueDynamic(this, &ThisClass::OnSelectionChanged_Song);
 	DifficultyComboBoxWidget->ComboBox->OnSelectionChanged.AddUniqueDynamic(
 		this, &ThisClass::OnSelectionChanged_Difficulty);
+	DateRangeWidget->OnMinMaxMenuOptionChanged.BindUObject(this, &ThisClass::OnDateChanged);
 }
 
 void UDefaultGameModeScoreViewerWidget::OnSelectionChanged_GameMode(const TArray<FString>& ActiveSelections,
@@ -106,7 +108,8 @@ void UDefaultGameModeScoreViewerWidget::OnSelectionChanged_GameMode(const TArray
 	const FString CurrentSongTitle = SongComboBoxWidget->ComboBox->GetSelectedOption();
 	const EGameModeDifficulty CurrentDifficulty = FindGameModeDifficulty(
 		DifficultyComboBoxWidget->ComboBox->GetSelectedOption());
-	FilterActiveScores(CurrentGameMode, CurrentSongTitle, CurrentDifficulty);
+	const auto [StartDate, EndDate] = DateRangeWidget->GetValues(false);
+	FilterActiveScores(CurrentGameMode, CurrentSongTitle, CurrentDifficulty, StartDate, EndDate);
 }
 
 void UDefaultGameModeScoreViewerWidget::OnSelectionChanged_Song(const TArray<FString>& ActiveSelections,
@@ -120,7 +123,8 @@ void UDefaultGameModeScoreViewerWidget::OnSelectionChanged_Song(const TArray<FSt
 	const FString CurrentSongTitle = SongComboBoxWidget->ComboBox->GetSelectedOption();
 	const EGameModeDifficulty CurrentDifficulty = FindGameModeDifficulty(
 		DifficultyComboBoxWidget->ComboBox->GetSelectedOption());
-	FilterActiveScores(CurrentGameMode, CurrentSongTitle, CurrentDifficulty);
+	const auto [StartDate, EndDate] = DateRangeWidget->GetValues(false);
+	FilterActiveScores(CurrentGameMode, CurrentSongTitle, CurrentDifficulty, StartDate, EndDate);
 }
 
 void UDefaultGameModeScoreViewerWidget::OnSelectionChanged_Difficulty(const TArray<FString>& ActiveSelections,
@@ -134,7 +138,8 @@ void UDefaultGameModeScoreViewerWidget::OnSelectionChanged_Difficulty(const TArr
 	const FString CurrentSongTitle = SongComboBoxWidget->ComboBox->GetSelectedOption();
 	const EGameModeDifficulty CurrentDifficulty = FindGameModeDifficulty(
 		DifficultyComboBoxWidget->ComboBox->GetSelectedOption());
-	FilterActiveScores(CurrentGameMode, CurrentSongTitle, CurrentDifficulty);
+	const auto [StartDate, EndDate] = DateRangeWidget->GetValues(false);
+	FilterActiveScores(CurrentGameMode, CurrentSongTitle, CurrentDifficulty, StartDate, EndDate);
 }
 
 EBaseGameMode UDefaultGameModeScoreViewerWidget::FindBaseGameMode(const FString& InGameModeName)
@@ -161,10 +166,26 @@ EGameModeDifficulty UDefaultGameModeScoreViewerWidget::FindGameModeDifficulty(co
 	return EGameModeDifficulty::None;
 }
 
+void UDefaultGameModeScoreViewerWidget::OnDateChanged(const FDateTime& Start, const FDateTime& End)
+{
+	const EBaseGameMode CurrentGameMode = FindBaseGameMode(GameModeComboBoxWidget->ComboBox->GetSelectedOption());
+	const FString CurrentSongTitle = SongComboBoxWidget->ComboBox->GetSelectedOption();
+	const EGameModeDifficulty CurrentDifficulty = FindGameModeDifficulty(
+		DifficultyComboBoxWidget->ComboBox->GetSelectedOption());
+	FilterActiveScores(CurrentGameMode, CurrentSongTitle, CurrentDifficulty, Start, End);
+}
+
 void UDefaultGameModeScoreViewerWidget::FilterActiveScores(const EBaseGameMode CurrentBaseGameMode,
                                                            const FString& CurrentSongTitle,
-                                                           const EGameModeDifficulty CurrentDifficulty)
+                                                           const EGameModeDifficulty CurrentDifficulty,
+                                                           const FDateTime& StartDate,
+                                                           const FDateTime& EndDate)
 {
+	FDateTime MinDate = StartDate;
+	FDateTime MaxDate = EndDate;
+
+	const bool SetDates = MinDate == FDateTime::MaxValue() && MaxDate == FDateTime::MinValue();
+
 	TSet<FString> SongOptions;
 	if (PlayerScoreByGameModeSongAndDifficulty.Contains(CurrentBaseGameMode))
 	{
@@ -217,9 +238,29 @@ void UDefaultGameModeScoreViewerWidget::FilterActiveScores(const EBaseGameMode C
 	if (CurrentBaseGameMode != EBaseGameMode::None && !CurrentSongTitleOverride.IsEmpty() && CurrentDifficultyOverride
 	    != EGameModeDifficulty::None)
 	{
-		GameModeScoreViewerWidget->SetActiveScores(
-			PlayerScoreByGameModeSongAndDifficulty[CurrentBaseGameMode][CurrentSongTitleOverride][
-				CurrentDifficultyOverride]);
+		for (const auto& PlayerScore : PlayerScoreByGameModeSongAndDifficulty[CurrentBaseGameMode][
+			     CurrentSongTitleOverride][CurrentDifficultyOverride])
+		{
+			const auto LocalDateDate = PlayerScore->LocalDateTime.GetDate();
+			MinDate = FMath::Min(MinDate, LocalDateDate);
+			MaxDate = FMath::Max(MaxDate, LocalDateDate);
+		}
+
+		if (SetDates)
+		{
+			DateRangeWidget->SetValues(MinDate, MaxDate, 1.f);
+			DateRangeWidget->SetValue_Min(MinDate);
+			DateRangeWidget->SetValue_Max(MaxDate);
+		}
+
+		const auto Filtered = PlayerScoreByGameModeSongAndDifficulty[CurrentBaseGameMode][CurrentSongTitleOverride][
+			CurrentDifficultyOverride].FilterByPredicate(
+			[&MinDate, &MaxDate](const TSharedPtr<FPlayerScore>& PlayerScore)
+			{
+				const auto LocalDateDate = PlayerScore->LocalDateTime.GetDate();
+				return LocalDateDate >= MinDate && LocalDateDate <= MaxDate;
+			});
+		GameModeScoreViewerWidget->SetActiveScores(Filtered);
 	}
 	else
 	{
