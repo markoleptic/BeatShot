@@ -352,12 +352,12 @@ void UGameModeScoreViewerWidget::SetActiveScores(const TArray<TSharedPtr<FPlayer
 	UpdateDataVisualization();
 }
 
-FText UGameModeScoreViewerWidget::HandleGenericDateValueText(const int32 XIndex, const int32 YIndex)
+FText UGameModeScoreViewerWidget::HandleGenericDateValueText(const int32 /*SeriesIndex*/, const int32 PointIndex)
 {
-	if (ActiveScores.IsValidIndex(XIndex) && TimesByPlayerScore.Contains(ActiveScores[XIndex]))
+	if (ActiveScores.IsValidIndex(PointIndex) && TimesByPlayerScore.Contains(ActiveScores[PointIndex]))
 	{
 		return FText::FromString(
-			TimesByPlayerScore[ActiveScores[XIndex]].ToFormattedString(TEXT("%b %d, %Y, %I:%M %P")));
+			TimesByPlayerScore[ActiveScores[PointIndex]].ToFormattedString(TEXT("%b %d, %Y, %I:%M %P")));
 	}
 	return {};
 }
