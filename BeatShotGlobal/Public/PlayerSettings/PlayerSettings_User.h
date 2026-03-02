@@ -19,15 +19,6 @@ struct BEATSHOTGLOBAL_API FPlayerSettings_User
 	float Sensitivity;
 
 	UPROPERTY(BlueprintReadOnly)
-	FString UserID;
-
-	UPROPERTY(BlueprintReadOnly)
-	FString DisplayName;
-
-	UPROPERTY(BlueprintReadOnly)
-	FString RefreshCookie;
-
-	UPROPERTY(BlueprintReadOnly)
 	bool bNightModeUnlocked;
 
 	UPROPERTY(BlueprintReadOnly)
@@ -39,8 +30,6 @@ struct BEATSHOTGLOBAL_API FPlayerSettings_User
 	FPlayerSettings_User()
 	{
 		Sensitivity = Constants::DefaultSensitivity;
-		UserID = FString();
-		RefreshCookie = FString();
 		bNightModeUnlocked = false;
 		bHasRanBenchmark = false;
 		Keybindings = TMap<FName, FKey>();
