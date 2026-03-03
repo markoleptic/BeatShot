@@ -159,8 +159,8 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 		[](int32, int32, const float Value)
 		{
 			FNumberFormattingOptions NumberFormattingOptions;
-			NumberFormattingOptions.MaximumFractionalDigits = 0;
-			NumberFormattingOptions.MinimumFractionalDigits = 0;
+			NumberFormattingOptions.MaximumFractionalDigits = 1;
+			NumberFormattingOptions.MinimumFractionalDigits = 1;
 			return FText::Format(GetMillisecondFormat(), FText::AsNumber(Value * 100.f, &NumberFormattingOptions));
 		});
 
@@ -225,7 +225,7 @@ void UGameModeScoreViewerWidget::UpdateDataVisualization()
 		float BestScore = 0.0f;
 		float BestAccuracy = 0.0f;
 		int BestStreak = 0;
-		float BestReactionTime = 0.0f;
+		float BestReactionTime = TNumericLimits<float>::Max();
 		float BestCompletion = 0.f;
 		for (const auto& PlayerScore : ActiveScores)
 		{
@@ -272,12 +272,14 @@ void UGameModeScoreViewerWidget::UpdateDataVisualization()
 		const float AvgReactionTime = TotalReactionTime * 100.f / ActiveScores.Num();
 		const int AvgTargetsDestroyed = TotalCompletion * 100.f / ActiveScores.Num();
 
-		NumberFormattingOptions.MaximumFractionalDigits = 0;
-		NumberFormattingOptions.MinimumFractionalDigits = 0;
+		NumberFormattingOptions.MaximumFractionalDigits = 1;
+		NumberFormattingOptions.MinimumFractionalDigits = 1;
 		TextBlock_AverageScore->SetText(FText::AsNumber(AverageScore, &NumberFormattingOptions));
 		TextBlock_AverageReactionTime->SetText(FText::Format(GetMillisecondFormat(),
 		                                                     FText::AsNumber(
 			                                                     AvgReactionTime, &NumberFormattingOptions)));
+		NumberFormattingOptions.MaximumFractionalDigits = 0;
+		NumberFormattingOptions.MinimumFractionalDigits = 0;
 		TextBlock_AverageStreak->SetText(FText::AsNumber(AverageStreak, &NumberFormattingOptions));
 		NumberFormattingOptions.MaximumFractionalDigits = 1;
 		NumberFormattingOptions.MinimumFractionalDigits = 1;
