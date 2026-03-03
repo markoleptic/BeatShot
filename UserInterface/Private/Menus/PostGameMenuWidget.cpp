@@ -30,9 +30,10 @@ void UPostGameMenuWidget::NativeConstruct()
 	MenuButton_FAQ->OnBSButtonPressed.AddUObject(this, &ThisClass::OnButtonClicked_BSButton);
 	MenuButton_Quit->OnBSButtonPressed.AddUObject(this, &ThisClass::OnButtonClicked_BSButton);
 
-	FadeInWidgetDelegate.BindDynamic(this, &UPostGameMenuWidget::SetScoresWidgetVisibility);
-
-	BindToAnimationFinished(FadeInWidget, FadeInWidgetDelegate);
+	MenuButton_Scores->SetActive();
+	MenuSwitcher->SetActiveWidget(MenuButton_Scores->GetAssociatedWidget());
+	LastMenuButton = MakeWeakObjectPtr(MenuButton_Scores);
+	
 	PlayFadeInWidget();
 }
 
@@ -86,13 +87,6 @@ void UPostGameMenuWidget::ShowAudioFormatSelect()
 	});
 	AudioSelectWidget->AddToViewport();
 	AudioSelectWidget->FadeIn();
-}
-
-void UPostGameMenuWidget::SetScoresWidgetVisibility()
-{
-	ScoreViewerWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	MenuButton_Scores->SetActive();
-	MenuSwitcher->SetActiveWidget(MenuButton_Scores->GetAssociatedWidget());
 }
 
 void UPostGameMenuWidget::OnButtonClicked_BSButton(const UBSButton* Button)

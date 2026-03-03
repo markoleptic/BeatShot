@@ -91,13 +91,7 @@ protected:
 	UFUNCTION()
 	void PlayFadeInWidget() { PlayAnimationForward(FadeInWidget); }
 
-	/** Delegate used to bind CollapseWidget to FadeOutBackgroundBlur. */
-	FWidgetAnimationDynamicEvent FadeInWidgetDelegate;
-
 	void ShowAudioFormatSelect();
-
-	UFUNCTION()
-	void SetScoresWidgetVisibility();
 
 	void OnButtonClicked_BSButton(const UBSButton* Button);
 
