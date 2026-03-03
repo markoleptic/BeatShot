@@ -153,12 +153,17 @@ void ABSGameMode::InitializeGameMode(const TSharedPtr<FBSConfig>& InConfig)
 	{
 		TargetManager = GetWorld()->SpawnActor<ATargetManager>(TargetManagerClass, FVector::Zero(),
 		                                                       FRotator::ZeroRotator, SpawnParameters);
+	}
+	if (!TargetManager->OnTargetActivated.IsBoundToObject(this))
+	{
 		TargetManager->OnTargetActivated.AddUObject(this, &ABSGameMode::UpdateTargetsSpawned);
+	}
+	if (!TargetManager->PostTargetDamageEvent.IsBoundToObject(this))
+	{
 		TargetManager->PostTargetDamageEvent.AddUObject(this, &ABSGameMode::HandlePostTargetDamageEvent);
 	}
 
 	check(LocalPlayerController);
-
 
 	const FCommonScoreInfo CommonScoreInfo = LocalPlayerController->GetSaveGamePlayerScore()->FindOrAddCommonScoreInfo(
 		BSConfig->DefiningConfig);
@@ -229,6 +234,9 @@ void ABSGameMode::StartGameMode()
 
 	StartGameModeTimers();
 	TargetManager->SetShouldSpawn(true);
+
+	check(TargetManager->OnTargetActivated.IsBoundToObject(this));
+	check(TargetManager->PostTargetDamageEvent.IsBoundToObject(this));
 }
 
 void ABSGameMode::StartGameModeTimers()
