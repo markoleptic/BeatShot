@@ -144,9 +144,6 @@ private:
 	UFUNCTION()
 	void InitializeExit();
 
-	/** Function that is bound to FadeOutBackgroundBlur to set the visibility of the widget to collapsed. */
-	UFUNCTION()
-	void CollapseWidget();
 	UFUNCTION()
 	void SetGotoMainMenuTrue() { bGotoMainMenu = true; }
 

@@ -145,12 +145,6 @@ void UQuitMenuWidget::OnRestart()
 	OnGameModeStateChanged.ExecuteIfBound(TransitionState);
 }
 
-void UQuitMenuWidget::CollapseWidget()
-{
-	SetVisibility(ESlateVisibility::Collapsed);
-	UnbindFromAnimationFinished(FadeOutBackgroundBlur, FadeOutWidgetDelegate);
-}
-
 void UQuitMenuWidget::SetSaveMenuTitleMainMenu()
 {
 	TextBlock_SaveMenuTitle->SetText(IBSWidgetInterface::GetWidgetTextFromKey("QM_QuitMainMenuButtonText"));
