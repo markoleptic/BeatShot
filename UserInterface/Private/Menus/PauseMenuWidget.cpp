@@ -69,6 +69,7 @@ void UPauseMenuWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 			OnGameModeStateChanged.ExecuteIfBound(Forward<decltype(Args)>(Args)...);
 		});
 
+		QuitMenuWidget->AddToViewport();
 		if (Button == MenuButton_Quit)
 		{
 			QuitMenuWidget->PlayInitialFadeInMenu();
