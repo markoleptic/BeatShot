@@ -33,6 +33,8 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
+	constexpr int MaxTickCount = 20;
+
 	const auto ShortDateXAxisFormatter = TDelegate<FText(int32, float)>::CreateUObject(
 		this, &ThisClass::HandleShortDateXAxisFormatter);
 	const auto ZeroDecimalFormatter = TDelegate<FText(int32, float)>::CreateLambda([](int32, const float Value)
@@ -58,6 +60,7 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 		FAxisLabelOptions XAxisLabelOptions;
 		XAxisLabelOptions.StartAtZero = false;
 		XAxisLabelOptions.Formatter = ShortDateXAxisFormatter;
+		XAxisLabelOptions.MaxTickCount = MaxTickCount;
 		ScoreVsTimeAxisData->Add({EAxisType::X, XAxisLabelOptions});
 
 		FAxisLabelOptions YAxisLabelOptions;
@@ -77,6 +80,7 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 		FAxisLabelOptions XAxisLabelOptions;
 		XAxisLabelOptions.StartAtZero = false;
 		XAxisLabelOptions.Formatter = ShortDateXAxisFormatter;
+		XAxisLabelOptions.MaxTickCount = MaxTickCount;
 		StreakVsTimeAxisData->Add({EAxisType::X, XAxisLabelOptions});
 
 		FAxisLabelOptions YAxisLabelOptions;
@@ -91,11 +95,15 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 		FAxisLabelOptions XAxisLabelOptions;
 		XAxisLabelOptions.StartAtZero = false;
 		XAxisLabelOptions.Formatter = ShortDateXAxisFormatter;
+		XAxisLabelOptions.MaxTickCount = MaxTickCount;
 		AverageTargetsDestroyedAxisData->Add({EAxisType::X, XAxisLabelOptions});
 
 		FAxisLabelOptions YAxisLabelOptions;
 		YAxisLabelOptions.StartAtZero = true;
 		YAxisLabelOptions.Formatter = ZeroDecimalTimesOneHundredFormatter;
+		YAxisLabelOptions.MinRangeOverride = 0.f;
+		YAxisLabelOptions.MaxRangeOverride = 1.f;
+		YAxisLabelOptions.TickStepOverride = 0.1f;
 		AverageTargetsDestroyedAxisData->Add({EAxisType::Y, YAxisLabelOptions});
 	}
 
@@ -105,6 +113,7 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 		FAxisLabelOptions XAxisLabelOptions;
 		XAxisLabelOptions.StartAtZero = false;
 		XAxisLabelOptions.Formatter = ShortDateXAxisFormatter;
+		XAxisLabelOptions.MaxTickCount = MaxTickCount;
 		AverageReactionTimeAxisData->Add({EAxisType::X, XAxisLabelOptions});
 
 		FAxisLabelOptions YAxisLabelOptions;
@@ -119,11 +128,15 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 		FAxisLabelOptions XAxisLabelOptions;
 		XAxisLabelOptions.StartAtZero = false;
 		XAxisLabelOptions.Formatter = ShortDateXAxisFormatter;
+		XAxisLabelOptions.MaxTickCount = MaxTickCount;
 		AccuracyVsTimeAxisData->Add({EAxisType::X, XAxisLabelOptions});
 
 		FAxisLabelOptions YAxisLabelOptions;
 		YAxisLabelOptions.StartAtZero = true;
 		YAxisLabelOptions.Formatter = ZeroDecimalTimesOneHundredFormatter;
+		YAxisLabelOptions.MinRangeOverride = 0.f;
+		YAxisLabelOptions.MaxRangeOverride = 1.f;
+		YAxisLabelOptions.TickStepOverride = 0.1f;
 		AccuracyVsTimeAxisData->Add({EAxisType::Y, YAxisLabelOptions});
 	}
 
