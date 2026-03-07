@@ -85,6 +85,8 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 
 		FAxisLabelOptions YAxisLabelOptions;
 		YAxisLabelOptions.StartAtZero = true;
+		YAxisLabelOptions.MinTickStep = 1;
+		YAxisLabelOptions.MinTickCount = 3;
 		YAxisLabelOptions.Formatter = ZeroDecimalFormatter;
 		StreakVsTimeAxisData->Add({EAxisType::Y, YAxisLabelOptions});
 	}

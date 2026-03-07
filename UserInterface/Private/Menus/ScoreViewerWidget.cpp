@@ -40,24 +40,49 @@ void SortGameModePlayTime(TArray<FGameModePlayTime>& GameModePlayTime)
 	});
 }
 
+
 template <typename T>
-void SortAndUpdateGameModePlayTimeData(const TMap<T, FGameModePlayTime>& PlayTimeMap,
-                                       TArray<FGameModePlayTime>& PlayTimeArray,
-                                       TArray<float>& Points)
+EGameModePlayTimeUnits SortAndUpdateGameModePlayTimeData(const TMap<T, FGameModePlayTime>& PlayTimeMap,
+                                                         TArray<FGameModePlayTime>& PlayTimeArray,
+                                                         TArray<float>& Points)
 {
 	PlayTimeArray.Empty(PlayTimeMap.Num());
+	float MaxPlayTime = 0;
 	for (const auto& [Key, GameModePlayTime] : PlayTimeMap)
 	{
 		PlayTimeArray.Add(GameModePlayTime);
+		MaxPlayTime = FMath::Max(MaxPlayTime, GameModePlayTime.PlayTime);
 	}
 
 	SortGameModePlayTime(PlayTimeArray);
-
+	EGameModePlayTimeUnits GameModePlayTimeUnits;
+	float DivideBy;
+	if (MaxPlayTime < 3600.f)
+	{
+		DivideBy = 60.f;
+		GameModePlayTimeUnits = EGameModePlayTimeUnits::Minutes;
+	}
+	else
+	{
+		DivideBy = 3600.f;
+		GameModePlayTimeUnits = EGameModePlayTimeUnits::Hours;
+	}
 	Points.Empty(PlayTimeArray.Num());
 	for (const auto& GameModePlayTime : PlayTimeArray)
 	{
-		Points.Add(GameModePlayTime.PlayTime);
+		Points.Add(GameModePlayTime.PlayTime / DivideBy);
 	}
+	return GameModePlayTimeUnits;
+}
+
+int32 ComputeLabelPrecision(const double Step)
+{
+	if (Step <= 0.0)
+	{
+		return 0;
+	}
+
+	return FMath::Max(0, static_cast<int32>(FMath::CeilToInt(-FMath::LogX(10.0, Step))));
 }
 }
 
@@ -145,6 +170,7 @@ void UScoreViewerWidget::NativeConstruct()
 
 		FAxisLabelOptions YAxisLabelOptions;
 		YAxisLabelOptions.StartAtZero = true;
+		YAxisLabelOptions.MinTickCount = 3;
 		YAxisLabelOptions.Formatter = TDelegate<FText(int32, float)>::CreateUObject(
 			this, &ThisClass::HandleMostPlayedDefaultGameModesYAxisFormatter);
 		MostPlayedDefaultGameModesAxisData->Add({EAxisType::Y, YAxisLabelOptions});
@@ -161,6 +187,7 @@ void UScoreViewerWidget::NativeConstruct()
 
 		FAxisLabelOptions YAxisLabelOptions;
 		YAxisLabelOptions.StartAtZero = true;
+		YAxisLabelOptions.MinTickCount = 3;
 		YAxisLabelOptions.Formatter = TDelegate<FText(int32, float)>::CreateUObject(
 			this, &ThisClass::HandleMostPlayedCustomGameModesYAxisFormatter);
 		MostPlayedCustomGameModesAxisData->Add({EAxisType::Y, YAxisLabelOptions});
@@ -170,12 +197,20 @@ void UScoreViewerWidget::NativeConstruct()
 	                                    TDelegate<FText(int32)>::CreateUObject(
 		                                    this, &ThisClass::HandleMostPlayedDefaultGameModesDisplayText),
 	                                    TDelegate<FText(int32, float)>::CreateUObject(
-		                                    this, &ThisClass::HandleMostPlayedDefaultGameModesValueText));
+		                                    this, &ThisClass::HandleMostPlayedDefaultGameModesValueText),
+	                                    TDelegate<void(float)>::CreateLambda([this](float Value)
+	                                    {
+		                                    DefaultGameModePrecision = ComputeLabelPrecision(Value);
+	                                    }));
 	MostPlayedCustomGameModes->SetData(MostPlayedCustomGameModesData, MostPlayedCustomGameModesAxisData,
 	                                   TDelegate<FText(int32)>::CreateUObject(
 		                                   this, &ThisClass::HandleMostPlayedCustomGameModesDisplayText),
 	                                   TDelegate<FText(int32, float)>::CreateUObject(
-		                                   this, &ThisClass::HandleMostPlayedCustomGameModesValueText));
+		                                   this, &ThisClass::HandleMostPlayedCustomGameModesValueText),
+	                                   TDelegate<void(float)>::CreateLambda([this](float Value)
+	                                   {
+		                                   CustomGameModePrecision = ComputeLabelPrecision(Value);
+	                                   }));
 
 	MenuButton_Overview->SetActive();
 	Switcher->SetActiveWidget(MenuButton_Overview->GetAssociatedWidget());
@@ -316,10 +351,31 @@ FCalculateTimeStatisticsResult UScoreViewerWidget::CalculateTimeStatistics(
 	}
 
 	UpdateRelativePlayFrequency();
-	SortAndUpdateGameModePlayTimeData(PlayTimeByBaseGameMode, DefaultGameModePlayTime,
-	                                  MostPlayedDefaultGameModesData->Points);
-	SortAndUpdateGameModePlayTimeData(PlayTimeByCustomGameModeName, CustomGameModePlayTime,
-	                                  MostPlayedCustomGameModesData->Points);
+
+	DefaultGameModePlayTimeUnits = SortAndUpdateGameModePlayTimeData(PlayTimeByBaseGameMode, DefaultGameModePlayTime,
+	                                                                 MostPlayedDefaultGameModesData->Points);
+	switch (DefaultGameModePlayTimeUnits)
+	{
+	case EGameModePlayTimeUnits::Minutes:
+		MostPlayedDefaultGameModes->YAxisLabel = FText::FromString("Total Time Played (Minutes)");
+		break;
+	case EGameModePlayTimeUnits::Hours:
+		MostPlayedDefaultGameModes->YAxisLabel = FText::FromString("Total Time Played (Hours)");
+		break;
+	}
+
+	CustomGameModePlayTimeUnits = SortAndUpdateGameModePlayTimeData(PlayTimeByCustomGameModeName,
+	                                                                CustomGameModePlayTime,
+	                                                                MostPlayedCustomGameModesData->Points);
+	switch (CustomGameModePlayTimeUnits)
+	{
+	case EGameModePlayTimeUnits::Minutes:
+		MostPlayedCustomGameModes->YAxisLabel = FText::FromString("Total Time Played (Minutes)");
+		break;
+	case EGameModePlayTimeUnits::Hours:
+		MostPlayedCustomGameModes->YAxisLabel = FText::FromString("Total Time Played (Hours)");
+		break;
+	}
 
 	TSharedPtr<FPlayerScore> MostRecentPlayerScore;
 	if (MostRecentDefaultScore && MostRecentCustomScore)
@@ -489,7 +545,7 @@ FText UScoreViewerWidget::HandleMostPlayedDefaultGameModesDisplayText(const int3
 
 FText UScoreViewerWidget::HandleMostPlayedDefaultGameModesValueText(int32, const float Value)
 {
-	return FormatTime(Value);
+	return FormatTime(Value, DefaultGameModePlayTimeUnits);
 }
 
 FText UScoreViewerWidget::HandleMostPlayedCustomGameModesDisplayText(const int32 Index)
@@ -497,9 +553,9 @@ FText UScoreViewerWidget::HandleMostPlayedCustomGameModesDisplayText(const int32
 	return FText::FromString(CustomGameModePlayTime[Index].CustomGameModeName);
 }
 
-FText UScoreViewerWidget::HandleMostPlayedCustomGameModesValueText(const int32 Index, const float Value)
+FText UScoreViewerWidget::HandleMostPlayedCustomGameModesValueText(const int32 /*Index*/, const float Value)
 {
-	return FormatTime(Value);
+	return FormatTime(Value, CustomGameModePlayTimeUnits);
 }
 
 FText UScoreViewerWidget::HandleMostPlayedDefaultGameModesXAxisFormatter(const int32 Index, float)
@@ -514,8 +570,18 @@ FText UScoreViewerWidget::HandleMostPlayedDefaultGameModesXAxisFormatter(const i
 FText UScoreViewerWidget::HandleMostPlayedDefaultGameModesYAxisFormatter(int32, const float Value)
 {
 	FNumberFormattingOptions NumberFormattingOptions;
-	NumberFormattingOptions.SetMaximumFractionalDigits(1);
-	return FText::AsNumber(Value / 3600.f, &NumberFormattingOptions);
+
+	switch (DefaultGameModePlayTimeUnits)
+	{
+	case EGameModePlayTimeUnits::Minutes:
+		NumberFormattingOptions.SetMaximumFractionalDigits(0);
+		break;
+	case EGameModePlayTimeUnits::Hours:
+		NumberFormattingOptions.SetMaximumFractionalDigits(1);
+		break;
+	}
+
+	return FText::AsNumber(Value, &NumberFormattingOptions);
 }
 
 FText UScoreViewerWidget::HandleMostPlayedCustomGameModesXAxisFormatter(const int32 Index, float)
@@ -527,24 +593,62 @@ FText UScoreViewerWidget::HandleMostPlayedCustomGameModesXAxisFormatter(const in
 	return {};
 }
 
-FText UScoreViewerWidget::HandleMostPlayedCustomGameModesYAxisFormatter(const int32 Index, const float Value)
-{
-	return HandleMostPlayedDefaultGameModesYAxisFormatter(Index, Value);
-}
-
-FText UScoreViewerWidget::FormatTime(const float Seconds)
+FText UScoreViewerWidget::HandleMostPlayedCustomGameModesYAxisFormatter(const int32 /*Index*/, const float Value)
 {
 	FNumberFormattingOptions NumberFormattingOptions;
-	if (Seconds < 3600.f)
+
+	switch (CustomGameModePlayTimeUnits)
 	{
+	case EGameModePlayTimeUnits::Minutes:
+		NumberFormattingOptions.SetMaximumFractionalDigits(CustomGameModePrecision);
+		break;
+	case EGameModePlayTimeUnits::Hours:
 		NumberFormattingOptions.SetMaximumFractionalDigits(1);
-		return FText::Format(SpaceSeparatedFormat, FText::AsNumber(Seconds / 60.f, &NumberFormattingOptions),
-		                     FText::FromString("Minutes"));
+		break;
+	}
+
+	return FText::AsNumber(Value, &NumberFormattingOptions);
+}
+
+FText UScoreViewerWidget::FormatTime(const float Seconds, TOptional<EGameModePlayTimeUnits> Units)
+{
+	FNumberFormattingOptions NumberFormattingOptions;
+	if (Units)
+	{
+		FText Text;
+		switch (Units.GetValue())
+		{
+		case EGameModePlayTimeUnits::Minutes:
+			{
+				NumberFormattingOptions.SetMaximumFractionalDigits(1);
+				const float Minutes = Seconds;
+				Text = FText::Format(SpaceSeparatedFormat, FText::AsNumber(Minutes, &NumberFormattingOptions),
+				                     FText::FromString("Minutes"));
+			}
+			break;
+		case EGameModePlayTimeUnits::Hours:
+			{
+				const float Hours = Seconds;
+				Text = FText::Format(SpaceSeparatedFormat, FText::AsNumber(Hours, &NumberFormattingOptions),
+				                     FText::FromString("Hours"));
+			}
+			break;
+		}
+		return Text;
 	}
 	else
 	{
-		NumberFormattingOptions.SetMaximumFractionalDigits(2);
-		return FText::Format(SpaceSeparatedFormat, FText::AsNumber(Seconds / 3600.f, &NumberFormattingOptions),
-		                     FText::FromString("Hours"));
+		if (Seconds < 3600.f)
+		{
+			NumberFormattingOptions.SetMaximumFractionalDigits(1);
+			return FText::Format(SpaceSeparatedFormat, FText::AsNumber(Seconds / 60.f, &NumberFormattingOptions),
+			                     FText::FromString("Minutes"));
+		}
+		else
+		{
+			NumberFormattingOptions.SetMaximumFractionalDigits(2);
+			return FText::Format(SpaceSeparatedFormat, FText::AsNumber(Seconds / 3600.f, &NumberFormattingOptions),
+			                     FText::FromString("Hours"));
+		}
 	}
 }

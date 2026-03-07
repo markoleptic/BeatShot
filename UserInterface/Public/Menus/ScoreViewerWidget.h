@@ -24,6 +24,12 @@ struct FHeatMapAxisLabelOptions;
 struct FHeatMapData;
 class UHeatMapWidget;
 
+enum class EGameModePlayTimeUnits
+{
+	Minutes,
+	Hours
+};
+
 struct FGameModePlayTime
 {
 	float PlayTime;
@@ -155,7 +161,7 @@ private:
 
 	FText HandleMostPlayedCustomGameModesYAxisFormatter(int32, float);
 
-	FText FormatTime(float Seconds);
+	FText FormatTime(float Seconds, TOptional<EGameModePlayTimeUnits> Units = TOptional<EGameModePlayTimeUnits>());
 
 	UPROPERTY()
 	TObjectPtr<USaveGamePlayerScore> SaveGamePlayerScore;
@@ -191,4 +197,10 @@ private:
 	TArray<FGameModePlayTime> DefaultGameModePlayTime;
 
 	TArray<FGameModePlayTime> CustomGameModePlayTime;
+
+	int32 DefaultGameModePrecision = 0;
+	int32 CustomGameModePrecision = 0;
+
+	EGameModePlayTimeUnits DefaultGameModePlayTimeUnits = EGameModePlayTimeUnits::Hours;
+	EGameModePlayTimeUnits CustomGameModePlayTimeUnits = EGameModePlayTimeUnits::Hours;
 };
