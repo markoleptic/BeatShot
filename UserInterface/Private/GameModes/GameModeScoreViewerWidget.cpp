@@ -45,15 +45,6 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 		return FText::AsNumber(Value, &NumberFormattingOptions);
 	});
 
-	const auto ZeroDecimalTimesOneHundredFormatter = TDelegate<FText(int32, float)>::CreateLambda(
-		[](int32, const float Value)
-		{
-			FNumberFormattingOptions NumberFormattingOptions;
-			NumberFormattingOptions.MaximumFractionalDigits = 0;
-			NumberFormattingOptions.MinimumFractionalDigits = 0;
-			return FText::AsNumber(Value * 100.f, &NumberFormattingOptions);
-		});
-
 	ScoreVsTimeData = MakeShared<TArray<FLineChartSeries>>();
 	ScoreVsTimeAxisData = MakeShared<TMap<EAxisType, FAxisLabelOptions>>();
 	{
@@ -65,12 +56,9 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 
 		FAxisLabelOptions YAxisLabelOptions;
 		YAxisLabelOptions.StartAtZero = true;
-		YAxisLabelOptions.Formatter = TDelegate<FText(int32, float)>::CreateLambda([](int32, const float Value)
-		{
-			FNumberFormattingOptions NumberFormattingOptions;
-			NumberFormattingOptions.SetMaximumFractionalDigits(0);
-			return FText::AsNumber(Value / 1000.f, &NumberFormattingOptions);
-		});
+		YAxisLabelOptions.MinTickStep = 1;
+		YAxisLabelOptions.MinTickCount = 3;
+		YAxisLabelOptions.Formatter = ZeroDecimalFormatter;
 		ScoreVsTimeAxisData->Add({EAxisType::Y, YAxisLabelOptions});
 	}
 
@@ -102,10 +90,10 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 
 		FAxisLabelOptions YAxisLabelOptions;
 		YAxisLabelOptions.StartAtZero = true;
-		YAxisLabelOptions.Formatter = ZeroDecimalTimesOneHundredFormatter;
+		YAxisLabelOptions.Formatter = ZeroDecimalFormatter;
 		YAxisLabelOptions.MinRangeOverride = 0.f;
-		YAxisLabelOptions.MaxRangeOverride = 1.f;
-		YAxisLabelOptions.TickStepOverride = 0.1f;
+		YAxisLabelOptions.MaxRangeOverride = 100.f;
+		YAxisLabelOptions.TickStepOverride = 10.0f;
 		AverageTargetsDestroyedAxisData->Add({EAxisType::Y, YAxisLabelOptions});
 	}
 
@@ -120,7 +108,9 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 
 		FAxisLabelOptions YAxisLabelOptions;
 		YAxisLabelOptions.StartAtZero = true;
-		YAxisLabelOptions.Formatter = ZeroDecimalTimesOneHundredFormatter;
+		YAxisLabelOptions.MinTickStep = 1.f;
+		YAxisLabelOptions.MinTickCount = 3;
+		YAxisLabelOptions.Formatter = ZeroDecimalFormatter;
 		AverageReactionTimeAxisData->Add({EAxisType::Y, YAxisLabelOptions});
 	}
 
@@ -135,10 +125,10 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 
 		FAxisLabelOptions YAxisLabelOptions;
 		YAxisLabelOptions.StartAtZero = true;
-		YAxisLabelOptions.Formatter = ZeroDecimalTimesOneHundredFormatter;
+		YAxisLabelOptions.Formatter = ZeroDecimalFormatter;
 		YAxisLabelOptions.MinRangeOverride = 0.f;
-		YAxisLabelOptions.MaxRangeOverride = 1.f;
-		YAxisLabelOptions.TickStepOverride = 0.1f;
+		YAxisLabelOptions.MaxRangeOverride = 100.f;
+		YAxisLabelOptions.TickStepOverride = 10.0f;
 		AccuracyVsTimeAxisData->Add({EAxisType::Y, YAxisLabelOptions});
 	}
 
@@ -158,8 +148,8 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 		[](int32, int32, const float Value)
 		{
 			FNumberFormattingOptions NumberFormattingOptions;
-			NumberFormattingOptions.SetMaximumFractionalDigits(1);
-			return FText::AsNumber(Value, &NumberFormattingOptions);
+			NumberFormattingOptions.SetMaximumFractionalDigits(0);
+			return FText::AsNumber(Value * 1000.f, &NumberFormattingOptions);
 		});
 
 	const auto StreakVsTimeValueTextGetter = TDelegate<FText(int32, int32, float)>::CreateLambda(
@@ -176,7 +166,7 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 			FNumberFormattingOptions NumberFormattingOptions;
 			NumberFormattingOptions.MaximumFractionalDigits = 1;
 			NumberFormattingOptions.MinimumFractionalDigits = 1;
-			return FText::Format(GetMillisecondFormat(), FText::AsNumber(Value * 100.f, &NumberFormattingOptions));
+			return FText::Format(GetMillisecondFormat(), FText::AsNumber(Value, &NumberFormattingOptions));
 		});
 
 	const auto GenericPercentValueTextDelegate = TDelegate<FText(int32, int32, float)>::CreateLambda(
@@ -185,7 +175,7 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 			FNumberFormattingOptions NumberFormattingOptions;
 			NumberFormattingOptions.MaximumFractionalDigits = 1;
 			NumberFormattingOptions.MinimumFractionalDigits = 1;
-			return FText::Format(GetPercentFormat(), FText::AsNumber(Value * 100.f, &NumberFormattingOptions));
+			return FText::Format(GetPercentFormat(), FText::AsNumber(Value, &NumberFormattingOptions));
 		});
 
 
@@ -312,11 +302,11 @@ void UGameModeScoreViewerWidget::UpdateDataVisualization()
 		float Index = 0;
 		for (const auto& PlayerScore : ActiveScores)
 		{
-			ScoreVsTimeLineChartSeries.Points.Add({Index, PlayerScore->Score});
+			ScoreVsTimeLineChartSeries.Points.Add({Index, PlayerScore->Score / 1000.f});
 			StreakVsTimeLineChartSeries.Points.Add({Index, static_cast<float>(PlayerScore->Streak)});
-			AverageReactionTimeLineChartSeries.Points.Add({Index, PlayerScore->AvgTimeOffset});
-			AverageTargetsDestroyedLineChartSeries.Points.Add({Index, PlayerScore->Completion});
-			AccuracyVsTimeLineChartSeries.Points.Add({Index, PlayerScore->Accuracy});
+			AverageReactionTimeLineChartSeries.Points.Add({Index, PlayerScore->AvgTimeOffset * 100.f});
+			AverageTargetsDestroyedLineChartSeries.Points.Add({Index, PlayerScore->Completion * 100.f});
+			AccuracyVsTimeLineChartSeries.Points.Add({Index, PlayerScore->Accuracy * 100.f});
 			Index++;
 		}
 		ScoreVsTimeData->Empty(1);
