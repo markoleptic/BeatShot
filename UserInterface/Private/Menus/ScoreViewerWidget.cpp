@@ -17,6 +17,87 @@
 
 namespace
 {
+static TArray<FPlayerScore> GenerateTestScores(int32 NumEntries)
+{
+	TArray<FPlayerScore> Scores;
+	Scores.Reserve(NumEntries);
+
+	const TArray<FString> Songs = {"Neon Skyline", "Digital Pulse", "Starlight Drive", "Velocity", "Arc Reactor"};
+
+	const TArray<float> SongLengths = {71.f, 88.9f, 150.f, 200.f, 360.f,};
+
+	const TArray<EBaseGameMode> BaseModes = {
+		EBaseGameMode::SingleBeat,
+		EBaseGameMode::MultiBeat,
+		EBaseGameMode::BeatGrid,
+		EBaseGameMode::BeatTrack
+	};
+
+	const TArray<EGameModeDifficulty> Difficulties = {
+		EGameModeDifficulty::Normal,
+		EGameModeDifficulty::Hard,
+		EGameModeDifficulty::Death
+	};
+
+	const FDateTime Now = FDateTime::UtcNow();
+	const FTimespan UtcOffset = Now - FDateTime::UtcNow();
+	for (int32 i = 0; i < NumEntries; ++i)
+	{
+		FPlayerScore Score;
+
+		// ----- Defining Config -----
+		Score.DefiningConfig.GameModeType = (FMath::RandBool()) ? EGameModeType::Preset : EGameModeType::Custom;
+
+		if (Score.DefiningConfig.GameModeType == EGameModeType::Preset)
+		{
+			Score.DefiningConfig.BaseGameMode = BaseModes[FMath::RandRange(0, BaseModes.Num() - 1)];
+
+			Score.DefiningConfig.Difficulty = Difficulties[FMath::RandRange(0, Difficulties.Num() - 1)];
+		}
+		else
+		{
+			Score.DefiningConfig.CustomGameModeName = FString::Printf(TEXT("CustomMode_%d"), FMath::RandRange(1, 5));
+
+			Score.DefiningConfig.BaseGameMode = BaseModes[FMath::RandRange(0, BaseModes.Num() - 1)];
+		}
+
+		// ----- Song -----
+		int SongIndex = FMath::RandRange(0, Songs.Num() - 1);
+		Score.SongTitle = Songs[SongIndex];
+
+		Score.SongLength = SongLengths[SongIndex];
+
+		// ----- Gameplay Stats -----
+		Score.TargetsSpawned = FMath::RandRange(50, 300);
+		Score.TargetsHit = FMath::RandRange(FMath::RoundToInt(Score.TargetsSpawned * 0.5f), Score.TargetsSpawned);
+		Score.ShotsFired = Score.TargetsHit + FMath::RandRange(0, 80);
+		Score.Accuracy = Score.ShotsFired > 0 ? (float)Score.TargetsHit / Score.ShotsFired : 0.f;
+		Score.Completion = Score.TargetsSpawned > 0 ? (float)Score.TargetsHit / Score.TargetsSpawned : 0.f;
+
+		Score.Score = FMath::RandRange(30000.f, 99999.f);
+		Score.Streak = FMath::RandRange(1, Score.TargetsHit);
+		Score.AvgTimeOffset = FMath::RandRange(0.02f, 0.45f);
+		Score.TotalTimeOffset = Score.TargetsHit * Score.AvgTimeOffset;
+
+
+		// ----- Tracking Mode Stats -----
+		if (Score.DefiningConfig.BaseGameMode == EBaseGameMode::BeatTrack || Score.DefiningConfig.BaseGameMode ==
+		    EBaseGameMode::ChargedBeatTrack)
+		{
+			Score.TotalPossibleDamage = FMath::RandRange(200.f, 1000.f);
+		}
+
+		// ----- Timestamp -----
+		FDateTime SessionTime = Now - FTimespan::FromMinutes(FMath::RandRange(0, 60 * 24 * 30));
+		Score.Time = SessionTime.ToIso8601();
+		Score.LocalDateTime = SessionTime + UtcOffset;
+
+		Scores.Add(MoveTemp(Score));
+	}
+
+	return Scores;
+}
+
 constexpr int DaysInWeek = 7;
 
 TMap<int32, FText> CreateDaysOfWeekMap(const FDateTime& StartDate)
@@ -223,6 +304,11 @@ void UScoreViewerWidget::LoadScores(USaveGamePlayerScore* InSaveGamePlayerScore,
 		SaveGamePlayerScore = InSaveGamePlayerScore;
 		InSaveGamePlayerScore->OnScoresDeleted.AddUObject(this, &UScoreViewerWidget::LoadScores,
 		                                                  SaveGamePlayerScore.Get(), false);
+	}
+
+	for (const auto& Score : GenerateTestScores(500))
+	{
+		SaveGamePlayerScore->AddPlayerScoreInstance(Score);
 	}
 
 	RelativePlayFrequencyData->Sections = InitialPlayFrequencyData;
@@ -628,6 +714,7 @@ FText UScoreViewerWidget::FormatTime(const float Seconds, TOptional<EGameModePla
 			break;
 		case EGameModePlayTimeUnits::Hours:
 			{
+				NumberFormattingOptions.SetMaximumFractionalDigits(2);
 				const float Hours = Seconds;
 				Text = FText::Format(SpaceSeparatedFormat, FText::AsNumber(Hours, &NumberFormattingOptions),
 				                     FText::FromString("Hours"));

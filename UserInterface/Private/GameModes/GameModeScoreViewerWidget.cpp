@@ -207,6 +207,13 @@ void UGameModeScoreViewerWidget::UpdateDataVisualization()
 		TextBlock_BestStreak->SetText(FText());
 		TextBlock_BestAccuracy->SetText(FText());
 		TextBlock_BestTargetsDestroyed->SetText(FText());
+
+		TextBlock_AverageScore->SetText(FText());
+		TextBlock_AverageReactionTime->SetText(FText());
+		TextBlock_AverageStreak->SetText(FText());
+		TextBlock_AverageAccuracy->SetText(FText());
+		TextBlock_AverageTargetsDestroyed->SetText(FText());
+
 		ScoreVsTimeData->Empty();
 		ScoreVsTime->Redraw();
 

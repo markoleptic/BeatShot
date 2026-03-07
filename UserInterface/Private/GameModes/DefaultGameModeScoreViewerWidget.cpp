@@ -238,16 +238,15 @@ void UDefaultGameModeScoreViewerWidget::FilterActiveScores(const EBaseGameMode C
 	if (CurrentBaseGameMode != EBaseGameMode::None && !CurrentSongTitleOverride.IsEmpty() && CurrentDifficultyOverride
 	    != EGameModeDifficulty::None)
 	{
-		for (const auto& PlayerScore : PlayerScoreByGameModeSongAndDifficulty[CurrentBaseGameMode][
-			     CurrentSongTitleOverride][CurrentDifficultyOverride])
-		{
-			const auto LocalDateDate = PlayerScore->LocalDateTime.GetDate();
-			MinDate = FMath::Min(MinDate, LocalDateDate);
-			MaxDate = FMath::Max(MaxDate, LocalDateDate);
-		}
-
 		if (SetDates)
 		{
+			for (const auto& PlayerScore : PlayerScoreByGameModeSongAndDifficulty[CurrentBaseGameMode][
+				     CurrentSongTitleOverride][CurrentDifficultyOverride])
+			{
+				const auto LocalDateDate = PlayerScore->LocalDateTime.GetDate();
+				MinDate = FMath::Min(MinDate, LocalDateDate);
+				MaxDate = FMath::Max(MaxDate, LocalDateDate);
+			}
 			DateRangeWidget->SetValues(MinDate, MaxDate, 1.f);
 			DateRangeWidget->SetValue_Min(MinDate);
 			DateRangeWidget->SetValue_Max(MaxDate);

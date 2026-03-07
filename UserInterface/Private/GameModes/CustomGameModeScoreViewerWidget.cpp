@@ -140,16 +140,16 @@ void UCustomGameModeScoreViewerWidget::FilterActiveScores(const FString& Current
 
 	if (!CurrentCustomGameModeName.IsEmpty() && !CurrentSongTitleOverride.IsEmpty())
 	{
-		for (const auto& PlayerScore : PlayerScoreByGameModeAndSong[CurrentCustomGameModeName][
-			     CurrentSongTitleOverride])
-		{
-			const auto LocalDateDate = PlayerScore->LocalDateTime.GetDate();
-			MinDate = FMath::Min(MinDate, LocalDateDate);
-			MaxDate = FMath::Max(MaxDate, LocalDateDate);
-		}
-
 		if (SetDates)
 		{
+			for (const auto& PlayerScore : PlayerScoreByGameModeAndSong[CurrentCustomGameModeName][
+				     CurrentSongTitleOverride])
+			{
+				const auto LocalDateDate = PlayerScore->LocalDateTime.GetDate();
+				MinDate = FMath::Min(MinDate, LocalDateDate);
+				MaxDate = FMath::Max(MaxDate, LocalDateDate);
+			}
+
 			DateRangeWidget->SetValues(MinDate, MaxDate, 1.f);
 			DateRangeWidget->SetValue_Min(MinDate);
 			DateRangeWidget->SetValue_Max(MaxDate);

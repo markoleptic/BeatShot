@@ -90,6 +90,8 @@ void UDateRangeWidget::NativeConstruct()
 
 	Slider_Min->OnValueChanged.AddUniqueDynamic(this, &ThisClass::OnSliderChanged_Min);
 	Slider_Max->OnValueChanged.AddUniqueDynamic(this, &ThisClass::OnSliderChanged_Max);
+	Slider_Min->OnMouseCaptureEnd.AddUniqueDynamic(this, &ThisClass::OnSliderMouseCaptureEnd_Min);
+	Slider_Max->OnMouseCaptureEnd.AddUniqueDynamic(this, &ThisClass::OnSliderMouseCaptureEnd_Max);
 	EditableTextBox_Min->OnTextCommitted.AddUniqueDynamic(this, &ThisClass::OnTextCommitted_Min);
 	EditableTextBox_Max->OnTextCommitted.AddUniqueDynamic(this, &ThisClass::OnTextCommitted_Max);
 }
@@ -224,6 +226,8 @@ void UDateRangeWidget::SetValues(const FDateTime& Min, const FDateTime& Max, con
 	GridSnapSize = SnapSize;
 	LastValidMinText = FText();
 	LastValidMaxText = FText();
+	LastMinSliderValue = FDateTime();
+	LastMaxSliderValue = FDateTime();
 }
 
 void UDateRangeWidget::SetValue_Min(const FDateTime& Value) const
@@ -232,8 +236,8 @@ void UDateRangeWidget::SetValue_Min(const FDateTime& Value) const
 
 	const float SliderValue = GetSliderValueFromDateTime(Value);
 	const float ClampedValue = FMath::Clamp(SliderValue, Slider_Min->GetMinValue(), Slider_Min->GetMaxValue());
-	const auto Date = GetDateTimeFromSliderValue(ClampedValue);
-	LastValidMinText = CreateEditableTextBoxText(Date);
+	LastMinSliderValue = GetDateTimeFromSliderValue(ClampedValue);
+	LastValidMinText = CreateEditableTextBoxText(LastMinSliderValue);
 	EditableTextBox_Min->SetText(LastValidMinText);
 	Slider_Min->SetValue(ClampedValue);
 
@@ -246,10 +250,11 @@ void UDateRangeWidget::SetValue_Max(const FDateTime& Value) const
 
 	const float SliderValue = GetSliderValueFromDateTime(Value);
 	const float ClampedValue = FMath::Clamp(SliderValue, Slider_Max->GetMinValue(), Slider_Max->GetMaxValue());
-	const auto Date = GetDateTimeFromSliderValue(ClampedValue);
-	LastValidMaxText = CreateEditableTextBoxText(Date);
+	LastMaxSliderValue = GetDateTimeFromSliderValue(ClampedValue);
+	LastValidMaxText = CreateEditableTextBoxText(LastMaxSliderValue);
 	EditableTextBox_Max->SetText(LastValidMaxText);
 	Slider_Max->SetValue(ClampedValue);
+
 
 	Slider_Max->OnValueChanged.AddUniqueDynamic(this, &ThisClass::OnSliderChanged_Max);
 }
@@ -288,12 +293,17 @@ void UDateRangeWidget::OnSliderChanged_Min(const float Value)
 {
 	const float ClampedValue = FMath::GridSnap(Value, GridSnapSize);
 	const auto Date = GetDateTimeFromSliderValue(ClampedValue);
+	if (LastMinSliderValue == Date)
+	{
+		return;
+	}
+	LastMinSliderValue = Date;
 	const FText DateText = CreateEditableTextBoxText(Date);
 	EditableTextBox_Min->SetText(DateText);
 
 	if (ClampedValue > Slider_Max->GetValue())
 	{
-		SetValue_Max(ClampedValue);
+		SetValue_Max(Date);
 	}
 
 	OnMinMaxMenuOptionChanged.Execute(Date, GetMaxSliderValue(true));
@@ -303,15 +313,36 @@ void UDateRangeWidget::OnSliderChanged_Max(const float Value)
 {
 	const float ClampedValue = FMath::GridSnap(Value, GridSnapSize);
 	const auto Date = GetDateTimeFromSliderValue(ClampedValue);
+	if (LastMaxSliderValue == Date)
+	{
+		return;
+	}
+	LastMaxSliderValue = Date;
 	const FText DateText = CreateEditableTextBoxText(Date);
 	EditableTextBox_Max->SetText(DateText);
 
 	if (ClampedValue < Slider_Min->GetValue())
 	{
-		SetValue_Min(ClampedValue);
+		SetValue_Min(Date);
 	}
 
 	OnMinMaxMenuOptionChanged.Execute(GetMinSliderValue(true), Date);
+}
+
+void UDateRangeWidget::OnSliderMouseCaptureEnd_Min()
+{
+	if (LastMinSliderValue != FDateTime::MinValue() && DatesToSliderValues.Contains(LastMinSliderValue))
+	{
+		SetValue_Min(LastMinSliderValue);
+	}
+}
+
+void UDateRangeWidget::OnSliderMouseCaptureEnd_Max()
+{
+	if (LastMaxSliderValue != FDateTime::MinValue() && DatesToSliderValues.Contains(LastMaxSliderValue))
+	{
+		SetValue_Max(LastMaxSliderValue);
+	}
 }
 
 void UDateRangeWidget::OnTextCommitted_Min(const FText& Text, ETextCommit::Type CommitType)
@@ -319,9 +350,7 @@ void UDateRangeWidget::OnTextCommitted_Min(const FText& Text, ETextCommit::Type 
 	FDateTime DateTime;
 	if (ParseTime(Text.ToString(), DateTime) && DatesToSliderValues.Contains(DateTime))
 	{
-		LastValidMinText = CreateEditableTextBoxText(DateTime);
-		EditableTextBox_Min->SetText(LastValidMinText);
-		Slider_Min->SetValue(DatesToSliderValues[DateTime]);
+		SetValue_Min(DateTime);
 		OnMinMaxMenuOptionChanged.Execute(DateTime, GetMaxSliderValue(true));
 	}
 	else
@@ -335,9 +364,7 @@ void UDateRangeWidget::OnTextCommitted_Max(const FText& Text, ETextCommit::Type 
 	FDateTime DateTime;
 	if (ParseTime(Text.ToString(), DateTime) && DatesToSliderValues.Contains(DateTime))
 	{
-		LastValidMaxText = CreateEditableTextBoxText(DateTime);
-		EditableTextBox_Max->SetText(LastValidMaxText);
-		Slider_Max->SetValue(DatesToSliderValues[DateTime]);
+		SetValue_Max(DateTime);
 		OnMinMaxMenuOptionChanged.Execute(GetMinSliderValue(true), DateTime);
 	}
 	else

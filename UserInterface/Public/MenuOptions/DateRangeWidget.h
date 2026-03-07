@@ -65,6 +65,11 @@ protected:
 	UFUNCTION()
 	void OnSliderChanged_Max(const float Value);
 	UFUNCTION()
+	void OnSliderMouseCaptureEnd_Min();
+	UFUNCTION()
+	void OnSliderMouseCaptureEnd_Max();
+
+	UFUNCTION()
 	void OnTextCommitted_Min(const FText& Text, ETextCommit::Type CommitType);
 	UFUNCTION()
 	void OnTextCommitted_Max(const FText& Text, ETextCommit::Type CommitType);
@@ -103,5 +108,7 @@ protected:
 
 	mutable FText LastValidMinText;
 	mutable FText LastValidMaxText;
+	mutable FDateTime LastMinSliderValue;
+	mutable FDateTime LastMaxSliderValue;
 	TMap<FDateTime, float> DatesToSliderValues;
 };
