@@ -254,6 +254,7 @@ void UScoreViewerWidget::NativeConstruct()
 		YAxisLabelOptions.MinTickCount = 3;
 		YAxisLabelOptions.Formatter = TDelegate<FText(int32, float)>::CreateUObject(
 			this, &ThisClass::HandleMostPlayedDefaultGameModesYAxisFormatter);
+		YAxisLabelOptions.LabelTextProperties.Padding = {10.f, 0.f, 10.f, 0.f};
 		MostPlayedDefaultGameModesAxisData->Add({EAxisType::Y, YAxisLabelOptions});
 	}
 
@@ -271,6 +272,7 @@ void UScoreViewerWidget::NativeConstruct()
 		YAxisLabelOptions.MinTickCount = 3;
 		YAxisLabelOptions.Formatter = TDelegate<FText(int32, float)>::CreateUObject(
 			this, &ThisClass::HandleMostPlayedCustomGameModesYAxisFormatter);
+		YAxisLabelOptions.LabelTextProperties.Padding = {10.f, 0.f, 10.f, 0.f};
 		MostPlayedCustomGameModesAxisData->Add({EAxisType::Y, YAxisLabelOptions});
 	}
 

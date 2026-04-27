@@ -59,6 +59,7 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 		YAxisLabelOptions.MinTickStep = 1;
 		YAxisLabelOptions.MinTickCount = 3;
 		YAxisLabelOptions.Formatter = ZeroDecimalFormatter;
+		YAxisLabelOptions.LabelTextProperties.Padding = {10.f, 0.f, 10.f, 0.f};
 		ScoreVsTimeAxisData->Add({EAxisType::Y, YAxisLabelOptions});
 	}
 
@@ -76,6 +77,7 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 		YAxisLabelOptions.MinTickStep = 1;
 		YAxisLabelOptions.MinTickCount = 3;
 		YAxisLabelOptions.Formatter = ZeroDecimalFormatter;
+		YAxisLabelOptions.LabelTextProperties.Padding = {10.f, 0.f, 10.f, 0.f};
 		StreakVsTimeAxisData->Add({EAxisType::Y, YAxisLabelOptions});
 	}
 
@@ -94,6 +96,7 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 		YAxisLabelOptions.MinRangeOverride = 0.f;
 		YAxisLabelOptions.MaxRangeOverride = 100.f;
 		YAxisLabelOptions.TickStepOverride = 10.0f;
+		YAxisLabelOptions.LabelTextProperties.Padding = {10.f, 0.f, 10.f, 0.f};
 		AverageTargetsDestroyedAxisData->Add({EAxisType::Y, YAxisLabelOptions});
 	}
 
@@ -111,6 +114,7 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 		YAxisLabelOptions.MinTickStep = 1.f;
 		YAxisLabelOptions.MinTickCount = 3;
 		YAxisLabelOptions.Formatter = ZeroDecimalFormatter;
+		YAxisLabelOptions.LabelTextProperties.Padding = {10.f, 0.f, 10.f, 0.f};
 		AverageReactionTimeAxisData->Add({EAxisType::Y, YAxisLabelOptions});
 	}
 
@@ -129,6 +133,7 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 		YAxisLabelOptions.MinRangeOverride = 0.f;
 		YAxisLabelOptions.MaxRangeOverride = 100.f;
 		YAxisLabelOptions.TickStepOverride = 10.0f;
+		YAxisLabelOptions.LabelTextProperties.Padding = {10.f, 0.f, 10.f, 0.f};
 		AccuracyVsTimeAxisData->Add({EAxisType::Y, YAxisLabelOptions});
 	}
 
