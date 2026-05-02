@@ -84,8 +84,7 @@ void UCustomGameModeScoreViewerWidget::OnSelectionChanged_GameMode(const TArray<
 	{
 		return;
 	}
-	const auto [StartDate, EndDate] = DateRangeWidget->GetValues(false);
-	FilterActiveScores(ActiveSelections[0], SongComboBoxWidget->ComboBox->GetSelectedOption(), StartDate, EndDate);
+	FilterActiveScores(ActiveSelections[0], SongComboBoxWidget->ComboBox->GetSelectedOption());
 }
 
 void UCustomGameModeScoreViewerWidget::OnSelectionChanged_Song(const TArray<FString>& ActiveSelections,
@@ -96,8 +95,7 @@ void UCustomGameModeScoreViewerWidget::OnSelectionChanged_Song(const TArray<FStr
 		return;
 	}
 	const FString CurrentCustomGameModeName = GameModeComboBoxWidget->ComboBox->GetSelectedOptions()[0];
-	const auto [StartDate, EndDate] = DateRangeWidget->GetValues(false);
-	FilterActiveScores(CurrentCustomGameModeName, ActiveSelections[0], StartDate, EndDate);
+	FilterActiveScores(CurrentCustomGameModeName, ActiveSelections[0]);
 }
 
 void UCustomGameModeScoreViewerWidget::OnDateChanged(const FDateTime& Start, const FDateTime& End)

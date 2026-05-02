@@ -108,8 +108,7 @@ void UDefaultGameModeScoreViewerWidget::OnSelectionChanged_GameMode(const TArray
 	const FString CurrentSongTitle = SongComboBoxWidget->ComboBox->GetSelectedOption();
 	const EGameModeDifficulty CurrentDifficulty = FindGameModeDifficulty(
 		DifficultyComboBoxWidget->ComboBox->GetSelectedOption());
-	const auto [StartDate, EndDate] = DateRangeWidget->GetValues(false);
-	FilterActiveScores(CurrentGameMode, CurrentSongTitle, CurrentDifficulty, StartDate, EndDate);
+	FilterActiveScores(CurrentGameMode, CurrentSongTitle, CurrentDifficulty);
 }
 
 void UDefaultGameModeScoreViewerWidget::OnSelectionChanged_Song(const TArray<FString>& ActiveSelections,
@@ -123,8 +122,7 @@ void UDefaultGameModeScoreViewerWidget::OnSelectionChanged_Song(const TArray<FSt
 	const FString CurrentSongTitle = SongComboBoxWidget->ComboBox->GetSelectedOption();
 	const EGameModeDifficulty CurrentDifficulty = FindGameModeDifficulty(
 		DifficultyComboBoxWidget->ComboBox->GetSelectedOption());
-	const auto [StartDate, EndDate] = DateRangeWidget->GetValues(false);
-	FilterActiveScores(CurrentGameMode, CurrentSongTitle, CurrentDifficulty, StartDate, EndDate);
+	FilterActiveScores(CurrentGameMode, CurrentSongTitle, CurrentDifficulty);
 }
 
 void UDefaultGameModeScoreViewerWidget::OnSelectionChanged_Difficulty(const TArray<FString>& ActiveSelections,
@@ -138,8 +136,7 @@ void UDefaultGameModeScoreViewerWidget::OnSelectionChanged_Difficulty(const TArr
 	const FString CurrentSongTitle = SongComboBoxWidget->ComboBox->GetSelectedOption();
 	const EGameModeDifficulty CurrentDifficulty = FindGameModeDifficulty(
 		DifficultyComboBoxWidget->ComboBox->GetSelectedOption());
-	const auto [StartDate, EndDate] = DateRangeWidget->GetValues(false);
-	FilterActiveScores(CurrentGameMode, CurrentSongTitle, CurrentDifficulty, StartDate, EndDate);
+	FilterActiveScores(CurrentGameMode, CurrentSongTitle, CurrentDifficulty);
 }
 
 EBaseGameMode UDefaultGameModeScoreViewerWidget::FindBaseGameMode(const FString& InGameModeName)
