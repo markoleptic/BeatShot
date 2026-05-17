@@ -8,6 +8,7 @@
 #include "MenuOptions/ComboBoxWidget.h"
 #include "MenuOptions/DateRangeWidget.h"
 #include "SaveGames/SaveGamePlayerScore.h"
+#include "Utilities/BSVerticalBox.h"
 
 void UDefaultGameModeScoreViewerWidget::SetSaveGamePlayerScore(USaveGamePlayerScore* InSaveGamePlayerScore)
 {
@@ -88,6 +89,8 @@ void UDefaultGameModeScoreViewerWidget::SetDifficultyText(
 void UDefaultGameModeScoreViewerWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+
+	FilterVerticalBox->UpdateBrushColors();
 
 	GameModeComboBoxWidget->ComboBox->OnSelectionChanged.
 	                        AddUniqueDynamic(this, &ThisClass::OnSelectionChanged_GameMode);

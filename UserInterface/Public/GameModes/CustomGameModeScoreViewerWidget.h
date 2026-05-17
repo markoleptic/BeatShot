@@ -7,6 +7,7 @@
 #include "SaveGames/SaveGamePlayerScore.h"
 #include "CustomGameModeScoreViewerWidget.generated.h"
 
+class UBSVerticalBox;
 class UDateRangeWidget;
 class UTextBlock;
 class UVerticalBox;
@@ -50,6 +51,8 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UVerticalBox* MainBox;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UBSVerticalBox* FilterVerticalBox;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* TextBlock_NoScores;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))

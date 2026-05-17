@@ -7,6 +7,7 @@
 #include "GameModes/GameModeScoreViewerWidget.h"
 #include "MenuOptions/ComboBoxWidget.h"
 #include "MenuOptions/DateRangeWidget.h"
+#include "Utilities/BSVerticalBox.h"
 
 void UCustomGameModeScoreViewerWidget::SetSaveGamePlayerScore(USaveGamePlayerScore* InSaveGamePlayerScore)
 {
@@ -70,6 +71,8 @@ void UCustomGameModeScoreViewerWidget::RepopulatePlayerScoreByGameModeAndSong()
 void UCustomGameModeScoreViewerWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+
+	FilterVerticalBox->UpdateBrushColors();
 
 	GameModeComboBoxWidget->ComboBox->OnSelectionChanged.
 	                        AddUniqueDynamic(this, &ThisClass::OnSelectionChanged_GameMode);
