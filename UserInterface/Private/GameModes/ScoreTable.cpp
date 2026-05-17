@@ -82,7 +82,11 @@ TSharedRef<SWidget> UScoreTable::RebuildWidget()
 		.HeaderRow(Header)
 		.OnSelectionChanged_UObject(this, &UScoreTable::OnSelectionChanged);
 
-	return SlateWidget.ToSharedRef();
+	return SNew(SBorder)
+		[
+			SlateWidget
+			.ToSharedRef()
+		];
 }
 
 void UScoreTable::SetBaseGameModeText(const TMap<EBaseGameMode, FText>& InBaseGameModeText)

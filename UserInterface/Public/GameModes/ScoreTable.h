@@ -16,8 +16,6 @@ class USERINTERFACE_API UScoreTable : public UWidget
 	GENERATED_BODY()
 
 public:
-	virtual TSharedRef<SWidget> RebuildWidget() override;
-
 	void SetBaseGameModeText(const TMap<EBaseGameMode, FText>& InBaseGameModeText);
 
 	void SetDifficultyText(const TMap<EGameModeDifficulty, FText>& InGameModeDifficultyText);
@@ -29,6 +27,9 @@ public:
 	TArray<TSharedPtr<FPlayerScore>> GetSelectedItems() const;
 
 	TDelegate<void(bool)> OnSelectionChangedDelegate;
+
+protected:
+	virtual TSharedRef<SWidget> RebuildWidget() override;
 
 private:
 	TSharedRef<ITableRow> OnGenerateRow(TSharedPtr<FPlayerScore> Item, const TSharedRef<STableViewBase>& OwnerTable);
