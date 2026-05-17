@@ -31,6 +31,8 @@ void SPlayerScoreRow::Construct(const FArguments& InArgs, const TSharedRef<STabl
 	FSuperRowType::Construct(FTableRowArgs().Style(InArgs._TableRowStyle), InOwnerTableView);
 }
 
+END_SLATE_FUNCTION_BUILD_OPTIMIZATION
+
 TSharedRef<SWidget> SPlayerScoreRow::GenerateWidgetForColumn(const FName& ColumnName)
 {
 	static const auto PercentFormatter = [](const float Value)
@@ -216,5 +218,3 @@ TSharedRef<SWidget> SPlayerScoreRow::GenerateWidgetForColumn(const FName& Column
 	}
 	return SNullWidget::NullWidget;
 }
-
-END_SLATE_FUNCTION_BUILD_OPTIMIZATION
