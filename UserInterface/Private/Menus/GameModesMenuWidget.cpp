@@ -212,7 +212,7 @@ void UGameModeMenuWidget::InitDefaultGameModesWidgets()
 	Box_DefaultGameModesOptions->UpdateBrushColors();
 }
 
-void UGameModeMenuWidget::OnCarouselWidgetIndexChanged_DefaultCustom(UCommonWidgetCarousel* InCarousel,
+void UGameModeMenuWidget::OnCarouselWidgetIndexChanged_DefaultCustom(UCommonWidgetCarousel* /*InCarousel*/,
                                                                      const int32 NewIndex)
 {
 	// Custom Game Modes && Creator View
@@ -226,7 +226,7 @@ void UGameModeMenuWidget::OnCarouselWidgetIndexChanged_DefaultCustom(UCommonWidg
 	}
 }
 
-void UGameModeMenuWidget::OnCarouselWidgetIndexChanged_CreatorProperty(UCommonWidgetCarousel* InCarousel,
+void UGameModeMenuWidget::OnCarouselWidgetIndexChanged_CreatorProperty(UCommonWidgetCarousel* /*InCarousel*/,
                                                                        const int32 NewIndex)
 {
 	SynchronizeStartWidgets();

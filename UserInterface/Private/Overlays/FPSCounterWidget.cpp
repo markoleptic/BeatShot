@@ -4,7 +4,7 @@
 #include "Components/TextBlock.h"
 #include "Overlays/FrameCounterWidget.h"
 
-void UFrameCounterWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+void UFrameCounterWidget::NativeTick(const FGeometry& MyGeometry, const float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 

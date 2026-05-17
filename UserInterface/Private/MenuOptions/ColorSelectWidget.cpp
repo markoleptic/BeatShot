@@ -57,8 +57,7 @@ void UColorSelectWidget::SetStyling()
 		if (ColorRText)
 		{
 			ColorRText->SetFont(MenuOptionStyle->Font_DescriptionText);
-			UHorizontalBoxSlot* HorizontalBoxSlot = Cast<UHorizontalBoxSlot>(ColorRText->Slot);
-			if (HorizontalBoxSlot)
+			if (UHorizontalBoxSlot* HorizontalBoxSlot = Cast<UHorizontalBoxSlot>(ColorRText->Slot))
 			{
 				HorizontalBoxSlot->SetPadding(NewMargin);
 			}
@@ -66,8 +65,7 @@ void UColorSelectWidget::SetStyling()
 		if (ColorGText)
 		{
 			ColorGText->SetFont(MenuOptionStyle->Font_DescriptionText);
-			UHorizontalBoxSlot* HorizontalBoxSlot = Cast<UHorizontalBoxSlot>(ColorGText->Slot);
-			if (HorizontalBoxSlot)
+			if (UHorizontalBoxSlot* HorizontalBoxSlot = Cast<UHorizontalBoxSlot>(ColorGText->Slot))
 			{
 				HorizontalBoxSlot->SetPadding(NewMargin);
 			}
@@ -75,8 +73,7 @@ void UColorSelectWidget::SetStyling()
 		if (ColorBText)
 		{
 			ColorBText->SetFont(MenuOptionStyle->Font_DescriptionText);
-			UHorizontalBoxSlot* HorizontalBoxSlot = Cast<UHorizontalBoxSlot>(ColorBText->Slot);
-			if (HorizontalBoxSlot)
+			if (UHorizontalBoxSlot* HorizontalBoxSlot = Cast<UHorizontalBoxSlot>(ColorBText->Slot))
 			{
 				HorizontalBoxSlot->SetPadding(NewMargin);
 			}
@@ -84,8 +81,7 @@ void UColorSelectWidget::SetStyling()
 		if (ColorAText)
 		{
 			ColorAText->SetFont(MenuOptionStyle->Font_DescriptionText);
-			UHorizontalBoxSlot* HorizontalBoxSlot = Cast<UHorizontalBoxSlot>(ColorAText->Slot);
-			if (HorizontalBoxSlot)
+			if (UHorizontalBoxSlot* HorizontalBoxSlot = Cast<UHorizontalBoxSlot>(ColorAText->Slot))
 			{
 				HorizontalBoxSlot->SetPadding(NewMargin);
 			}
@@ -93,8 +89,7 @@ void UColorSelectWidget::SetStyling()
 		if (HexText)
 		{
 			HexText->SetFont(MenuOptionStyle->Font_DescriptionText);
-			UHorizontalBoxSlot* HorizontalBoxSlot = Cast<UHorizontalBoxSlot>(HexText->Slot);
-			if (HorizontalBoxSlot)
+			if (UHorizontalBoxSlot* HorizontalBoxSlot = Cast<UHorizontalBoxSlot>(HexText->Slot))
 			{
 				HorizontalBoxSlot->SetPadding(NewMargin);
 			}
@@ -120,7 +115,7 @@ void UColorSelectWidget::InitializeColor(const FLinearColor& NewColor)
 	ColorPreview->SetColorAndOpacity(Color);
 }
 
-void UColorSelectWidget::OnColorAValueChange(const FText& NewValue, ETextCommit::Type CommitType)
+void UColorSelectWidget::OnColorAValueChange(const FText& NewValue, ETextCommit::Type /*CommitType*/)
 {
 	const float SnappedValue = IBSWidgetInterface::OnEditableTextBoxChanged(
 		NewValue, ColorAValue, ColorASlider, 1, 0, 100);
@@ -133,7 +128,7 @@ void UColorSelectWidget::OnColorAValueChange(const FText& NewValue, ETextCommit:
 	}
 }
 
-void UColorSelectWidget::OnColorRValueChange(const FText& NewValue, ETextCommit::Type CommitType)
+void UColorSelectWidget::OnColorRValueChange(const FText& NewValue, ETextCommit::Type /*CommitType*/)
 {
 	const float SnappedValue = IBSWidgetInterface::OnEditableTextBoxChanged(
 		NewValue, ColorRValue, ColorRSlider, 1, 0, 255);
@@ -146,7 +141,7 @@ void UColorSelectWidget::OnColorRValueChange(const FText& NewValue, ETextCommit:
 	}
 }
 
-void UColorSelectWidget::OnColorGValueChange(const FText& NewValue, ETextCommit::Type CommitType)
+void UColorSelectWidget::OnColorGValueChange(const FText& NewValue, ETextCommit::Type /*CommitType*/)
 {
 	const float SnappedValue = IBSWidgetInterface::OnEditableTextBoxChanged(
 		NewValue, ColorGValue, ColorGSlider, 1, 0, 255);
@@ -159,7 +154,7 @@ void UColorSelectWidget::OnColorGValueChange(const FText& NewValue, ETextCommit:
 	}
 }
 
-void UColorSelectWidget::OnColorBValueChange(const FText& NewValue, ETextCommit::Type CommitType)
+void UColorSelectWidget::OnColorBValueChange(const FText& NewValue, ETextCommit::Type /*CommitType*/)
 {
 	const float SnappedValue = IBSWidgetInterface::OnEditableTextBoxChanged(
 		NewValue, ColorBValue, ColorBSlider, 1, 0, 255);
@@ -172,7 +167,7 @@ void UColorSelectWidget::OnColorBValueChange(const FText& NewValue, ETextCommit:
 	}
 }
 
-void UColorSelectWidget::OnHexValueChange(const FText& NewValue, ETextCommit::Type CommitType)
+void UColorSelectWidget::OnHexValueChange(const FText& NewValue, ETextCommit::Type /*CommitType*/)
 {
 	const FString String = FColor::FromHex(NewValue.ToString()).ToString();
 	Color.InitFromString(String);

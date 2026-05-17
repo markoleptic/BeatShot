@@ -14,6 +14,7 @@ class USERINTERFACE_API UTargetWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
+protected:
 	virtual void NativeConstruct() override;
 
 public:

@@ -23,6 +23,7 @@ class USERINTERFACE_API UGameSettingsWidget : public UBSSettingCategoryWidget, p
 {
 	GENERATED_BODY()
 
+protected:
 	virtual void NativeConstruct() override;
 
 public:

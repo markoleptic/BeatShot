@@ -20,7 +20,7 @@ struct USERINTERFACE_API FLoadingScreenStyle : public FSlateWidgetStyle
 	// FSlateWidgetStyle
 	virtual void GetResources(TArray<const FSlateBrush*>& OutBrushes) const override;
 	static const FName TypeName;
-	virtual const FName GetTypeName() const override { return TypeName; };
+	virtual const FName GetTypeName() const override { return TypeName; }
 	static const FLoadingScreenStyle& GetDefault();
 
 	/** Static texture of the Background. */
@@ -177,8 +177,8 @@ public:
 	UPROPERTY(Category = "Style", EditAnywhere, BlueprintReadWrite, meta=(ShowOnlyInnerProperties))
 	FLoadingScreenStyle WidgetStyle;
 
-	virtual const struct FSlateWidgetStyle* const GetStyle() const override
+	virtual const FSlateWidgetStyle* const GetStyle() const override
 	{
-		return static_cast<const struct FSlateWidgetStyle*>(&WidgetStyle);
+		return &WidgetStyle;
 	}
 };

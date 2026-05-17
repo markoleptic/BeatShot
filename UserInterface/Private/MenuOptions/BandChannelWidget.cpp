@@ -26,8 +26,7 @@ void UBandChannelWidget::SetStyling()
 		if (TextBlock_Lower)
 		{
 			TextBlock_Lower->SetFont(MenuOptionStyle->Font_DescriptionText);
-			UHorizontalBoxSlot* HorizontalBoxSlot = Cast<UHorizontalBoxSlot>(TextBlock_Lower->Slot);
-			if (HorizontalBoxSlot)
+			if (UHorizontalBoxSlot* HorizontalBoxSlot = Cast<UHorizontalBoxSlot>(TextBlock_Lower->Slot))
 			{
 				HorizontalBoxSlot->SetPadding(
 					MenuOptionStyle->Padding_LeftBox + MenuOptionStyle->Padding_DescriptionText);
@@ -36,8 +35,7 @@ void UBandChannelWidget::SetStyling()
 		if (TextBlock_Upper)
 		{
 			TextBlock_Upper->SetFont(MenuOptionStyle->Font_DescriptionText);
-			UHorizontalBoxSlot* HorizontalBoxSlot = Cast<UHorizontalBoxSlot>(TextBlock_Upper->Slot);
-			if (HorizontalBoxSlot)
+			if (UHorizontalBoxSlot* HorizontalBoxSlot = Cast<UHorizontalBoxSlot>(TextBlock_Upper->Slot))
 			{
 				HorizontalBoxSlot->SetPadding(
 					MenuOptionStyle->Padding_LeftBox + MenuOptionStyle->Padding_DescriptionText);
@@ -67,7 +65,7 @@ void UBandChannelWidget::SetDefaultValues(const FVector2d Values, const int32 Ch
 	Index = ChannelIndex;
 }
 
-void UBandChannelWidget::OnValueCommitted_Min(const FText& NewValue, ETextCommit::Type CommitType)
+void UBandChannelWidget::OnValueCommitted_Min(const FText& NewValue, ETextCommit::Type /*CommitType*/)
 {
 	const float NewFloatValue = FCString::Atof(*UKismetStringLibrary::Replace(NewValue.ToString(), ",", ""));
 	if (NewFloatValue < Constants::MinValue_BandFrequency)
@@ -86,7 +84,7 @@ void UBandChannelWidget::OnValueCommitted_Min(const FText& NewValue, ETextCommit
 	}
 }
 
-void UBandChannelWidget::OnValueCommitted_Max(const FText& NewValue, ETextCommit::Type CommitType)
+void UBandChannelWidget::OnValueCommitted_Max(const FText& NewValue, ETextCommit::Type /*CommitType*/)
 {
 	const float NewFloatValue = FCString::Atof(*UKismetStringLibrary::Replace(NewValue.ToString(), ",", ""));
 	if (NewFloatValue < Constants::MinValue_BandFrequency)

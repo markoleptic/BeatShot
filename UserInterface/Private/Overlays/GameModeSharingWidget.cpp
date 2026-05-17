@@ -11,7 +11,7 @@ FString UGameModeSharingWidget::GetImportString() const
 	return MultilineTextBox->GetText().ToString();
 }
 
-void UGameModeSharingWidget::SetImportButton(TObjectPtr<UBSButton> InImportButton)
+void UGameModeSharingWidget::SetImportButton(const TObjectPtr<UBSButton> InImportButton)
 {
 	ImportButton = InImportButton;
 }

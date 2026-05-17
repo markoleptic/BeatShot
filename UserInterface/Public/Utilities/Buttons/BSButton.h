@@ -126,6 +126,7 @@ protected:
 	UWidgetAnimation* Anim_OnHovered;
 
 	/** Pointer to the next BSButton in a collection of them. */
+	UPROPERTY()
 	TObjectPtr<UBSButton> Next;
 
 	/** Event delegate binding Anim_OnPressed to OnAnimFinished_OnPressed. */

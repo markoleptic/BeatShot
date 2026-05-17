@@ -20,7 +20,7 @@ void UHitTimingWidget::NativeConstruct()
 	Tick_Transition_Timeline.SetPlayRate(4.f);
 }
 
-void UHitTimingWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+void UHitTimingWidget::NativeTick(const FGeometry& MyGeometry, const float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 	Tick_Transition_Timeline.TickTimeline(InDeltaTime);

@@ -18,7 +18,7 @@ void UCountdownWidget::NativeConstruct()
 	CountdownTimeline.SetPlayRate(1.f);
 }
 
-void UCountdownWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+void UCountdownWidget::NativeTick(const FGeometry& MyGeometry, const float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 	CountdownTimeline.TickTimeline(InDeltaTime);

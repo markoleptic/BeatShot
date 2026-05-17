@@ -14,9 +14,11 @@ class USERINTERFACE_API UFrameCounterWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
+protected:
 	/** Called every frame. */
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
+private:
 	/** Whether to show the FPS counter. */
 	bool bShowFPSCounter = false;
 

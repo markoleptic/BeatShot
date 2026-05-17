@@ -29,8 +29,7 @@ void UFeedbackWidget::NativeConstruct()
 	Button_Feedback->OnBSButtonPressed.AddUObject(this, &ThisClass::OnButtonClicked_BSButton);
 	Button_BugReport->SetDefaults(0, Button_Feedback);
 	Button_Feedback->SetDefaults(1, Button_BugReport);
-
-	Value_Title->OnTextCommitted.AddDynamic(this, &ThisClass::OnTextCommitted_Title);
+	
 	Value_Content->OnTextCommitted.AddDynamic(this, &ThisClass::OnTextCommitted_Content);
 
 	Button_SubmitFeedback->SetIsEnabled(false);
@@ -110,11 +109,8 @@ void UFeedbackWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 	}
 }
 
-void UFeedbackWidget::OnTextCommitted_Title(const FText& NewTitle, ETextCommit::Type CommitType)
-{
-}
 
-void UFeedbackWidget::OnTextCommitted_Content(const FText& NewContent, ETextCommit::Type CommitType)
+void UFeedbackWidget::OnTextCommitted_Content(const FText& NewContent, ETextCommit::Type /*CommitType*/)
 {
 	if (!NewContent.IsEmptyOrWhitespace())
 	{

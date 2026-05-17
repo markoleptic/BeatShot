@@ -356,7 +356,7 @@ void UCustomGameModeSpawnAreaWidget::OnSliderTextBoxValueChanged(USingleRangeInp
 }
 
 void UCustomGameModeSpawnAreaWidget::OnMinMaxValueChanged(UDualRangeInputWidget* Widget,
-                                                          const bool bChecked,
+                                                          const bool /*bChecked*/,
                                                           const float Min,
                                                           const float Max)
 {

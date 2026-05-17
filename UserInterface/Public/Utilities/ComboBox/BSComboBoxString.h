@@ -151,7 +151,7 @@ public:
 
 	/** Removes existing option from the combo box. */
 	UFUNCTION(BlueprintCallable, Category = "ComboBox")
-	bool HasOption(const FString& Option);
+	bool HasOption(const FString& Option) const;
 
 	/** Returns the index corresponding to the Option, or -1 if not found. */
 	UFUNCTION(BlueprintPure, Category = "ComboBox")
@@ -208,7 +208,7 @@ public:
 	/** Refreshes the list of options. If you added new ones, and want to update the list even if it's currently being
 	 *  displayed use this. */
 	UFUNCTION(BlueprintCallable, Category = "ComboBox")
-	void RefreshOptions();
+	void RefreshOptions() const;
 
 	/** Clears all options. */
 	UFUNCTION(BlueprintCallable, Category = "ComboBox")

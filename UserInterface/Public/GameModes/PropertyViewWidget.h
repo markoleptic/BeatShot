@@ -11,5 +11,6 @@ class USERINTERFACE_API UPropertyViewWidget : public UCustomGameModeWidget
 {
 	GENERATED_BODY()
 
+protected:
 	virtual void NativeConstruct() override;
 };

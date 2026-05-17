@@ -182,7 +182,7 @@ void UVideoAndSoundSettingsWidget::NativeConstruct()
 
 void UVideoAndSoundSettingsWidget::InitializeVideoAndSoundSettings()
 {
-	UBSGameUserSettings* GameUserSettings = UBSGameUserSettings::Get();
+	const UBSGameUserSettings* GameUserSettings = UBSGameUserSettings::Get();
 	float CurrentScaleNormalized;
 	float CurrentScale;
 	float MinScale;
@@ -264,7 +264,7 @@ void UVideoAndSoundSettingsWidget::OnCheckStateChanged_HDREnabled(const bool bIs
 }
 
 void UVideoAndSoundSettingsWidget::OnSelectionChanged_WindowMode(const TArray<FString>& SelectedOptions,
-                                                                 ESelectInfo::Type SelectionType)
+                                                                 const ESelectInfo::Type SelectionType)
 {
 	if (SelectionType == ESelectInfo::Type::Direct || SelectedOptions.Num() != 1)
 	{
@@ -286,7 +286,7 @@ void UVideoAndSoundSettingsWidget::OnSelectionChanged_WindowMode(const TArray<FS
 }
 
 void UVideoAndSoundSettingsWidget::OnSelectionChanged_Resolution(const TArray<FString>& SelectedOptions,
-                                                                 ESelectInfo::Type SelectionType)
+                                                                 const ESelectInfo::Type SelectionType)
 {
 	if (SelectionType == ESelectInfo::Type::Direct || SelectedOptions.Num() != 1)
 	{
@@ -309,7 +309,7 @@ void UVideoAndSoundSettingsWidget::OnSelectionChanged_Resolution(const TArray<FS
 }
 
 void UVideoAndSoundSettingsWidget::OnSelectionChanged_DLSS_EnabledMode(const TArray<FString>& SelectedOptions,
-                                                                       ESelectInfo::Type SelectionType)
+                                                                       const ESelectInfo::Type SelectionType)
 {
 	if (SelectedOptions.Num() != 1 || SelectionType == ESelectInfo::Type::Direct)
 	{
@@ -338,7 +338,7 @@ void UVideoAndSoundSettingsWidget::OnSelectionChanged_DLSS_EnabledMode(const TAr
 }
 
 void UVideoAndSoundSettingsWidget::OnSelectionChanged_FrameGeneration(const TArray<FString>& SelectedOptions,
-                                                                      ESelectInfo::Type SelectionType)
+                                                                      const ESelectInfo::Type SelectionType)
 {
 	if (SelectedOptions.Num() != 1 || SelectionType == ESelectInfo::Type::Direct)
 	{
@@ -358,7 +358,7 @@ void UVideoAndSoundSettingsWidget::OnSelectionChanged_FrameGeneration(const TArr
 }
 
 void UVideoAndSoundSettingsWidget::OnSelectionChanged_SuperResolution(const TArray<FString>& SelectedOptions,
-                                                                      ESelectInfo::Type SelectionType)
+                                                                      const ESelectInfo::Type SelectionType)
 {
 	if (SelectedOptions.Num() != 1 || SelectionType == ESelectInfo::Type::Direct)
 	{
@@ -380,7 +380,7 @@ void UVideoAndSoundSettingsWidget::OnSelectionChanged_SuperResolution(const TArr
 }
 
 void UVideoAndSoundSettingsWidget::OnSelectionChanged_RayReconstitution(const TArray<FString>& SelectedOptions,
-                                                                        ESelectInfo::Type SelectionType)
+                                                                        const ESelectInfo::Type SelectionType)
 {
 	if (SelectedOptions.Num() != 1 || SelectionType == ESelectInfo::Type::Direct)
 	{
@@ -393,7 +393,7 @@ void UVideoAndSoundSettingsWidget::OnSelectionChanged_RayReconstitution(const TA
 }
 
 void UVideoAndSoundSettingsWidget::OnSelectionChanged_NIS_EnabledMode(const TArray<FString>& SelectedOptions,
-                                                                      ESelectInfo::Type SelectionType)
+                                                                      const ESelectInfo::Type SelectionType)
 {
 	if (SelectedOptions.Num() != 1 || SelectionType == ESelectInfo::Type::Direct)
 	{
@@ -415,7 +415,7 @@ void UVideoAndSoundSettingsWidget::OnSelectionChanged_NIS_EnabledMode(const TArr
 }
 
 void UVideoAndSoundSettingsWidget::OnSelectionChanged_NIS_Mode(const TArray<FString>& SelectedOptions,
-                                                               ESelectInfo::Type SelectionType)
+                                                               const ESelectInfo::Type SelectionType)
 {
 	if (SelectedOptions.Num() != 1 || SelectionType == ESelectInfo::Type::Direct)
 	{
@@ -437,7 +437,7 @@ void UVideoAndSoundSettingsWidget::OnSelectionChanged_NIS_Mode(const TArray<FStr
 }
 
 void UVideoAndSoundSettingsWidget::OnSelectionChanged_Reflex(const TArray<FString>& SelectedOptions,
-                                                             ESelectInfo::Type SelectionType)
+                                                             const ESelectInfo::Type SelectionType)
 {
 	if (SelectedOptions.Num() != 1 || SelectionType == ESelectInfo::Type::Direct)
 	{
@@ -456,8 +456,9 @@ void UVideoAndSoundSettingsWidget::OnSelectionChanged_Reflex(const TArray<FStrin
 	}
 }
 
-void UVideoAndSoundSettingsWidget::OnSelectionChanged_AntiAliasingMethod(const TArray<FString>& SelectedOptions,
-                                                                         ESelectInfo::Type SelectionType)
+void UVideoAndSoundSettingsWidget::OnSelectionChanged_AntiAliasingMethod(
+	const TArray<FString>& SelectedOptions,
+	const ESelectInfo::Type SelectionType)
 {
 	if (SelectionType == ESelectInfo::Type::Direct || SelectedOptions.Num() != 1)
 	{
@@ -476,7 +477,7 @@ void UVideoAndSoundSettingsWidget::OnSelectionChanged_AntiAliasingMethod(const T
 }
 
 void UVideoAndSoundSettingsWidget::OnSelectionChanged_OutputAudioDevice(const TArray<FString>& SelectedOptions,
-                                                                        ESelectInfo::Type SelectionType)
+                                                                        const ESelectInfo::Type SelectionType)
 {
 	if (SelectedOptions.Num() != 1 || SelectionType == ESelectInfo::Type::Direct)
 	{
@@ -614,7 +615,7 @@ void UVideoAndSoundSettingsWidget::PopulateResolutionComboBox()
 
 void UVideoAndSoundSettingsWidget::UpdateNvidiaSettings()
 {
-	UBSGameUserSettings* GameUserSettings = UBSGameUserSettings::Get();
+	const UBSGameUserSettings* GameUserSettings = UBSGameUserSettings::Get();
 	if (const FString* Found = DLSSEnabledModeMap.FindKey(GameUserSettings->GetDLSSEnabledMode()))
 	{
 		ComboBoxOption_DLSS->ComboBox->SetSelectedOption(*Found);
@@ -769,19 +770,20 @@ void UVideoAndSoundSettingsWidget::OnCheckStateChanged_FPSCounter(const bool bIs
 	UBSGameUserSettings::Get()->SetShowFPSCounter(bIsChecked);
 }
 
-void UVideoAndSoundSettingsWidget::OnTextCommitted_FPSLimitMenu(const FText& Text, ETextCommit::Type CommitType)
+void UVideoAndSoundSettingsWidget::OnTextCommitted_FPSLimitMenu(const FText& Text, ETextCommit::Type /*CommitType*/)
 {
 	const float FrameLimit = FMath::GridSnap(FCString::Atof(*Text.ToString()), SnapSize_FrameRateLimit);
 	UBSGameUserSettings::Get()->SetFrameRateLimitMenu(FrameLimit);
 }
 
-void UVideoAndSoundSettingsWidget::OnTextCommitted_FPSLimitGame(const FText& Text, ETextCommit::Type CommitType)
+void UVideoAndSoundSettingsWidget::OnTextCommitted_FPSLimitGame(const FText& Text, ETextCommit::Type /*CommitType*/)
 {
 	const float FrameLimit = FMath::GridSnap(FCString::Atof(*Text.ToString()), SnapSize_FrameRateLimit);
 	UBSGameUserSettings::Get()->SetFrameRateLimitGame(FrameLimit);
 }
 
-void UVideoAndSoundSettingsWidget::OnTextCommitted_FPSLimitBackground(const FText& Text, ETextCommit::Type CommitType)
+void UVideoAndSoundSettingsWidget::OnTextCommitted_FPSLimitBackground(const FText& Text,
+                                                                      ETextCommit::Type /*CommitType*/)
 {
 	const float FrameLimit = FMath::GridSnap(FCString::Atof(*Text.ToString()), SnapSize_FrameRateLimit);
 	UBSGameUserSettings::Get()->SetFrameRateLimitBackground(FrameLimit);

@@ -10,7 +10,7 @@ FHyperLinkTextBlockDecorator::FHyperLinkTextBlockDecorator(URichTextBlock* InOwn
 	FRichTextDecorator(InOwner),
 	Decorator(InDecorator)
 {
-	OnHyperlinkClicked.BindLambda([this]()
+	OnHyperlinkClicked.BindLambda([this]
 	{
 		OnBrowserLinkClicked();
 	});
@@ -38,7 +38,8 @@ void FHyperLinkTextBlockDecorator::OnBrowserLinkClicked() const
 TSharedPtr<SWidget> FHyperLinkTextBlockDecorator::CreateDecoratorWidget(const FTextRunInfo& RunInfo,
                                                                         const FTextBlockStyle& DefaultTextStyle) const
 {
-	TSharedPtr<FSlateHyperlinkRun::FWidgetViewModel> Model = MakeShareable(new FSlateHyperlinkRun::FWidgetViewModel);
+	const TSharedPtr<FSlateHyperlinkRun::FWidgetViewModel> Model = MakeShareable(
+		new FSlateHyperlinkRun::FWidgetViewModel);
 	TSharedPtr<SBSRichTextHyperlink> Link = SNew(SBSRichTextHyperlink, Model.ToSharedRef())
 		.Text(RunInfo.Content)
 		.Style(&Decorator->Style)

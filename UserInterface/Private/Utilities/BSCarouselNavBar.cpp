@@ -42,7 +42,7 @@ void UBSCarouselNavBar::UpdateNotifications(const int32 Index, const int32 NumCa
 	Button->SetNumCautions(NumCautions);
 }
 
-void UBSCarouselNavBar::ReleaseSlateResources(bool bReleaseChildren)
+void UBSCarouselNavBar::ReleaseSlateResources(const bool bReleaseChildren)
 {
 	Super::ReleaseSlateResources(bReleaseChildren);
 
@@ -50,7 +50,7 @@ void UBSCarouselNavBar::ReleaseSlateResources(bool bReleaseChildren)
 	MyContainer.Reset();
 }
 
-void UBSCarouselNavBar::HandlePageChanged(UCommonWidgetCarousel* CommonCarousel, int32 PageIndex)
+void UBSCarouselNavBar::HandlePageChanged(UCommonWidgetCarousel* /*CommonCarousel*/, const int32 PageIndex)
 {
 	if (Buttons.IsValidIndex(PageIndex))
 	{

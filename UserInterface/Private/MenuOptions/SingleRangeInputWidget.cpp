@@ -30,7 +30,7 @@ void USingleRangeInputWidget::OnSliderChanged_Slider(const float Value)
 	OnSliderTextBoxValueChanged.Broadcast(this, ClampedValue);
 }
 
-void USingleRangeInputWidget::OnTextCommitted_EditableTextBox(const FText& Text, ETextCommit::Type CommitType)
+void USingleRangeInputWidget::OnTextCommitted_EditableTextBox(const FText& Text, ETextCommit::Type /*CommitType*/)
 {
 	IBSWidgetInterface::OnEditableTextBoxChanged(Text, EditableTextBox, Slider, GridSnapSize, Slider->GetMinValue(),
 	                                             Slider->GetMaxValue());

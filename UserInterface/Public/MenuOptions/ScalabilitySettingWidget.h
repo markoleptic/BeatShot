@@ -22,13 +22,13 @@ public:
 	void SetActiveButton(const int32 InQuality);
 	FOnVideoSettingQualityButtonPressed OnVideoSettingQualityButtonPressed;
 
+protected:
 	virtual void NativePreConstruct() override;
 	virtual void NativeConstruct() override;
 	virtual void SetStyling() override;
 
 	/** Changes video settings quality depending on input button. */
 	void OnBSButtonPressed_VideoQuality(const UBSButton* Button);
-
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UScalabilitySettingButton* Button_0;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))

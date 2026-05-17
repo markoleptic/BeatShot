@@ -133,17 +133,17 @@ void UCustomGameModeConditionsAndResponsesWidget::UpdateOptionsFromConfig()
 }
 
 void UCustomGameModeConditionsAndResponsesWidget::UpdateDependentOptions_TargetDeactivationResponses(
-	const TArray<ETargetDeactivationResponse>& Responses)
+	const TArray<ETargetDeactivationResponse>& /*Responses*/)
 {
 }
 
 void UCustomGameModeConditionsAndResponsesWidget::UpdateDependentOptions_TargetSpawnResponses(
-	const TArray<ETargetSpawnResponse>& Responses)
+	const TArray<ETargetSpawnResponse>& /*Responses*/)
 {
 }
 
 void UCustomGameModeConditionsAndResponsesWidget::UpdateDependentOptions_TargetActivationResponses(
-	const TArray<ETargetActivationResponse>& Responses)
+	const TArray<ETargetActivationResponse>& /*Responses*/)
 {
 }
 

@@ -125,9 +125,9 @@ TMap<FGuid, ATarget*> FTargetManagerTestWithWorld::GetManagedTargets() const
 
 void FTargetManagerTestWithWorld::TickWorld(float Time)
 {
-	constexpr float Step = 0.1f;
 	while (Time > 0.f)
 	{
+		constexpr float Step = 0.1f;
 		World->Tick(ELevelTick::LEVELTICK_All, FMath::Min(Time, Step));
 		Time -= Step;
 		GFrameCounter++;

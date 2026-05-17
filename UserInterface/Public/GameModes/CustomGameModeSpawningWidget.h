@@ -16,12 +16,13 @@ class USERINTERFACE_API UCustomGameModeSpawningWidget : public UCustomGameModeCa
 {
 	GENERATED_BODY()
 
+public:
+	virtual void UpdateOptionsFromConfig() override;
+	
 protected:
 	UCustomGameModeSpawningWidget();
 
 	virtual void NativeConstruct() override;
-
-	virtual void UpdateOptionsFromConfig() override;
 
 	void UpdateDependentOptions_TargetSpawningPolicy(const ETargetSpawningPolicy& InTargetSpawningPolicy);
 

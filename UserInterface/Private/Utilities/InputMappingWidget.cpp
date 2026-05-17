@@ -35,15 +35,13 @@ void UInputMappingWidget::SetStyles()
 	if (MenuOptionStyle)
 	{
 		TextBlock_KeyDescription->SetFont(MenuOptionStyle->Font_DescriptionText);
-		UHorizontalBoxSlot* HorizontalBoxSlot = Cast<UHorizontalBoxSlot>(TextBlock_KeyDescription->Slot);
-		if (HorizontalBoxSlot)
+		if (UHorizontalBoxSlot* HorizontalBoxSlot = Cast<UHorizontalBoxSlot>(TextBlock_KeyDescription->Slot))
 		{
 			HorizontalBoxSlot->SetPadding(MenuOptionStyle->Padding_DescriptionText);
 		}
 		if (Box_Left)
 		{
-			UBorderSlot* BorderSlot = Cast<UBorderSlot>(Box_Left->Slot);
-			if (BorderSlot)
+			if (UBorderSlot* BorderSlot = Cast<UBorderSlot>(Box_Left->Slot))
 			{
 				BorderSlot->SetPadding(MenuOptionStyle->Padding_LeftBox);
 			}

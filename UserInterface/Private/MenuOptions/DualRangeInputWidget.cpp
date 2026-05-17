@@ -67,8 +67,7 @@ void UDualRangeInputWidget::SetStyling()
 		if (TextBlock_Description_Min)
 		{
 			TextBlock_Description_Min->SetFont(MenuOptionStyle->Font_DescriptionText);
-			UHorizontalBoxSlot* HorizontalBoxSlot = Cast<UHorizontalBoxSlot>(TextBlock_Description_Min->Slot);
-			if (HorizontalBoxSlot)
+			if (UHorizontalBoxSlot* HorizontalBoxSlot = Cast<UHorizontalBoxSlot>(TextBlock_Description_Min->Slot))
 			{
 				HorizontalBoxSlot->SetPadding(MenuOptionStyle->Padding_DescriptionText);
 			}
@@ -76,8 +75,7 @@ void UDualRangeInputWidget::SetStyling()
 		if (TextBlock_Description_Max)
 		{
 			TextBlock_Description_Max->SetFont(MenuOptionStyle->Font_DescriptionText);
-			UHorizontalBoxSlot* HorizontalBoxSlot = Cast<UHorizontalBoxSlot>(TextBlock_Description_Max->Slot);
-			if (HorizontalBoxSlot)
+			if (UHorizontalBoxSlot* HorizontalBoxSlot = Cast<UHorizontalBoxSlot>(TextBlock_Description_Max->Slot))
 			{
 				HorizontalBoxSlot->SetPadding(MenuOptionStyle->Padding_DescriptionText);
 			}
@@ -327,13 +325,13 @@ void UDualRangeInputWidget::OnSliderChanged_Max(const float Value)
 	}
 }
 
-void UDualRangeInputWidget::OnTextCommitted_Min(const FText& Text, ETextCommit::Type CommitType)
+void UDualRangeInputWidget::OnTextCommitted_Min(const FText& Text, ETextCommit::Type /*CommitType*/)
 {
 	IBSWidgetInterface::OnEditableTextBoxChanged(Text, EditableTextBox_Min, Slider_Min, GridSnapSize,
 	                                             Slider_Min->GetMinValue(), Slider_Min->GetMaxValue());
 }
 
-void UDualRangeInputWidget::OnTextCommitted_Max(const FText& Text, ETextCommit::Type CommitType)
+void UDualRangeInputWidget::OnTextCommitted_Max(const FText& Text, ETextCommit::Type /*CommitType*/)
 {
 	IBSWidgetInterface::OnEditableTextBoxChanged(Text, EditableTextBox_Max, Slider_Max, GridSnapSize,
 	                                             Slider_Max->GetMinValue(), Slider_Max->GetMaxValue());

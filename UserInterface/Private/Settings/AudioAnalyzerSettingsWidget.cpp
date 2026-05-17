@@ -78,7 +78,7 @@ void UAudioAnalyzerSettingsWidget::NativeConstruct()
 	PopulateAASettings();
 }
 
-void UAudioAnalyzerSettingsWidget::OnChannelValueCommitted(const UBandChannelWidget* BandChannel,
+void UAudioAnalyzerSettingsWidget::OnChannelValueCommitted(const UBandChannelWidget* /*BandChannel*/,
                                                            const int32 Index,
                                                            const float NewValue,
                                                            const bool bIsMinValue)
@@ -93,7 +93,7 @@ void UAudioAnalyzerSettingsWidget::OnChannelValueCommitted(const UBandChannelWid
 	}
 }
 
-void UAudioAnalyzerSettingsWidget::OnBandThresholdChanged(const UBandThresholdWidget* BandThreshold,
+void UAudioAnalyzerSettingsWidget::OnBandThresholdChanged(const UBandThresholdWidget* /*BandThreshold*/,
                                                           const int32 Index,
                                                           const float NewValue)
 {
@@ -108,8 +108,8 @@ void UAudioAnalyzerSettingsWidget::OnSliderTextBoxValueChanged(USingleRangeInput
 	}
 }
 
-void UAudioAnalyzerSettingsWidget::OnSelectionChanged_NumBandChannels(const TArray<FString>& SelectedOptions,
-                                                                      ESelectInfo::Type SelectionType)
+void UAudioAnalyzerSettingsWidget::OnSelectionChanged_NumBandChannels(const TArray<FString>& /*SelectedOptions*/,
+                                                                      const ESelectInfo::Type SelectionType)
 {
 	if (SelectionType == ESelectInfo::Type::Direct)
 	{

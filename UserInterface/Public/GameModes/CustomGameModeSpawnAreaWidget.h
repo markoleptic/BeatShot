@@ -47,13 +47,13 @@ class USERINTERFACE_API UCustomGameModeSpawnAreaWidget : public UCustomGameModeC
 public:
 	UCustomGameModeSpawnAreaWidget();
 
-protected:
-	virtual void NativeConstruct() override;
-
 	virtual void UpdateOptionsFromConfig() override;
 
 	virtual void HandleWatchedPropertyChanged(uint32 PropertyHash) override;
 
+protected:
+	virtual void NativeConstruct() override;
+	
 	void UpdateDependentOptions_TargetDistributionPolicy();
 
 	void UpdateSpread();

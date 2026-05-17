@@ -11,7 +11,6 @@
 #include "Components/VerticalBox.h"
 #include "Microsoft/COMPointer.h"
 #include "Overlays/PopupMessageWidget.h"
-#include "SaveGames/SaveGamePlayerScore.h"
 #include "SaveGames/SaveGamePlayerSettings.h"
 #include "Utilities/Buttons/BSButton.h"
 
@@ -232,7 +231,7 @@ void UAudioSelectWidget::OnButtonClicked_LoadFile()
 	Button_Start->SetIsEnabled(true);
 }
 
-void UAudioSelectWidget::OnValueChanged_SongTitle(const FText& NewSongTitle, ETextCommit::Type CommitType)
+void UAudioSelectWidget::OnValueChanged_SongTitle(const FText& NewSongTitle, const ETextCommit::Type CommitType)
 {
 	const bool bSongTitleTextEmpty = NewSongTitle.IsEmptyOrWhitespace();
 	const bool bComboBoxEmpty = ComboBox_SongTitle->GetSelectedOption().IsEmpty();
@@ -249,7 +248,7 @@ void UAudioSelectWidget::OnValueChanged_SongTitle(const FText& NewSongTitle, ETe
 	Button_Start->SetIsEnabled(!bSongTitleTextEmpty || !bComboBoxEmpty);
 }
 
-void UAudioSelectWidget::OnValueChanged_Minutes(const FText& NewMinutes, ETextCommit::Type CommitType)
+void UAudioSelectWidget::OnValueChanged_Minutes(const FText& NewMinutes, ETextCommit::Type /*CommitType*/)
 {
 	const int32 ClampedMinutes = FMath::Clamp(FCString::Atoi(*NewMinutes.ToString()), 0, 99);
 	Value_Minutes->SetText(FText::AsNumber(ClampedMinutes, &NumberFormattingOptions));
@@ -257,7 +256,7 @@ void UAudioSelectWidget::OnValueChanged_Minutes(const FText& NewMinutes, ETextCo
 	                                                            60);
 }
 
-void UAudioSelectWidget::OnValueChanged_Seconds(const FText& NewSeconds, ETextCommit::Type CommitType)
+void UAudioSelectWidget::OnValueChanged_Seconds(const FText& NewSeconds, ETextCommit::Type /*CommitType*/)
 {
 	const int32 ClampedSeconds = FMath::Clamp(FCString::Atoi(*NewSeconds.ToString()), 0, 60);
 	Value_Seconds->SetText(FText::AsNumber(ClampedSeconds, &NumberFormattingOptions));
@@ -266,7 +265,7 @@ void UAudioSelectWidget::OnValueChanged_Seconds(const FText& NewSeconds, ETextCo
 }
 
 void UAudioSelectWidget::OnSelectionChanged_InAudioDevice(const FString SelectedInAudioDevice,
-                                                          const ESelectInfo::Type SelectionType)
+                                                          const ESelectInfo::Type /*SelectionType*/)
 {
 	if (ComboBox_InAudioDevices->GetSelectedIndex() != -1)
 	{
@@ -288,7 +287,7 @@ void UAudioSelectWidget::OnSelectionChanged_SongTitle(const FString NewSongTitle
 	{
 		AudioConfig.SongLength = *SongLength;
 		const int32 Minutes = AudioConfig.SongLength / 60;
-		const int32 Seconds = AudioConfig.SongLength - (Minutes * 60);
+		const int32 Seconds = AudioConfig.SongLength - Minutes * 60;
 		const int32 ClampedMinutes = FMath::Clamp(Minutes, 0, 60);
 		const int32 ClampedSeconds = FMath::Clamp(Seconds, 0, 60);
 		Value_Minutes->SetText(FText::AsNumber(ClampedMinutes, &NumberFormattingOptions));
@@ -318,21 +317,21 @@ void UAudioSelectWidget::OnCheckStateChanged_PlaybackAudio(const bool bIsChecked
 bool UAudioSelectWidget::OpenFileDialog(TArray<FString>& OutFileNames)
 {
 	const FString DialogTitle = "Choose a Song in .mp3 or .ogg Format";
-	FString DefaultPath;
-	FString DefaultFile;
+	const FString DefaultPath;
+	const FString DefaultFile;
 	const FString FileTypes = ".mp3,.ogg";
 	int OutFilterIndex = 0;
 	return FileDialogShared(false, GEngine->GameViewport->GetWindow()->GetNativeWindow()->GetOSWindowHandle(),
 	                        DialogTitle, DefaultPath, DefaultFile, FileTypes, 0, OutFileNames, OutFilterIndex);
 }
 
-bool UAudioSelectWidget::FileDialogShared(bool bSave,
+bool UAudioSelectWidget::FileDialogShared(const bool bSave,
                                           const void* ParentWindowHandle,
                                           const FString& DialogTitle,
                                           const FString& DefaultPath,
                                           const FString& DefaultFile,
                                           const FString& FileTypes,
-                                          uint32 Flags,
+                                          uint32 /*Flags*/,
                                           TArray<FString>& OutFilenames,
                                           int32& OutFilterIndex)
 {
@@ -367,7 +366,7 @@ bool UAudioSelectWidget::FileDialogShared(bool bSave,
 		if (Extension != TEXT("*.*"))
 		{
 			// Add to the clean extension list, first removing the * wildcard from the extension
-			int32 WildCardIndex = Extension.Find(TEXT("*"));
+			const int32 WildCardIndex = Extension.Find(TEXT("*"));
 			CleanExtensionList.Add(WildCardIndex != INDEX_NONE ? Extension.RightChop(WildCardIndex + 1) : Extension);
 		}
 	}
@@ -393,40 +392,40 @@ bool UAudioSelectWidget::FileDialogShared(bool bSave,
 		FileTypeStr[FileTypesLen + 1] = 0;
 	}
 
-	OPENFILENAME ofn;
-	FMemory::Memzero(&ofn, sizeof(OPENFILENAME));
+	OPENFILENAME Ofn;
+	FMemory::Memzero(&Ofn, sizeof(OPENFILENAME));
 
-	ofn.lStructSize = sizeof(OPENFILENAME);
-	ofn.hwndOwner = (HWND)ParentWindowHandle;
-	ofn.lpstrFilter = FileTypesPtr;
-	ofn.nFilterIndex = 1;
-	ofn.lpstrFile = Filename;
-	ofn.nMaxFile = MAX_FILENAME_STR;
-	ofn.lpstrInitialDir = Pathname;
-	ofn.lpstrTitle = *DialogTitle;
+	Ofn.lStructSize = sizeof(OPENFILENAME);
+	Ofn.hwndOwner = (HWND)ParentWindowHandle;
+	Ofn.lpstrFilter = FileTypesPtr;
+	Ofn.nFilterIndex = 1;
+	Ofn.lpstrFile = Filename;
+	Ofn.nMaxFile = MAX_FILENAME_STR;
+	Ofn.lpstrInitialDir = Pathname;
+	Ofn.lpstrTitle = *DialogTitle;
 	if (FileTypesLen > 0)
 	{
-		ofn.lpstrDefExt = &FileTypeStr[0];
+		Ofn.lpstrDefExt = &FileTypeStr[0];
 	}
 
-	ofn.Flags = OFN_HIDEREADONLY | OFN_ENABLESIZING | OFN_EXPLORER;
-
-	if (bSave)
-	{
-		ofn.Flags |= OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_NOVALIDATE;
-	}
-	else
-	{
-		ofn.Flags |= OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
-	}
+	Ofn.Flags = OFN_HIDEREADONLY | OFN_ENABLESIZING | OFN_EXPLORER;
 
 	if (bSave)
 	{
-		bSuccess = !!::GetSaveFileName(&ofn);
+		Ofn.Flags |= OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_NOVALIDATE;
 	}
 	else
 	{
-		bSuccess = !!::GetOpenFileName(&ofn);
+		Ofn.Flags |= OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+	}
+
+	if (bSave)
+	{
+		bSuccess = !!::GetSaveFileName(&Ofn);
+	}
+	else
+	{
+		bSuccess = !!::GetOpenFileName(&Ofn);
 	}
 
 	if (bSuccess)
@@ -437,7 +436,7 @@ bool UAudioSelectWidget::FileDialogShared(bool bSave,
 		new(OutFilenames) FString(Filename);
 
 		// The index of the filter in OPENFILENAME starts at 1.
-		OutFilterIndex = ofn.nFilterIndex - 1;
+		OutFilterIndex = Ofn.nFilterIndex - 1;
 
 		// Get the extension to add to the filename (if one doesnt already exist)
 		FString Extension = CleanExtensionList.IsValidIndex(OutFilterIndex)
@@ -462,7 +461,7 @@ bool UAudioSelectWidget::FileDialogShared(bool bSave,
 	}
 	else
 	{
-		uint32 Error = ::CommDlgExtendedError();
+		const uint32 Error = ::CommDlgExtendedError();
 		if (Error != ERROR_SUCCESS)
 		{
 			//UE_LOG(LogDesktopPlatform, Warning, TEXT("Error reading results of file dialog. Error: 0x%04X"), Error);

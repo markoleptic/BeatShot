@@ -17,14 +17,15 @@ class USERINTERFACE_API UCustomGameModeTargetSizingWidget : public UCustomGameMo
 {
 	GENERATED_BODY()
 
+public:
+	virtual void UpdateOptionsFromConfig() override;
+
+	virtual void HandleWatchedPropertyChanged(uint32 PropertyHash) override;
+
 protected:
 	UCustomGameModeTargetSizingWidget();
 
 	virtual void NativeConstruct() override;
-
-	virtual void UpdateOptionsFromConfig() override;
-
-	virtual void HandleWatchedPropertyChanged(uint32 PropertyHash) override;
 
 	/** Updates options that depend on the value selection of TargetActivationResponses. */
 	void UpdateDependentOptions_TargetActivationResponses(const TArray<ETargetActivationResponse>& InResponses);

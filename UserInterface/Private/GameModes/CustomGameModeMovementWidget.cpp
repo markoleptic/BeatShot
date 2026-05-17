@@ -154,7 +154,7 @@ void UCustomGameModeMovementWidget::HandleWatchedPropertyChanged(const uint32 Pr
 }
 
 void UCustomGameModeMovementWidget::UpdateDependentOptions_SpawnResponses(const TArray<ETargetSpawnResponse>& Responses,
-                                                                          const bool bConstant)
+                                                                          const bool /*bConstant*/)
 {
 	if (Responses.Contains(ETargetSpawnResponse::ChangeVelocity))
 	{
@@ -169,7 +169,7 @@ void UCustomGameModeMovementWidget::UpdateDependentOptions_SpawnResponses(const 
 
 void UCustomGameModeMovementWidget::UpdateDependentOptions_ActivationResponses(
 	const TArray<ETargetActivationResponse>& Responses,
-	const bool bConstant)
+	const bool /*bConstant*/)
 {
 	if (Responses.Contains(ETargetActivationResponse::ChangeVelocity))
 	{
@@ -185,7 +185,7 @@ void UCustomGameModeMovementWidget::UpdateDependentOptions_ActivationResponses(
 
 void UCustomGameModeMovementWidget::UpdateDependentOptions_DeactivationResponses(
 	const TArray<ETargetDeactivationResponse>& Responses,
-	const bool bConstant)
+	const bool /*bConstant*/)
 {
 	if (Responses.Contains(ETargetDeactivationResponse::ChangeVelocity))
 	{

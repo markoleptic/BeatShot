@@ -17,7 +17,4 @@ public:
 
 protected:
 	virtual void NativeConstruct() override;
-
-	UFUNCTION()
-	void OnCheckStateChanged_CheckBox(bool bChecked);
 };

@@ -3,7 +3,6 @@
 
 #include "GameModes/ScoreTable.h"
 #include "Fonts/FontMeasure.h"
-#include "Internationalization/BreakIterator.h"
 #include "SaveGames/SaveGamePlayerScore.h"
 #include "Slate/SPlayerScoreRow.h"
 
@@ -192,7 +191,7 @@ void UScoreTable::SetListItems(const TArray<TSharedPtr<FPlayerScore>>& InListIte
 	}
 }
 
-void UScoreTable::ReleaseSlateResources(bool bReleaseChildren)
+void UScoreTable::ReleaseSlateResources(const bool bReleaseChildren)
 {
 	Super::ReleaseSlateResources(bReleaseChildren);
 

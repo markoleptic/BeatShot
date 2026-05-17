@@ -65,8 +65,7 @@ public:
 	DECLARE_DELEGATE_RetVal_EightParams(int32, FOnPaintDropIndicator, EItemDropZone, const FPaintArgs&,
 	                                    const FGeometry&, const FSlateRect&, FSlateWindowElementList&, int32,
 	                                    const FWidgetStyle&, bool);
-
-public:
+	
 	SLATE_BEGIN_ARGS(SBSTableRow< ItemType >) :
 			_Style(&FCoreStyle::Get().GetWidgetStyle<FTableRowStyle>("TableView.Row")),
 			_ExpanderStyleSet(&FCoreStyle::Get()),
@@ -284,14 +283,11 @@ public:
 		{
 		case EItemDropZone::AboveItem:
 			return &Style->DropIndicator_Above;
-			break;
 		default: case EItemDropZone::OntoItem:
 			return &Style->DropIndicator_Onto;
-			break;
 		case EItemDropZone::BelowItem:
 			return &Style->DropIndicator_Below;
-			break;
-		};
+		}
 	}
 
 	virtual int32 OnPaint(const FPaintArgs& Args,
@@ -365,7 +361,7 @@ public:
 			const FVector2D LocalSize(AllottedGeometry.GetLocalSize());
 			const FVector2D Pivot(LocalSize * 0.5f);
 			const FVector2D RotatedLocalSize(LocalSize.Y, LocalSize.X);
-			FSlateLayoutTransform RotatedTransform(Pivot - RotatedLocalSize * 0.5f);
+			const FSlateLayoutTransform RotatedTransform(Pivot - RotatedLocalSize * 0.5f);
 			// Make the box centered to the alloted geometry, so that it can be rotated around the center.
 
 			FSlateDrawElement::MakeRotatedBox(OutDrawElements, LayerId++,
@@ -564,6 +560,10 @@ public:
 							}
 						}
 						break;
+					case ESelectionMode::None:
+						break;
+					case ESelectionMode::Single:
+						break;
 					}
 				}
 
@@ -614,6 +614,8 @@ public:
 						return FReply::Handled();
 					}
 				}
+				break;
+			case ESelectionMode::None:
 				break;
 			}
 		}
@@ -756,7 +758,7 @@ public:
 			const EItemDropZone ItemHoverZone = ZoneFromPointerPosition(LocalPointerPos, MyGeometry.GetLocalSize(),
 			                                                            OwnerTable->Private_GetOrientation());
 
-			ItemDropZone = [ItemHoverZone, DragDropEvent, this]()
+			ItemDropZone = [ItemHoverZone, DragDropEvent, this]
 			{
 				TSharedRef<ITypedTableView<ItemType>> OwnerTable = OwnerTablePtr.Pin().ToSharedRef();
 				if (const ItemType* MyItemPtr = GetItemForThis(OwnerTable))
@@ -1213,8 +1215,7 @@ protected:
 	{
 		return bCanSelectNone;
 	}
-
-protected:
+	
 	/** The list that owns this Selectable. */
 	TWeakPtr<ITypedTableView<ItemType>> OwnerTablePtr;
 

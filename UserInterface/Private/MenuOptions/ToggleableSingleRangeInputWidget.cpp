@@ -47,7 +47,8 @@ void UToggleableSingleRangeInputWidget::SetStyling()
 	}
 }
 
-void UToggleableSingleRangeInputWidget::OnSliderTextBoxOptionChanged(USingleRangeInputWidget* Widget, const float Value)
+void UToggleableSingleRangeInputWidget::OnSliderTextBoxOptionChanged(USingleRangeInputWidget* /*Widget*/,
+                                                                     const float Value)
 {
 	OnSliderTextBoxCheckBoxOptionChanged.Broadcast(this, CheckBox->IsChecked(), Value);
 }

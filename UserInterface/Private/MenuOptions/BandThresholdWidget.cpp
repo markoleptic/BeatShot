@@ -26,7 +26,7 @@ void UBandThresholdWidget::SetDefaultValue(const float Value, const int32 Channe
 	Index = ChannelIndex;
 }
 
-void UBandThresholdWidget::OnSliderTextBoxValueChanged_Threshold(USingleRangeInputWidget* SliderTextBoxOptionWidget,
+void UBandThresholdWidget::OnSliderTextBoxValueChanged_Threshold(USingleRangeInputWidget* /*SliderTextBoxOptionWidget*/,
                                                                  const float Value)
 {
 	if (!OnThresholdValueCommitted.ExecuteIfBound(this, Index, Value))

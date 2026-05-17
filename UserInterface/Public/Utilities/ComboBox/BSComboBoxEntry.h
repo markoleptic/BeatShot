@@ -17,11 +17,11 @@ class USERINTERFACE_API UBSComboBoxEntry : public UUserWidget
 {
 	GENERATED_BODY()
 
+protected:
 	virtual void NativePreConstruct() override;
 	virtual void NativeConstruct() override;
 	virtual void SetStyles();
-
-protected:
+	
 	UPROPERTY(EditDefaultsOnly, Category = "BSComboBoxEntry|Style")
 	TSubclassOf<UMenuOptionStyle> MenuOptionStyleClass;
 

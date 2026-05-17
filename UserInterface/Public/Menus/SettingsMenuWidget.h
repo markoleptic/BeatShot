@@ -55,9 +55,6 @@ protected:
 	UFUNCTION()
 	void OnRestartButtonClicked_AudioAnalyzer() const;
 
-	UFUNCTION()
-	void OnCarouselWidgetIndexChanged(UCommonWidgetCarousel* InCarousel, const int32 NewIndex);
-
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCommonWidgetCarousel* Carousel;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))

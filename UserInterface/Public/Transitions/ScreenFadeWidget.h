@@ -14,6 +14,7 @@ class USERINTERFACE_API UScreenFadeWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
+protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
 

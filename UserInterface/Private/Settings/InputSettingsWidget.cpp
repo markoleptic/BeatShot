@@ -69,7 +69,8 @@ void UInputSettingsWidget::InitializeInputSettings(const TMap<FName, FKeyMapping
 	TMap<FName, FKeyMappingRow> Rows = InPlayerMappedRows;
 	if (InPlayerMappedRows.IsEmpty())
 	{
-		UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(
+		const UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<
+			UEnhancedInputLocalPlayerSubsystem>(
 			GetOwningPlayer()->GetLocalPlayer());
 		Rows = Subsystem->GetUserSettings()->GetActiveKeyProfile()->GetPlayerMappingRows();
 	}
@@ -259,7 +260,8 @@ void UInputSettingsWidget::OnButtonClicked_Save()
 	Settings_User.Sensitivity = Sensitivity;
 	MenuOption_CurrentSensitivity->EditableTextBox->SetText(FText::AsNumber(Sensitivity));
 
-	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(
+	const UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<
+		UEnhancedInputLocalPlayerSubsystem>(
 		GetOwningPlayer()->GetLocalPlayer());
 
 	for (const TPair<FName, UInputMappingWidget*>& WidgetMapping : InputMappingWidgetMap)
@@ -269,7 +271,7 @@ void UInputSettingsWidget::OnButtonClicked_Save()
 
 		Args.MappingName = WidgetMapping.Key;
 
-		Args.NewKey = WidgetMapping.Value->GetKeyFromSlot(EPlayerMappableKeySlot::First).Key;;
+		Args.NewKey = WidgetMapping.Value->GetKeyFromSlot(EPlayerMappableKeySlot::First).Key;
 		Args.Slot = EPlayerMappableKeySlot::First;
 		Subsystem->GetUserSettings()->MapPlayerKey(Args, Failure);
 
@@ -288,7 +290,8 @@ void UInputSettingsWidget::OnButtonClicked_Save()
 
 void UInputSettingsWidget::OnButtonClicked_Reset()
 {
-	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(
+	const UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<
+		UEnhancedInputLocalPlayerSubsystem>(
 		GetOwningPlayer()->GetLocalPlayer());
 	UEnhancedPlayerMappableKeyProfile* KeyProfile = Subsystem->GetUserSettings()->GetActiveKeyProfile();
 	KeyProfile->ResetToDefault();

@@ -72,8 +72,7 @@ void UMenuOptionWidget::SetStyling()
 	}
 	if (Box_TagsAndTooltips)
 	{
-		UHorizontalBoxSlot* HorizontalBoxSlot = Cast<UHorizontalBoxSlot>(Box_TagsAndTooltips->Slot);
-		if (HorizontalBoxSlot)
+		if (UHorizontalBoxSlot* HorizontalBoxSlot = Cast<UHorizontalBoxSlot>(Box_TagsAndTooltips->Slot))
 		{
 			HorizontalBoxSlot->SetPadding(MenuOptionStyle->Padding_TagsAndTooltips);
 		}
@@ -81,8 +80,7 @@ void UMenuOptionWidget::SetStyling()
 	if (TextBlock_Description)
 	{
 		TextBlock_Description->SetFont(MenuOptionStyle->Font_DescriptionText);
-		UHorizontalBoxSlot* HorizontalBoxSlot = Cast<UHorizontalBoxSlot>(TextBlock_Description->Slot);
-		if (HorizontalBoxSlot)
+		if (UHorizontalBoxSlot* HorizontalBoxSlot = Cast<UHorizontalBoxSlot>(TextBlock_Description->Slot))
 		{
 			HorizontalBoxSlot->SetPadding(MenuOptionStyle->Padding_DescriptionText);
 		}

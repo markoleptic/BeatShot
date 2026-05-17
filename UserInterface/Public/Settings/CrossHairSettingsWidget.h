@@ -26,6 +26,7 @@ class USERINTERFACE_API UCrossHairSettingsWidget : public UBSSettingCategoryWidg
 {
 	GENERATED_BODY()
 
+protected:
 	virtual void NativeConstruct() override;
 
 public:

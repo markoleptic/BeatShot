@@ -21,10 +21,10 @@ static FComboBoxStyle* EditorComboBoxStyle = nullptr;
 static FTableRowStyle* EditorComboBoxRowStyle = nullptr;
 #endif
 
-void UBSComboBoxString::ReleaseSlateResources(bool bReleaseChildren)
+void UBSComboBoxString::ReleaseSlateResources(const bool bReleaseChildren)
 {
 	Super::ReleaseSlateResources(bReleaseChildren);
-	for (TSharedPtr<FString> SharedStr : CurrentlySelectedOptionPointers)
+	for (auto& SharedStr : CurrentlySelectedOptionPointers)
 	{
 		SharedStr.Reset();
 	}
@@ -264,7 +264,7 @@ void UBSComboBoxString::HandleOpening()
 
 TSharedRef<SWidget> UBSComboBoxString::RebuildWidget()
 {
-	int32 InitialIndex = GetIndexOfOption(GetSelectedOption());
+	const int32 InitialIndex = GetIndexOfOption(GetSelectedOption());
 
 	TSharedPtr<FString> CurrentOptionPtr;
 
@@ -338,7 +338,7 @@ bool UBSComboBoxString::RemoveOption(const FString& Option)
 	return false;
 }
 
-bool UBSComboBoxString::HasOption(const FString& Option)
+bool UBSComboBoxString::HasOption(const FString& Option) const
 {
 	return GetIndexOfOption(Option) != -1;
 }
@@ -521,7 +521,7 @@ bool UBSComboBoxString::IsOpen() const
 	return SlateComboBox.IsValid() && SlateComboBox->IsOpen();
 }
 
-void UBSComboBoxString::RefreshOptions()
+void UBSComboBoxString::RefreshOptions() const
 {
 	if (SlateComboBox.IsValid())
 	{
@@ -533,7 +533,7 @@ void UBSComboBoxString::ClearOptions()
 {
 	ClearSelection();
 
-	for (TSharedPtr<FString> String : Options)
+	for (auto& String : Options)
 	{
 		String.Reset();
 	}

@@ -14,6 +14,7 @@ class USERINTERFACE_API UCombatTextWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
+protected:
 	virtual void NativeOnInitialized() override;
 
 public:

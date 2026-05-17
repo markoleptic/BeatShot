@@ -56,9 +56,7 @@ protected:
 
 private:
 	void OnButtonClicked_BSButton(const UBSButton* Button);
-
-	UFUNCTION()
-	void OnTextCommitted_Title(const FText& NewTitle, ETextCommit::Type CommitType);
+	
 	UFUNCTION()
 	void OnTextCommitted_Content(const FText& NewContent, ETextCommit::Type CommitType);
 	UFUNCTION()

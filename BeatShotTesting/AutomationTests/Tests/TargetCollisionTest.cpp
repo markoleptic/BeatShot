@@ -20,20 +20,19 @@ public:
 
 	virtual EAutomationTestFlags GetTestFlags() const override
 	{
-		return ((EAutomationTestFlags::CommandletContext | EAutomationTestFlags::EditorContext |
-		         EAutomationTestFlags_HighPriorityAndAbove | EAutomationTestFlags::EngineFilter) & ~(
-			        EAutomationTestFlags::SmokeFilter));
+		return (EAutomationTestFlags::CommandletContext | EAutomationTestFlags::EditorContext |
+		        EAutomationTestFlags_HighPriorityAndAbove | EAutomationTestFlags::EngineFilter) & ~
+		       EAutomationTestFlags::SmokeFilter;
 	}
 
 	virtual bool IsStressTest() const override { return true; }
 	virtual uint32 GetRequiredDeviceNum() const override { return 1; }
 	virtual FString GetTestSourceFileName() const override { return "TargetCollisionTest.cpp"; }
 	virtual int32 GetTestSourceFileLine() const override { return 7; }
-
+	virtual FString GetBeautifiedTestName() const override { return "TargetManager.TargetCollision"; }
 protected:
 	virtual void GetTests(TArray<FString>& OutBeautifiedNames, TArray<FString>& OutTestCommands) const override;
 	virtual bool RunTest(const FString& Parameters) override;
-	virtual FString GetBeautifiedTestName() const override { return "TargetManager.TargetCollision"; }
 	void TestIntersection(const FSphere& SphereOne, const FSphere& SphereTwo);
 	void ResetTestVariables();
 
@@ -46,7 +45,7 @@ protected:
 
 namespace
 {
-FTargetCollisionTest FTargetCollisionTestAutomationTestInstance(L"FTargetCollisionTest");
+[[maybe_unused]] FTargetCollisionTest FTargetCollisionTestAutomationTestInstance(L"FTargetCollisionTest");
 }
 
 void FTargetCollisionTest::GetTests(TArray<FString>& OutBeautifiedNames, TArray<FString>& OutTestCommands) const

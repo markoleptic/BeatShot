@@ -36,13 +36,13 @@ public:
 	UGameModeMenuWidget* GetGameModesWidget() const;
 
 	USettingsMenuWidget* GetSettingsMenuWidget() const;
-
-	/** Called when another class saves User settings. */
-	virtual void OnPlayerSettingsChanged(const FPlayerSettings_User& UserSettings) override;
-
+	
 	void SetSaveGamePlayerScore(USaveGamePlayerScore* InSaveGamePlayerScore);
 
 protected:
+	/** Called when another class saves User settings. */
+	virtual void OnPlayerSettingsChanged(const FPlayerSettings_User& UserSettings) override;
+	
 	virtual void NativeConstruct() override;
 	virtual void NativePreConstruct() override;
 

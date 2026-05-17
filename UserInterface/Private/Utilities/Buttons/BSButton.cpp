@@ -54,7 +54,7 @@ void UBSButton::NativeConstruct()
 	}
 }
 
-void UBSButton::SetIsEnabled(bool bInIsEnabled)
+void UBSButton::SetIsEnabled(const bool bInIsEnabled)
 {
 	if (!bInIsEnabled)
 	{

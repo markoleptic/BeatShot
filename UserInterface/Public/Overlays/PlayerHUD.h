@@ -22,15 +22,16 @@ class USERINTERFACE_API UPlayerHUD : public UUserWidget, public IBSPlayerSetting
 {
 	GENERATED_BODY()
 
-public:
+protected:
 	virtual void NativeConstruct() override;
 
+public:
+	/** Called when another class saves Game settings. */
+	virtual void OnPlayerSettingsChanged(const FPlayerSettings_Game& GameSettings) override;
+	
 	void Init(const TSharedPtr<FBSConfig>& InConfig);
 
 	FOnPlayerSettingsChanged_Game& GetGameDelegate() { return OnPlayerSettingsChangedDelegate_Game; }
-
-	/** Called when another class saves Game settings. */
-	virtual void OnPlayerSettingsChanged(const FPlayerSettings_Game& GameSettings) override;
 
 	/** Takes in a PlayerScore struct and updates all elements of the PlayerHUD. */
 	void UpdateAllElements(const FPlayerScore& Scores,

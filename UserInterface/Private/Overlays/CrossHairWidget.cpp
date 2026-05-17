@@ -87,8 +87,7 @@ void UCrossHairWidget::SetShowCrossHairDot(const bool bShow)
 
 void UCrossHairWidget::SetCrossHairDotColor(const FLinearColor NewColor)
 {
-	UMaterialInstanceDynamic* MaterialInstance = Cast<UMaterialInstanceDynamic>(Image_Dot->GetDynamicMaterial());
-	if (MaterialInstance)
+	if (UMaterialInstanceDynamic* MaterialInstance = Cast<UMaterialInstanceDynamic>(Image_Dot->GetDynamicMaterial()))
 	{
 		MaterialInstance->SetVectorParameterValue("Color", NewColor);
 	}
@@ -97,8 +96,7 @@ void UCrossHairWidget::SetCrossHairDotColor(const FLinearColor NewColor)
 void UCrossHairWidget::SetCrossHairDotSize(const int32 NewSize, const int32 OutlineSize)
 {
 	Image_Dot->SetDesiredSizeOverride(FVector2d(NewSize + OutlineSize));
-	UMaterialInstanceDynamic* MaterialInstance = Cast<UMaterialInstanceDynamic>(Image_Dot->GetDynamicMaterial());
-	if (MaterialInstance)
+	if (UMaterialInstanceDynamic* MaterialInstance = Cast<UMaterialInstanceDynamic>(Image_Dot->GetDynamicMaterial()))
 	{
 		MaterialInstance->SetScalarParameterValue("FillOutlineRatio",
 		                                          static_cast<float>(NewSize) / static_cast<float>(
@@ -108,8 +106,7 @@ void UCrossHairWidget::SetCrossHairDotSize(const int32 NewSize, const int32 Outl
 
 void UCrossHairWidget::SetCrossHairDotOutlineColor(const FLinearColor NewColor)
 {
-	UMaterialInstanceDynamic* MaterialInstance = Cast<UMaterialInstanceDynamic>(Image_Dot->GetDynamicMaterial());
-	if (MaterialInstance)
+	if (UMaterialInstanceDynamic* MaterialInstance = Cast<UMaterialInstanceDynamic>(Image_Dot->GetDynamicMaterial()))
 	{
 		MaterialInstance->SetVectorParameterValue("OutlineColor", NewColor);
 	}

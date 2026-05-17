@@ -52,6 +52,7 @@ protected:
 
 	virtual TSharedRef<SWidget> RebuildWidget() override;
 
+public:
 	virtual UBSComboBoxEntry* ConstructComboBoxEntryWidget() override;
 
 	virtual UWidget* OnGenerateWidgetEvent(const UBSComboBoxString* ComboBoxString, FString Method) override;
@@ -59,12 +60,13 @@ protected:
 	virtual FString
 	GetStringTableKeyFromComboBox(const UBSComboBoxString* ComboBoxString, const FString& EnumString) override;
 
+protected:
 	/** Adds GameModeCategoryTagWidgets to the ComboBox entry if matching tags are found. */
 	UWidget* AddGameModeCategoryTagWidgets(UBSTaggedComboBoxEntry* ComboBoxEntry);
 
 	/** Pointer to CustomGameModesWidgetComponent's GameplayTagWidgetMap. */
 	UPROPERTY()
-	TObjectPtr<UGameModeCategoryTagMap> GameModeCategoryTagMap;;
+	TObjectPtr<UGameModeCategoryTagMap> GameModeCategoryTagMap;
 
 	/** Pointer to CustomGameModesWidgetComponent's EnumTagMap. */
 	UPROPERTY()

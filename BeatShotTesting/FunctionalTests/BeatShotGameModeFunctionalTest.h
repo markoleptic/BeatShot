@@ -21,13 +21,14 @@ class BEATSHOTTESTING_API ABeatShotGameModeFunctionalTest : public AFunctionalTe
 public:
 	ABeatShotGameModeFunctionalTest();
 
-protected:
 	// AFunctionalTest
+	virtual void FinishTest(EFunctionalTestResult TestResult, const FString& Message) override;
+	virtual void CleanUp() override;
+	
+protected:
 	virtual void PrepareTest() override;
 	virtual bool IsReady_Implementation() override;
 	virtual void StartTest() override;
-	virtual void FinishTest(EFunctionalTestResult TestResult, const FString& Message) override;
-	virtual void CleanUp() override;
 	// ~AFunctionalTest
 
 	/** Imports Default Game Modes using the GameModeDataAsset, DefaultGameModesToTest,

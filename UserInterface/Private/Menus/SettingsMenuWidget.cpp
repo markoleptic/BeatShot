@@ -14,8 +14,7 @@ void USettingsMenuWidget::NativeConstruct()
 	Super::NativeConstruct();
 
 	AudioAnalyzer_Widget->OnRestartButtonClicked.BindUFunction(this, "OnRestartButtonClicked_AudioAnalyzer");
-
-	Carousel->OnCurrentPageIndexChanged.AddUniqueDynamic(this, &ThisClass::OnCarouselWidgetIndexChanged);
+	
 	Carousel->SetActiveWidgetIndex(0);
 	CarouselNavBar->SetLinkedCarousel(Carousel);
 
@@ -31,10 +30,6 @@ void USettingsMenuWidget::OnRestartButtonClicked_AudioAnalyzer() const
 	{
 		UE_LOG(LogTemp, Display, TEXT("OnRestartButtonClicked not bound."));
 	}
-}
-
-void USettingsMenuWidget::OnCarouselWidgetIndexChanged(UCommonWidgetCarousel* InCarousel, const int32 NewIndex)
-{
 }
 
 FOnPlayerSettingsChanged_Game& USettingsMenuWidget::GetGameDelegate() const

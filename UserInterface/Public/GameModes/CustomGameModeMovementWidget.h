@@ -18,13 +18,13 @@ class USERINTERFACE_API UCustomGameModeMovementWidget : public UCustomGameModeCa
 public:
 	UCustomGameModeMovementWidget();
 
-protected:
-	virtual void NativeConstruct() override;
-
 	virtual void UpdateOptionsFromConfig() override;
 
 	virtual void HandleWatchedPropertyChanged(uint32 PropertyHash) override;
 
+protected:
+	virtual void NativeConstruct() override;
+	
 	/** Updates options that depend on TargetSpawnResponses (and ConstantSpawnedTargetVelocity). */
 	void UpdateDependentOptions_SpawnResponses(const TArray<ETargetSpawnResponse>& Responses, const bool bConstant);
 

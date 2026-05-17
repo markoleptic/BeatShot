@@ -39,10 +39,10 @@ class USERINTERFACE_API UQTableWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
+protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
-
-protected:
+	
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UImage> DefaultImage;
 

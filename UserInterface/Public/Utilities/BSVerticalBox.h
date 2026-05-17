@@ -13,8 +13,7 @@ class USERINTERFACE_API UBSVerticalBox : public UVerticalBox
 {
 	GENERATED_BODY()
 
-	friend class UBSSettingCategoryWidget;
-
+protected:
 	virtual TSharedRef<SWidget> RebuildWidget() override;
 
 public:
@@ -26,6 +25,4 @@ private:
 	 *  Returns true if the last left side border was dark, so that the next slot can do the opposite. Skips collapsed
 	 *  boxes. */
 	bool UpdateBrushColors_Private(TArray<TObjectPtr<UPanelSlot>>& InSlots, bool bLastLeftBorderDark);
-
-	void UpdateHorizontalBoxBorderColors(UBSHorizontalBox* HorizontalBox, bool& bLastLeftBorderDark);
 };

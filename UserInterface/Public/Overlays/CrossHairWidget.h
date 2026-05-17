@@ -80,7 +80,7 @@ public:
 	void SetLineColor(const FLinearColor NewColor);
 
 	/** Sets the offset between the middle of the screen and the start of the lines. */
-	void SetInnerOffset(const int32 NewOffset);
+	void SetInnerOffset(const int32 NewOffsetValue);
 
 	/** Sets the visibility of the CrossHair Dot. */
 	void SetShowCrossHairDot(const bool bShow);
@@ -93,7 +93,7 @@ public:
 
 	/** Sets the color of the CrossHair Dot Outline. */
 	void SetCrossHairDotOutlineColor(const FLinearColor NewColor);
-
+	
 	/** Reinitialize CrossHair if Player Settings change. */
 	virtual void OnPlayerSettingsChanged(const FPlayerSettings_CrossHair& CrossHairSettings) override;
 };

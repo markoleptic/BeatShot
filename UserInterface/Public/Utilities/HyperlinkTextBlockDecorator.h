@@ -16,6 +16,7 @@ public:
 
 	virtual bool Supports(const FTextRunParseResults& RunParseResult, const FString& Text) const override;
 
+protected:
 	virtual TSharedPtr<SWidget> CreateDecoratorWidget(const FTextRunInfo& RunInfo,
 	                                                  const FTextBlockStyle& DefaultTextStyle) const override;
 

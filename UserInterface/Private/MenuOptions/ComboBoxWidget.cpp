@@ -37,7 +37,7 @@ UBSComboBoxEntry* UComboBoxWidget::ConstructComboBoxEntryWidget()
 	return CreateWidget<UBSComboBoxEntry>(this, ComboBox->GetComboboxEntryWidget());
 }
 
-UWidget* UComboBoxWidget::OnGenerateWidgetEvent(const UBSComboBoxString* ComboBoxString, FString Method)
+UWidget* UComboBoxWidget::OnGenerateWidgetEvent(const UBSComboBoxString* ComboBoxString, const FString Method)
 {
 	UWidget* Widget = IBSWidgetInterface::OnGenerateWidgetEvent(ComboBoxString, Method);
 

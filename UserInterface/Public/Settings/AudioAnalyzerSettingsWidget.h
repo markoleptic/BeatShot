@@ -23,9 +23,10 @@ class USERINTERFACE_API UAudioAnalyzerSettingsWidget : public UBSSettingCategory
 {
 	GENERATED_BODY()
 
-public:
+protected:
 	virtual void NativeConstruct() override;
-
+	
+public:
 	/** Broadcast when the restart and save button is clicked to apply AudioAnalyzer settings that require a restart. */
 	TDelegate<void()> OnRestartButtonClicked;
 

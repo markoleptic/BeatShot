@@ -22,6 +22,7 @@ class USERINTERFACE_API UBandThresholdWidget : public USingleRangeInputWidget
 {
 	GENERATED_BODY()
 
+protected:
 	virtual void NativeConstruct() override;
 
 public:

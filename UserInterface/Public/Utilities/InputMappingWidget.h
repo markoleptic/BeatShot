@@ -21,6 +21,7 @@ class USERINTERFACE_API UInputMappingWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
+protected:
 	virtual void NativeConstruct() override;
 	virtual void NativePreConstruct() override;
 	virtual void SetStyles();

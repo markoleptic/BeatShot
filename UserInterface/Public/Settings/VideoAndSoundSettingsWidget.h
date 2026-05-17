@@ -33,13 +33,13 @@ class USERINTERFACE_API UVideoAndSoundSettingsWidget : public UBSSettingCategory
 	GENERATED_BODY()
 
 	friend class USettingsMenuWidget;
-
-	virtual void NativeConstruct() override;
-
+	
 	/** Populates the settings menu with BSGameUserSettings. */
 	void InitializeVideoAndSoundSettings();
 
 protected:
+	virtual void NativeConstruct() override;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Classes | PopUp")
 	TSubclassOf<UPopupMessageWidget> PopupMessageClass;
 

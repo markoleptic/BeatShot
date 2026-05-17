@@ -95,7 +95,7 @@ void ABeatShotGameModeFunctionalTest::StartTest()
 	StartGameMode();
 }
 
-void ABeatShotGameModeFunctionalTest::FinishTest(EFunctionalTestResult TestResult, const FString& Message)
+void ABeatShotGameModeFunctionalTest::FinishTest(const EFunctionalTestResult TestResult, const FString& Message)
 {
 	GetWorldTimerManager().ClearAllTimersForObject(this);
 	TargetManager->Clear();

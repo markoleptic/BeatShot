@@ -7,6 +7,42 @@
 #include "Utilities/BSHorizontalBox.h"
 #include "Utilities/BSWidgetInterface.h"
 
+namespace
+{
+void UpdateHorizontalBoxBorderColors(UBSHorizontalBox* HorizontalBox, bool& bLastLeftBorderDark)
+{
+	if (HorizontalBox->GetVisibility() != ESlateVisibility::Collapsed)
+	{
+		if (HorizontalBox->ShouldForceSameBorderBrushTintAsPrevious())
+		{
+			if (bLastLeftBorderDark)
+			{
+				HorizontalBox->SetLeftBorderBrushTint(Constants::DarkMenuBrushColor);
+				HorizontalBox->SetRightBorderBrushTint(Constants::LightMenuBrushColor);
+			}
+			else
+			{
+				HorizontalBox->SetLeftBorderBrushTint(Constants::LightMenuBrushColor);
+				HorizontalBox->SetRightBorderBrushTint(Constants::DarkMenuBrushColor);
+			}
+			return;
+		}
+		if (bLastLeftBorderDark)
+		{
+			HorizontalBox->SetLeftBorderBrushTint(Constants::LightMenuBrushColor);
+			HorizontalBox->SetRightBorderBrushTint(Constants::DarkMenuBrushColor);
+			bLastLeftBorderDark = false;
+		}
+		else
+		{
+			HorizontalBox->SetLeftBorderBrushTint(Constants::DarkMenuBrushColor);
+			HorizontalBox->SetRightBorderBrushTint(Constants::LightMenuBrushColor);
+			bLastLeftBorderDark = true;
+		}
+	}
+}
+}
+
 TSharedRef<SWidget> UBSVerticalBox::RebuildWidget()
 {
 	return Super::RebuildWidget();
@@ -77,35 +113,4 @@ bool UBSVerticalBox::UpdateBrushColors_Private(TArray<TObjectPtr<UPanelSlot>>& I
 	return bLastLeftBorderDark;
 }
 
-void UBSVerticalBox::UpdateHorizontalBoxBorderColors(UBSHorizontalBox* HorizontalBox, bool& bLastLeftBorderDark)
-{
-	if (HorizontalBox->GetVisibility() != ESlateVisibility::Collapsed)
-	{
-		if (HorizontalBox->ShouldForceSameBorderBrushTintAsPrevious())
-		{
-			if (bLastLeftBorderDark)
-			{
-				HorizontalBox->SetLeftBorderBrushTint(Constants::DarkMenuBrushColor);
-				HorizontalBox->SetRightBorderBrushTint(Constants::LightMenuBrushColor);
-			}
-			else
-			{
-				HorizontalBox->SetLeftBorderBrushTint(Constants::LightMenuBrushColor);
-				HorizontalBox->SetRightBorderBrushTint(Constants::DarkMenuBrushColor);
-			}
-			return;
-		}
-		if (bLastLeftBorderDark)
-		{
-			HorizontalBox->SetLeftBorderBrushTint(Constants::LightMenuBrushColor);
-			HorizontalBox->SetRightBorderBrushTint(Constants::DarkMenuBrushColor);
-			bLastLeftBorderDark = false;
-		}
-		else
-		{
-			HorizontalBox->SetLeftBorderBrushTint(Constants::DarkMenuBrushColor);
-			HorizontalBox->SetRightBorderBrushTint(Constants::LightMenuBrushColor);
-			bLastLeftBorderDark = true;
-		}
-	}
-}
+

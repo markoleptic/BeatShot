@@ -18,15 +18,16 @@ class USERINTERFACE_API UCustomGameModeActivationWidget : public UCustomGameMode
 {
 	GENERATED_BODY()
 
+public:
+	virtual void UpdateOptionsFromConfig() override;
+
+	virtual void HandleWatchedPropertyChanged(uint32 PropertyHash) override;
+	
 protected:
 	UCustomGameModeActivationWidget();
 
 	virtual void NativeConstruct() override;
-
-	virtual void UpdateOptionsFromConfig() override;
-
-	virtual void HandleWatchedPropertyChanged(uint32 PropertyHash) override;
-
+	
 	/** Updates options that depend on the value selection of TargetActivationResponses. */
 	void UpdateDependentOptions_TargetActivationResponses(const TArray<ETargetActivationResponse>& InResponses,
 	                                                      const bool bUseConstantTargetSpeed);

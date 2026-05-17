@@ -17,23 +17,23 @@
 
 namespace
 {
-static TArray<FPlayerScore> GenerateTestScores(int32 NumEntries)
+TArray<FPlayerScore> GenerateTestScores(int32 NumEntries)
 {
 	TArray<FPlayerScore> Scores;
 	Scores.Reserve(NumEntries);
 
 	const TArray<FString> Songs = {"Neon Skyline", "Digital Pulse", "Starlight Drive", "Velocity", "Arc Reactor"};
 
-	const TArray<float> SongLengths = {71.f, 88.9f, 150.f, 200.f, 360.f,};
+	const TArray SongLengths = {71.f, 88.9f, 150.f, 200.f, 360.f,};
 
-	const TArray<EBaseGameMode> BaseModes = {
+	const TArray BaseModes = {
 		EBaseGameMode::SingleBeat,
 		EBaseGameMode::MultiBeat,
 		EBaseGameMode::BeatGrid,
 		EBaseGameMode::BeatTrack
 	};
 
-	const TArray<EGameModeDifficulty> Difficulties = {
+	const TArray Difficulties = {
 		EGameModeDifficulty::Normal,
 		EGameModeDifficulty::Hard,
 		EGameModeDifficulty::Death
@@ -56,8 +56,8 @@ static TArray<FPlayerScore> GenerateTestScores(int32 NumEntries)
 		Score.TargetsSpawned = FMath::RandRange(50, 300);
 		Score.TargetsHit = FMath::RandRange(FMath::RoundToInt(Score.TargetsSpawned * 0.5f), Score.TargetsSpawned);
 		Score.ShotsFired = Score.TargetsHit + FMath::RandRange(0, 80);
-		Score.Accuracy = Score.ShotsFired > 0 ? (float)Score.TargetsHit / Score.ShotsFired : 0.f;
-		Score.Completion = Score.TargetsSpawned > 0 ? (float)Score.TargetsHit / Score.TargetsSpawned : 0.f;
+		Score.Accuracy = Score.ShotsFired > 0 ? static_cast<float>(Score.TargetsHit) / Score.ShotsFired : 0.f;
+		Score.Completion = Score.TargetsSpawned > 0 ? static_cast<float>(Score.TargetsHit) / Score.TargetsSpawned : 0.f;
 
 		Score.Score = FMath::RandRange(30000.f, 99999.f);
 		Score.Streak = FMath::RandRange(1, Score.TargetsHit);
@@ -86,7 +86,7 @@ static TArray<FPlayerScore> GenerateTestScores(int32 NumEntries)
 		FPlayerScore Score;
 
 		// ----- Defining Config -----
-		Score.DefiningConfig.GameModeType = (FMath::RandBool()) ? EGameModeType::Preset : EGameModeType::Custom;
+		Score.DefiningConfig.GameModeType = FMath::RandBool() ? EGameModeType::Preset : EGameModeType::Custom;
 
 		if (Score.DefiningConfig.GameModeType == EGameModeType::Preset)
 		{
@@ -111,8 +111,8 @@ static TArray<FPlayerScore> GenerateTestScores(int32 NumEntries)
 		Score.TargetsSpawned = FMath::RandRange(50, 300);
 		Score.TargetsHit = FMath::RandRange(FMath::RoundToInt(Score.TargetsSpawned * 0.5f), Score.TargetsSpawned);
 		Score.ShotsFired = Score.TargetsHit + FMath::RandRange(0, 80);
-		Score.Accuracy = Score.ShotsFired > 0 ? (float)Score.TargetsHit / Score.ShotsFired : 0.f;
-		Score.Completion = Score.TargetsSpawned > 0 ? (float)Score.TargetsHit / Score.TargetsSpawned : 0.f;
+		Score.Accuracy = Score.ShotsFired > 0 ? static_cast<float>(Score.TargetsHit) / Score.ShotsFired : 0.f;
+		Score.Completion = Score.TargetsSpawned > 0 ? static_cast<float>(Score.TargetsHit) / Score.TargetsSpawned : 0.f;
 
 		Score.Score = FMath::RandRange(30000.f, 99999.f);
 		Score.Streak = FMath::RandRange(1, Score.TargetsHit);
@@ -315,7 +315,7 @@ void UScoreViewerWidget::NativeConstruct()
 	MostPlayedDefaultGameModes->GetOptions()->TooltipTextGenerator = TDelegate<FText(int32, float)>::CreateUObject(
 		this, &ThisClass::HandleMostPlayedDefaultGameModesValueText);
 	MostPlayedDefaultGameModes->SetData(MostPlayedDefaultGameModesData, TDelegate<void(float)>::CreateLambda(
-		                                    [this](float Value)
+		                                    [this](const float Value)
 		                                    {
 			                                    DefaultGameModePrecision = ComputeLabelPrecision(Value);
 		                                    }));
@@ -324,8 +324,8 @@ void UScoreViewerWidget::NativeConstruct()
 		this, &ThisClass::HandleMostPlayedCustomGameModesDisplayText);
 	MostPlayedCustomGameModes->GetOptions()->TooltipTextGenerator = TDelegate<FText(int32, float)>::CreateUObject(
 		this, &ThisClass::HandleMostPlayedCustomGameModesValueText);
-	MostPlayedCustomGameModes->SetData(MostPlayedCustomGameModesData, 
-	                                   TDelegate<void(float)>::CreateLambda([this](float Value)
+	MostPlayedCustomGameModes->SetData(MostPlayedCustomGameModesData, TDelegate<void(float)>::CreateLambda(
+		                                   [this](const float Value)
 	                                   {
 		                                   CustomGameModePrecision = ComputeLabelPrecision(Value);
 	                                   }));
@@ -411,7 +411,7 @@ void UScoreViewerWidget::OnButtonClicked_MenuButton(const UBSButton* Button)
 
 void UScoreViewerWidget::OnButtonClicked_DeleteSelectedScoresButton(const UBSButton*)
 {
-	auto SelectedItems = ScoreTable->GetSelectedItems();
+	const auto SelectedItems = ScoreTable->GetSelectedItems();
 	if (!SelectedItems.IsEmpty())
 	{
 		SaveGamePlayerScore->DeletePlayerScores(SelectedItems);

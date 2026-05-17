@@ -29,7 +29,7 @@ FString SimplifyWhitespace(const FString& Input)
 
 	bool bPreviousWasWhitespace = false;
 
-	for (TCHAR Char : Trimmed)
+	for (const TCHAR Char : Trimmed)
 	{
 		if (FChar::IsWhitespace(Char))
 		{
@@ -137,8 +137,7 @@ void UDateRangeWidget::SetStyling()
 		if (TextBlock_Description_Max)
 		{
 			TextBlock_Description_Max->SetFont(MenuOptionStyle->Font_DescriptionText);
-			UHorizontalBoxSlot* HorizontalBoxSlot = Cast<UHorizontalBoxSlot>(TextBlock_Description_Max->Slot);
-			if (HorizontalBoxSlot)
+			if (UHorizontalBoxSlot* HorizontalBoxSlot = Cast<UHorizontalBoxSlot>(TextBlock_Description_Max->Slot))
 			{
 				HorizontalBoxSlot->SetPadding(MenuOptionStyle->Padding_DescriptionText);
 			}
@@ -345,7 +344,7 @@ void UDateRangeWidget::OnSliderMouseCaptureEnd_Max()
 	}
 }
 
-void UDateRangeWidget::OnTextCommitted_Min(const FText& Text, ETextCommit::Type CommitType)
+void UDateRangeWidget::OnTextCommitted_Min(const FText& Text, ETextCommit::Type /*CommitType*/)
 {
 	FDateTime DateTime;
 	if (ParseTime(Text.ToString(), DateTime) && DatesToSliderValues.Contains(DateTime))
@@ -359,7 +358,7 @@ void UDateRangeWidget::OnTextCommitted_Min(const FText& Text, ETextCommit::Type 
 	}
 }
 
-void UDateRangeWidget::OnTextCommitted_Max(const FText& Text, ETextCommit::Type CommitType)
+void UDateRangeWidget::OnTextCommitted_Max(const FText& Text, ETextCommit::Type /*CommitType*/)
 {
 	FDateTime DateTime;
 	if (ParseTime(Text.ToString(), DateTime) && DatesToSliderValues.Contains(DateTime))

@@ -17,19 +17,18 @@ class UComboBoxWidget;
 UCLASS()
 class USERINTERFACE_API UCustomGameModeGeneralWidget : public UCustomGameModeCategoryWidget
 {
-public:
-	UCustomGameModeGeneralWidget();
-
-private:
 	GENERATED_BODY()
 
-protected:
-	virtual void NativeConstruct() override;
+public:
+	UCustomGameModeGeneralWidget();
 
 	virtual void UpdateOptionsFromConfig() override;
 
 	virtual void HandleWatchedPropertyChanged(uint32 PropertyHash) override;
 
+protected:
+	virtual void NativeConstruct() override;
+	
 	/** Updates options that depend on the value selection of RecentTargetMemoryPolicy. */
 	void UpdateDependentOptions_RecentTargetMemoryPolicy(const ERecentTargetMemoryPolicy InRecentTargetMemoryPolicy);
 

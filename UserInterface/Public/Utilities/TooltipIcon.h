@@ -37,8 +37,10 @@ protected:
 
 	virtual void NativeConstruct() override;
 
+public:
 	virtual void PostInitProperties() override;
 
+protected:
 	/** Broadcasts OnTooltipHovered delegate. */
 	UFUNCTION()
 	void HandleTooltipHovered();

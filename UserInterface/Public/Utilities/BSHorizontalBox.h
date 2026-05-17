@@ -14,6 +14,7 @@ class USERINTERFACE_API UBSHorizontalBox : public UHorizontalBox
 {
 	GENERATED_BODY()
 
+protected:
 	virtual TSharedRef<SWidget> RebuildWidget() override;
 
 public:

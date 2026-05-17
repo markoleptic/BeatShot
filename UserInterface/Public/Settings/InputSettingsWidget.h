@@ -32,13 +32,13 @@ public:
 	{
 		return OnPlayerSettingsChangedDelegate_User;
 	}
-
-	virtual void NativeConstruct() override;
-
+	
 	/** Populates the settings menu. */
 	void InitializeInputSettings(const TMap<FName, FKeyMappingRow>& InPlayerMappedRows = TMap<FName, FKeyMappingRow>());
 
 protected:
+	virtual void NativeConstruct() override;
+	
 	/** Function bound to all InputMappingWidgets' OnKeySelected delegates. */
 	void OnKeySelected(const FName MappingName, const EPlayerMappableKeySlot& InSlot, const FInputChord SelectedKey);
 

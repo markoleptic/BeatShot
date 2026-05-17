@@ -21,6 +21,7 @@ class USERINTERFACE_API UBandChannelWidget : public UMenuOptionWidget
 {
 	GENERATED_BODY()
 
+protected:
 	virtual void NativeConstruct() override;
 	virtual void SetStyling() override;
 

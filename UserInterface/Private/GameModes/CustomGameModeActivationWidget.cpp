@@ -121,8 +121,8 @@ void UCustomGameModeActivationWidget::HandleWatchedPropertyChanged(const uint32 
 }
 
 void UCustomGameModeActivationWidget::UpdateDependentOptions_TargetActivationResponses(
-	const TArray<ETargetActivationResponse>& InResponses,
-	const bool bUseConstantTargetSpeed)
+	const TArray<ETargetActivationResponse>& /*InResponses*/,
+	const bool /*bUseConstantTargetSpeed*/)
 {
 }
 

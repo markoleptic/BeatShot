@@ -511,6 +511,31 @@ protected:
 		return SWidget::OnKeyDown(MyGeometry, InKeyEvent);
 	}
 
+	/** Handle clicking on the content menu. */
+	virtual FReply OnButtonClicked() override
+	{
+		// if user clicked to close the combo menu
+		if (this->IsOpen())
+		{
+			const TArray<OptionType> ComboListItems = ComboListView->GetSelectedItems();
+			for (const OptionType& ComboListItem : ComboListItems)
+			{
+				if (TListTypeTraits<OptionType>::IsPtrValid(ComboListItem))
+				{
+					OnSelectionChanged_Internal(ComboListItem, ESelectInfo::Direct);
+				}
+			}
+		}
+		else
+		{
+			PlayPressedSound();
+			OnComboBoxOpening.ExecuteIfBound();
+		}
+
+		return SComboButton::OnButtonClicked();
+	}
+
+public:
 	virtual bool SupportsKeyboardFocus() const override
 	{
 		return bIsFocusable;
@@ -549,7 +574,7 @@ private:
 	}
 
 	/** Called if the menu is closed. */
-	void OnMenuOpenChanged(bool bOpen)
+	void OnMenuOpenChanged(const bool bOpen)
 	{
 		if (bOpen == false)
 		{
@@ -581,7 +606,7 @@ private:
 	}
 
 	/** Invoked when the selection in the list changes. */
-	void OnSelectionChanged_Internal(NullableOptionType ProposedSelection, ESelectInfo::Type SelectInfo)
+	void OnSelectionChanged_Internal(NullableOptionType /*ProposedSelection*/, ESelectInfo::Type SelectInfo)
 	{
 		if (SelectInfo != ESelectInfo::OnNavigation)
 		{
@@ -598,31 +623,8 @@ private:
 		}
 	}
 
-	/** Handle clicking on the content menu. */
-	virtual FReply OnButtonClicked() override
-	{
-		// if user clicked to close the combo menu
-		if (this->IsOpen())
-		{
-			const TArray<OptionType> ComboListItems = ComboListView->GetSelectedItems();
-			for (const OptionType& ComboListItem : ComboListItems)
-			{
-				if (TListTypeTraits<OptionType>::IsPtrValid(ComboListItem))
-				{
-					OnSelectionChanged_Internal(ComboListItem, ESelectInfo::Direct);
-				}
-			}
-		}
-		else
-		{
-			PlayPressedSound();
-			OnComboBoxOpening.ExecuteIfBound();
-		}
 
-		return SComboButton::OnButtonClicked();
-	}
-
-	FReply OnKeyDownHandler(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent)
+	FReply OnKeyDownHandler(const FGeometry& /*MyGeometry*/, const FKeyEvent& InKeyEvent)
 	{
 		if (InKeyEvent.GetKey() == EKeys::Enter)
 		{
@@ -666,8 +668,7 @@ private:
 
 	/** The padding around each menu row. */
 	FMargin MenuRowPadding;
-
-private:
+	
 	/** Delegate that is invoked when the selected item in the combo box changes. */
 	FOnSelectionChanged OnSelectionChanged;
 	/** Delegate that is invoked when the selected items in the combo box changes. */

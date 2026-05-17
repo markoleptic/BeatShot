@@ -301,7 +301,7 @@ void UCustomGameModeGeneralWidget::UpdateDependentOptions_EnableAI(const bool bI
 void UCustomGameModeGeneralWidget::UpdateDependentOptions_HyperParameterMode(const bool bInEnableReinforcementLearning,
                                                                              const
                                                                              EReinforcementLearningHyperParameterMode
-                                                                             HyperParameterMode)
+                                                                             /*HyperParameterMode*/)
 {
 	if (bInEnableReinforcementLearning)
 	{
