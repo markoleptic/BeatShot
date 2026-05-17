@@ -49,12 +49,12 @@ int32 IBSGameModeInterface::RemoveCustomGameMode(const FBSConfig& ConfigToRemove
 	if (USaveGameCustomGameMode* SaveGameCustomGameMode = SaveLoadCommon::LoadFromSlot<USaveGameCustomGameMode>(
 		TEXT("CustomGameModesSlot"), 3))
 	{
-		SaveGameCustomGameMode->RemoveCustomGameMode(ConfigToRemove);
+		NumScoresRemoved = SaveGameCustomGameMode->RemoveCustomGameMode(ConfigToRemove);
 		SaveLoadCommon::SaveToSlot(SaveGameCustomGameMode, TEXT("CustomGameModesSlot"), 3);
 	}
 	if (SaveGamePlayerScore)
 	{
-		SaveGamePlayerScore->RemoveCommonScoreInfoAndMatchingPlayerScores(ConfigToRemove.DefiningConfig);
+		NumScoresRemoved = SaveGamePlayerScore->RemoveCommonScoreInfoAndMatchingPlayerScores(ConfigToRemove.DefiningConfig);
 	}
 	return NumScoresRemoved;
 }

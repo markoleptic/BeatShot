@@ -72,8 +72,11 @@ public:
 	BEATSHOTGLOBAL_API virtual void ValidateSettings() override;
 	BEATSHOTGLOBAL_API virtual void ApplyNonResolutionSettings() override;
 	BEATSHOTGLOBAL_API virtual void SaveSettings() override;
+
+protected:
 	BEATSHOTGLOBAL_API virtual float GetEffectiveFrameRateLimit() override;
 
+public:
 	/** Queries the supported setting type and creates a map based on the results.
 	 *  @param NvidiaSettingType the Nvidia setting type to query for
 	 *  @return a map that maps each supported setting's string representation to its int equivalent enum value

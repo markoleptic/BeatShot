@@ -101,7 +101,7 @@ void PrintTrainingSamples(const FBS_DefiningConfig& InDefiningConfig,
 		}
 		else if (LineValue.Len() == 3)
 		{
-			LineValue = " " + LineValue + " ";;
+			LineValue = " " + LineValue + " ";
 		}
 		else if (LineValue.Len() == 4)
 		{

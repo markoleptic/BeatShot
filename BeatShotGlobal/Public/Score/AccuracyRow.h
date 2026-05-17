@@ -33,7 +33,7 @@ struct BEATSHOTGLOBAL_API FAccuracyRow
 		TotalHits = TArray<int64>();
 	}
 
-	FAccuracyRow(const int32 InSize)
+	explicit FAccuracyRow(const int32 InSize)
 	{
 		Size = InSize;
 		Accuracy.Init(-1.f, Size);

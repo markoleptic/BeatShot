@@ -371,7 +371,7 @@ void UBSGameUserSettings::LoadUserControlBusMix(const UWorld* World)
 
 void UBSGameUserSettings::SetVolumeForControlBus(const FName& ControlBusKey, const float InVolume) const
 {
-	TObjectPtr<USoundControlBus> ControlBus = ControlBusMap.FindRef(ControlBusKey);
+	const TObjectPtr<USoundControlBus> ControlBus = ControlBusMap.FindRef(ControlBusKey);
 
 	if (GEngine && ControlBus && bSoundControlBusMixLoaded)
 	{
@@ -541,7 +541,7 @@ void UBSGameUserSettings::SetToDefaults()
 	SetToBSDefaults();
 }
 
-void UBSGameUserSettings::LoadSettings(bool bForceReload)
+void UBSGameUserSettings::LoadSettings(const bool bForceReload)
 {
 	Super::LoadSettings(bForceReload);
 	LoadDLSSSettings();
@@ -915,7 +915,7 @@ void UBSGameUserSettings::SetNISSharpness(const float InNISSharpness)
 	NISSharpness = InNISSharpness;
 }
 
-void UBSGameUserSettings::HandleApplicationActivationStateChanged(bool bIsActive)
+void UBSGameUserSettings::HandleApplicationActivationStateChanged(bool /*bIsActive*/)
 {
 	UpdateEffectiveFrameRateLimit();
 }
