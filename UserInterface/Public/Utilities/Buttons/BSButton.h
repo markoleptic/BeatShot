@@ -24,10 +24,14 @@ class USERINTERFACE_API UBSButton : public UUserWidget
 {
 	GENERATED_BODY()
 
+protected:
 	virtual void NativePreConstruct() override;
+	
 	virtual void NativeConstruct() override;
 
 public:
+	virtual void SetIsEnabled(bool bInIsEnabled) override;
+	
 	/** Returns a pointer to the next BSButton in a linked list. */
 	virtual UBSButton* GetNext() const { return Next; }
 

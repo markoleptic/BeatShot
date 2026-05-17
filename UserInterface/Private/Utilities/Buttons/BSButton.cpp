@@ -54,6 +54,27 @@ void UBSButton::NativeConstruct()
 	}
 }
 
+void UBSButton::SetIsEnabled(bool bInIsEnabled)
+{
+	if (!bInIsEnabled)
+	{
+		if (IsAnimationPlaying(Anim_OnHovered))
+		{
+			StopAnimation(Anim_OnHovered);
+		}
+		if (IsAnimationPlaying(Anim_OnPressed))
+		{
+			StopAnimation(Anim_OnPressed);
+		}
+		if (DynamicImageMaterial)
+		{
+			DynamicImageMaterial->SetScalarParameterValue(HoveredScalarParameterName, 0.f);
+			DynamicImageMaterial->SetScalarParameterValue(PressedScalarParameterName, 0.f);
+		}
+	}
+	Super::SetIsEnabled(bInIsEnabled);
+}
+
 void UBSButton::SetInActive()
 {
 	if (!bIsClicked)
