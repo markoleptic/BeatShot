@@ -5,7 +5,6 @@
 #include "Components/TextBlock.h"
 #include "MenuOptions/ComboBoxWidget.h"
 #include "SaveGames/SaveGamePlayerScore.h"
-#include "Slate/HeatMap.h"
 #include "Widgets/HeatMapWidget.h"
 #include "Widgets/LineChartWidget.h"
 
@@ -33,7 +32,7 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	constexpr int MaxTickCount = 20;
+	constexpr int MaxTickCount = 16;
 
 	const auto ShortDateXAxisFormatter = TDelegate<FText(int32, float)>::CreateUObject(
 		this, &ThisClass::HandleShortDateXAxisFormatter);
@@ -46,103 +45,81 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 	});
 
 	ScoreVsTimeData = MakeShared<TArray<FLineChartSeries>>();
-	ScoreVsTimeAxisData = MakeShared<TMap<EAxisType, FAxisLabelOptions>>();
 	{
-		FAxisLabelOptions XAxisLabelOptions;
-		XAxisLabelOptions.StartAtZero = false;
-		XAxisLabelOptions.Formatter = ShortDateXAxisFormatter;
-		XAxisLabelOptions.MaxTickCount = MaxTickCount;
-		ScoreVsTimeAxisData->Add({EAxisType::X, XAxisLabelOptions});
+		auto& XAxisOptions = ScoreVsTime->GetOptions()->AxisOptions[EAxisType::X];
+		XAxisOptions.AxisGridOptions.StartAtZero = false;
+		XAxisOptions.AxisLabelGenerator = ShortDateXAxisFormatter;
+		XAxisOptions.AxisGridOptions.MaxGridLineCount = MaxTickCount;
 
-		FAxisLabelOptions YAxisLabelOptions;
-		YAxisLabelOptions.StartAtZero = true;
-		YAxisLabelOptions.MinTickStep = 1;
-		YAxisLabelOptions.MinTickCount = 3;
-		YAxisLabelOptions.Formatter = ZeroDecimalFormatter;
-		YAxisLabelOptions.LabelTextProperties.Padding = {10.f, 0.f, 10.f, 0.f};
-		ScoreVsTimeAxisData->Add({EAxisType::Y, YAxisLabelOptions});
+		auto& YAxisOptions = ScoreVsTime->GetOptions()->AxisOptions[EAxisType::Y];
+		YAxisOptions.AxisGridOptions.StartAtZero = true;
+		YAxisOptions.AxisGridOptions.MinGridStep = 1;
+		YAxisOptions.AxisGridOptions.MinGridLineCount = 3;
+		YAxisOptions.AxisLabelGenerator = ZeroDecimalFormatter;
 	}
 
 	StreakVsTimeData = MakeShared<TArray<FLineChartSeries>>();
-	StreakVsTimeAxisData = MakeShared<TMap<EAxisType, FAxisLabelOptions>>();
 	{
-		FAxisLabelOptions XAxisLabelOptions;
-		XAxisLabelOptions.StartAtZero = false;
-		XAxisLabelOptions.Formatter = ShortDateXAxisFormatter;
-		XAxisLabelOptions.MaxTickCount = MaxTickCount;
-		StreakVsTimeAxisData->Add({EAxisType::X, XAxisLabelOptions});
+		auto& XAxisOptions = StreakVsTime->GetOptions()->AxisOptions[EAxisType::X];
+		XAxisOptions.AxisGridOptions.StartAtZero = false;
+		XAxisOptions.AxisLabelGenerator = ShortDateXAxisFormatter;
+		XAxisOptions.AxisGridOptions.MaxGridLineCount = MaxTickCount;
 
-		FAxisLabelOptions YAxisLabelOptions;
-		YAxisLabelOptions.StartAtZero = true;
-		YAxisLabelOptions.MinTickStep = 1;
-		YAxisLabelOptions.MinTickCount = 3;
-		YAxisLabelOptions.Formatter = ZeroDecimalFormatter;
-		YAxisLabelOptions.LabelTextProperties.Padding = {10.f, 0.f, 10.f, 0.f};
-		StreakVsTimeAxisData->Add({EAxisType::Y, YAxisLabelOptions});
+		auto& YAxisOptions = StreakVsTime->GetOptions()->AxisOptions[EAxisType::Y];
+		YAxisOptions.AxisGridOptions.StartAtZero = true;
+		YAxisOptions.AxisGridOptions.MinGridStep = 1;
+		YAxisOptions.AxisGridOptions.MinGridLineCount = 3;
+		YAxisOptions.AxisLabelGenerator = ZeroDecimalFormatter;
 	}
 
 	AverageTargetsDestroyedData = MakeShared<TArray<FLineChartSeries>>();
-	AverageTargetsDestroyedAxisData = MakeShared<TMap<EAxisType, FAxisLabelOptions>>();
 	{
-		FAxisLabelOptions XAxisLabelOptions;
-		XAxisLabelOptions.StartAtZero = false;
-		XAxisLabelOptions.Formatter = ShortDateXAxisFormatter;
-		XAxisLabelOptions.MaxTickCount = MaxTickCount;
-		AverageTargetsDestroyedAxisData->Add({EAxisType::X, XAxisLabelOptions});
+		auto& XAxisOptions = AverageTargetsDestroyed->GetOptions()->AxisOptions[EAxisType::X];
+		XAxisOptions.AxisGridOptions.StartAtZero = false;
+		XAxisOptions.AxisLabelGenerator = ShortDateXAxisFormatter;
+		XAxisOptions.AxisGridOptions.MaxGridLineCount = MaxTickCount;
 
-		FAxisLabelOptions YAxisLabelOptions;
-		YAxisLabelOptions.StartAtZero = true;
-		YAxisLabelOptions.Formatter = ZeroDecimalFormatter;
-		YAxisLabelOptions.MinRangeOverride = 0.f;
-		YAxisLabelOptions.MaxRangeOverride = 100.f;
-		YAxisLabelOptions.TickStepOverride = 10.0f;
-		YAxisLabelOptions.LabelTextProperties.Padding = {10.f, 0.f, 10.f, 0.f};
-		AverageTargetsDestroyedAxisData->Add({EAxisType::Y, YAxisLabelOptions});
+		auto& YAxisOptions = AverageTargetsDestroyed->GetOptions()->AxisOptions[EAxisType::Y];
+		YAxisOptions.AxisGridOptions.StartAtZero = true;
+		YAxisOptions.AxisLabelGenerator = ZeroDecimalFormatter;
+		YAxisOptions.AxisGridOptions.MinRangeOverride = 0.f;
+		YAxisOptions.AxisGridOptions.MaxRangeOverride = 100.f;
+		YAxisOptions.AxisGridOptions.GridStepOverride = 10.0f;
 	}
 
 	AverageReactionTimeData = MakeShared<TArray<FLineChartSeries>>();
-	AverageReactionTimeAxisData = MakeShared<TMap<EAxisType, FAxisLabelOptions>>();
 	{
-		FAxisLabelOptions XAxisLabelOptions;
-		XAxisLabelOptions.StartAtZero = false;
-		XAxisLabelOptions.Formatter = ShortDateXAxisFormatter;
-		XAxisLabelOptions.MaxTickCount = MaxTickCount;
-		AverageReactionTimeAxisData->Add({EAxisType::X, XAxisLabelOptions});
+		auto& XAxisOptions = AverageReactionTime->GetOptions()->AxisOptions[EAxisType::X];
+		XAxisOptions.AxisGridOptions.StartAtZero = false;
+		XAxisOptions.AxisLabelGenerator = ShortDateXAxisFormatter;
+		XAxisOptions.AxisGridOptions.MaxGridLineCount = MaxTickCount;
 
-		FAxisLabelOptions YAxisLabelOptions;
-		YAxisLabelOptions.StartAtZero = true;
-		YAxisLabelOptions.MinTickStep = 1.f;
-		YAxisLabelOptions.MinTickCount = 3;
-		YAxisLabelOptions.Formatter = ZeroDecimalFormatter;
-		YAxisLabelOptions.LabelTextProperties.Padding = {10.f, 0.f, 10.f, 0.f};
-		AverageReactionTimeAxisData->Add({EAxisType::Y, YAxisLabelOptions});
+		auto& YAxisOptions = AverageReactionTime->GetOptions()->AxisOptions[EAxisType::Y];
+		YAxisOptions.AxisGridOptions.StartAtZero = true;
+		YAxisOptions.AxisGridOptions.MinGridStep = 1.f;
+		YAxisOptions.AxisGridOptions.MaxGridLineCount = 3;
+		YAxisOptions.AxisLabelGenerator = ZeroDecimalFormatter;
 	}
 
 	AccuracyVsTimeData = MakeShared<TArray<FLineChartSeries>>();
-	AccuracyVsTimeAxisData = MakeShared<TMap<EAxisType, FAxisLabelOptions>>();
 	{
-		FAxisLabelOptions XAxisLabelOptions;
-		XAxisLabelOptions.StartAtZero = false;
-		XAxisLabelOptions.Formatter = ShortDateXAxisFormatter;
-		XAxisLabelOptions.MaxTickCount = MaxTickCount;
-		AccuracyVsTimeAxisData->Add({EAxisType::X, XAxisLabelOptions});
+		auto& XAxisOptions = AccuracyVsTime->GetOptions()->AxisOptions[EAxisType::X];
+		XAxisOptions.AxisGridOptions.StartAtZero = false;
+		XAxisOptions.AxisLabelGenerator = ShortDateXAxisFormatter;
+		XAxisOptions.AxisGridOptions.MaxGridLineCount = MaxTickCount;
 
-		FAxisLabelOptions YAxisLabelOptions;
-		YAxisLabelOptions.StartAtZero = true;
-		YAxisLabelOptions.Formatter = ZeroDecimalFormatter;
-		YAxisLabelOptions.MinRangeOverride = 0.f;
-		YAxisLabelOptions.MaxRangeOverride = 100.f;
-		YAxisLabelOptions.TickStepOverride = 10.0f;
-		YAxisLabelOptions.LabelTextProperties.Padding = {10.f, 0.f, 10.f, 0.f};
-		AccuracyVsTimeAxisData->Add({EAxisType::Y, YAxisLabelOptions});
+		auto& YAxisOptions = AccuracyVsTime->GetOptions()->AxisOptions[EAxisType::Y];
+		YAxisOptions.AxisGridOptions.StartAtZero = true;
+		YAxisOptions.AxisLabelGenerator = ZeroDecimalFormatter;
+		YAxisOptions.AxisGridOptions.MinRangeOverride = 0.f;
+		YAxisOptions.AxisGridOptions.MaxRangeOverride = 100.f;
+		YAxisOptions.AxisGridOptions.GridStepOverride = 10.0f;
 	}
 
-
-	LocationAccuracyData = MakeShared<FHeatMapData>();
-	LocationAccuracyData->Options.bDrawSectionIfValueLessThanZero = true;
-	LocationAccuracyAxisData = MakeShared<FHeatMapAxisLabelOptions>();
-	LocationAccuracyAxisData->XAxisLabelsDrawIndices = TSet{0, 1, 2, 3, 4};
-	LocationAccuracyAxisData->YAxisLabelsDrawIndices = TSet{0, 1, 2, 3, 4};
+	LocationAccuracyData = MakeShared<TArray<TArray<float>>>();
+	LocationAccuracy->GetOptions()->DrawSectionIfValueLessThanZero = true;
+	LocationAccuracy->GetOptions()->AxisOptions[EAxisType::X].DrawIndices = TSet{0, 1, 2, 3, 4};
+	LocationAccuracy->GetOptions()->AxisOptions[EAxisType::Y].DrawIndices = TSet{0, 1, 2, 3, 4};
 	const auto LocationAccuracyValueTextGetter = TDelegate<FText(int32, int32, float)>::CreateLambda(
 		[](int32, int32, float)
 		{
@@ -187,20 +164,30 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 	const auto GenericDateValueTextDelegate = TDelegate<FText(int32, int32)>::CreateUObject(
 		this, &ThisClass::HandleGenericDateValueText);
 
-	ScoreVsTime->SetData(ScoreVsTimeData, ScoreVsTimeAxisData, GenericDateValueTextDelegate,
-	                     ScoreVsTimeValueTextGetter);
-	StreakVsTime->SetData(StreakVsTimeData, StreakVsTimeAxisData, GenericDateValueTextDelegate,
-	                      StreakVsTimeValueTextGetter);
-	AverageReactionTime->SetData(AverageReactionTimeData, AverageReactionTimeAxisData, GenericDateValueTextDelegate,
-	                             AverageReactionTimeValueTextGetter);
-	AverageTargetsDestroyed->SetData(AverageTargetsDestroyedData, AverageTargetsDestroyedAxisData,
-	                                 GenericDateValueTextDelegate, GenericPercentValueTextDelegate);
-	AccuracyVsTime->SetData(AccuracyVsTimeData, AccuracyVsTimeAxisData, GenericDateValueTextDelegate,
-	                        GenericPercentValueTextDelegate);
-	LocationAccuracy->SetData(LocationAccuracyData, LocationAccuracyAxisData,
-	                          TDelegate<FText(int32, int32)>::CreateUObject(
-		                          this, &ThisClass::HandleLocationAccuracyDisplayText),
-	                          LocationAccuracyValueTextGetter);
+	ScoreVsTime->GetOptions()->TooltipTitleTextGenerator = GenericDateValueTextDelegate;
+	ScoreVsTime->GetOptions()->TooltipTextGenerator = ScoreVsTimeValueTextGetter;
+	ScoreVsTime->SetData(ScoreVsTimeData);
+
+	StreakVsTime->GetOptions()->TooltipTitleTextGenerator = GenericDateValueTextDelegate;
+	StreakVsTime->GetOptions()->TooltipTextGenerator = StreakVsTimeValueTextGetter;
+	StreakVsTime->SetData(StreakVsTimeData);
+
+	AverageReactionTime->GetOptions()->TooltipTitleTextGenerator = GenericDateValueTextDelegate;
+	AverageReactionTime->GetOptions()->TooltipTextGenerator = AverageReactionTimeValueTextGetter;
+	AverageReactionTime->SetData(AverageReactionTimeData);
+
+	AverageTargetsDestroyed->GetOptions()->TooltipTitleTextGenerator = GenericDateValueTextDelegate;
+	AverageTargetsDestroyed->GetOptions()->TooltipTextGenerator = GenericPercentValueTextDelegate;
+	AverageTargetsDestroyed->SetData(AverageTargetsDestroyedData);
+
+	AccuracyVsTime->GetOptions()->TooltipTitleTextGenerator = GenericDateValueTextDelegate;
+	AccuracyVsTime->GetOptions()->TooltipTextGenerator = GenericPercentValueTextDelegate;
+	AccuracyVsTime->SetData(AccuracyVsTimeData);
+
+	LocationAccuracy->GetOptions()->TooltipTitleTextGenerator = TDelegate<FText(int32, int32)>::CreateUObject(
+		this, &ThisClass::HandleLocationAccuracyDisplayText);
+	LocationAccuracy->GetOptions()->TooltipTextGenerator = LocationAccuracyValueTextGetter;
+	LocationAccuracy->SetData(LocationAccuracyData);
 }
 
 void UGameModeScoreViewerWidget::UpdateDataVisualization()
@@ -234,7 +221,7 @@ void UGameModeScoreViewerWidget::UpdateDataVisualization()
 		AccuracyVsTimeData->Empty();
 		AccuracyVsTime->Redraw();
 
-		LocationAccuracyData->Sections.Empty();
+		LocationAccuracyData->Empty();
 		LocationAccuracy->Redraw();
 	}
 	else
@@ -341,18 +328,18 @@ void UGameModeScoreViewerWidget::UpdateDataVisualization()
 		AccuracyVsTimeData->Add(AccuracyVsTimeLineChartSeries);
 		AccuracyVsTime->Redraw();
 
-		LocationAccuracyData->Sections.Empty();
+		LocationAccuracyData->Empty();
 		if (CommonScoreInfoMap.Contains(ActiveScores[0]->DefiningConfig))
 		{
 			const auto& AccuracyRows = CommonScoreInfoMap[ActiveScores[0]->DefiningConfig].AccuracyData.AccuracyRows;
-			LocationAccuracyData->Sections.Init({}, AccuracyRows.Num());
+			LocationAccuracyData->Init({}, AccuracyRows.Num());
 			for (int i = 0; i < AccuracyRows.Num(); i++)
 			{
 				const auto& AccuracyRow = AccuracyRows[i];
-				LocationAccuracyData->Sections[i].Reserve(AccuracyRow.Size);
+				LocationAccuracyData->operator[](i).Reserve(AccuracyRow.Size);
 				for (const float Accuracy : AccuracyRow.Accuracy)
 				{
-					LocationAccuracyData->Sections[i].Add(Accuracy);
+					LocationAccuracyData->operator[](i).Add(Accuracy);
 				}
 			}
 		}

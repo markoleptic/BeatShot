@@ -5,17 +5,13 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "BSGameModeConfig/DefiningConfig.h"
-#include "Common/HeatMapAxisLabelOptions.h"
 #include "SaveGames/SaveGamePlayerScore.h"
-#include "Slate/Heatmap.h"
 #include "Slate/LineChart.h"
 #include "GameModeScoreViewerWidget.generated.h"
 
-class UVerticalBox;
 class UTextBlock;
 class UHeatMapWidget;
 class ULineChartWidget;
-class UComboBoxWidget;
 
 UCLASS(BlueprintType)
 class USERINTERFACE_API UGameModeScoreViewerWidget : public UUserWidget
@@ -80,22 +76,16 @@ private:
 	TArray<TSharedPtr<FPlayerScore>> ActiveScores;
 
 	TSharedPtr<TArray<FLineChartSeries>> ScoreVsTimeData;
-	TSharedPtr<TMap<EAxisType, FAxisLabelOptions>> ScoreVsTimeAxisData;
 
 	TSharedPtr<TArray<FLineChartSeries>> StreakVsTimeData;
-	TSharedPtr<TMap<EAxisType, FAxisLabelOptions>> StreakVsTimeAxisData;
 
 	TSharedPtr<TArray<FLineChartSeries>> AverageTargetsDestroyedData;
-	TSharedPtr<TMap<EAxisType, FAxisLabelOptions>> AverageTargetsDestroyedAxisData;
 
 	TSharedPtr<TArray<FLineChartSeries>> AverageReactionTimeData;
-	TSharedPtr<TMap<EAxisType, FAxisLabelOptions>> AverageReactionTimeAxisData;
 
 	TSharedPtr<TArray<FLineChartSeries>> AccuracyVsTimeData;
-	TSharedPtr<TMap<EAxisType, FAxisLabelOptions>> AccuracyVsTimeAxisData;
 
-	TSharedPtr<FHeatMapData> LocationAccuracyData;
-	TSharedPtr<FHeatMapAxisLabelOptions> LocationAccuracyAxisData;
+	TSharedPtr<TArray<TArray<float>>> LocationAccuracyData;
 
 	FText HandleGenericDateValueText(int32, int32);
 

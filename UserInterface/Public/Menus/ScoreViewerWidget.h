@@ -9,19 +9,13 @@
 
 class UScoreTable;
 class UTextBlock;
-struct FAxisLabelOptions;
-enum class EAxisType : uint8;
-struct FBarChartData;
 class UBSButton;
 class UCustomGameModeScoreViewerWidget;
 class UBarChartWidget;
 class UDefaultGameModeScoreViewerWidget;
-class UGameModeScoreViewerWidget;
 class UVerticalBox;
 class UWidgetSwitcher;
 class UMenuButton;
-struct FHeatMapAxisLabelOptions;
-struct FHeatMapData;
 class UHeatMapWidget;
 
 enum class EGameModePlayTimeUnits
@@ -178,21 +172,18 @@ private:
 
 	const FTextFormat TimeForFormat = FTextFormat::FromString("Time for {0}:");
 
-	TArray<TArray<float>> PlayFrequencyData;
-
+	/** Initialized with zeros for the past year. */
 	TArray<TArray<float>> InitialPlayFrequencyData;
 
-	TSharedPtr<FHeatMapData> RelativePlayFrequencyData;
+	/** Absolute (total seconds per day) play frequency data. */
+	TArray<TArray<float>> PlayFrequencyData;
 
-	TSharedPtr<FHeatMapAxisLabelOptions> PlayFrequencyAxisData;
+	/** Normalized play frequency data shared with the PlayFrequency widget. */
+	TSharedPtr<TArray<TArray<float>>> NormalizedPlayFrequencyData;
 
-	TSharedPtr<FBarChartData> MostPlayedDefaultGameModesData;
+	TSharedPtr<TArray<float>> MostPlayedDefaultGameModesData;
 
-	TSharedPtr<TMap<EAxisType, FAxisLabelOptions>> MostPlayedDefaultGameModesAxisData;
-
-	TSharedPtr<FBarChartData> MostPlayedCustomGameModesData;
-
-	TSharedPtr<TMap<EAxisType, FAxisLabelOptions>> MostPlayedCustomGameModesAxisData;
+	TSharedPtr<TArray<float>> MostPlayedCustomGameModesData;
 
 	TArray<FGameModePlayTime> DefaultGameModePlayTime;
 
