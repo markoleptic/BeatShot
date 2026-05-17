@@ -26,12 +26,15 @@ class BEATSHOT_API UBSAT_MontageEventWait : public UAbilityTask
 public:
 	UBSAT_MontageEventWait();
 
+protected:
 	/**
 	* The Blueprint node for this task, PlayMontageAndWaitForEvent, has some black magic from the plugin that
 	* automagically calls Activate() inside K2Node_LatentAbilityCall as stated in the AbilityTask.h. Ability logic
 	* written in C++ probably needs to call Activate() itself manually.
 	*/
 	virtual void Activate() override;
+
+public:
 	virtual void ExternalCancel() override;
 	virtual FString GetDebugString() const override;
 	virtual void OnDestroy(bool AbilityEnded) override;

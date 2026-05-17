@@ -54,7 +54,7 @@ void ABSGameMode::BeginPlay()
 	InitializeGameMode(GI->GetBSConfig());
 }
 
-void ABSGameMode::Tick(float DeltaSeconds)
+void ABSGameMode::Tick(const float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 	if (bShouldTick && GetWorldTimerManager().IsTimerActive(GameModeLengthTimer))
@@ -103,9 +103,9 @@ ACharacter* ABSGameMode::SpawnPlayer(APlayerController* PlayerController)
 	return SpawnedCharacter;
 }
 
-void ABSGameMode::HandleAudioImporterResult(URuntimeAudioImporterLibrary* Importer,
+void ABSGameMode::HandleAudioImporterResult(URuntimeAudioImporterLibrary* /*Importer*/,
                                             UImportedSoundWave* SoundWave,
-                                            ERuntimeImportStatus Status)
+                                            const ERuntimeImportStatus Status)
 {
 	if (Status == ERuntimeImportStatus::SuccessfulImport)
 	{
@@ -401,7 +401,7 @@ void ABSGameMode::StartAAManagerPlayback()
 		AATracker->Play();
 		if (AAPlayer)
 		{
-			auto HandleTimerFinished = [this]()
+			auto HandleTimerFinished = [this]
 			{
 				AudioComponent->Play();
 				UE_LOG(LogBSGameMode, Display, TEXT("Now Playing AudioComponent"));
@@ -469,7 +469,7 @@ void ABSGameMode::RegisterGun(ABSGun* InGun)
 bool ABSGameMode::InitializeAudioManagers()
 {
 	AATracker = NewObject<UAudioAnalyzerManager>(this);
-	UBSGameUserSettings* GameUserSettings = UBSGameUserSettings::Get();
+	const UBSGameUserSettings* GameUserSettings = UBSGameUserSettings::Get();
 
 	switch (BSConfig->AudioConfig.AudioFormat)
 	{
@@ -688,15 +688,15 @@ void ABSGameMode::FinalizePlayerScore(FPlayerScore& InScore) const
 	}
 }
 
-void ABSGameMode::OnPlayerSettingsChanged(const FPlayerSettings_Game& GameSettings)
+void ABSGameMode::OnPlayerSettingsChanged(const FPlayerSettings_Game& NewGameSettings)
 {
 	if (VisualizerManager)
 	{
-		VisualizerManager->UpdateVisualizerSettings(GameSettings);
+		VisualizerManager->UpdateVisualizerSettings(NewGameSettings);
 	}
 	if (TargetManager)
 	{
-		TargetManager->UpdatePlayerSettings(GameSettings);
+		TargetManager->UpdatePlayerSettings(NewGameSettings);
 	}
 }
 
@@ -785,8 +785,7 @@ void ABSGameMode::UpdateShotsFired(ABSPlayerController* Controller)
 {
 	if (Controller)
 	{
-		FPlayerScore* Score = CurrentPlayerScores.Find(Controller);
-		if (Score)
+		if (FPlayerScore* Score = CurrentPlayerScores.Find(Controller))
 		{
 			Score->ShotsFired++;
 			Controller->UpdatePlayerHUD(*Score, -1.f, -1.f);

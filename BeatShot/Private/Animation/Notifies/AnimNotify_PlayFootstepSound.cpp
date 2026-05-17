@@ -44,14 +44,14 @@ void UAnimNotify_PlayFootstepSound::Notify(USkeletalMeshComponent* MeshComp,
 			if (bPerformTrace)
 			{
 				// If trace is needed, set up Start Location to Attached
-				FVector TraceStart = bAttached
-				                     ? MeshComp->GetSocketLocation(SocketName)
-				                     : MeshComp->GetComponentLocation();
+				const FVector TraceStart = bAttached
+				                           ? MeshComp->GetSocketLocation(SocketName)
+				                           : MeshComp->GetComponentLocation();
 
 				if (UWorld* World = OwningActor->GetWorld())
 				{
 					World->LineTraceSingleByChannel(HitResult, TraceStart,
-					                                (TraceStart + TraceProperties.EndTraceLocationOffset),
+					                                TraceStart + TraceProperties.EndTraceLocationOffset,
 					                                TraceProperties.TraceChannel, QueryParams,
 					                                FCollisionResponseParams::DefaultResponseParam);
 				}

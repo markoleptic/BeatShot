@@ -62,8 +62,11 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+
+public:
 	virtual void Destroyed() override;
 
+protected:
 	/** The current 2D spawn area. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "BeatShot|Components")
 	TObjectPtr<UBoxComponent> SpawnBox;

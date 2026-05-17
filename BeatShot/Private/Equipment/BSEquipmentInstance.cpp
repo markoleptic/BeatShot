@@ -39,7 +39,7 @@ APawn* UBSEquipmentInstance::GetPawn() const
 	return Cast<APawn>(GetOuter());
 }
 
-APawn* UBSEquipmentInstance::GetTypedPawn(TSubclassOf<APawn> PawnType) const
+APawn* UBSEquipmentInstance::GetTypedPawn(const TSubclassOf<APawn> PawnType) const
 {
 	APawn* Result = nullptr;
 	if (UClass* ActualPawnType = PawnType)
@@ -52,7 +52,7 @@ APawn* UBSEquipmentInstance::GetTypedPawn(TSubclassOf<APawn> PawnType) const
 	return Result;
 }
 
-AActor* UBSEquipmentInstance::GetTypedSpawnedActor(TSubclassOf<AActor> ActorType) const
+AActor* UBSEquipmentInstance::GetTypedSpawnedActor(const TSubclassOf<AActor> ActorType) const
 {
 	UClass* ActualActorType = ActorType;
 	for (AActor* Actor : SpawnedActors)

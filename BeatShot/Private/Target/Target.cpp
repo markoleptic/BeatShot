@@ -262,7 +262,7 @@ void ATarget::PostInitializeComponents()
 	}
 }
 
-void ATarget::Tick(float DeltaSeconds)
+void ATarget::Tick(const float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 	StartToPeakTimeline.TickTimeline(DeltaSeconds);
@@ -383,7 +383,8 @@ void ATarget::RemoveImmunityEffect()
 	ActiveGE_TargetImmunity.Invalidate();
 }
 
-void ATarget::OnImmunityBlockGameplayEffect(const FGameplayEffectSpec& Spec, const FActiveGameplayEffect* Effect)
+void ATarget::OnImmunityBlockGameplayEffect(const FGameplayEffectSpec& /*Spec*/,
+                                            const FActiveGameplayEffect* /*Effect*/)
 {
 	UE_LOG(LogTemp, Display, TEXT("Blocked tag"));
 }

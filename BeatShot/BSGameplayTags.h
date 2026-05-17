@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "GameplayTagContainer.h"
 #include "NativeGameplayTags.h"
 
 class UGameplayTagsManager;
@@ -148,4 +147,4 @@ UE_DECLARE_GAMEPLAY_TAG_EXTERN(Target_State_Tracking);
 UE_DECLARE_GAMEPLAY_TAG_EXTERN(Target_State_Charged);
 UE_DECLARE_GAMEPLAY_TAG_EXTERN(Target_ResetHealth);
 UE_DECLARE_GAMEPLAY_TAG_EXTERN(Target_TreatAsExternalDamage);
-};
+}

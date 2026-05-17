@@ -145,10 +145,10 @@ class BEATSHOT_API ASimpleBeamLight : public AActor
 public:
 	ASimpleBeamLight();
 
+	virtual void Tick(float DeltaTime) override;
+
 protected:
 	virtual void BeginPlay() override;
-
-	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "SimpleBeamLight | Components")
 	UStaticMeshComponent* SpotlightBase;

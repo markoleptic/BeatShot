@@ -13,7 +13,7 @@ UAnimSequence* UBSAnimationSet::FindAnimSequence(const EBSAnimMovementMode Movem
 		{
 			if (const auto Cardinal = CardinalSet->Map.Find(AnimCardinal))
 			{
-				return (*Cardinal);
+				return *Cardinal;
 			}
 		}
 	}

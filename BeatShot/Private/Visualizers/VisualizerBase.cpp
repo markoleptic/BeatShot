@@ -93,9 +93,9 @@ void AVisualizerBase::MapAudioAnalyzerChannelsToVisualizerLights(const int32 Num
 		return;
 	}
 
-	if ((NumVisualizers > NumBandChannels) && (BaseConfig->AssignmentMethod !=
-	                                           ELightVisualizerAssignmentMethod::MultiLightPerChannelOnly) && (
-		    BaseConfig->AssignmentMethod != ELightVisualizerAssignmentMethod::Auto))
+	if (NumVisualizers > NumBandChannels && BaseConfig->AssignmentMethod !=
+	    ELightVisualizerAssignmentMethod::MultiLightPerChannelOnly && BaseConfig->AssignmentMethod !=
+	    ELightVisualizerAssignmentMethod::Auto)
 	{
 		for (int i = 0; i < NumBandChannels; i++)
 		{
@@ -104,9 +104,9 @@ void AVisualizerBase::MapAudioAnalyzerChannelsToVisualizerLights(const int32 Num
 		return;
 	}
 
-	if ((NumBandChannels > NumVisualizers) && (BaseConfig->AssignmentMethod !=
-	                                           ELightVisualizerAssignmentMethod::MultiChannelPerLightOnly) && (
-		    BaseConfig->AssignmentMethod != ELightVisualizerAssignmentMethod::Auto))
+	if (NumBandChannels > NumVisualizers && BaseConfig->AssignmentMethod !=
+	    ELightVisualizerAssignmentMethod::MultiChannelPerLightOnly && BaseConfig->AssignmentMethod !=
+	    ELightVisualizerAssignmentMethod::Auto)
 	{
 		for (int i = 0; i < NumVisualizers; i++)
 		{

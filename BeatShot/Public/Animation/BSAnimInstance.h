@@ -21,10 +21,11 @@ public:
 
 	virtual void InitializeWithAbilitySystem(UAbilitySystemComponent* ASC);
 
-protected:
 	virtual void NativeInitializeAnimation() override;
-	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 
+	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
+	
+protected:
 	/** Gameplay tags that can be mapped to blueprint variables. The variables will automatically update as the tags are
 	 *  added or removed. These should be used instead of manually querying for the gameplay tags. */
 	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|GameplayTags")

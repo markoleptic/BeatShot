@@ -35,7 +35,10 @@ class BEATSHOT_API ABSPlayerController : public APlayerController, public IBSPla
 {
 	GENERATED_BODY()
 
+protected:
 	virtual void BeginPlay() override;
+
+public:
 	virtual void PreProcessInput(const float DeltaTime, const bool bGamePaused) override;
 	virtual void PostProcessInput(const float DeltaTime, const bool bGamePaused) override;
 
@@ -46,8 +49,7 @@ class BEATSHOT_API ABSPlayerController : public APlayerController, public IBSPla
 	/** Returns the ability system component. */
 	UFUNCTION(BlueprintCallable, Category = "BeatShot")
 	UBSAbilitySystemComponent* GetBSAbilitySystemComponent() const;
-
-public:
+	
 	/** Returns the possessed character. */
 	ABSCharacterBase* GetBSCharacter() const;
 
@@ -139,8 +141,10 @@ public:
 	void HandleLeftClick();
 
 	/** Server only */
+protected:
 	virtual void OnPossess(APawn* InPawn) override;
 
+public:
 	/** Server only */
 	virtual void OnRep_PlayerState() override;
 
@@ -190,11 +194,14 @@ private:
 	/** Callback function for screen fade widget's OnFadeFromBlackFinish delegate. */
 	void OnFadeScreenFromBlackFinish();
 
+protected:
 	/** Callback functions for when settings change. */
 	virtual void OnPlayerSettingsChanged(const FPlayerSettings_Game& NewGameSettings) override;
 	virtual void OnPlayerSettingsChanged(const FPlayerSettings_User& NewUserSettings) override;
 	virtual void OnPlayerSettingsChanged(const FPlayerSettings_AudioAnalyzer& NewAudioAnalyzerSettings) override;
 	virtual void OnPlayerSettingsChanged(const FPlayerSettings_CrossHair& NewCrossHairSettings) override;
+
+private:
 	void HandleGameUserSettingsChanged(const UBSGameUserSettings* InGameUserSettings);
 
 	UPROPERTY()

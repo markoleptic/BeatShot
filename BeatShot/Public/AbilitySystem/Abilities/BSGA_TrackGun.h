@@ -23,17 +23,19 @@ public:
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FOnPlayerStopTrackingTarget OnPlayerStopTrackingTarget;
 
+	virtual void OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
+
 protected:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 	                             const FGameplayAbilityActorInfo* ActorInfo,
 	                             const FGameplayAbilityActivationInfo ActivationInfo,
 	                             const FGameplayEventData* TriggerEventData) override;
+	
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle,
 	                        const FGameplayAbilityActorInfo* ActorInfo,
 	                        const FGameplayAbilityActivationInfo ActivationInfo,
 	                        bool bReplicateEndAbility,
 	                        bool bWasCancelled) override;
-	virtual void OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
 
 	/** Performs non-gameplay related tasks like muzzle flash, camera recoil, and decal spawning. */
 	UFUNCTION(BlueprintImplementableEvent)
@@ -50,6 +52,7 @@ protected:
 	float TraceDistance = 100000.f;
 
 private:
+	UPROPERTY()
 	TObjectPtr<UBSAT_TickTrace> TickTraceTask;
 
 	FDelegateHandle OnTargetDataReadyCallbackDelegateHandle;

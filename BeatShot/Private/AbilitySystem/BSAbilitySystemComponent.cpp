@@ -18,7 +18,7 @@ void UBSAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AActo
 }
 
 void UBSAbilitySystemComponent::CancelAbilitiesByFunc(TShouldCancelAbilityFunc ShouldCancelFunc,
-                                                      bool bReplicateCancelAbility)
+                                                      const bool bReplicateCancelAbility)
 {
 	ABILITYLIST_SCOPE_LOCK();
 	for (const FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities.Items)
@@ -69,13 +69,13 @@ void UBSAbilitySystemComponent::CancelAbilitiesByFunc(TShouldCancelAbilityFunc S
 	}
 }
 
-void UBSAbilitySystemComponent::CancelInputActivatedAbilities(bool bReplicateCancelAbility)
+void UBSAbilitySystemComponent::CancelInputActivatedAbilities(const bool bReplicateCancelAbility)
 {
-	auto ShouldCancelFunc = [this](const UBSGameplayAbility* Ability, FGameplayAbilitySpecHandle Handle)
+	auto ShouldCancelFunc = [this](const UBSGameplayAbility* Ability, FGameplayAbilitySpecHandle /*Handle*/)
 	{
 		const EBSAbilityActivationPolicy ActivationPolicy = Ability->GetActivationPolicy();
-		return ((ActivationPolicy == EBSAbilityActivationPolicy::OnInputTriggered) || (ActivationPolicy ==
-			        EBSAbilityActivationPolicy::WhileInputActive));
+		return ActivationPolicy == EBSAbilityActivationPolicy::OnInputTriggered || ActivationPolicy ==
+		       EBSAbilityActivationPolicy::WhileInputActive;
 	};
 
 	CancelAbilitiesByFunc(ShouldCancelFunc, bReplicateCancelAbility);
@@ -95,7 +95,7 @@ bool UBSAbilitySystemComponent::IsActivationGroupBlocked(EBSAbilityActivationGro
 	case EBSAbilityActivationGroup::Exclusive_Replaceable:
 	case EBSAbilityActivationGroup::Exclusive_Blocking:
 		// Exclusive abilities can activate if nothing is blocking.
-		bBlocked = (ActivationGroupCounts[static_cast<uint8>(EBSAbilityActivationGroup::Exclusive_Blocking)] > 0);
+		bBlocked = ActivationGroupCounts[static_cast<uint8>(EBSAbilityActivationGroup::Exclusive_Blocking)] > 0;
 		break;
 
 	default: checkf(false, TEXT("IsActivationGroupBlocked: Invalid ActivationGroup [%d]\n"), static_cast<uint8>(Group));
@@ -152,12 +152,12 @@ void UBSAbilitySystemComponent::RemoveAbilityFromActivationGroup(EBSAbilityActiv
 
 void UBSAbilitySystemComponent::CancelActivationGroupAbilities(EBSAbilityActivationGroup Group,
                                                                UBSGameplayAbility* IgnoreAbility,
-                                                               bool bReplicateCancelAbility)
+                                                               const bool bReplicateCancelAbility)
 {
 	auto ShouldCancelFunc = [this, Group, IgnoreAbility](const UBSGameplayAbility* Ability,
-	                                                     FGameplayAbilitySpecHandle Handle)
+	                                                     FGameplayAbilitySpecHandle /*Handle*/)
 	{
-		return ((Ability->GetActivationGroup() == Group) && (Ability != IgnoreAbility));
+		return Ability->GetActivationGroup() == Group && Ability != IgnoreAbility;
 	};
 
 	CancelAbilitiesByFunc(ShouldCancelFunc, bReplicateCancelAbility);
@@ -167,7 +167,7 @@ void UBSAbilitySystemComponent::GetAbilityTargetData(const FGameplayAbilitySpecH
                                                      FGameplayAbilityActivationInfo ActivationInfo,
                                                      FGameplayAbilityTargetDataHandle& OutTargetDataHandle)
 {
-	TSharedPtr<FAbilityReplicatedDataCache> ReplicatedData = AbilityTargetDataMap.Find(
+	const TSharedPtr<FAbilityReplicatedDataCache> ReplicatedData = AbilityTargetDataMap.Find(
 		FGameplayAbilitySpecHandleAndPredictionKey(AbilityHandle, ActivationInfo.GetActivationPredictionKey()));
 	if (ReplicatedData.IsValid())
 	{
@@ -218,7 +218,7 @@ void UBSAbilitySystemComponent::AbilitySpecInputReleased(FGameplayAbilitySpec& S
 	}
 }
 
-void UBSAbilitySystemComponent::ProcessAbilityInput(float DeltaTime, bool bGamePaused)
+void UBSAbilitySystemComponent::ProcessAbilityInput(float /*DeltaTime*/, bool /*bGamePaused*/)
 {
 	if (HasMatchingGameplayTag(BSGameplayTags::Ability_InputBlocked))
 	{
@@ -317,7 +317,7 @@ void UBSAbilitySystemComponent::ClearAbilityInput()
 	InputHeldSpecHandles.Reset();
 }
 
-void UBSAbilitySystemComponent::AbilityInputTagPressed(FGameplayTag InputTag)
+void UBSAbilitySystemComponent::AbilityInputTagPressed(const FGameplayTag InputTag)
 {
 	if (InputTag.IsValid())
 	{
@@ -332,7 +332,7 @@ void UBSAbilitySystemComponent::AbilityInputTagPressed(FGameplayTag InputTag)
 	}
 }
 
-void UBSAbilitySystemComponent::AbilityInputTagReleased(FGameplayTag InputTag)
+void UBSAbilitySystemComponent::AbilityInputTagReleased(const FGameplayTag InputTag)
 {
 	if (InputTag.IsValid())
 	{

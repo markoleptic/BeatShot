@@ -81,7 +81,7 @@ void ATargetManager::Destroyed()
 	Super::Destroyed();
 }
 
-void ATargetManager::Tick(float DeltaTime)
+void ATargetManager::Tick(const float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	if (ShouldSpawn && TrackingTargetIsDamageable())

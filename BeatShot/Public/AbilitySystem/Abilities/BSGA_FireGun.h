@@ -16,6 +16,7 @@ class BEATSHOT_API UBSGA_FireGun : public UBSGameplayAbility
 public:
 	UBSGA_FireGun();
 
+protected:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 	                             const FGameplayAbilityActorInfo* ActorInfo,
 	                             const FGameplayAbilityActivationInfo ActivationInfo,
@@ -25,8 +26,7 @@ public:
 	                        const FGameplayAbilityActivationInfo ActivationInfo,
 	                        bool bReplicateEndAbility,
 	                        bool bWasCancelled) override;
-
-protected:
+	
 	/** The firing animation to play. */
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	UAnimMontage* FireHipMontage;

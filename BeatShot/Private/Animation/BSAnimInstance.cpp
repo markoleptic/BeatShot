@@ -23,7 +23,7 @@ void UBSAnimInstance::NativeInitializeAnimation()
 {
 	Super::NativeInitializeAnimation();
 
-	if (AActor* OwningActor = GetOwningActor())
+	if (const AActor* OwningActor = GetOwningActor())
 	{
 		if (UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(OwningActor))
 		{
@@ -32,7 +32,7 @@ void UBSAnimInstance::NativeInitializeAnimation()
 	}
 }
 
-void UBSAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
+void UBSAnimInstance::NativeUpdateAnimation(const float DeltaSeconds)
 {
 	Super::NativeUpdateAnimation(DeltaSeconds);
 

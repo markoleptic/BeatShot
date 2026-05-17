@@ -19,9 +19,8 @@ void UBSAT_MontageEventWait::Activate()
 	}
 
 	bool bPlayedMontage = false;
-	UBSAbilitySystemComponent* BSAbilitySystemComponent = GetTargetASC();
 
-	if (BSAbilitySystemComponent)
+	if (UBSAbilitySystemComponent* BSAbilitySystemComponent = GetTargetASC())
 	{
 		const FGameplayAbilityActorInfo* ActorInfo = Ability->GetCurrentActorInfo();
 		UAnimInstance* AnimInstance = ActorInfo->GetAnimInstance();
@@ -111,7 +110,7 @@ FString UBSAT_MontageEventWait::GetDebugString() const
 		*GetNameSafe(PlayingMontage));
 }
 
-void UBSAT_MontageEventWait::OnDestroy(bool AbilityEnded)
+void UBSAT_MontageEventWait::OnDestroy(const bool AbilityEnded)
 {
 	// Note: Clearing montage end delegate isn't necessary since its not a multicast and will be cleared when the next montage plays.
 	// (If we are destroyed, it will detect this and not do anything)
@@ -136,13 +135,13 @@ void UBSAT_MontageEventWait::OnDestroy(bool AbilityEnded)
 }
 
 UBSAT_MontageEventWait* UBSAT_MontageEventWait::PlayMontageAndWaitForEvent(UGameplayAbility* OwningAbility,
-                                                                           FName TaskInstanceName,
+                                                                           const FName TaskInstanceName,
                                                                            UAnimMontage* MontageToPlay,
-                                                                           FGameplayTagContainer EventTags,
+                                                                           const FGameplayTagContainer EventTags,
                                                                            float Rate,
-                                                                           FName StartSection,
-                                                                           bool bStopWhenAbilityEnds,
-                                                                           float AnimRootMotionTranslationScale)
+                                                                           const FName StartSection,
+                                                                           const bool bStopWhenAbilityEnds,
+                                                                           const float AnimRootMotionTranslationScale)
 {
 	UAbilitySystemGlobals::NonShipping_ApplyGlobalAbilityScaler_Rate(Rate);
 
@@ -196,7 +195,7 @@ UBSAbilitySystemComponent* UBSAT_MontageEventWait::GetTargetASC() const
 	return Cast<UBSAbilitySystemComponent>(AbilitySystemComponent);
 }
 
-void UBSAT_MontageEventWait::OnMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted) const
+void UBSAT_MontageEventWait::OnMontageBlendingOut(UAnimMontage* Montage, const bool bInterrupted) const
 {
 	if (Ability && Ability->GetCurrentMontage() == MontageToPlay)
 	{
@@ -244,7 +243,7 @@ void UBSAT_MontageEventWait::OnAbilityCancelled() const
 	}
 }
 
-void UBSAT_MontageEventWait::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+void UBSAT_MontageEventWait::OnMontageEnded(UAnimMontage* /*Montage*/, const bool bInterrupted)
 {
 	EndTask();
 	if (!bInterrupted)
@@ -263,7 +262,7 @@ void UBSAT_MontageEventWait::OnMontageEnded(UAnimMontage* Montage, bool bInterru
 	}
 }
 
-void UBSAT_MontageEventWait::OnGameplayEvent(FGameplayTag EventTag, const FGameplayEventData* Payload) const
+void UBSAT_MontageEventWait::OnGameplayEvent(const FGameplayTag EventTag, const FGameplayEventData* Payload) const
 {
 	if (ShouldBroadcastAbilityTaskDelegates())
 	{

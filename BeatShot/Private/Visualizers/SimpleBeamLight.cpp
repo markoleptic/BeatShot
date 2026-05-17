@@ -54,7 +54,7 @@ void ASimpleBeamLight::BeginPlay()
 	Super::BeginPlay();
 }
 
-void ASimpleBeamLight::Tick(float DeltaTime)
+void ASimpleBeamLight::Tick(const float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	if (!SimpleBeamLightConfig.bIsMovingLight)
@@ -195,7 +195,7 @@ void ASimpleBeamLight::DeactivateLightComponents()
 	}
 }
 
-void ASimpleBeamLight::OnNiagaraBeamFinished(UNiagaraComponent* NiagaraComponent)
+void ASimpleBeamLight::OnNiagaraBeamFinished(UNiagaraComponent* /*NiagaraComponent*/)
 {
 	DeactivateLightComponents();
 	OnBeamLightLifetimeCompleted.Broadcast(SimpleBeamLightConfig.Index);

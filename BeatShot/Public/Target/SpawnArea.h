@@ -149,7 +149,7 @@ public:
 	FVector GetBottomLeftVertex() const { return BottomLeftVertex; }
 
 	/** Returns the middle location between the bottom left and top left. */
-	FVector GetCenterPoint() const { return CenterPoint; };
+	FVector GetCenterPoint() const { return CenterPoint; }
 
 	/** Returns whether the SpawnArea contains an activated target. */
 	bool IsActivated() const { return bIsActivated; }
@@ -279,9 +279,8 @@ public:
 		{
 			return true;
 		}
-		if ((Other.BottomLeftVertex.Y >= BottomLeftVertex.Y) && (Other.BottomLeftVertex.Z >= BottomLeftVertex.Z) && (
-			    Other.BottomLeftVertex.Y < TopRightVertex.Y - 0.01) && (
-			    Other.BottomLeftVertex.Z < TopRightVertex.Z - 0.01))
+		if (Other.BottomLeftVertex.Y >= BottomLeftVertex.Y && Other.BottomLeftVertex.Z >= BottomLeftVertex.Z && Other.
+		    BottomLeftVertex.Y < TopRightVertex.Y - 0.01 && Other.BottomLeftVertex.Z < TopRightVertex.Z - 0.01)
 		{
 			return true;
 		}
@@ -307,9 +306,8 @@ public:
 		{
 			return true;
 		}
-		if ((Other->BottomLeftVertex.Y >= BottomLeftVertex.Y) && (Other->BottomLeftVertex.Z >= BottomLeftVertex.Z) && (
-			    Other->BottomLeftVertex.Y < TopRightVertex.Y - 0.01) && (
-			    Other->BottomLeftVertex.Z < TopRightVertex.Z - 0.01))
+		if (Other->BottomLeftVertex.Y >= BottomLeftVertex.Y && Other->BottomLeftVertex.Z >= BottomLeftVertex.Z && Other
+		    ->BottomLeftVertex.Y < TopRightVertex.Y - 0.01 && Other->BottomLeftVertex.Z < TopRightVertex.Z - 0.01)
 		{
 			return true;
 		}

@@ -22,9 +22,9 @@ void UBSHealthComponent::BeginPlay()
 void UBSHealthComponent::OnHealthAttributeChanged(AActor* EffectInstigator,
                                                   AActor* EffectCauser,
                                                   const FGameplayEffectSpec* EffectSpec,
-                                                  float EffectMagnitude,
-                                                  float OldValue,
-                                                  float NewValue)
+                                                  const float EffectMagnitude,
+                                                  const float OldValue,
+                                                  const float NewValue)
 {
 	OnHealthChangedDelegate.Broadcast(EffectInstigator, EffectCauser, EffectSpec, EffectMagnitude, OldValue, NewValue);
 }

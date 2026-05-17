@@ -17,7 +17,7 @@ struct FGenericIndexMapping
 		MappedIndices = TArray<int32>();
 	}
 
-	FGenericIndexMapping(const int32 InIndex)
+	explicit FGenericIndexMapping(const int32 InIndex)
 	{
 		Index = InIndex;
 		MappedIndices = TArray<int32>();
@@ -101,7 +101,7 @@ nc::NdArray<T> GetAveraged5X5NdArray(const TArray<T>& In, const int32 NumRows, c
 	constexpr int SmallM = 5;
 	constexpr int SmallN = 5;
 
-	nc::NdArray<T> Out = nc::zeros<T>(nc::Shape(SmallM, SmallN));;
+	nc::NdArray<T> Out = nc::zeros<T>(nc::Shape(SmallM, SmallN));
 
 	// Define the minimum number of elements that are averaged from input array
 	const int MFloor = FMath::Floor(NumRows / SmallM);

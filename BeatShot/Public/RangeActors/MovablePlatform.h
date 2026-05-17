@@ -30,12 +30,16 @@ class BEATSHOT_API AMovablePlatform : public AActor
 {
 	GENERATED_BODY()
 
+public:
 	AMovablePlatform();
 
+protected:
 	virtual void BeginPlay() override;
 
+public:
 	virtual void Tick(float DeltaSeconds) override;
 
+protected:
 	UFUNCTION()
 	void MovePlatformUp(const int32 Stop);
 
@@ -72,8 +76,7 @@ class BEATSHOT_API AMovablePlatform : public AActor
 	                             AActor* OtherActor,
 	                             UPrimitiveComponent* OtherComp,
 	                             int32 OtherBodyIndex);
-
-protected:
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UStaticMeshComponent* Floor;
 

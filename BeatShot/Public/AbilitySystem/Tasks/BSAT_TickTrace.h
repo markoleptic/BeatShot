@@ -22,7 +22,10 @@ class BEATSHOT_API UBSAT_TickTrace : public UAbilityTask
 public:
 	UBSAT_TickTrace();
 
+protected:
 	virtual void Activate() override;
+
+public:
 	virtual void ExternalCancel() override;
 	virtual void OnDestroy(bool AbilityEnded) override;
 	virtual void TickTask(float DeltaTime) override;

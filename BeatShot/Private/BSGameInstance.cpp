@@ -274,7 +274,7 @@ void UBSGameInstance::OnSteamOverlayIsOff()
 	this->OnSteamOverlayIsActive(false);
 }
 
-void UBSGameInstance::OnSteamOverlayIsActive(bool bIsOverlayActive) const
+void UBSGameInstance::OnSteamOverlayIsActive(const bool bIsOverlayActive) const
 {
 	if (bIsOverlayActive)
 	{

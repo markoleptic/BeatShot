@@ -6,11 +6,12 @@ UBSInputConfig::UBSInputConfig()
 {
 }
 
-const UInputAction* UBSInputConfig::FindNativeInputActionForTag(const FGameplayTag& InputTag, bool bLogNotFound) const
+const UInputAction* UBSInputConfig::FindNativeInputActionForTag(const FGameplayTag& InputTag,
+                                                                const bool bLogNotFound) const
 {
 	for (const FBSInputAction& Action : NativeInputActions)
 	{
-		if (Action.InputAction && (Action.InputTag == InputTag))
+		if (Action.InputAction && Action.InputTag == InputTag)
 		{
 			return Action.InputAction;
 		}
@@ -25,11 +26,12 @@ const UInputAction* UBSInputConfig::FindNativeInputActionForTag(const FGameplayT
 	return nullptr;
 }
 
-const UInputAction* UBSInputConfig::FindAbilityInputActionForTag(const FGameplayTag& InputTag, bool bLogNotFound) const
+const UInputAction* UBSInputConfig::FindAbilityInputActionForTag(const FGameplayTag& InputTag,
+                                                                 const bool bLogNotFound) const
 {
 	for (const FBSInputAction& Action : AbilityInputActions)
 	{
-		if (Action.InputAction && (Action.InputTag == InputTag))
+		if (Action.InputAction && Action.InputTag == InputTag)
 		{
 			return Action.InputAction;
 		}
@@ -44,11 +46,11 @@ const UInputAction* UBSInputConfig::FindAbilityInputActionForTag(const FGameplay
 	return nullptr;
 }
 
-FBSInputAction UBSInputConfig::FindBSInputActionForTag(const FGameplayTag& InputTag, bool bLogNotFound) const
+FBSInputAction UBSInputConfig::FindBSInputActionForTag(const FGameplayTag& InputTag, const bool bLogNotFound) const
 {
 	for (const FBSInputAction& Action : NativeInputActions)
 	{
-		if (Action.InputAction && (Action.InputTag == InputTag))
+		if (Action.InputAction && Action.InputTag == InputTag)
 		{
 			return Action;
 		}

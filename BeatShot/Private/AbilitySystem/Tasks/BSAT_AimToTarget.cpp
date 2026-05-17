@@ -13,10 +13,10 @@ UBSAT_AimToTarget::UBSAT_AimToTarget() : Camera(nullptr)
 }
 
 UBSAT_AimToTarget* UBSAT_AimToTarget::AimToTarget(UBSGameplayAbility* OwningAbility,
-                                                  FName TaskInstanceName,
+                                                  const FName TaskInstanceName,
                                                   UCurveFloat* RotationCurve,
                                                   ATarget* TargetToDestroy,
-                                                  float TimelinePlaybackRate)
+                                                  const float TimelinePlaybackRate)
 {
 	UBSAT_AimToTarget* MyObj = NewAbilityTask<UBSAT_AimToTarget>(OwningAbility, TaskInstanceName);
 
@@ -44,7 +44,7 @@ void UBSAT_AimToTarget::Activate()
 	Super::Activate();
 }
 
-void UBSAT_AimToTarget::TickTask(float DeltaTime)
+void UBSAT_AimToTarget::TickTask(const float DeltaTime)
 {
 	Super::TickTask(DeltaTime);
 	if (TaskState == EGameplayTaskState::Active)
@@ -59,7 +59,7 @@ void UBSAT_AimToTarget::ExternalCancel()
 	Super::ExternalCancel();
 }
 
-void UBSAT_AimToTarget::OnDestroy(bool AbilityEnded)
+void UBSAT_AimToTarget::OnDestroy(const bool AbilityEnded)
 {
 	AimBotTimeline.Stop();
 

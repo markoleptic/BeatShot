@@ -122,13 +122,13 @@ public:
 	UBSCharacterMovementComponent* GetBSCharacterMovement() const;
 
 	UFUNCTION(BlueprintPure, Category = "BeatShot|Character")
-	UCameraComponent* GetCamera() const { return CameraComponent.Get(); };
+	UCameraComponent* GetCamera() const { return CameraComponent.Get(); }
 
 	UFUNCTION(BlueprintPure, Category = "BeatShot|Character")
-	UBSRecoilComponent* GetRecoilComponent() const { return RecoilComponent.Get(); };
+	UBSRecoilComponent* GetRecoilComponent() const { return RecoilComponent.Get(); }
 
 	UFUNCTION(BlueprintPure, Category = "BeatShot|Character")
-	float GetMinSpeedForFallDamage() const { return MinSpeedForFallDamage; };
+	float GetMinSpeedForFallDamage() const { return MinSpeedForFallDamage; }
 
 	UFUNCTION(BlueprintPure, Category = "BeatShot|Character")
 	float GetMinLandBounceSpeed() const { return MinLandBounceSpeed; }
@@ -143,15 +143,14 @@ public:
 	FORCEINLINE bool GetAutoBunnyHop() const { return bAutoBunnyHop; }
 
 	UFUNCTION(Category = "BeatShot|Character", BlueprintCallable)
-	void SetAutoBunnyHop(bool Value) { bAutoBunnyHop = Value; }
+	void SetAutoBunnyHop(const bool Value) { bAutoBunnyHop = Value; }
 
 	/** Implement IGameplayTagAssetInterface */
 	virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override;
 	/** End Implement IGameplayTagAssetInterface */
-
-protected:
+	
 	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaSeconds) override;
+	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void PossessedBy(AController* NewController) override;
@@ -165,13 +164,15 @@ protected:
 	virtual void Jump() override;
 	virtual void StopJumping() override;
 	virtual void OnJumped_Implementation() override;
+
+protected:
 	virtual bool CanJumpInternal_Implementation() const override;
+
+public:
 	virtual void RecalculateBaseEyeHeight() override;
 	virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PrevCustomMode) override;
 	virtual bool CanCrouch() const override;
 	virtual void OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
-
-public:
 	virtual bool IsSprinting() const;
 
 protected:

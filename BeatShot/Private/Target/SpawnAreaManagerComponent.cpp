@@ -37,7 +37,7 @@ void FRectCandidate::MergeSubRectangles()
 			const FIndexPair CurrentStartEndIndex = SortedSubRectangles[CurrentIndex].BoundingIndices;
 			if (LastStartEndIndex.EndIndex == CurrentStartEndIndex.EndIndex)
 			{
-				if (CurrentStartEndIndex.StartIndex != (LastStartEndIndex.StartIndex + 1))
+				if (CurrentStartEndIndex.StartIndex != LastStartEndIndex.StartIndex + 1)
 				{
 					FilteredArray.Add(SortedSubRectangles[CurrentIndex]);
 				}
@@ -98,7 +98,7 @@ USpawnAreaManagerComponent::USpawnAreaManagerComponent()
 	OriginSpawnArea = nullptr;
 }
 
-void USpawnAreaManagerComponent::DestroyComponent(bool bPromoteChildren)
+void USpawnAreaManagerComponent::DestroyComponent(const bool bPromoteChildren)
 {
 	BSConfig.Reset();
 	Super::DestroyComponent(bPromoteChildren);
@@ -1498,8 +1498,8 @@ void USpawnAreaManagerComponent::UpdateMostRecentGridBlocks(const TSet<USpawnAre
 /* ------------- */
 
 template <typename OutType>
-TSet<OutType> USpawnAreaManagerComponent::GetAdjacentSpawnAreas(const TSet<USpawnArea*>& InSpawnAreas,
-                                                                const TSet<EAdjacentDirection>& Directions) const
+TSet<OutType> USpawnAreaManagerComponent::GetAdjacentSpawnAreas(const TSet<USpawnArea*>& /*InSpawnAreas*/,
+                                                                const TSet<EAdjacentDirection>& /*Directions*/) const
 {
 	return TSet<OutType>();
 }
@@ -2375,7 +2375,7 @@ void USpawnAreaManagerComponent::PrintDebug_Matrix(const TArray<int32>& Matrix,
 	{
 		FString Number = FText::AsNumber(CurrentIndex, &Options).ToString();
 		Line += (i == 1 ? Number : Xs) + " ";
-		if ((CurrentIndex + 1) % NumCols == 0 && (CurrentIndex + 1) >= NumCols)
+		if ((CurrentIndex + 1) % NumCols == 0 && CurrentIndex + 1 >= NumCols)
 		{
 			Lines[CurrentRow] = Line;
 			CurrentRow--;

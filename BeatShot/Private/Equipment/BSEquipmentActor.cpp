@@ -19,7 +19,7 @@ void ABSEquipmentActor::GetOwnedGameplayTags(FGameplayTagContainer& TagContainer
 	TagContainer.AppendTags(GameplayTags);
 }
 
-bool ABSEquipmentActor::HasMatchingGameplayTag(FGameplayTag TagToCheck) const
+bool ABSEquipmentActor::HasMatchingGameplayTag(const FGameplayTag TagToCheck) const
 {
 	return IGameplayTagAssetInterface::HasMatchingGameplayTag(TagToCheck);
 }

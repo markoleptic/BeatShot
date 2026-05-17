@@ -131,7 +131,7 @@ void UWeaponAudioFunctions::SetEarlyReflections(AActor* Target,
 	                       RightWeapon.Distance, bHit);
 }
 
-void UWeaponAudioFunctions::CalculateTapProperties(const FString& DebugString,
+void UWeaponAudioFunctions::CalculateTapProperties(const FString& /*DebugString*/,
                                                    USubmixEffectTapDelayPreset* SubmixEffect,
                                                    UCameraComponent* CameraComponent,
                                                    const FVector& ListenerLocation,

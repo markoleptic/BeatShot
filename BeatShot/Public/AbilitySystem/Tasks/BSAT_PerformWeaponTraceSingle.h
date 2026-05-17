@@ -20,9 +20,11 @@ class BEATSHOT_API UBSAT_PerformWeaponTraceSingle : public UAbilityTask
 public:
 	UBSAT_PerformWeaponTraceSingle();
 
+protected:
 	/** Calls LineTraceSingle and broadcasts delegate. */
 	virtual void Activate() override;
 
+public:
 	/** Broadcasts delegate. */
 	virtual void ExternalCancel() override;
 

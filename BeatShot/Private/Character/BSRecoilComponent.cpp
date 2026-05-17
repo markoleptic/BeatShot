@@ -81,7 +81,7 @@ void UBSRecoilComponent::Recoil(const float FireRate)
 	KickbackAlpha = 0.f;
 }
 
-void UBSRecoilComponent::SetRecoilRotation(float DeltaTime)
+void UBSRecoilComponent::SetRecoilRotation(const float DeltaTime)
 {
 	const FRotator Current = GetRelativeRotation();
 	const FRotator UpdatedRotation = UKismetMathLibrary::RInterpTo(Current, CurrentShotCameraRecoilRotation, DeltaTime,
@@ -104,7 +104,7 @@ void UBSRecoilComponent::SetRecoilRotation(float DeltaTime)
 	}
 }
 
-void UBSRecoilComponent::UpdateKickback(float DeltaTime)
+void UBSRecoilComponent::UpdateKickback(const float DeltaTime)
 {
 	if (bShouldKickback)
 	{

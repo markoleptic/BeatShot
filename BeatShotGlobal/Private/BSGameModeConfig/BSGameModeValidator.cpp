@@ -753,7 +753,8 @@ void UBSGameModeValidator::FPrivate::SetupValidationChecks()
 
 	// Moving Target Direction Mode & Target Spawn/Activation/Deactivation Responses
 	auto VelocityCheckPtr = CreateValidationCheck(MovingTargetDirectionModePtr, EGameModeWarningType::Caution,
-	                                              [](const TSharedPtr<FBSConfig>& Config, FValidationCheckData& /*Data*/)
+	                                              [](const TSharedPtr<FBSConfig>& Config,
+	                                                 FValidationCheckData& /*Data*/)
 	                                              {
 		                                              return !(Config->TargetConfig.MovingTargetDirectionMode ==
 		                                                       EMovingTargetDirectionMode::None && (
@@ -768,7 +769,8 @@ void UBSGameModeValidator::FPrivate::SetupValidationChecks()
 				                                                                  ETargetDeactivationResponse::ChangeVelocity)));
 	                                              }, nullptr);
 	auto DirectionCheckPtr = CreateValidationCheck(MovingTargetDirectionModePtr, EGameModeWarningType::Caution,
-	                                               [](const TSharedPtr<FBSConfig>& Config, FValidationCheckData& /*Data*/)
+	                                               [](const TSharedPtr<FBSConfig>& Config,
+	                                                  FValidationCheckData& /*Data*/)
 	                                               {
 		                                               return !(Config->TargetConfig.MovingTargetDirectionMode ==
 		                                                        EMovingTargetDirectionMode::None && (

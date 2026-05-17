@@ -69,7 +69,7 @@ AWallMenu::AWallMenu()
 	// Left Beam Visualizer
 	MainText_Enable_LVLeftBeam = CreateDefaultSubobject<UText3DComponent>(FName("Enable Left Beam"));
 	SetupMainText(MainText_Enable_LVLeftBeam, MainText_Enable_LightVisualizers, false, "WallMenu_LVLeftBeam",
-	              (Offset_MainText * 2) + Indent);
+	              Offset_MainText * 2 + Indent);
 
 	ToggleText_LVLeftBeam_On = CreateDefaultSubobject<UText3DComponent>(FName("Left Beam On"));
 	ToggleText_LVLeftBeam_Off = CreateDefaultSubobject<UText3DComponent>(FName("Left Beam Off"));
@@ -82,7 +82,7 @@ AWallMenu::AWallMenu()
 	// Right Beam Visualizer
 	MainText_Enable_LVRightBeam = CreateDefaultSubobject<UText3DComponent>(FName("Enable Right Beam"));
 	SetupMainText(MainText_Enable_LVRightBeam, MainText_Enable_LightVisualizers, false, "WallMenu_LVRightBeam",
-	              (Offset_MainText * 3) + Indent);
+	              Offset_MainText * 3 + Indent);
 
 	ToggleText_LVRightBeam_On = CreateDefaultSubobject<UText3DComponent>(FName("Right Beam On"));
 	ToggleText_LVRightBeam_Off = CreateDefaultSubobject<UText3DComponent>(FName("Right Beam Off"));
@@ -95,7 +95,7 @@ AWallMenu::AWallMenu()
 	// Left Cube Visualizer
 	MainText_EnableLV_LeftCube = CreateDefaultSubobject<UText3DComponent>(FName("Enable Left Cube"));
 	SetupMainText(MainText_EnableLV_LeftCube, MainText_Enable_LightVisualizers, false, "WallMenu_LVLeftCube",
-	              (Offset_MainText * 4) + Indent);
+	              Offset_MainText * 4 + Indent);
 
 	ToggleText_LV_LeftCube_On = CreateDefaultSubobject<UText3DComponent>(FName("Left Cube On"));
 	ToggleText_LV_LeftCube_Off = CreateDefaultSubobject<UText3DComponent>(FName("Left Cube Off"));
@@ -108,7 +108,7 @@ AWallMenu::AWallMenu()
 	// Right Cube Visualizer
 	MainText_EnableLV_RightCube = CreateDefaultSubobject<UText3DComponent>(FName("Enable Right Cube"));
 	SetupMainText(MainText_EnableLV_RightCube, MainText_Enable_LightVisualizers, false, "WallMenu_LVRightCube",
-	              (Offset_MainText * 5) + Indent);
+	              Offset_MainText * 5 + Indent);
 
 	ToggleText_LV_RightCube_On = CreateDefaultSubobject<UText3DComponent>(FName("Right Cube On"));
 	ToggleText_LV_RightCube_Off = CreateDefaultSubobject<UText3DComponent>(FName("Right Cube Off"));
@@ -301,9 +301,9 @@ UAbilitySystemComponent* AWallMenu::GetAbilitySystemComponent() const
 	return AbilitySystemComponent;
 }
 
-void AWallMenu::OnGameplayEffectAppliedToSelf(UAbilitySystemComponent* ABS,
+void AWallMenu::OnGameplayEffectAppliedToSelf(UAbilitySystemComponent* /*ABS*/,
                                               const FGameplayEffectSpec& EffectSpec,
-                                              FActiveGameplayEffectHandle EffectHandle)
+                                              FActiveGameplayEffectHandle /*EffectHandle*/)
 {
 	FGameplayTagContainer Container;
 	EffectSpec.GetAllAssetTags(Container);
@@ -317,8 +317,7 @@ void AWallMenu::OnGameplayEffectAppliedToSelf(UAbilitySystemComponent* ABS,
 	if (UPrimitiveComponent* HitComponent = Hit->GetComponent())
 	{
 		UBoxComponent* Box = Cast<UBoxComponent>(HitComponent);
-		const FText3DToggle* Found = BoxToTextMap.Find(Box);
-		if (Found)
+		if (const FText3DToggle* Found = BoxToTextMap.Find(Box))
 		{
 			bool bRequiresSave = false;
 			FPlayerSettings PlayerSettings = LoadPlayerSettings();
@@ -326,7 +325,7 @@ void AWallMenu::OnGameplayEffectAppliedToSelf(UAbilitySystemComponent* ABS,
 			{
 				if (!bIsWaitingOnTimeOfDayTransition)
 				{
-					bRequiresSave = (PlayerSettings.Game.bNightModeSelected != Found->bIsOnText) || bRequiresSave;
+					bRequiresSave = PlayerSettings.Game.bNightModeSelected != Found->bIsOnText || bRequiresSave;
 					PlayerSettings.Game.bNightModeSelected = Found->bIsOnText;
 				}
 			}
@@ -378,32 +377,32 @@ void AWallMenu::OnGameplayEffectAppliedToSelf(UAbilitySystemComponent* ABS,
 			}
 			else if (Found->SettingType == "bShow_LVFrontBeam")
 			{
-				bRequiresSave = (PlayerSettings.Game.bShow_LVFrontBeam != Found->bIsOnText) || bRequiresSave;
+				bRequiresSave = PlayerSettings.Game.bShow_LVFrontBeam != Found->bIsOnText || bRequiresSave;
 				PlayerSettings.Game.bShow_LVFrontBeam = Found->bIsOnText;
 			}
 			else if (Found->SettingType == "bShow_LVLeftBeam")
 			{
-				bRequiresSave = (PlayerSettings.Game.bShow_LVLeftBeam != Found->bIsOnText) || bRequiresSave;
+				bRequiresSave = PlayerSettings.Game.bShow_LVLeftBeam != Found->bIsOnText || bRequiresSave;
 				PlayerSettings.Game.bShow_LVLeftBeam = Found->bIsOnText;
 			}
 			else if (Found->SettingType == "bShow_LVRightBeam")
 			{
-				bRequiresSave = (PlayerSettings.Game.bShow_LVRightBeam != Found->bIsOnText) || bRequiresSave;
+				bRequiresSave = PlayerSettings.Game.bShow_LVRightBeam != Found->bIsOnText || bRequiresSave;
 				PlayerSettings.Game.bShow_LVRightBeam = Found->bIsOnText;
 			}
 			else if (Found->SettingType == "bShow_LVTopBeam")
 			{
-				bRequiresSave = (PlayerSettings.Game.bShow_LVTopBeam != Found->bIsOnText) || bRequiresSave;
+				bRequiresSave = PlayerSettings.Game.bShow_LVTopBeam != Found->bIsOnText || bRequiresSave;
 				PlayerSettings.Game.bShow_LVTopBeam = Found->bIsOnText;
 			}
 			else if (Found->SettingType == "bShow_LVLeftCube")
 			{
-				bRequiresSave = (PlayerSettings.Game.bShow_LVLeftCube != Found->bIsOnText) || bRequiresSave;
+				bRequiresSave = PlayerSettings.Game.bShow_LVLeftCube != Found->bIsOnText || bRequiresSave;
 				PlayerSettings.Game.bShow_LVLeftCube = Found->bIsOnText;
 			}
 			else if (Found->SettingType == "bShow_LVRightCube")
 			{
-				bRequiresSave = (PlayerSettings.Game.bShow_LVRightCube != Found->bIsOnText) || bRequiresSave;
+				bRequiresSave = PlayerSettings.Game.bShow_LVRightCube != Found->bIsOnText || bRequiresSave;
 				PlayerSettings.Game.bShow_LVRightCube = Found->bIsOnText;
 			}
 

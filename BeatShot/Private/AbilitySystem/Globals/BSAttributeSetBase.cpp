@@ -37,7 +37,9 @@ void UBSAttributeSetBase::PreAttributeChange(const FGameplayAttribute& Attribute
 	}
 }
 
-void UBSAttributeSetBase::PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue)
+void UBSAttributeSetBase::PostAttributeChange(const FGameplayAttribute& Attribute,
+                                              const float OldValue,
+                                              const float NewValue)
 {
 	Super::PostAttributeChange(Attribute, OldValue, NewValue);
 }
@@ -135,7 +137,7 @@ void UBSAttributeSetBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 
 void UBSAttributeSetBase::AdjustAttributeForMaxChange(FGameplayAttributeData& AffectedAttribute,
                                                       const FGameplayAttributeData& MaxAttribute,
-                                                      float NewMaxValue,
+                                                      const float NewMaxValue,
                                                       const FGameplayAttribute& AffectedAttributeProperty)
 {
 	UAbilitySystemComponent* AbilityComp = GetOwningAbilitySystemComponent();
@@ -144,8 +146,8 @@ void UBSAttributeSetBase::AdjustAttributeForMaxChange(FGameplayAttributeData& Af
 	{
 		// Change current value to maintain the current Val / Max percent
 		const float CurrentValue = AffectedAttribute.GetCurrentValue();
-		float NewDelta = (CurrentMaxValue > 0.f)
-		                 ? (CurrentValue * NewMaxValue / CurrentMaxValue) - CurrentValue
+		float NewDelta = CurrentMaxValue > 0.f
+		                 ? CurrentValue * NewMaxValue / CurrentMaxValue - CurrentValue
 		                 : NewMaxValue;
 
 		// Clamp the max to be less than Max - Current since it gets added

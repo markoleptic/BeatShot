@@ -14,8 +14,10 @@ class BEATSHOT_API UStatFragment : public UBSInventoryItemFragment
 {
 	GENERATED_BODY()
 
+public:
 	virtual void OnInstanceCreated(UBSInventoryItemInstance* Instance) const override;
 
+private:
 	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Equipment")
 	TMap<FGameplayTag, int32> InitialItemStats;
 

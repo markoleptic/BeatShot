@@ -71,12 +71,14 @@ private:
 	UPROPERTY()
 	UCubeVisualizerDefinition* CubeVisualizerDefinition;
 
+public:
 	/** Returns the Beam Visualizer Definition. */
 	virtual UCubeVisualizerDefinition* GetVisualizerDefinition() const override
 	{
 		return Cast<UCubeVisualizerDefinition>(VisualizerDefinition);
 	}
 
+private:
 	/** Returns the Cube Visualizer Definition. */
 	UCubeVisualizerDefinition& GetFastDef() const { return *CubeVisualizerDefinition; }
 

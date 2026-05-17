@@ -10,11 +10,6 @@
 
 class FLifetimeProperty;
 
-UBSInventoryItemInstance::UBSInventoryItemInstance(const FObjectInitializer& ObjectInitializer) : Super(
-	ObjectInitializer)
-{
-}
-
 void UBSInventoryItemInstance::AddIdentifierTags(const FGameplayTagContainer& Tags)
 {
 	IdentifierTags.AppendTags(Tags);
@@ -38,30 +33,30 @@ void UBSInventoryItemInstance::GetLifetimeReplicatedProps(TArray<FLifetimeProper
 	DOREPLIFETIME(ThisClass, ItemDef);
 }
 
-void UBSInventoryItemInstance::AddStatTagStack(FGameplayTag Tag, int32 StackCount)
+void UBSInventoryItemInstance::AddStatTagStack(const FGameplayTag Tag, const int32 StackCount)
 {
 	StatTags.AddStack(Tag, StackCount);
 }
 
-void UBSInventoryItemInstance::RemoveStatTagStack(FGameplayTag Tag, int32 StackCount)
+void UBSInventoryItemInstance::RemoveStatTagStack(const FGameplayTag Tag, const int32 StackCount)
 {
 	StatTags.RemoveStack(Tag, StackCount);
 }
 
-int32 UBSInventoryItemInstance::GetStatTagStackCount(FGameplayTag Tag) const
+int32 UBSInventoryItemInstance::GetStatTagStackCount(const FGameplayTag Tag) const
 {
 	return StatTags.GetStackCount(Tag);
 }
 
-bool UBSInventoryItemInstance::HasStatTag(FGameplayTag Tag) const
+bool UBSInventoryItemInstance::HasStatTag(const FGameplayTag Tag) const
 {
-	return (StatTags.GetStackCount(Tag) == 0) ? false : true;
+	return StatTags.GetStackCount(Tag) != 0;
 }
 
 const UBSInventoryItemFragment* UBSInventoryItemInstance::FindFragmentByClass(
-	TSubclassOf<UBSInventoryItemFragment> FragmentClass) const
+	const TSubclassOf<UBSInventoryItemFragment> FragmentClass) const
 {
-	if ((ItemDef != nullptr) && (FragmentClass != nullptr))
+	if (ItemDef != nullptr && FragmentClass != nullptr)
 	{
 		return GetDefault<UBSInventoryItemDefinition>(ItemDef)->FindFragmentByClass(FragmentClass);
 	}
@@ -69,7 +64,7 @@ const UBSInventoryItemFragment* UBSInventoryItemInstance::FindFragmentByClass(
 	return nullptr;
 }
 
-void UBSInventoryItemInstance::SetItemDef(TSubclassOf<UBSInventoryItemDefinition> InDef)
+void UBSInventoryItemInstance::SetItemDef(const TSubclassOf<UBSInventoryItemDefinition> InDef)
 {
 	ItemDef = InDef;
 }

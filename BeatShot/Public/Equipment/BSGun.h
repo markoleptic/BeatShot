@@ -18,15 +18,17 @@ class BEATSHOT_API ABSGun : public ABSEquipmentActor, public IBSPlayerSettingsIn
 {
 	GENERATED_BODY()
 
+public:
 	ABSGun();
 
+protected:
 	virtual void BeginPlay() override;
 
+public:
 	/** ~IBSPlayerSettingsInterface begin */
 	virtual void OnPlayerSettingsChanged(const FPlayerSettings_Game& GameSettings) override;
 	/** ~IBSPlayerSettingsInterface end */
-
-public:
+	
 	/** Increments ShotsFired, executes OnShotFired. */
 	UFUNCTION(BlueprintCallable)
 	virtual void Fire();

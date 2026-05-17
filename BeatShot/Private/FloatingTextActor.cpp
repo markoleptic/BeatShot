@@ -35,7 +35,7 @@ void AFloatingTextActor::BeginPlay()
 	}
 }
 
-void AFloatingTextActor::Tick(float DeltaTime)
+void AFloatingTextActor::Tick(const float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }

@@ -16,6 +16,7 @@ class BEATSHOT_API UBSGA_AimBot : public UBSGameplayAbility
 public:
 	UBSGA_AimBot();
 
+protected:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 	                             const FGameplayAbilityActorInfo* ActorInfo,
 	                             const FGameplayAbilityActivationInfo ActivationInfo,
@@ -26,6 +27,7 @@ public:
 	                        bool bReplicateEndAbility,
 	                        bool bWasCancelled) override;
 
+public:
 	/** Bound to TargetSpawner's OnTargetActivated delegate. */
 	UFUNCTION()
 	void OnTargetActivated(ATarget* SpawnedTarget);

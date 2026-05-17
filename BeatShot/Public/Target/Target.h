@@ -201,9 +201,10 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-	virtual void PostInitializeComponents() override;
 
 public:
+	virtual void PostInitializeComponents() override;
+	
 	virtual void Tick(float DeltaSeconds) override;
 
 	/** Called in TargetManager to initialize the target. */

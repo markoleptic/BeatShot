@@ -38,7 +38,7 @@ void AMoon::BeginPlay()
 	Super::BeginPlay();
 }
 
-void AMoon::Tick(float DeltaTime)
+void AMoon::Tick(const float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }

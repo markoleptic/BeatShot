@@ -24,7 +24,10 @@ class BEATSHOT_API AMainMenuGameMode : public AGameModeBase, public IBSPlayerSet
 public:
 	AMainMenuGameMode();
 
+protected:
 	virtual void BeginPlay() override;
+
+public:
 	virtual void OnPlayerSettingsChanged(const FPlayerSettings_Game& GameSettings) override;
 
 	/** Enables communication between GameModesWidget and TargetManager. */

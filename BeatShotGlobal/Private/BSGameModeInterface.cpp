@@ -54,7 +54,8 @@ int32 IBSGameModeInterface::RemoveCustomGameMode(const FBSConfig& ConfigToRemove
 	}
 	if (SaveGamePlayerScore)
 	{
-		NumScoresRemoved = SaveGamePlayerScore->RemoveCommonScoreInfoAndMatchingPlayerScores(ConfigToRemove.DefiningConfig);
+		NumScoresRemoved = SaveGamePlayerScore->RemoveCommonScoreInfoAndMatchingPlayerScores(
+			ConfigToRemove.DefiningConfig);
 	}
 	return NumScoresRemoved;
 }

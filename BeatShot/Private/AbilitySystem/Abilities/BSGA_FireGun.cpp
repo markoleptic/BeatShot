@@ -53,7 +53,7 @@ void UBSGA_FireGun::EndAbility(const FGameplayAbilitySpecHandle Handle,
 }
 
 void UBSGA_FireGun::OnTargetDataReadyCallback(const FGameplayAbilityTargetDataHandle& InData,
-                                              FGameplayTag ApplicationTag)
+                                              const FGameplayTag ApplicationTag)
 {
 	UAbilitySystemComponent* MyAbilityComponent = CurrentActorInfo->AbilitySystemComponent.Get();
 	if (MyAbilityComponent->FindAbilitySpecFromHandle(CurrentSpecHandle))

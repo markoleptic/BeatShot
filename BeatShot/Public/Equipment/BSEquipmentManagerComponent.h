@@ -27,7 +27,7 @@ struct FBSAppliedEquipmentEntry : public FFastArraySerializerItem
 	FString GetDebugString() const
 	{
 		return FString::Printf(TEXT("%s of %s"), *GetNameSafe(Instance.Get()), *GetNameSafe(EquipmentDefinition.Get()));
-	};
+	}
 
 	friend struct FBSEquipmentList;
 	friend class UBSEquipmentManagerComponent;
@@ -87,7 +87,7 @@ private:
 };
 
 template <>
-struct TStructOpsTypeTraits<FBSEquipmentList> : public TStructOpsTypeTraitsBase2<FBSEquipmentList>
+struct TStructOpsTypeTraits<FBSEquipmentList> : TStructOpsTypeTraitsBase2<FBSEquipmentList>
 {
 	enum { WithNetDeltaSerializer = true };
 };
@@ -113,8 +113,8 @@ public:
 	void UnequipItem(UBSEquipmentInstance* ItemInstance, const bool bCallOnUnequipped = true);
 
 	//~UObject interface
-	virtual bool ReplicateSubobjects(class UActorChannel* Channel,
-	                                 class FOutBunch* Bunch,
+	virtual bool ReplicateSubobjects(UActorChannel* Channel,
+	                                 FOutBunch* Bunch,
 	                                 FReplicationFlags* RepFlags) override;
 	//~End of UObject interface
 

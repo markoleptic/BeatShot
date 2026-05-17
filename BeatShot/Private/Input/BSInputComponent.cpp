@@ -6,17 +6,13 @@
 #include "SaveGames/SaveGamePlayerSettings.h"
 #include "UserSettings/EnhancedInputUserSettings.h"
 
-UBSInputComponent::UBSInputComponent(const FObjectInitializer& ObjectInitializer)
-{
-}
-
 void UBSInputComponent::AddInputMappings(const UBSInputConfig* InputConfig,
                                          UEnhancedInputLocalPlayerSubsystem* InputSubsystem) const
 {
 	check(InputConfig);
 	check(InputSubsystem);
 
-	ULocalPlayer* LocalPlayer = InputSubsystem->GetLocalPlayer();
+	const ULocalPlayer* LocalPlayer = InputSubsystem->GetLocalPlayer();
 	check(LocalPlayer);
 
 	FPlayerSettings_User UserSettings = LoadPlayerSettings().User;
@@ -66,7 +62,7 @@ void UBSInputComponent::RemoveNativeActionBinding(const FGameplayTag& InputTag)
 	TArray<FEnhancedInputActionEventBinding*> BindHandles;
 	if (NativeActionBindings.RemoveAndCopyValue(InputTag, BindHandles))
 	{
-		for (FEnhancedInputActionEventBinding* BindHandle : BindHandles)
+		for (const FEnhancedInputActionEventBinding* BindHandle : BindHandles)
 		{
 			RemoveBindingByHandle(BindHandle->GetHandle());
 		}
@@ -78,7 +74,7 @@ void UBSInputComponent::RemoveAbilityActionBinding(const FGameplayTag& InputTag)
 	TArray<FEnhancedInputActionEventBinding*> BindHandles;
 	if (AbilityActionBindings.RemoveAndCopyValue(InputTag, BindHandles))
 	{
-		for (FEnhancedInputActionEventBinding* BindHandle : BindHandles)
+		for (const FEnhancedInputActionEventBinding* BindHandle : BindHandles)
 		{
 			RemoveBindingByHandle(BindHandle->GetHandle());
 		}
@@ -89,7 +85,7 @@ void UBSInputComponent::ClearNativeActionBindings()
 {
 	for (auto& Binding : NativeActionBindings)
 	{
-		for (FEnhancedInputActionEventBinding* Handle : Binding.Value)
+		for (const FEnhancedInputActionEventBinding* Handle : Binding.Value)
 		{
 			RemoveBindingByHandle(Handle->GetHandle());
 		}
@@ -101,7 +97,7 @@ void UBSInputComponent::ClearAbilityActionBindings()
 {
 	for (auto& Binding : AbilityActionBindings)
 	{
-		for (FEnhancedInputActionEventBinding* Handle : Binding.Value)
+		for (const FEnhancedInputActionEventBinding* Handle : Binding.Value)
 		{
 			RemoveBindingByHandle(Handle->GetHandle());
 		}

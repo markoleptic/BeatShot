@@ -93,7 +93,7 @@ private:
 };
 
 template <>
-struct TStructOpsTypeTraits<FGameplayTagStackContainer> : public TStructOpsTypeTraitsBase2<FGameplayTagStackContainer>
+struct TStructOpsTypeTraits<FGameplayTagStackContainer> : TStructOpsTypeTraitsBase2<FGameplayTagStackContainer>
 {
 	enum
 	{

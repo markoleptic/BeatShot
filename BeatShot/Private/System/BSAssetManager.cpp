@@ -10,8 +10,6 @@ UBSAssetManager::UBSAssetManager()
 UBSAssetManager& UBSAssetManager::Get()
 {
 	check(GEngine);
-	auto This = Cast<UBSAssetManager>(GEngine->AssetManager);
-
 	UBSAssetManager* MyAssetManager = Cast<UBSAssetManager>(GEngine->AssetManager);
 	return *MyAssetManager;
 }

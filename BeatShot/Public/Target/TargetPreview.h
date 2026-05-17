@@ -58,6 +58,7 @@ protected:
 	virtual void OnLifeSpanExpired() override;
 
 	/** Reference to the target widget in CustomGameModesWidget_Preview. */
+	UPROPERTY()
 	TObjectPtr<UTargetWidget> TargetWidget;
 
 	float BoxBoundsHeight = 1000.f;

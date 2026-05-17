@@ -41,7 +41,7 @@ void FGameplayTagStackContainer::AddStack(FGameplayTag Tag, int32 StackCount)
 	}
 }
 
-void FGameplayTagStackContainer::RemoveStack(FGameplayTag Tag, int32 StackCount)
+void FGameplayTagStackContainer::RemoveStack(const FGameplayTag Tag, const int32 StackCount)
 {
 	if (!Tag.IsValid())
 	{
@@ -75,7 +75,7 @@ void FGameplayTagStackContainer::RemoveStack(FGameplayTag Tag, int32 StackCount)
 	}
 }
 
-void FGameplayTagStackContainer::PreReplicatedRemove(const TArrayView<int32> RemovedIndices, int32 FinalSize)
+void FGameplayTagStackContainer::PreReplicatedRemove(const TArrayView<int32> RemovedIndices, int32 /*FinalSize*/)
 {
 	for (const int32 Index : RemovedIndices)
 	{
@@ -84,7 +84,7 @@ void FGameplayTagStackContainer::PreReplicatedRemove(const TArrayView<int32> Rem
 	}
 }
 
-void FGameplayTagStackContainer::PostReplicatedAdd(const TArrayView<int32> AddedIndices, int32 FinalSize)
+void FGameplayTagStackContainer::PostReplicatedAdd(const TArrayView<int32> AddedIndices, int32 /*FinalSize*/)
 {
 	for (const int32 Index : AddedIndices)
 	{
@@ -93,7 +93,7 @@ void FGameplayTagStackContainer::PostReplicatedAdd(const TArrayView<int32> Added
 	}
 }
 
-void FGameplayTagStackContainer::PostReplicatedChange(const TArrayView<int32> ChangedIndices, int32 FinalSize)
+void FGameplayTagStackContainer::PostReplicatedChange(const TArrayView<int32> ChangedIndices, int32 /*FinalSize*/)
 {
 	for (const int32 Index : ChangedIndices)
 	{

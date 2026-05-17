@@ -87,7 +87,7 @@ void ATimeOfDayManager::PostInitializeComponents()
 	}
 }
 
-void ATimeOfDayManager::Tick(float DeltaTime)
+void ATimeOfDayManager::Tick(const float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	if (TransitionTimeline.IsPlaying())
@@ -316,7 +316,7 @@ void ATimeOfDayManager::HandleGameUserSettingsChanged(const UBSGameUserSettings*
 
 void ATimeOfDayManager::OnTimelineCompletedCallback()
 {
-	TimeOfDay = (TimeOfDay == ETimeOfDay::DayToNight) ? ETimeOfDay::Night : ETimeOfDay::Day;;
+	TimeOfDay = TimeOfDay == ETimeOfDay::DayToNight ? ETimeOfDay::Night : ETimeOfDay::Day;
 	if (OnTimeOfDayTransitionCompleted.IsBound())
 	{
 		OnTimeOfDayTransitionCompleted.Execute(TimeOfDay);
@@ -383,7 +383,7 @@ void ATimeOfDayManager::TransitionTimeOfDay(const float Value)
 	else
 	{
 		const float CurrentRoofXTravelDistance = UKismetMathLibrary::Lerp(
-			0, DayToNightRoofXTravelDistance, (PositionAlpha - 0.2f) / (0.8f));
+			0, DayToNightRoofXTravelDistance, (PositionAlpha - 0.2f) / 0.8f);
 		LeftWindowCover->GetStaticMeshComponent()->SetRelativeLocation(
 			DaytimeLeftRoofLocation + FVector(CurrentRoofXTravelDistance, 0, DayToNightRoofZTravelDistance));
 		RightWindowCover->GetStaticMeshComponent()->SetRelativeLocation(

@@ -156,7 +156,7 @@ UBSCharacterMovementComponent::UBSCharacterMovementComponent()
 	bMaintainHorizontalGroundVelocity = true;
 }
 
-void UBSCharacterMovementComponent::SetSprintSpeedMultiplier(float NewSpringSpeedMultiplier)
+void UBSCharacterMovementComponent::SetSprintSpeedMultiplier(const float NewSpringSpeedMultiplier)
 {
 	SprintSpeedMultiplier = NewSpringSpeedMultiplier;
 }
@@ -197,7 +197,7 @@ float UBSCharacterMovementComponent::GetMaxSpeed() const
 
 const FCharacterGroundInfo& UBSCharacterMovementComponent::GetGroundInfo()
 {
-	if (!CharacterOwner || (GFrameCounter == CachedGroundInfo.LastUpdateFrame))
+	if (!CharacterOwner || GFrameCounter == CachedGroundInfo.LastUpdateFrame)
 	{
 		return CachedGroundInfo;
 	}
@@ -213,9 +213,9 @@ const FCharacterGroundInfo& UBSCharacterMovementComponent::GetGroundInfo()
 		check(CapsuleComp);
 
 		const float CapsuleHalfHeight = CapsuleComp->GetUnscaledCapsuleHalfHeight();
-		const ECollisionChannel CollisionChannel = (UpdatedComponent
-		                                            ? UpdatedComponent->GetCollisionObjectType()
-		                                            : ECC_Pawn);
+		const ECollisionChannel CollisionChannel = UpdatedComponent
+		                                           ? UpdatedComponent->GetCollisionObjectType()
+		                                           : ECC_Pawn;
 		const FVector TraceStart(GetActorLocation());
 		const FVector TraceEnd(TraceStart.X, TraceStart.Y, TraceStart.Z - GroundTraceDistance - CapsuleHalfHeight);
 
@@ -235,7 +235,7 @@ const FCharacterGroundInfo& UBSCharacterMovementComponent::GetGroundInfo()
 		}
 		else if (HitResult.bBlockingHit)
 		{
-			CachedGroundInfo.GroundDistance = FMath::Max((HitResult.Distance - CapsuleHalfHeight), 0.0f);
+			CachedGroundInfo.GroundDistance = FMath::Max(HitResult.Distance - CapsuleHalfHeight, 0.0f);
 		}
 	}
 
@@ -253,15 +253,15 @@ void UBSCharacterMovementComponent::OnRegister()
 {
 	Super::OnRegister();
 
-	const bool bIsReplay = (GetWorld() && GetWorld()->IsPlayingReplay());
+	const bool bIsReplay = GetWorld() && GetWorld()->IsPlayingReplay();
 	if (!bIsReplay && GetNetMode() == NM_ListenServer)
 	{
 		NetworkSmoothingMode = ENetworkSmoothingMode::Linear;
 	}
 }
 
-void UBSCharacterMovementComponent::TickComponent(float DeltaTime,
-                                                  ELevelTick TickType,
+void UBSCharacterMovementComponent::TickComponent(const float DeltaTime,
+                                                  const ELevelTick TickType,
                                                   FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
@@ -320,10 +320,10 @@ void UBSCharacterMovementComponent::TickComponent(float DeltaTime,
 	bCrouchFrameTolerated = IsCrouching();
 }
 
-void UBSCharacterMovementComponent::CalcVelocity(float DeltaTime,
+void UBSCharacterMovementComponent::CalcVelocity(const float DeltaTime,
                                                  float Friction,
-                                                 bool bFluid,
-                                                 float BrakingDeceleration)
+                                                 const bool bFluid,
+                                                 const float BrakingDeceleration)
 {
 	// Do not update velocity when using root motion or when SimulatedProxy and not simulating root motion;
 	// SimulatedProxy are repped their Velocity
@@ -467,8 +467,8 @@ void UBSCharacterMovementComponent::CalcVelocity(float DeltaTime,
 	else
 	{
 		// Scale step/ramp height down the faster we go
-		float Speed = FMath::Sqrt(SpeedSq);
-		float SpeedScale = (Speed - SpeedMultMin) / (SpeedMultMax - SpeedMultMin);
+		const float Speed = FMath::Sqrt(SpeedSq);
+		const float SpeedScale = (Speed - SpeedMultMin) / (SpeedMultMax - SpeedMultMin);
 		float SpeedMultiplier = FMath::Clamp(SpeedScale, 0.0f, 1.0f);
 		SpeedMultiplier *= SpeedMultiplier;
 		if (!IsFalling())
@@ -481,7 +481,9 @@ void UBSCharacterMovementComponent::CalcVelocity(float DeltaTime,
 	}
 }
 
-void UBSCharacterMovementComponent::ApplyVelocityBraking(float DeltaTime, float Friction, float BrakingDeceleration)
+void UBSCharacterMovementComponent::ApplyVelocityBraking(const float DeltaTime,
+                                                         float Friction,
+                                                         float BrakingDeceleration)
 {
 	if (Velocity.IsNearlyZero(0.1f) || !HasValidData() || HasAnimRootMotion() || DeltaTime < MIN_TICK_TIME)
 	{
@@ -491,8 +493,8 @@ void UBSCharacterMovementComponent::ApplyVelocityBraking(float DeltaTime, float 
 	const float FrictionFactor = FMath::Max(0.f, BrakingFrictionFactor);
 	Friction = FMath::Max(0.f, Friction * FrictionFactor);
 	BrakingDeceleration = FMath::Max(0.f, BrakingDeceleration);
-	const bool bZeroFriction = (Friction == 0.f);
-	const bool bZeroBraking = (BrakingDeceleration == 0.f);
+	const bool bZeroFriction = Friction == 0.f;
+	const bool bZeroBraking = BrakingDeceleration == 0.f;
 
 	if (bZeroFriction && bZeroBraking)
 	{
@@ -507,17 +509,17 @@ void UBSCharacterMovementComponent::ApplyVelocityBraking(float DeltaTime, float 
 	const float MaxTimeStep = FMath::Clamp(BrakingSubStepTime, 1.0f / 75.0f, 1.0f / 20.0f);
 
 	// Decelerate to brake to a stop
-	const FVector RevAccel = (bZeroBraking ? FVector::ZeroVector : (-BrakingDeceleration * Velocity.GetSafeNormal()));
+	const FVector RevAccel = bZeroBraking ? FVector::ZeroVector : -BrakingDeceleration * Velocity.GetSafeNormal();
 	while (RemainingTime >= MIN_TICK_TIME)
 	{
 		// Zero friction uses constant deceleration, so no need for iteration.
-		const float dt = ((RemainingTime > MaxTimeStep && !bZeroFriction)
-		                  ? FMath::Min(MaxTimeStep, RemainingTime * 0.5f)
-		                  : RemainingTime);
-		RemainingTime -= dt;
+		const float DT = RemainingTime > MaxTimeStep && !bZeroFriction
+		                 ? FMath::Min(MaxTimeStep, RemainingTime * 0.5f)
+		                 : RemainingTime;
+		RemainingTime -= DT;
 
 		// apply friction and braking
-		Velocity = Velocity + ((-Friction) * Velocity + RevAccel) * dt;
+		Velocity = Velocity + (-Friction * Velocity + RevAccel) * DT;
 
 		// Don't reverse direction
 		if ((Velocity | OldVel) <= 0.f)
@@ -535,26 +537,26 @@ void UBSCharacterMovementComponent::ApplyVelocityBraking(float DeltaTime, float 
 	}
 }
 
-void UBSCharacterMovementComponent::PhysFalling(float deltaTime, int32 Iterations)
+void UBSCharacterMovementComponent::PhysFalling(float DeltaTime, int32 Iterations)
 {
 	SCOPE_CYCLE_COUNTER(STAT_CharPhysFalling);
 	CSV_SCOPED_TIMING_STAT_EXCLUSIVE(CharPhysFalling);
 
-	if (deltaTime < MIN_TICK_TIME)
+	if (DeltaTime < MIN_TICK_TIME)
 	{
 		return;
 	}
 
-	FVector FallAcceleration = GetFallingLateralAcceleration(deltaTime);
+	FVector FallAcceleration = GetFallingLateralAcceleration(DeltaTime);
 	FallAcceleration.Z = 0.f;
-	const bool bHasLimitedAirControl = ShouldLimitAirControl(deltaTime, FallAcceleration);
+	const bool bHasLimitedAirControl = ShouldLimitAirControl(DeltaTime, FallAcceleration);
 
-	float remainingTime = deltaTime;
-	while ((remainingTime >= MIN_TICK_TIME) && (Iterations < MaxSimulationIterations))
+	float RemainingTime = DeltaTime;
+	while (RemainingTime >= MIN_TICK_TIME && Iterations < MaxSimulationIterations)
 	{
 		Iterations++;
-		float timeTick = GetSimulationTimeStep(remainingTime, Iterations);
-		remainingTime -= timeTick;
+		float TimeTick = GetSimulationTimeStep(RemainingTime, Iterations);
+		RemainingTime -= TimeTick;
 
 		const FVector OldLocation = UpdatedComponent->GetComponentLocation();
 		const FQuat PawnRotation = UpdatedComponent->GetComponentQuat();
@@ -575,14 +577,14 @@ void UBSCharacterMovementComponent::PhysFalling(float deltaTime, int32 Iteration
 				// Acceleration = FallAcceleration for CalcVelocity(), but we restore it after using it.
 				TGuardValue<FVector> RestoreAcceleration(Acceleration, FallAcceleration);
 				Velocity.Z = 0.f;
-				CalcVelocity(timeTick, FallingLateralFriction, false, MaxDeceleration);
+				CalcVelocity(TimeTick, FallingLateralFriction, false, MaxDeceleration);
 				Velocity.Z = OldVelocity.Z;
 			}
 		}
 
 		// Compute current gravity
 		const FVector Gravity(0.f, 0.f, GetGravityZ());
-		float GravityTime = timeTick;
+		float GravityTime = TimeTick;
 
 		// If jump is providing force, gravity may be affected.
 		bool bEndingJumpForce = false;
@@ -590,8 +592,8 @@ void UBSCharacterMovementComponent::PhysFalling(float deltaTime, int32 Iteration
 		{
 			// Consume some of the force time. Only the remaining time (if any) is affected by gravity when
 			// bApplyGravityWhileJumping=false.
-			const float JumpForceTime = FMath::Min(CharacterOwner->JumpForceTimeRemaining, timeTick);
-			GravityTime = bApplyGravityWhileJumping ? timeTick : FMath::Max(0.0f, timeTick - JumpForceTime);
+			const float JumpForceTime = FMath::Min(CharacterOwner->JumpForceTimeRemaining, TimeTick);
+			GravityTime = bApplyGravityWhileJumping ? TimeTick : FMath::Max(0.0f, TimeTick - JumpForceTime);
 
 			// Update Character state
 			CharacterOwner->JumpForceTimeRemaining -= JumpForceTime;
@@ -609,14 +611,14 @@ void UBSCharacterMovementComponent::PhysFalling(float deltaTime, int32 Iteration
 		// of the trajectory as framerate varies.
 		if (OldVelocity.Z > 0.f && Velocity.Z <= 0.f && NumJumpApexAttempts < MaxJumpApexAttemptsPerSimulation)
 		{
-			const FVector DerivedAccel = (Velocity - OldVelocity) / timeTick;
+			const FVector DerivedAccel = (Velocity - OldVelocity) / TimeTick;
 			if (!FMath::IsNearlyZero(DerivedAccel.Z))
 			{
 				const float TimeToApex = -OldVelocity.Z / DerivedAccel.Z;
 
 				// The time-to-apex calculation should be precise, and we want to avoid adding a substep when we
 				// are basically already at the apex from the previous iteration's work.
-				if (TimeToApex >= ApexTimeMinimum && TimeToApex < timeTick)
+				if (TimeToApex >= ApexTimeMinimum && TimeToApex < TimeTick)
 				{
 					const FVector ApexVelocity = OldVelocity + DerivedAccel * TimeToApex;
 					Velocity = ApexVelocity;
@@ -624,8 +626,8 @@ void UBSCharacterMovementComponent::PhysFalling(float deltaTime, int32 Iteration
 
 					// We only want to move the amount of time it takes to reach the apex, and refund the unused
 					// time for next iteration.
-					remainingTime += (timeTick - TimeToApex);
-					timeTick = TimeToApex;
+					RemainingTime += TimeTick - TimeToApex;
+					TimeTick = TimeToApex;
 					Iterations--;
 					NumJumpApexAttempts++;
 				}
@@ -636,9 +638,9 @@ void UBSCharacterMovementComponent::PhysFalling(float deltaTime, int32 Iteration
 		// OldVelocityWithRootMotion=(%s) NewVelocity=(%s)"), timeTick,
 		// *(UpdatedComponent->GetComponentLocation()).ToString(), *OldVelocity.ToString(),
 		// *OldVelocityWithRootMotion.ToString(), *Velocity.ToString());
-		ApplyRootMotionToVelocity(timeTick);
+		ApplyRootMotionToVelocity(TimeTick);
 
-		if (bNotifyApex && (Velocity.Z < 0.f))
+		if (bNotifyApex && Velocity.Z < 0.f)
 		{
 			// Just passed jump apex since now going down
 			bNotifyApex = false;
@@ -646,16 +648,16 @@ void UBSCharacterMovementComponent::PhysFalling(float deltaTime, int32 Iteration
 		}
 
 		// Compute change in position (using midpoint integration method).
-		FVector Adjusted = 0.5f * (OldVelocityWithRootMotion + Velocity) * timeTick;
+		FVector Adjusted = 0.5f * (OldVelocityWithRootMotion + Velocity) * TimeTick;
 
 		// Special handling if ending the jump force where we didn't apply gravity during the jump.
 		if (bEndingJumpForce && !bApplyGravityWhileJumping)
 		{
 			// We had a portion of the time at constant speed then a portion with acceleration due to gravity.
 			// Account for that here with a more correct change in position.
-			const float NonGravityTime = FMath::Max(0.f, timeTick - GravityTime);
-			Adjusted = (OldVelocityWithRootMotion * NonGravityTime) + (0.5f * (OldVelocityWithRootMotion + Velocity) *
-			                                                           GravityTime);
+			const float NonGravityTime = FMath::Max(0.f, TimeTick - GravityTime);
+			Adjusted = OldVelocityWithRootMotion * NonGravityTime + 0.5f * (OldVelocityWithRootMotion + Velocity) *
+			           GravityTime;
 		}
 
 		// Move
@@ -667,21 +669,21 @@ void UBSCharacterMovementComponent::PhysFalling(float deltaTime, int32 Iteration
 			return;
 		}
 
-		float LastMoveTimeSlice = timeTick;
-		float subTimeTickRemaining = timeTick * (1.f - Hit.Time);
+		float LastMoveTimeSlice = TimeTick;
+		float SubTimeTickRemaining = TimeTick * (1.f - Hit.Time);
 
 		if (IsSwimming()) //just entered water
 		{
-			remainingTime += subTimeTickRemaining;
-			StartSwimming(OldLocation, OldVelocity, timeTick, remainingTime, Iterations);
+			RemainingTime += SubTimeTickRemaining;
+			StartSwimming(OldLocation, OldVelocity, TimeTick, RemainingTime, Iterations);
 			return;
 		}
 		if (Hit.bBlockingHit)
 		{
 			if (IsValidLandingSpot(UpdatedComponent->GetComponentLocation(), Hit))
 			{
-				remainingTime += subTimeTickRemaining;
-				ProcessLanded(Hit, remainingTime, Iterations);
+				RemainingTime += SubTimeTickRemaining;
+				ProcessLanded(Hit, RemainingTime, Iterations);
 				return;
 			}
 			// Compute impact deflection based on final velocity, not integration step.
@@ -690,15 +692,15 @@ void UBSCharacterMovementComponent::PhysFalling(float deltaTime, int32 Iteration
 			//Adjusted = Velocity * timeTick;
 
 			// See if we can convert a normally invalid landing spot (based on the hit result) to a usable one.
-			if (!Hit.bStartPenetrating && ShouldCheckForValidLandingSpot(timeTick, Adjusted, Hit))
+			if (!Hit.bStartPenetrating && ShouldCheckForValidLandingSpot(TimeTick, Adjusted, Hit))
 			{
 				const FVector PawnLocation = UpdatedComponent->GetComponentLocation();
 				FFindFloorResult FloorResult;
 				FindFloor(PawnLocation, FloorResult, false);
 				if (FloorResult.IsWalkableFloor() && IsValidLandingSpot(PawnLocation, FloorResult.HitResult))
 				{
-					remainingTime += subTimeTickRemaining;
-					ProcessLanded(FloorResult.HitResult, remainingTime, Iterations);
+					RemainingTime += SubTimeTickRemaining;
+					ProcessLanded(FloorResult.HitResult, RemainingTime, Iterations);
 					return;
 				}
 			}
@@ -723,13 +725,13 @@ void UBSCharacterMovementComponent::PhysFalling(float deltaTime, int32 Iteration
 					TGuardValue<FVector> RestoreAcceleration(Acceleration, FVector::ZeroVector);
 					TGuardValue<FVector> RestoreVelocity(Velocity, OldVelocity);
 					Velocity.Z = 0.f;
-					CalcVelocity(timeTick, FallingLateralFriction, false, MaxDeceleration);
+					CalcVelocity(TimeTick, FallingLateralFriction, false, MaxDeceleration);
 					VelocityNoAirControl = FVector(Velocity.X, Velocity.Y, OldVelocity.Z);
 					VelocityNoAirControl = NewFallVelocity(VelocityNoAirControl, Gravity, GravityTime);
 				}
 
 				constexpr bool bCheckLandingSpot = false; // we already checked above.
-				AirControlAccel = (Velocity - VelocityNoAirControl) / timeTick;
+				AirControlAccel = (Velocity - VelocityNoAirControl) / TimeTick;
 				const FVector AirControlDeltaV = LimitAirControl(LastMoveTimeSlice, AirControlAccel, Hit,
 				                                                 bCheckLandingSpot) * LastMoveTimeSlice;
 				Adjusted = (VelocityNoAirControl + AirControlDeltaV) * LastMoveTimeSlice;
@@ -739,18 +741,18 @@ void UBSCharacterMovementComponent::PhysFalling(float deltaTime, int32 Iteration
 			const FVector OldHitImpactNormal = Hit.ImpactNormal;
 			FVector Delta = ComputeSlideVector(Adjusted, 1.f - Hit.Time, OldHitNormal, Hit);
 			// TODO: Maybe there's a better way of integrating this?
-			FVector DeltaStep = ComputeSlideVector(Velocity * timeTick, 1.f - Hit.Time, OldHitNormal, Hit);
+			FVector DeltaStep = ComputeSlideVector(Velocity * TimeTick, 1.f - Hit.Time, OldHitNormal, Hit);
 
 			// Compute velocity after deflection (only gravity component for RootMotion)
-			if (subTimeTickRemaining > KINDA_SMALL_NUMBER && !bJustTeleported)
+			if (SubTimeTickRemaining > KINDA_SMALL_NUMBER && !bJustTeleported)
 			{
-				const FVector NewVelocity = (DeltaStep / subTimeTickRemaining);
+				const FVector NewVelocity = DeltaStep / SubTimeTickRemaining;
 				Velocity = HasAnimRootMotion() || CurrentRootMotion.HasOverrideVelocityWithIgnoreZAccumulate()
 				           ? FVector(Velocity.X, Velocity.Y, NewVelocity.Z)
 				           : NewVelocity;
 			}
 
-			if (subTimeTickRemaining > KINDA_SMALL_NUMBER && (Delta | Adjusted) > 0.f)
+			if (SubTimeTickRemaining > KINDA_SMALL_NUMBER && (Delta | Adjusted) > 0.f)
 			{
 				// Move in deflected direction.
 				SafeMoveUpdatedComponent(Delta, PawnRotation, true, Hit);
@@ -758,13 +760,13 @@ void UBSCharacterMovementComponent::PhysFalling(float deltaTime, int32 Iteration
 				if (Hit.bBlockingHit)
 				{
 					// hit second wall
-					LastMoveTimeSlice = subTimeTickRemaining;
-					subTimeTickRemaining = subTimeTickRemaining * (1.f - Hit.Time);
+					LastMoveTimeSlice = SubTimeTickRemaining;
+					SubTimeTickRemaining = SubTimeTickRemaining * (1.f - Hit.Time);
 
 					if (IsValidLandingSpot(UpdatedComponent->GetComponentLocation(), Hit))
 					{
-						remainingTime += subTimeTickRemaining;
-						ProcessLanded(Hit, remainingTime, Iterations);
+						RemainingTime += SubTimeTickRemaining;
+						ProcessLanded(Hit, RemainingTime, Iterations);
 						return;
 					}
 
@@ -789,29 +791,28 @@ void UBSCharacterMovementComponent::PhysFalling(float deltaTime, int32 Iteration
 					if (bHasLimitedAirControl)
 					{
 						constexpr bool bCheckLandingSpot = false; // we already checked above.
-						const FVector AirControlDeltaV = LimitAirControl(subTimeTickRemaining, AirControlAccel, Hit,
-						                                                 bCheckLandingSpot) * subTimeTickRemaining;
+						const FVector AirControlDeltaV = LimitAirControl(SubTimeTickRemaining, AirControlAccel, Hit,
+						                                                 bCheckLandingSpot) * SubTimeTickRemaining;
 
 						// Only allow if not back in to first wall
 						if (FVector::DotProduct(AirControlDeltaV, OldHitNormal) > 0.f)
 						{
-							Delta += (AirControlDeltaV * subTimeTickRemaining);
+							Delta += AirControlDeltaV * SubTimeTickRemaining;
 						}
 					}
 
 					// Compute velocity after deflection (only gravity component for RootMotion)
-					if (subTimeTickRemaining > KINDA_SMALL_NUMBER && !bJustTeleported)
+					if (SubTimeTickRemaining > KINDA_SMALL_NUMBER && !bJustTeleported)
 					{
-						const FVector NewVelocity = (Delta / subTimeTickRemaining);
+						const FVector NewVelocity = Delta / SubTimeTickRemaining;
 						Velocity = HasAnimRootMotion() || CurrentRootMotion.HasOverrideVelocityWithIgnoreZAccumulate()
 						           ? FVector(Velocity.X, Velocity.Y, NewVelocity.Z)
 						           : NewVelocity;
 					}
 
 					// bDitch=true means that pawn is straddling two slopes, neither of which he can stand on
-					bool bDitch = ((OldHitImpactNormal.Z > 0.f) && (Hit.ImpactNormal.Z > 0.f) && (
-						               FMath::Abs(Delta.Z) <= KINDA_SMALL_NUMBER) && (
-						               (Hit.ImpactNormal | OldHitImpactNormal) < 0.f));
+					bool bDitch = OldHitImpactNormal.Z > 0.f && Hit.ImpactNormal.Z > 0.f && FMath::Abs(Delta.Z) <=
+					              KINDA_SMALL_NUMBER && (Hit.ImpactNormal | OldHitImpactNormal) < 0.f;
 					SafeMoveUpdatedComponent(Delta, PawnRotation, true, Hit);
 					if (Hit.Time == 0.f)
 					{
@@ -826,8 +827,8 @@ void UBSCharacterMovementComponent::PhysFalling(float deltaTime, int32 Iteration
 
 					if (bDitch || IsValidLandingSpot(UpdatedComponent->GetComponentLocation(), Hit) || Hit.Time == 0.f)
 					{
-						remainingTime = 0.f;
-						ProcessLanded(Hit, remainingTime, Iterations);
+						RemainingTime = 0.f;
+						ProcessLanded(Hit, RemainingTime, Iterations);
 						return;
 					}
 					if (GetPerchRadiusThreshold() > 0.f && Hit.Time == 1.f && OldHitImpactNormal.Z >=
@@ -837,12 +838,12 @@ void UBSCharacterMovementComponent::PhysFalling(float deltaTime, int32 Iteration
 						const FVector PawnLocation = UpdatedComponent->GetComponentLocation();
 						const float ZMovedDist = FMath::Abs(PawnLocation.Z - OldLocation.Z);
 						const float MovedDist2DSq = (PawnLocation - OldLocation).SizeSquared2D();
-						if (ZMovedDist <= 0.2f * timeTick && MovedDist2DSq <= 4.f * timeTick)
+						if (ZMovedDist <= 0.2f * TimeTick && MovedDist2DSq <= 4.f * TimeTick)
 						{
 							Velocity.X += 0.25f * GetMaxSpeed() * (RandomStream.FRand() - 0.5f);
 							Velocity.Y += 0.25f * GetMaxSpeed() * (RandomStream.FRand() - 0.5f);
 							Velocity.Z = FMath::Max<float>(JumpZVelocity * 0.25f, 1.f);
-							Delta = Velocity * timeTick;
+							Delta = Velocity * TimeTick;
 							SafeMoveUpdatedComponent(Delta, PawnRotation, true, Hit);
 						}
 					}
@@ -866,7 +867,7 @@ bool UBSCharacterMovementComponent::ShouldLimitAirControl(float DeltaTime, const
 
 FVector UBSCharacterMovementComponent::NewFallVelocity(const FVector& InitialVelocity,
                                                        const FVector& Gravity,
-                                                       float DeltaTime) const
+                                                       const float DeltaTime) const
 {
 	//return Super::NewFallVelocity(InitialVelocity, Gravity, DeltaTime);
 	FVector FallVel = Super::NewFallVelocity(InitialVelocity, Gravity, DeltaTime);
@@ -874,14 +875,14 @@ FVector UBSCharacterMovementComponent::NewFallVelocity(const FVector& InitialVel
 	return FallVel;
 }
 
-void UBSCharacterMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSeconds)
+void UBSCharacterMovementComponent::UpdateCharacterStateBeforeMovement(const float DeltaSeconds)
 {
 	Super::UpdateCharacterStateBeforeMovement(DeltaSeconds);
 	Velocity.Z = FMath::Clamp(Velocity.Z, -AxisSpeedLimit, AxisSpeedLimit);
 	UpdateCrouching(DeltaSeconds);
 }
 
-void UBSCharacterMovementComponent::UpdateCharacterStateAfterMovement(float DeltaSeconds)
+void UBSCharacterMovementComponent::UpdateCharacterStateAfterMovement(const float DeltaSeconds)
 {
 	Super::UpdateCharacterStateAfterMovement(DeltaSeconds);
 	Velocity.Z = FMath::Clamp(Velocity.Z, -AxisSpeedLimit, AxisSpeedLimit);
@@ -889,7 +890,7 @@ void UBSCharacterMovementComponent::UpdateCharacterStateAfterMovement(float Delt
 	UpdateCrouching(DeltaSeconds, true);
 }
 
-void UBSCharacterMovementComponent::UpdateSurfaceFriction(bool bIsSliding)
+void UBSCharacterMovementComponent::UpdateSurfaceFriction(const bool bIsSliding)
 {
 	if (!IsFalling() && CurrentFloor.IsWalkableFloor())
 	{
@@ -911,7 +912,7 @@ void UBSCharacterMovementComponent::UpdateSurfaceFriction(bool bIsSliding)
 	}
 }
 
-void UBSCharacterMovementComponent::UpdateCrouching(float DeltaTime, bool bOnlyUncrouch)
+void UBSCharacterMovementComponent::UpdateCrouching(const float DeltaTime, const bool bOnlyUncrouch)
 {
 	if (CharacterOwner->GetLocalRole() == ROLE_SimulatedProxy)
 	{
@@ -959,7 +960,7 @@ void UBSCharacterMovementComponent::UpdateCrouching(float DeltaTime, bool bOnlyU
 	}
 }
 
-void UBSCharacterMovementComponent::Crouch(bool bClientSimulation)
+void UBSCharacterMovementComponent::Crouch(const bool bClientSimulation)
 {
 	// TODO: replicate to the client simulation that we are in a crouch transition so they can do the resize too.
 	if (bClientSimulation)
@@ -970,7 +971,7 @@ void UBSCharacterMovementComponent::Crouch(bool bClientSimulation)
 	bIsInCrouchTransition = true;
 }
 
-void UBSCharacterMovementComponent::UnCrouch(bool bClientSimulation)
+void UBSCharacterMovementComponent::UnCrouch(const bool bClientSimulation)
 {
 	// TODO: replicate to the client simulation that we are in a crouch transition so they can do the resize too.
 	if (bClientSimulation)
@@ -981,7 +982,9 @@ void UBSCharacterMovementComponent::UnCrouch(bool bClientSimulation)
 	bIsInCrouchTransition = true;
 }
 
-void UBSCharacterMovementComponent::DoCrouchResize(float TargetTime, float DeltaTime, bool bClientSimulation)
+void UBSCharacterMovementComponent::DoCrouchResize(const float TargetTime,
+                                                   const float DeltaTime,
+                                                   const bool bClientSimulation)
 {
 	if (!HasValidData() || (!bClientSimulation && !CanCrouchInCurrentState()))
 	{
@@ -1078,8 +1081,7 @@ void UBSCharacterMovementComponent::DoCrouchResize(float TargetTime, float Delta
 	if ((bClientSimulation && CharacterOwner->GetLocalRole() == ROLE_SimulatedProxy) || (IsNetMode(NM_ListenServer) &&
 		    CharacterOwner->GetRemoteRole() == ROLE_AutonomousProxy))
 	{
-		FNetworkPredictionData_Client_Character* ClientData = GetPredictionData_Client_Character();
-		if (ClientData)
+		if (FNetworkPredictionData_Client_Character* ClientData = GetPredictionData_Client_Character())
 		{
 			ClientData->MeshTranslationOffset -= FVector(0.0f, 0.0f, ScaledHalfHeightAdjust);
 			ClientData->OriginalMeshTranslationOffset = ClientData->MeshTranslationOffset;
@@ -1087,7 +1089,7 @@ void UBSCharacterMovementComponent::DoCrouchResize(float TargetTime, float Delta
 	}
 }
 
-void UBSCharacterMovementComponent::DoUnCrouchResize(float TargetTime, float DeltaTime, bool bClientSimulation)
+void UBSCharacterMovementComponent::DoUnCrouchResize(const float TargetTime, float DeltaTime, bool bClientSimulation)
 {
 	// UE4-COPY: void UCharacterMovementComponent::UnCrouch(bool bClientSimulation)
 
@@ -1228,7 +1230,7 @@ void UBSCharacterMovementComponent::DoUnCrouchResize(float TargetTime, float Del
 					{
 						// Compute where the base of the sweep ended up, and see
 						// if we can stand there
-						const float DistanceToBase = (Hit.Time * TraceDist) + ShortCapsuleShape.Capsule.HalfHeight;
+						const float DistanceToBase = Hit.Time * TraceDist + ShortCapsuleShape.Capsule.HalfHeight;
 						const FVector NewLoc = FVector(PawnLocation.X, PawnLocation.Y,
 						                               PawnLocation.Z - DistanceToBase + StandingCapsuleShape.Capsule.
 						                               HalfHeight + SweepInflation + MIN_FLOOR_DIST / 2.0f);
@@ -1315,8 +1317,7 @@ void UBSCharacterMovementComponent::DoUnCrouchResize(float TargetTime, float Del
 	if ((bClientSimulation && CharacterOwner->GetLocalRole() == ROLE_SimulatedProxy) || (IsNetMode(NM_ListenServer) &&
 		    CharacterOwner->GetRemoteRole() == ROLE_AutonomousProxy))
 	{
-		FNetworkPredictionData_Client_Character* ClientData = GetPredictionData_Client_Character();
-		if (ClientData)
+		if (FNetworkPredictionData_Client_Character* ClientData = GetPredictionData_Client_Character())
 		{
 			ClientData->MeshTranslationOffset += FVector(0.0f, 0.0f, MeshAdjust);
 			ClientData->OriginalMeshTranslationOffset = ClientData->MeshTranslationOffset;
@@ -1368,7 +1369,7 @@ bool UBSCharacterMovementComponent::CanAttemptJump() const
 	{
 		const float FloorZ = FVector(0.0f, 0.0f, 1.0f) | CurrentFloor.HitResult.ImpactNormal;
 		const float WalkableFloor = GetWalkableFloorZ();
-		bCanAttemptJump &= (FloorZ >= WalkableFloor) || FMath::IsNearlyEqual(FloorZ, WalkableFloor);
+		bCanAttemptJump &= FloorZ >= WalkableFloor || FMath::IsNearlyEqual(FloorZ, WalkableFloor);
 	}
 	else if (!IsFalling())
 	{
@@ -1547,7 +1548,7 @@ bool UBSCharacterMovementComponent::IsValidLandingSpot(const FVector& CapsuleLoc
 	return true;
 }
 
-bool UBSCharacterMovementComponent::ShouldCheckForValidLandingSpot(float DeltaTime,
+bool UBSCharacterMovementComponent::ShouldCheckForValidLandingSpot(const float DeltaTime,
                                                                    const FVector& Delta,
                                                                    const FHitResult& Hit) const
 {
@@ -1555,7 +1556,8 @@ bool UBSCharacterMovementComponent::ShouldCheckForValidLandingSpot(float DeltaTi
 	return !bUseFlatBaseForFloorChecks && Super::ShouldCheckForValidLandingSpot(DeltaTime, Delta, Hit);
 }
 
-void UBSCharacterMovementComponent::OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode)
+void UBSCharacterMovementComponent::OnMovementModeChanged(const EMovementMode PreviousMovementMode,
+                                                          const uint8 PreviousCustomMode)
 {
 	// Reset step side if we are changing modes
 	StepSide = false;
@@ -1583,7 +1585,7 @@ float UBSCharacterMovementComponent::GetCameraRoll()
 	return Side * Sign;
 }
 
-void UBSCharacterMovementComponent::SetNoClip(bool bNoClip)
+void UBSCharacterMovementComponent::SetNoClip(const bool bNoClip)
 {
 	// We need to defer movement in case we set this outside of main game thread loop, since character movement resets movement back in tick.
 	if (bNoClip)
@@ -1616,12 +1618,12 @@ void UBSCharacterMovementComponent::PlayMovementSound_Implementation(const FName
                                                                      const UAnimSequenceBase* AnimationSequence,
                                                                      const FHitResult HitResult,
                                                                      FGameplayTagContainer Context,
-                                                                     float AudioVolume,
-                                                                     float AudioPitch)
+                                                                     const float AudioVolume,
+                                                                     const float AudioPitch)
 {
 	if (HitResult.PhysMaterial.IsValid())
 	{
-		TEnumAsByte<EPhysicalSurface> SurfaceType = HitResult.PhysMaterial->SurfaceType;
+		const TEnumAsByte<EPhysicalSurface> SurfaceType = HitResult.PhysMaterial->SurfaceType;
 		if (const UBSAudioSettings* AudioSettings = GetDefault<UBSAudioSettings>())
 		{
 			if (const FGameplayTag* SurfaceContextPtr = AudioSettings->SurfaceTypeToGameplayTagMap.Find(SurfaceType))

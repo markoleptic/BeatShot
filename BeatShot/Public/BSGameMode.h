@@ -13,6 +13,7 @@
 
 struct FBSConfig;
 enum class ETransitionState : uint8;
+enum class ETargetDamageType : uint8;
 class UCapturableSoundWave;
 class UImportedSoundWave;
 class URuntimeAudioImporterLibrary;
@@ -47,6 +48,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+public:
 	virtual void Tick(float DeltaSeconds) override;
 
 	virtual void PostLogin(APlayerController* NewPlayer) override;
@@ -55,6 +57,7 @@ protected:
 
 	virtual void Logout(AController* Exiting) override;
 
+protected:
 	ACharacter* SpawnPlayer(APlayerController* PlayerController);
 
 	void HandleAudioImporterResult(URuntimeAudioImporterLibrary* Importer,

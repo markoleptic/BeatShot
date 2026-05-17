@@ -44,7 +44,7 @@ void UBSGA_TrackGun::EndAbility(const FGameplayAbilitySpecHandle Handle,
 			return;
 		}
 
-		UAbilitySystemComponent* MyAbilityComponent = CurrentActorInfo->AbilitySystemComponent.Get();
+		const UAbilitySystemComponent* MyAbilityComponent = CurrentActorInfo->AbilitySystemComponent.Get();
 		check(MyAbilityComponent);
 
 		if (TickTraceTask)
@@ -66,7 +66,7 @@ void UBSGA_TrackGun::OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo,
 }
 
 void UBSGA_TrackGun::OnTargetDataReadyCallback(const FGameplayAbilityTargetDataHandle& InData,
-                                               FGameplayTag ApplicationTag)
+                                               const FGameplayTag ApplicationTag)
 {
 	UAbilitySystemComponent* MyAbilityComponent = CurrentActorInfo->AbilitySystemComponent.Get();
 	if (MyAbilityComponent->FindAbilitySpecFromHandle(CurrentSpecHandle))

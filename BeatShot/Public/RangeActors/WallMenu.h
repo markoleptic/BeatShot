@@ -23,11 +23,20 @@ struct FText3DToggle
 
 	UPROPERTY()
 	TObjectPtr<USceneComponent> Parent;
+
+	UPROPERTY()
 	TObjectPtr<UBoxComponent> CollisionReceiver;
+
+	UPROPERTY()
 	TObjectPtr<UText3DComponent> OnText;
+
+	UPROPERTY()
 	TObjectPtr<UText3DComponent> OffText;
+	
 	FGuid Guid;
+	
 	bool bIsOnText;
+	
 	FString SettingType;
 
 	FText3DToggle()
@@ -46,7 +55,7 @@ struct FText3DToggle
 	              UText3DComponent* InOnText,
 	              UText3DComponent* InOffText,
 	              const bool bInIsOnText,
-	              const FString InSettingType)
+	              const FString& InSettingType)
 	{
 		bIsOnText = bInIsOnText;
 		Parent = InParent;
@@ -89,12 +98,11 @@ class BEATSHOT_API AWallMenu : public AActor, public IBSPlayerSettingsInterface,
 {
 	GENERATED_BODY()
 
+public:
 	AWallMenu();
 
 	virtual void PostInitializeComponents() override;
-
-	virtual void BeginPlay() override;
-
+	
 	/* ~Begin IAbilitySystemInterface */
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	/* ~End IAbilitySystemInterface */
@@ -102,11 +110,12 @@ class BEATSHOT_API AWallMenu : public AActor, public IBSPlayerSettingsInterface,
 	void OnGameplayEffectAppliedToSelf(UAbilitySystemComponent* ABS,
 	                                   const FGameplayEffectSpec& EffectSpec,
 	                                   FActiveGameplayEffectHandle EffectHandle);
-
-public:
+	
 	void OnTimeOfDayChangeCompleted(const ETimeOfDay NewTimeOfDay);
 
 protected:
+	virtual void BeginPlay() override;
+	
 	UPROPERTY()
 	UBSAbilitySystemComponent* AbilitySystemComponent;
 

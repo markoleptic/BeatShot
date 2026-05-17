@@ -19,6 +19,7 @@ protected:
 	/** Called when the game starts or when spawned. */
 	virtual void BeginPlay() override;
 
+public:
 	/** ~IGameplayTagAssetInterface begin */
 	virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override;
 	virtual bool HasMatchingGameplayTag(FGameplayTag TagToCheck) const override;
@@ -26,6 +27,7 @@ protected:
 	virtual bool HasAnyMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const override;
 	/** ~IGameplayTagAssetInterface end */
 
+protected:
 	void AddGameplayTag(const FGameplayTag& Tag);
 	void RemoveGameplayTag(const FGameplayTag& Tag);
 

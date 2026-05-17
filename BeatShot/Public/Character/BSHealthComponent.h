@@ -21,9 +21,10 @@ public:
 	/** Sets default values for this component's properties. */
 	UBSHealthComponent();
 
-protected:
+
 	virtual void BeginPlay() override;
 
+protected:
 	UPROPERTY()
 	TObjectPtr<UBSAbilitySystemComponent> AbilitySystemComponent;
 
@@ -41,9 +42,9 @@ protected:
 	/** Callback function for when the owner's AttributeSetBase OnDamageTaken delegate is broadcast. */
 	void OnDamageTaken(const FDamageEventData& DamageEvent);
 
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
 public:
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	
 	/** Initialize the component using an ability system component. */
 	UFUNCTION(BlueprintCallable, Category = "BeatShot")
 	void InitializeWithAbilitySystem(UBSAbilitySystemComponent* InASC);

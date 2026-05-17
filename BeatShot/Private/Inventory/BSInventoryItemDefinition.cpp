@@ -3,17 +3,12 @@
 
 #include "Inventory/BSInventoryItemDefinition.h"
 
-UBSInventoryItemDefinition::UBSInventoryItemDefinition(const FObjectInitializer& ObjectInitializer) : Super(
-	ObjectInitializer)
-{
-}
-
 const UBSInventoryItemFragment* UBSInventoryItemDefinition::FindFragmentByClass(
-	TSubclassOf<UBSInventoryItemFragment> FragmentClass) const
+	const TSubclassOf<UBSInventoryItemFragment> FragmentClass) const
 {
 	if (FragmentClass != nullptr)
 	{
-		for (const TObjectPtr<UBSInventoryItemFragment> Fragment : Fragments)
+		for (const auto& Fragment : Fragments)
 		{
 			if (Fragment && Fragment->IsA(FragmentClass))
 			{

@@ -160,9 +160,9 @@ class BEATSHOT_API UReinforcementLearningComponent : public UActorComponent
 public:
 	UReinforcementLearningComponent();
 
-protected:
 	virtual void BeginPlay() override;
 
+protected:
 	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Tables")
 	UCompositeCurveTable* CompositeCurveTable_HyperParameters;
 

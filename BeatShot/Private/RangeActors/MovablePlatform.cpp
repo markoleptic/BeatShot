@@ -52,7 +52,7 @@ void AMovablePlatform::BeginPlay()
 	FloorTriggerVolume->OnComponentEndOverlap.AddUniqueDynamic(this, &AMovablePlatform::OnCharacterStepOffFloor);
 }
 
-void AMovablePlatform::Tick(float DeltaSeconds)
+void AMovablePlatform::Tick(const float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 	if (PlatformTransitionType == EPlatformTransitionType::None)
@@ -129,12 +129,12 @@ void AMovablePlatform::InterpFloorElevation(const float DeltaSeconds)
 	Floor->SetWorldLocation(Location);
 }
 
-void AMovablePlatform::OnTriggerVolumeBeginOverlap(UPrimitiveComponent* OverlappedComp,
+void AMovablePlatform::OnTriggerVolumeBeginOverlap(UPrimitiveComponent* /*OverlappedComp*/,
                                                    AActor* OtherActor,
-                                                   UPrimitiveComponent* OtherComp,
-                                                   int32 OtherBodyIndex,
-                                                   bool bFromSweep,
-                                                   const FHitResult& SweepResult)
+                                                   UPrimitiveComponent* /*OtherComp*/,
+                                                   int32 /*OtherBodyIndex*/,
+                                                   bool /*bFromSweep*/,
+                                                   const FHitResult& /*SweepResult*/)
 {
 	if (Cast<ABSCharacterBase>(OtherActor))
 	{
@@ -143,10 +143,10 @@ void AMovablePlatform::OnTriggerVolumeBeginOverlap(UPrimitiveComponent* Overlapp
 	}
 }
 
-void AMovablePlatform::OnTriggerVolumeEndOverlap(UPrimitiveComponent* OverlappedComponent,
+void AMovablePlatform::OnTriggerVolumeEndOverlap(UPrimitiveComponent* /*OverlappedComponent*/,
                                                  AActor* OtherActor,
-                                                 UPrimitiveComponent* OtherComp,
-                                                 int32 OtherBodyIndex)
+                                                 UPrimitiveComponent* /*OtherComp*/,
+                                                 int32 /*OtherBodyIndex*/)
 {
 	if (Cast<ABSCharacterBase>(OtherActor))
 	{
@@ -156,12 +156,12 @@ void AMovablePlatform::OnTriggerVolumeEndOverlap(UPrimitiveComponent* Overlapped
 	}
 }
 
-void AMovablePlatform::OnCharacterStepOnFloor(UPrimitiveComponent* OverlappedComp,
+void AMovablePlatform::OnCharacterStepOnFloor(UPrimitiveComponent* /*OverlappedComp*/,
                                               AActor* OtherActor,
-                                              UPrimitiveComponent* OtherComp,
-                                              int32 OtherBodyIndex,
-                                              bool bFromSweep,
-                                              const FHitResult& SweepResult)
+                                              UPrimitiveComponent* /*OtherComp*/,
+                                              int32 /*OtherBodyIndex*/,
+                                              bool /*bFromSweep*/,
+                                              const FHitResult& /*SweepResult*/)
 {
 	if (Cast<ABSCharacterBase>(OtherActor))
 	{
@@ -169,10 +169,10 @@ void AMovablePlatform::OnCharacterStepOnFloor(UPrimitiveComponent* OverlappedCom
 	}
 }
 
-void AMovablePlatform::OnCharacterStepOffFloor(UPrimitiveComponent* OverlappedComponent,
+void AMovablePlatform::OnCharacterStepOffFloor(UPrimitiveComponent* /*OverlappedComponent*/,
                                                AActor* OtherActor,
-                                               UPrimitiveComponent* OtherComp,
-                                               int32 OtherBodyIndex)
+                                               UPrimitiveComponent* /*OtherComp*/,
+                                               int32 /*OtherBodyIndex*/)
 {
 	if (Cast<ABSCharacterBase>(OtherActor))
 	{

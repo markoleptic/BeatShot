@@ -28,7 +28,7 @@ void UBSAT_TickTrace::ExternalCancel()
 	Super::ExternalCancel();
 }
 
-void UBSAT_TickTrace::OnDestroy(bool AbilityEnded)
+void UBSAT_TickTrace::OnDestroy(const bool AbilityEnded)
 {
 	if (Ability)
 	{
@@ -37,7 +37,7 @@ void UBSAT_TickTrace::OnDestroy(bool AbilityEnded)
 	Super::OnDestroy(AbilityEnded);
 }
 
-void UBSAT_TickTrace::TickTask(float DeltaTime)
+void UBSAT_TickTrace::TickTask(const float DeltaTime)
 {
 	Super::TickTask(DeltaTime);
 	PerformSingleWeaponTrace();

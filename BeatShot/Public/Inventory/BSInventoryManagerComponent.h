@@ -53,7 +53,7 @@ struct FBSInventoryList : public FFastArraySerializer
 	{
 	}
 
-	FBSInventoryList(UActorComponent* InOwnerComponent) : OwnerComponent(InOwnerComponent)
+	explicit FBSInventoryList(UActorComponent* InOwnerComponent) : OwnerComponent(InOwnerComponent)
 	{
 	}
 
@@ -80,7 +80,7 @@ private:
 };
 
 template <>
-struct TStructOpsTypeTraits<FBSInventoryList> : public TStructOpsTypeTraitsBase2<FBSInventoryList>
+struct TStructOpsTypeTraits<FBSInventoryList> : TStructOpsTypeTraitsBase2<FBSInventoryList>
 {
 	enum { WithNetDeltaSerializer = true };
 };
@@ -97,7 +97,7 @@ class BEATSHOT_API UBSInventoryManagerComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:
-	UBSInventoryManagerComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+	UBSInventoryManagerComponent();
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
@@ -124,8 +124,8 @@ public:
 	bool ConsumeItemsByDefinition(TSubclassOf<UBSInventoryItemDefinition> ItemDef, int32 NumToConsume);
 
 	//~UObject interface
-	virtual bool ReplicateSubobjects(class UActorChannel* Channel,
-	                                 class FOutBunch* Bunch,
+	virtual bool ReplicateSubobjects(UActorChannel* Channel,
+	                                 FOutBunch* Bunch,
 	                                 FReplicationFlags* RepFlags) override;
 	virtual void ReadyForReplication() override;
 	//~End of UObject interface

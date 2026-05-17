@@ -13,8 +13,7 @@ void UBSMovementSounds::PostLoad()
 		return;
 	}
 
-	const UBSAudioSettings* AudioSettings = GetDefault<UBSAudioSettings>();
-	if (AudioSettings)
+	if (const UBSAudioSettings* AudioSettings = GetDefault<UBSAudioSettings>())
 	{
 		for (const auto& Pair : AudioSettings->SurfaceTypeToGameplayTagMap)
 		{

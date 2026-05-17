@@ -25,8 +25,6 @@ class UBSInputComponent : public UEnhancedInputComponent, public IBSPlayerSettin
 	GENERATED_BODY()
 
 public:
-	UBSInputComponent(const FObjectInitializer& ObjectInitializer);
-
 	/** Adds player mapped keys to the InputSubsystem. */
 	void AddInputMappings(const UBSInputConfig* InputConfig, UEnhancedInputLocalPlayerSubsystem* InputSubsystem) const;
 
@@ -83,7 +81,7 @@ void UBSInputComponent::BindNativeAction(const UBSInputConfig* InputConfig,
                                          const FGameplayTag& InputTag,
                                          UserClass* Object,
                                          FuncType Func,
-                                         bool bLogIfNotFound)
+                                         const bool bLogIfNotFound)
 {
 	check(InputConfig);
 	const FBSInputAction IA = InputConfig->FindBSInputActionForTag(InputTag, bLogIfNotFound);
@@ -100,7 +98,7 @@ void UBSInputComponent::BindNativeAction(const UBSInputConfig* InputConfig,
                                          UserClass* Object,
                                          PressedFuncType PressedFunc,
                                          ReleasedFuncType ReleasedFunc,
-                                         bool bLogIfNotFound)
+                                         const bool bLogIfNotFound)
 {
 	check(InputConfig);
 	const FBSInputAction IA = InputConfig->FindBSInputActionForTag(InputTag, bLogIfNotFound);

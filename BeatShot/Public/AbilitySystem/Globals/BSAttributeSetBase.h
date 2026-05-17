@@ -130,8 +130,7 @@ public:
 	/** Delegate to broadcast when IncomingTrackingDamage, IncomingHitDamage, or IncomingSelfDamage is changed by
 	 *  a GameplayEffect. */
 	mutable FBSDamageEvent OnDamageTaken;
-
-protected:
+	
 	/**
 	 *	Called just before any modification happens to an attribute. This is lower level than PreAttributeModify/
 	 *	PostAttribute modify. There is no additional context provided here since anything can trigger this. Executed
@@ -162,6 +161,7 @@ protected:
 	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+protected:
 	/** These OnRep functions exist to make sure that the ability system internal representations are synchronized
 	 *  properly during replication. */
 

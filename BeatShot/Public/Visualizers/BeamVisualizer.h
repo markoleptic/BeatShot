@@ -46,11 +46,13 @@ protected:
 	/** Returns the Beam Visualizer Definition. */
 	UBeamVisualizerDefinition& GetFastDef() const { return *BeamVisualizerDefinition; }
 
+public:
 	virtual UBeamVisualizerDefinition* GetVisualizerDefinition() const override
 	{
 		return Cast<UBeamVisualizerDefinition>(VisualizerDefinition);
 	}
 
+protected:
 	/** Returns the array of simple beam lights. */
 	TArray<TObjectPtr<ASimpleBeamLight>>& GetSimpleBeamLights() { return BeamLights; }
 

@@ -24,7 +24,7 @@ UReinforcementLearningComponent::UReinforcementLearningComponent()
 	Epsilon = 0;
 	TotalTrainingSamples = 0;
 	M = Constants::DefaultNumberOfQTableRows;
-	N = Constants::DefaultNumberOfQTableColumns;;
+	N = Constants::DefaultNumberOfQTableColumns;
 
 #if !UE_BUILD_SHIPPING
 	bPrintDebug_ActiveTargetPairs = false;
@@ -50,7 +50,7 @@ void UReinforcementLearningComponent::BeginPlay()
 	Super::BeginPlay();
 }
 
-void UReinforcementLearningComponent::DestroyComponent(bool bPromoteChildren)
+void UReinforcementLearningComponent::DestroyComponent(const bool bPromoteChildren)
 {
 	Super::DestroyComponent(bPromoteChildren);
 }
@@ -136,7 +136,7 @@ void UReinforcementLearningComponent::Clear()
 	Epsilon = 0;
 	TotalTrainingSamples = 0;
 	M = Constants::DefaultNumberOfQTableRows;
-	N = Constants::DefaultNumberOfQTableColumns;;
+	N = Constants::DefaultNumberOfQTableColumns;
 }
 
 // Main QTable functions
@@ -233,7 +233,7 @@ int32 UReinforcementLearningComponent::ChooseBestActionIndex(const int32 Previou
 	int32 NumFiltersRequired = 0;
 	int32 NumCurrentIndexChoices = 0;
 
-	const TArray<int32> MaxIndices = (PreviousSpawnAreaIndex == INDEX_NONE)
+	const TArray<int32> MaxIndices = PreviousSpawnAreaIndex == INDEX_NONE
 	                                 ? GetIndices_MaximizeFirst()
 	                                 : GetIndices_MaximizeSecond(
 		                                 GetIndex_FromSpawnArea_ToQTable(PreviousSpawnAreaIndex));
@@ -480,7 +480,7 @@ void UReinforcementLearningComponent::PrintRewards() const
 	Row.Empty();
 	for (const double It : FlippedMean)
 	{
-		const float Value = roundf(static_cast<float>(It) * 100.0) / 100.0;;
+		const float Value = roundf(static_cast<float>(It) * 100.0) / 100.0;
 		if (It >= 0.f)
 		{
 			Row.Append("+" + FString::SanitizeFloat(Value, 2) + " ");
@@ -519,26 +519,26 @@ void UReinforcementLearningComponent::PrintMaxAverageIndices() const
 		const float MaxValue = MaxValues(0, j);
 		const float AverageValue = AvgValues(0, j);
 
-		Row += (FText::AsNumber(MaxIndex, &IntegerFormatting).ToString() + "     ");
+		Row += FText::AsNumber(MaxIndex, &IntegerFormatting).ToString() + "     ";
 
 		if (MaxValue >= 0.f)
 		{
-			Row2 += ("  " + FText::AsNumber(MaxValue, &FloatFormatting).ToString() + " ");
+			Row2 += "  " + FText::AsNumber(MaxValue, &FloatFormatting).ToString() + " ";
 		}
 		else
 		{
-			Row2 += (" " + FText::AsNumber(MaxValue, &FloatFormatting).ToString() + " ");
+			Row2 += " " + FText::AsNumber(MaxValue, &FloatFormatting).ToString() + " ";
 		}
 
-		Row3 += (FText::AsNumber(AverageIndex, &IntegerFormatting).ToString() + "     ");
+		Row3 += FText::AsNumber(AverageIndex, &IntegerFormatting).ToString() + "     ";
 
 		if (AverageValue >= 0.f)
 		{
-			Row4 += ("  " + FText::AsNumber(AverageValue, &FloatFormatting).ToString() + " ");
+			Row4 += "  " + FText::AsNumber(AverageValue, &FloatFormatting).ToString() + " ";
 		}
 		else
 		{
-			Row4 += (" " + FText::AsNumber(AverageValue, &FloatFormatting).ToString() + " ");
+			Row4 += " " + FText::AsNumber(AverageValue, &FloatFormatting).ToString() + " ";
 		}
 	}
 	UE_LOG(LogTargetManager, Display, TEXT("Max Indices & Max Values:"));
@@ -557,14 +557,14 @@ void UReinforcementLearningComponent::PrintGetMaxIndex(const int32 PreviousIndex
 	FString String;
 	for (const float Value : PreviousRow)
 	{
-		String += ("  " + FText::AsNumber(Value, &FloatFormatting).ToString() + " ");
+		String += "  " + FText::AsNumber(Value, &FloatFormatting).ToString() + " ";
 	}
 	UE_LOG(LogTargetManager, Display, TEXT("RowIdx %d: %s"), PreviousIndex, *String);
 	String.Empty();
 
 	for (const unsigned Value : ReverseSortedIndices)
 	{
-		String += ("  " + FText::AsNumber(Value, &IntegerFormatting).ToString() + " ");
+		String += "  " + FText::AsNumber(Value, &IntegerFormatting).ToString() + " ";
 	}
 	UE_LOG(LogTargetManager, Display, TEXT("RowIdx %d ReversedArgSort: %s"), PreviousIndex, *String);
 	String.Empty();
@@ -574,7 +574,7 @@ void UReinforcementLearningComponent::PrintGetMaxIndex(const int32 PreviousIndex
 	{
 		if (PreviousRow[ReverseSortedIndices[i]] == MaxValue)
 		{
-			String += ("  " + FText::AsNumber(ReverseSortedIndices[i], &IntegerFormatting).ToString() + " ");
+			String += "  " + FText::AsNumber(ReverseSortedIndices[i], &IntegerFormatting).ToString() + " ";
 		}
 		else
 		{

@@ -127,7 +127,7 @@ ABSPlayerState* ABSPlayerController::GetBSPlayerState() const
 UBSAbilitySystemComponent* ABSPlayerController::GetBSAbilitySystemComponent() const
 {
 	const ABSPlayerState* PS = GetBSPlayerState();
-	return (PS ? PS->GetBSAbilitySystemComponent() : nullptr);
+	return PS ? PS->GetBSAbilitySystemComponent() : nullptr;
 }
 
 ABSCharacterBase* ABSPlayerController::GetBSCharacter() const
@@ -410,7 +410,7 @@ void ABSPlayerController::HandleLeftClick()
 	}
 	if (CountdownWidget)
 	{
-		UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+		const UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 		if (GI && GI->GetBSConfig().IsValid())
 		{
 			CountdownWidget->StartCountdown(Constants::CountdownTimerLength,
@@ -423,8 +423,7 @@ void ABSPlayerController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 
-	ABSPlayerState* PS = GetPlayerState<ABSPlayerState>();
-	if (PS)
+	if (ABSPlayerState* PS = GetPlayerState<ABSPlayerState>())
 	{
 		// Init ASC with PS (Owner) and our new Pawn (AvatarActor)
 		PS->GetAbilitySystemComponent()->InitAbilityActorInfo(PS, InPawn);

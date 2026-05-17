@@ -12,5 +12,7 @@ class FBeatShot : public FDefaultGameModuleImpl
 public:
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
+
+private:
 	virtual bool IsGameModule() const override { return true; }
 };

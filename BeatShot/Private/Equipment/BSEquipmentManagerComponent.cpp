@@ -19,7 +19,7 @@
 class FLifetimeProperty;
 struct FReplicationFlags;
 
-UBSEquipmentInstance* FBSEquipmentList::AddEntry(TSubclassOf<UBSEquipmentDefinition> EquipmentDefinition)
+UBSEquipmentInstance* FBSEquipmentList::AddEntry(const TSubclassOf<UBSEquipmentDefinition> EquipmentDefinition)
 {
 	check(EquipmentDefinition);
 	check(OwnerComponent);
@@ -40,7 +40,7 @@ UBSEquipmentInstance* FBSEquipmentList::AddEntry(TSubclassOf<UBSEquipmentDefinit
 
 	if (UBSAbilitySystemComponent* ASC = GetAbilitySystemComponent())
 	{
-		for (const TObjectPtr<const UBSAbilitySet> AbilitySet : EquipmentCDO->AbilitySetsToGrant)
+		for (const auto& AbilitySet : EquipmentCDO->AbilitySetsToGrant)
 		{
 			if (AbilitySet)
 			{
@@ -86,7 +86,7 @@ void FBSEquipmentList::RemoveEntry(UBSEquipmentInstance* Instance)
 UBSAbilitySystemComponent* FBSEquipmentList::GetAbilitySystemComponent() const
 {
 	check(OwnerComponent);
-	AActor* OwningActor = OwnerComponent->GetOwner();
+	const AActor* OwningActor = OwnerComponent->GetOwner();
 	return Cast<UBSAbilitySystemComponent>(UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(OwningActor));
 }
 
@@ -110,7 +110,8 @@ void UBSEquipmentManagerComponent::GetLifetimeReplicatedProps(TArray<FLifetimePr
 	DOREPLIFETIME(ThisClass, EquipmentList);
 }
 
-UBSEquipmentInstance* UBSEquipmentManagerComponent::EquipItem(TSubclassOf<UBSEquipmentDefinition> EquipmentDefinition)
+UBSEquipmentInstance* UBSEquipmentManagerComponent::EquipItem(
+	const TSubclassOf<UBSEquipmentDefinition> EquipmentDefinition)
 {
 	UBSEquipmentInstance* Result = nullptr;
 	if (EquipmentDefinition != nullptr)
@@ -206,7 +207,7 @@ void UBSEquipmentManagerComponent::ReadyForReplication()
 }
 
 UBSEquipmentInstance* UBSEquipmentManagerComponent::GetFirstInstanceOfType(
-	TSubclassOf<UBSEquipmentInstance> InstanceType)
+	const TSubclassOf<UBSEquipmentInstance> InstanceType)
 {
 	for (FBSAppliedEquipmentEntry& Entry : EquipmentList.Items)
 	{
@@ -223,7 +224,7 @@ UBSEquipmentInstance* UBSEquipmentManagerComponent::GetFirstInstanceOfType(
 }
 
 TArray<UBSEquipmentInstance*> UBSEquipmentManagerComponent::GetEquipmentInstancesOfType(
-	TSubclassOf<UBSEquipmentInstance> InstanceType) const
+	const TSubclassOf<UBSEquipmentInstance> InstanceType) const
 {
 	TArray<UBSEquipmentInstance*> Results;
 	for (const FBSAppliedEquipmentEntry& Entry : EquipmentList.Items)

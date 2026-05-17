@@ -12,7 +12,7 @@ ATargetPreview::ATargetPreview()
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-void ATargetPreview::Tick(float DeltaSeconds)
+void ATargetPreview::Tick(const float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 	if (ProjectileMovementComponent->IsActive())
@@ -55,7 +55,7 @@ void ATargetPreview::SetSimulatePlayerDestroying(const bool bInSimulatePlayerDes
 	DestroyChance = InDestroyChance;
 }
 
-void ATargetPreview::SetActorHiddenInGame(bool bNewHidden)
+void ATargetPreview::SetActorHiddenInGame(const bool bNewHidden)
 {
 	Super::SetActorHiddenInGame(bNewHidden);
 

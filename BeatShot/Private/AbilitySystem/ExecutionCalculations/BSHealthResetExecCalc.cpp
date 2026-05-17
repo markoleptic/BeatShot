@@ -3,16 +3,15 @@
 
 #include "AbilitySystem/ExecutionCalculations/BSHealthResetExecCalc.h"
 #include "AbilitySystem/Globals/BSAttributeSetBase.h"
-#include "BeatShot/BSGameplayTags.h"
 
 
 // Declare the attributes to capture and define how we want to capture them from the Source and Target.
-struct BSHealthStatics
+struct FBSHealthStatics
 {
 	FGameplayEffectAttributeCaptureDefinition HealthDef;
 	FGameplayEffectAttributeCaptureDefinition MaxHealthDef;
 
-	BSHealthStatics()
+	FBSHealthStatics()
 	{
 		HealthDef = FGameplayEffectAttributeCaptureDefinition(UBSAttributeSetBase::GetHealthAttribute(),
 		                                                      EGameplayEffectAttributeCaptureSource::Target, false);
@@ -21,9 +20,9 @@ struct BSHealthStatics
 	}
 };
 
-static const BSHealthStatics& HealthStatics()
+static const FBSHealthStatics& HealthStatics()
 {
-	static BSHealthStatics HStatics;
+	static FBSHealthStatics HStatics;
 	return HStatics;
 }
 

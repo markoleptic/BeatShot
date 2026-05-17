@@ -209,11 +209,15 @@ public:
 	// Overrides for Source-like movement
 	virtual float GetMaxSpeed() const override;
 	virtual void TickComponent(float DeltaTime,
-	                           enum ELevelTick TickType,
+	                           ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 	virtual void CalcVelocity(float DeltaTime, float Friction, bool bFluid, float BrakingDeceleration) override;
+
+protected:
 	virtual void ApplyVelocityBraking(float DeltaTime, float Friction, float BrakingDeceleration) override;
-	virtual void PhysFalling(float deltaTime, int32 Iterations) override;
+
+public:
+	virtual void PhysFalling(float DeltaTime, int32 Iterations) override;
 	virtual bool ShouldLimitAirControl(float DeltaTime, const FVector& FallAcceleration) const override;
 	virtual FVector
 	NewFallVelocity(const FVector& InitialVelocity, const FVector& Gravity, float DeltaTime) const override;
@@ -222,7 +226,7 @@ public:
 	virtual void UpdateCharacterStateAfterMovement(float DeltaSeconds) override;
 
 	void UpdateSurfaceFriction(bool bIsSliding = false);
-	void UpdateCrouching(float DeltaTime, bool bOnlyUnCrouch = false);
+	void UpdateCrouching(float DeltaTime, bool bOnlyUncrouch = false);
 
 	// Overrides for crouch transitions
 	virtual void Crouch(bool bClientSimulation = false) override;
@@ -230,20 +234,26 @@ public:
 	virtual void DoCrouchResize(float TargetTime, float DeltaTime, bool bClientSimulation = false);
 	virtual void DoUnCrouchResize(float TargetTime, float DeltaTime, bool bClientSimulation = false);
 
+protected:
 	virtual bool MoveUpdatedComponentImpl(const FVector& Delta,
 	                                      const FQuat& NewRotation,
 	                                      bool bSweep,
 	                                      FHitResult* OutHit,
 	                                      ETeleportType Teleport = ETeleportType::None) override;
 
+public:
 	// Jump overrides
 	virtual bool CanAttemptJump() const override;
 	virtual bool DoJump(bool bClientSimulation) override;
+
+protected:
 	virtual FVector HandleSlopeBoosting(const FVector& SlideResult,
 	                                    const FVector& Delta,
 	                                    const float Time,
 	                                    const FVector& Normal,
 	                                    const FHitResult& Hit) const override;
+
+public:
 	virtual bool ShouldCatchAir(const FFindFloorResult& OldFloor, const FFindFloorResult& NewFloor) override;
 	virtual bool IsValidLandingSpot(const FVector& CapsuleLocation, const FHitResult& Hit) const override;
 	virtual bool
@@ -255,8 +265,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = Gameplay)
 	bool IsOnLadder() const { return bOnLadder; }
 
+protected:
 	virtual void OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode) override;
 
+public:
 	/** Do camera roll effect based on velocity. */
 	float GetCameraRoll();
 

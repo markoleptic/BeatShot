@@ -33,8 +33,8 @@ void UBSGA_AimBot::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 void UBSGA_AimBot::EndAbility(const FGameplayAbilitySpecHandle Handle,
                               const FGameplayAbilityActorInfo* ActorInfo,
                               const FGameplayAbilityActivationInfo ActivationInfo,
-                              bool bReplicateEndAbility,
-                              bool bWasCancelled)
+                              const bool bReplicateEndAbility,
+                              const bool bWasCancelled)
 {
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }

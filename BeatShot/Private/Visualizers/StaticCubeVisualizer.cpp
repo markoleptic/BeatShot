@@ -48,8 +48,8 @@ void AStaticCubeVisualizer::CreateCubeInstances()
 			// If growing from center, start location will be offset by half the total length, growing in the positive direction
 			if (GetFastDef().bGrowFromCenter)
 			{
-				FVector LocationOffset = -GetFastDef().OffsetLocation * FVector(
-					                         static_cast<float>(GetFastDef().NumVisualizerLightsToSpawn - 1) / 2);
+				const FVector LocationOffset = -GetFastDef().OffsetLocation * FVector(
+					                               static_cast<float>(GetFastDef().NumVisualizerLightsToSpawn - 1) / 2);
 				CurrentOffsetTransform = FTransform(FRotator::ZeroRotator, LocationOffset,
 				                                    CurrentOffsetTransform.GetScale3D());
 			}

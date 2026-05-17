@@ -140,7 +140,7 @@ void ABSCharacterBase::BeginPlay()
 		this, &ABSCharacterBase::OnPlayerSettingsChanged);
 }
 
-void ABSCharacterBase::Tick(float DeltaTime)
+void ABSCharacterBase::Tick(const float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
@@ -272,7 +272,7 @@ void ABSCharacterBase::OnRep_PlayerState()
 	}
 }
 
-void ABSCharacterBase::ApplyDamageMomentum(float DamageTaken,
+void ABSCharacterBase::ApplyDamageMomentum(const float DamageTaken,
                                            const FDamageEvent& DamageEvent,
                                            APawn* PawnInstigator,
                                            AActor* DamageCauser)
@@ -294,10 +294,10 @@ void ABSCharacterBase::ApplyDamageMomentum(float DamageTaken,
 			DamageEvent.GetBestHitInfo(this, DamageCauser, HitInfo, ImpulseDir);
 		}
 
-		const float SizeFactor = (60.96f * 60.96f * 137.16f) / (FMath::Square(
-			                                                        GetCapsuleComponent()->GetScaledCapsuleRadius() *
-			                                                        2.0f) * GetCapsuleComponent()->
-		                                                        GetScaledCapsuleHalfHeight() * 2.0f);
+		const float SizeFactor = 60.96f * 60.96f * 137.16f / (FMath::Square(
+			                                                      GetCapsuleComponent()->GetScaledCapsuleRadius() *
+			                                                      2.0f) * GetCapsuleComponent()->
+		                                                      GetScaledCapsuleHalfHeight() * 2.0f);
 
 		float Magnitude = 1.905f * DamageTaken * SizeFactor * 5.0f;
 		Magnitude = FMath::Min(Magnitude, 1905.0f);
@@ -434,8 +434,8 @@ bool ABSCharacterBase::CanJumpInternal_Implementation() const
 			// A) We are on the ground
 			// B) The jump limit hasn't been met OR
 			// C) The jump limit has been met AND we were already jumping
-			const bool bJumpKeyHeld = (bPressedJump && JumpKeyHoldTime < GetJumpMaxHoldTime());
-			bCanJump = bJumpKeyHeld && (GetCharacterMovement()->IsMovingOnGround() || (JumpCurrentCount < JumpMaxCount)
+			const bool bJumpKeyHeld = bPressedJump && JumpKeyHoldTime < GetJumpMaxHoldTime();
+			bCanJump = bJumpKeyHeld && (GetCharacterMovement()->IsMovingOnGround() || JumpCurrentCount < JumpMaxCount
 			                            || (bWasJumping && JumpCurrentCount == JumpMaxCount));
 		}
 		if (GetCharacterMovement()->IsMovingOnGround())
@@ -443,7 +443,7 @@ bool ABSCharacterBase::CanJumpInternal_Implementation() const
 			const float FloorZ = FVector(0.0f, 0.0f, 1.0f) | GetCharacterMovement()->CurrentFloor.HitResult.
 			                     ImpactNormal;
 			const float WalkableFloor = GetCharacterMovement()->GetWalkableFloorZ();
-			bCanJump &= (FloorZ >= WalkableFloor || FMath::IsNearlyEqual(FloorZ, WalkableFloor));
+			bCanJump &= FloorZ >= WalkableFloor || FMath::IsNearlyEqual(FloorZ, WalkableFloor);
 		}
 	}
 	return bCanJump;
@@ -462,7 +462,7 @@ void ABSCharacterBase::RecalculateBaseEyeHeight()
 	BaseEyeHeight = FMath::Lerp(BaseEyeHeight, CrouchedEyeHeight, SimpleSpline(CurrentAlpha));
 }
 
-void ABSCharacterBase::OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PrevCustomMode)
+void ABSCharacterBase::OnMovementModeChanged(const EMovementMode PrevMovementMode, const uint8 PrevCustomMode)
 {
 	Super::OnMovementModeChanged(PrevMovementMode, PrevCustomMode);
 	if (!bPressedJump)
@@ -496,7 +496,7 @@ bool ABSCharacterBase::CanCrouch() const
 	return !GetCharacterMovement()->bCheatFlying && Super::CanCrouch() && !GetBSCharacterMovement()->IsOnLadder();
 }
 
-void ABSCharacterBase::OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust)
+void ABSCharacterBase::OnEndCrouch(const float HalfHeightAdjust, const float ScaledHalfHeightAdjust)
 {
 	Super::OnEndCrouch(HalfHeightAdjust, ScaledHalfHeightAdjust);
 
@@ -548,7 +548,7 @@ void ABSCharacterBase::AddCharacterInventoryItems()
 	}
 
 	int32 Index = 0;
-	for (const TSubclassOf<UBSInventoryItemDefinition> Definition : InitialInventoryItems)
+	for (const auto& Definition : InitialInventoryItems)
 	{
 		if (UBSInventoryItemInstance* ItemInstance = GetInventoryManager()->AddItemInstance(Definition, 1))
 		{
@@ -586,8 +586,7 @@ void ABSCharacterBase::RemoveCharacterInventoryItems()
 	UBSInventoryManagerComponent* InventoryManager = GetInventoryManager();
 	for (int32 Index = 0; Index < InventoryManager->GetSlots().Num(); Index++)
 	{
-		UBSInventoryItemInstance* Removed = InventoryManager->RemoveItemFromSlot(Index);
-		if (Removed)
+		if (UBSInventoryItemInstance* Removed = InventoryManager->RemoveItemFromSlot(Index))
 		{
 			InventoryManager->RemoveItemInstance(Removed);
 		}
@@ -625,7 +624,7 @@ void ABSCharacterBase::Input_Look(const FInputActionValue& Value)
 	AddControllerYawInput(Value[0] / Constants::SensitivityMultiplier * Sensitivity);
 }
 
-void ABSCharacterBase::Input_Crouch(const FInputActionValue& Value)
+void ABSCharacterBase::Input_Crouch(const FInputActionValue& /*Value*/)
 {
 	if (bIsCrouched || GetCharacterMovement()->bWantsToCrouch)
 	{
@@ -637,17 +636,17 @@ void ABSCharacterBase::Input_Crouch(const FInputActionValue& Value)
 	}
 }
 
-void ABSCharacterBase::Input_WalkStart(const FInputActionValue& Value)
+void ABSCharacterBase::Input_WalkStart(const FInputActionValue& /*Value*/)
 {
 	bWantsToWalk = true;
 }
 
-void ABSCharacterBase::Input_WalkEnd(const FInputActionValue& Value)
+void ABSCharacterBase::Input_WalkEnd(const FInputActionValue& /*Value*/)
 {
 	bWantsToWalk = false;
 }
 
-void ABSCharacterBase::Input_OnInteractStarted(const FInputActionValue& Value)
+void ABSCharacterBase::Input_OnInteractStarted(const FInputActionValue& /*Value*/)
 {
 	if (OnInteractDelegate.IsBound())
 	{
@@ -655,7 +654,7 @@ void ABSCharacterBase::Input_OnInteractStarted(const FInputActionValue& Value)
 	}
 }
 
-void ABSCharacterBase::Input_OnInteractCompleted(const FInputActionValue& Value)
+void ABSCharacterBase::Input_OnInteractCompleted(const FInputActionValue& /*Value*/)
 {
 	if (OnInteractDelegate.IsBound())
 	{
@@ -663,7 +662,7 @@ void ABSCharacterBase::Input_OnInteractCompleted(const FInputActionValue& Value)
 	}
 }
 
-void ABSCharacterBase::Input_OnShiftInteractStarted(const FInputActionValue& Value)
+void ABSCharacterBase::Input_OnShiftInteractStarted(const FInputActionValue& /*Value*/)
 {
 	if (OnShiftInteractDelegate.IsBound())
 	{
@@ -671,7 +670,7 @@ void ABSCharacterBase::Input_OnShiftInteractStarted(const FInputActionValue& Val
 	}
 }
 
-void ABSCharacterBase::Input_OnShiftInteractCompleted(const FInputActionValue& Value)
+void ABSCharacterBase::Input_OnShiftInteractCompleted(const FInputActionValue& /*Value*/)
 {
 	if (OnShiftInteractDelegate.IsBound())
 	{
@@ -679,7 +678,7 @@ void ABSCharacterBase::Input_OnShiftInteractCompleted(const FInputActionValue& V
 	}
 }
 
-void ABSCharacterBase::Input_OnEquipmentSlot1Started(const FInputActionValue& Value)
+void ABSCharacterBase::Input_OnEquipmentSlot1Started(const FInputActionValue& /*Value*/)
 {
 	if (GetInventoryManager()->GetSlots().Num() > 1)
 	{
@@ -687,7 +686,7 @@ void ABSCharacterBase::Input_OnEquipmentSlot1Started(const FInputActionValue& Va
 	}
 }
 
-void ABSCharacterBase::Input_OnEquipmentSlot2Started(const FInputActionValue& Value)
+void ABSCharacterBase::Input_OnEquipmentSlot2Started(const FInputActionValue& /*Value*/)
 {
 	if (GetInventoryManager()->GetSlots().Num() > 1)
 	{
@@ -695,7 +694,7 @@ void ABSCharacterBase::Input_OnEquipmentSlot2Started(const FInputActionValue& Va
 	}
 }
 
-void ABSCharacterBase::Input_OnEquipmentSlot3Started(const FInputActionValue& Value)
+void ABSCharacterBase::Input_OnEquipmentSlot3Started(const FInputActionValue& /*Value*/)
 {
 	if (GetInventoryManager()->GetSlots().Num() > 1)
 	{
@@ -703,7 +702,7 @@ void ABSCharacterBase::Input_OnEquipmentSlot3Started(const FInputActionValue& Va
 	}
 }
 
-void ABSCharacterBase::Input_OnEquipmentSlotLastEquippedStarted(const FInputActionValue& Value)
+void ABSCharacterBase::Input_OnEquipmentSlotLastEquippedStarted(const FInputActionValue& /*Value*/)
 {
 	if (GetInventoryManager()->GetSlots().Num() > 1)
 	{
@@ -711,7 +710,7 @@ void ABSCharacterBase::Input_OnEquipmentSlotLastEquippedStarted(const FInputActi
 	}
 }
 
-void ABSCharacterBase::Input_OnPause(const FInputActionValue& Value)
+void ABSCharacterBase::Input_OnPause(const FInputActionValue& /*Value*/)
 {
 	if (GetBSPlayerController())
 	{
@@ -719,7 +718,7 @@ void ABSCharacterBase::Input_OnPause(const FInputActionValue& Value)
 	}
 }
 
-void ABSCharacterBase::Input_OnLeftClick(const FInputActionValue& Value)
+void ABSCharacterBase::Input_OnLeftClick(const FInputActionValue& /*Value*/)
 {
 	if (GetBSPlayerController())
 	{
@@ -727,12 +726,12 @@ void ABSCharacterBase::Input_OnLeftClick(const FInputActionValue& Value)
 	}
 }
 
-void ABSCharacterBase::Input_AbilityInputTagPressed(FGameplayTag InputTag)
+void ABSCharacterBase::Input_AbilityInputTagPressed(const FGameplayTag InputTag)
 {
 	GetBSAbilitySystemComponent()->AbilityInputTagPressed(InputTag);
 }
 
-void ABSCharacterBase::Input_AbilityInputTagReleased(FGameplayTag InputTag)
+void ABSCharacterBase::Input_AbilityInputTagReleased(const FGameplayTag InputTag)
 {
 	GetBSAbilitySystemComponent()->AbilityInputTagReleased(InputTag);
 }

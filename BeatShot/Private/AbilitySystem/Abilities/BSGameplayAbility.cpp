@@ -23,14 +23,12 @@ UBSGameplayAbility::UBSGameplayAbility()
 
 UBSAbilitySystemComponent* UBSGameplayAbility::GetBSAbilitySystemComponentFromActorInfo() const
 {
-	return (CurrentActorInfo
-	        ? Cast<UBSAbilitySystemComponent>(CurrentActorInfo->AbilitySystemComponent.Get())
-	        : nullptr);
+	return CurrentActorInfo ? Cast<UBSAbilitySystemComponent>(CurrentActorInfo->AbilitySystemComponent.Get()) : nullptr;
 }
 
 ABSPlayerController* UBSGameplayAbility::GetBSPlayerControllerFromActorInfo() const
 {
-	return (CurrentActorInfo ? Cast<ABSPlayerController>(CurrentActorInfo->PlayerController.Get()) : nullptr);
+	return CurrentActorInfo ? Cast<ABSPlayerController>(CurrentActorInfo->PlayerController.Get()) : nullptr;
 }
 
 AController* UBSGameplayAbility::GetControllerFromActorInfo() const
@@ -51,7 +49,7 @@ AController* UBSGameplayAbility::GetControllerFromActorInfo() const
 				return C;
 			}
 
-			if (APawn* Pawn = Cast<APawn>(TestActor))
+			if (const APawn* Pawn = Cast<APawn>(TestActor))
 			{
 				return Pawn->GetController();
 			}
@@ -65,7 +63,7 @@ AController* UBSGameplayAbility::GetControllerFromActorInfo() const
 
 ABSCharacterBase* UBSGameplayAbility::GetBSCharacterFromActorInfo() const
 {
-	return (CurrentActorInfo ? Cast<ABSCharacterBase>(CurrentActorInfo->AvatarActor.Get()) : nullptr);
+	return CurrentActorInfo ? Cast<ABSCharacterBase>(CurrentActorInfo->AvatarActor.Get()) : nullptr;
 }
 
 void UBSGameplayAbility::OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
@@ -89,8 +87,8 @@ void UBSGameplayAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 void UBSGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle,
                                     const FGameplayAbilityActorInfo* ActorInfo,
                                     const FGameplayAbilityActivationInfo ActivationInfo,
-                                    bool bReplicateEndAbility,
-                                    bool bWasCancelled)
+                                    const bool bReplicateEndAbility,
+                                    const bool bWasCancelled)
 {
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }

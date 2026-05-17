@@ -25,9 +25,9 @@ class BEATSHOT_API AVisualizerBase : public AActor
 public:
 	AVisualizerBase();
 
-protected:
 	virtual void Destroyed() override;
 
+protected:
 	UPROPERTY(EditInstanceOnly, Category = "Spline")
 	USplineComponent* VisualizerPositioning;
 

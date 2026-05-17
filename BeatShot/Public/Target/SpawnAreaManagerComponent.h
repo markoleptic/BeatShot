@@ -1011,7 +1011,7 @@ private:
 	TSharedPtr<FBSConfig> BSConfig;
 
 	/** BSConfig->TargetConfig */
-	FBS_TargetConfig& TargetConfig() const { return BSConfig->TargetConfig; };
+	FBS_TargetConfig& TargetConfig() const { return BSConfig->TargetConfig; }
 
 	/** The total amount of (-, horizontal, vertical) Spawn Areas. */
 	FIntVector3 TotalSpawnAreaSize;

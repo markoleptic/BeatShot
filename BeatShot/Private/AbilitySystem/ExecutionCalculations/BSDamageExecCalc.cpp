@@ -5,13 +5,13 @@
 #include "BeatShot/BSGameplayTags.h"
 
 // Declare the attributes to capture and define how we want to capture them from the Source and Target.
-struct BSDamageStatics
+struct FBSDamageStatics
 {
 	FGameplayEffectAttributeCaptureDefinition HitDamageDef;
 	FGameplayEffectAttributeCaptureDefinition TrackingDamageDef;
 	FGameplayEffectAttributeCaptureDefinition SelfDamageDef;
 
-	BSDamageStatics()
+	FBSDamageStatics()
 	{
 		HitDamageDef = FGameplayEffectAttributeCaptureDefinition(UBSAttributeSetBase::GetHitDamageAttribute(),
 		                                                         EGameplayEffectAttributeCaptureSource::Source, true);
@@ -26,9 +26,9 @@ struct BSDamageStatics
 	}
 };
 
-static const BSDamageStatics& DamageStatics()
+static const FBSDamageStatics& DamageStatics()
 {
-	static BSDamageStatics DStatics;
+	static FBSDamageStatics DStatics;
 	return DStatics;
 }
 

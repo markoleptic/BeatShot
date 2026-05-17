@@ -37,8 +37,6 @@ class BEATSHOT_API UBSInventoryItemDefinition : public UObject
 	GENERATED_BODY()
 
 public:
-	UBSInventoryItemDefinition(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "BeatShot|Inventory")
 	FText DisplayName;
 
