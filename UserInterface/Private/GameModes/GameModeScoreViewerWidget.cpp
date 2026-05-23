@@ -5,23 +5,10 @@
 #include "Components/TextBlock.h"
 #include "MenuOptions/ComboBoxWidget.h"
 #include "SaveGames/SaveGamePlayerScore.h"
+#include "Utilities/BSWidgetInterface.h"
 #include "Widgets/HeatMapWidget.h"
 #include "Widgets/LineChartWidget.h"
 
-namespace
-{
-const FTextFormat& GetPercentFormat()
-{
-	static const FTextFormat Format = FTextFormat::FromString("{0}%");
-	return Format;
-}
-
-const FTextFormat& GetMillisecondFormat()
-{
-	static const FTextFormat Format = FTextFormat::FromString("{0}ms");
-	return Format;
-}
-}
 
 void UGameModeScoreViewerWidget::SetSaveGamePlayerScore(USaveGamePlayerScore* InSaveGamePlayerScore)
 {
@@ -148,7 +135,9 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 			FNumberFormattingOptions NumberFormattingOptions;
 			NumberFormattingOptions.MaximumFractionalDigits = 1;
 			NumberFormattingOptions.MinimumFractionalDigits = 1;
-			return FText::Format(GetMillisecondFormat(), FText::AsNumber(Value, &NumberFormattingOptions));
+			static const FTextFormat MillisecondFormat = FTextFormat(
+				IBSWidgetInterface::GetWidgetTextFromKey("Scores_MillisecondFormat"));
+			return FText::Format(MillisecondFormat, FText::AsNumber(Value, &NumberFormattingOptions));
 		});
 
 	const auto GenericPercentValueTextDelegate = TDelegate<FText(int32, int32, float)>::CreateLambda(
@@ -157,7 +146,8 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 			FNumberFormattingOptions NumberFormattingOptions;
 			NumberFormattingOptions.MaximumFractionalDigits = 1;
 			NumberFormattingOptions.MinimumFractionalDigits = 1;
-			return FText::Format(GetPercentFormat(), FText::AsNumber(Value, &NumberFormattingOptions));
+			static const FTextFormat PercentFormat = FTextFormat::FromString("{0}%");
+			return FText::Format(PercentFormat, FText::AsNumber(Value, &NumberFormattingOptions));
 		});
 
 
@@ -266,10 +256,12 @@ void UGameModeScoreViewerWidget::UpdateDataVisualization()
 
 		NumberFormattingOptions.MinimumFractionalDigits = 1;
 		NumberFormattingOptions.MaximumFractionalDigits = 1;
-		TextBlock_BestReactionTime->SetText(FText::Format(GetMillisecondFormat(),
+		static const FTextFormat MillisecondFormat = FTextFormat(
+			IBSWidgetInterface::GetWidgetTextFromKey("Scores_MillisecondFormat"));
+		TextBlock_BestReactionTime->SetText(FText::Format(MillisecondFormat,
 		                                                  FText::AsNumber(
 			                                                  BestReactionTime * 100.f, &NumberFormattingOptions)));
-		TextBlock_AverageReactionTime->SetText(FText::Format(GetMillisecondFormat(),
+		TextBlock_AverageReactionTime->SetText(FText::Format(MillisecondFormat,
 		                                                     FText::AsNumber(
 			                                                     AvgReactionTime, &NumberFormattingOptions)));
 
@@ -280,7 +272,7 @@ void UGameModeScoreViewerWidget::UpdateDataVisualization()
 
 		NumberFormattingOptions.MaximumFractionalDigits = 1;
 		NumberFormattingOptions.MinimumFractionalDigits = 1;
-		const FTextFormat& PercentFormat = GetPercentFormat();
+		static const FTextFormat PercentFormat = FTextFormat::FromString("{0}%");
 		TextBlock_BestAccuracy->SetText(FText::Format(PercentFormat,
 		                                              FText::AsNumber(BestAccuracy * 100.f, &NumberFormattingOptions)));
 		TextBlock_AverageAccuracy->SetText(FText::Format(PercentFormat,
@@ -378,12 +370,13 @@ FText UGameModeScoreViewerWidget::HandleLocationAccuracyDisplayText(const int32 
 			const float Value = AccuracyRows[XIndex].Accuracy[YIndex];
 			if (Value < 0.f)
 			{
-				return FText::FromString("No target has spawned here.");
+				return IBSWidgetInterface::GetWidgetTextFromKey("Scores_NoTargetSpawned");
 			}
 			FNumberFormattingOptions NumberFormattingOptions;
 			NumberFormattingOptions.MaximumFractionalDigits = 0;
 			NumberFormattingOptions.MinimumFractionalDigits = 0;
-			return FText::Format(GetPercentFormat(), FText::AsNumber(Value * 100.f, &NumberFormattingOptions));
+			static const FTextFormat PercentFormat = FTextFormat::FromString("{0}%");
+			return FText::Format(PercentFormat, FText::AsNumber(Value * 100.f, &NumberFormattingOptions));
 		}
 	}
 	return {};

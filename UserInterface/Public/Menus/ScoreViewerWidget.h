@@ -154,23 +154,13 @@ private:
 	FText HandleMostPlayedCustomGameModesXAxisFormatter(int32, float);
 
 	FText HandleMostPlayedCustomGameModesYAxisFormatter(int32, float);
-
-	FText FormatTime(float Seconds, TOptional<EGameModePlayTimeUnits> Units = TOptional<EGameModePlayTimeUnits>());
-
+	
 	UPROPERTY()
 	TObjectPtr<USaveGamePlayerScore> SaveGamePlayerScore;
 
 	FDateTime StartDate;
 
 	int32 StartDow;
-
-	const FTextFormat PlayFrequencyDisplayFormat = FTextFormat::FromString("{0}\n{1}");
-
-	const FTextFormat PlayFrequencyValueFormat = FTextFormat::FromString("Total for week: {0}");
-
-	const FTextFormat SpaceSeparatedFormat = FTextFormat::FromString("{0} {1}");
-
-	const FTextFormat TimeForFormat = FTextFormat::FromString("Time for {0}:");
 
 	/** Initialized with zeros for the past year. */
 	TArray<TArray<float>> InitialPlayFrequencyData;

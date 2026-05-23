@@ -11,6 +11,7 @@
 #include "GameModes/GameModeScoreViewerWidget.h"
 #include "GameModes/ScoreTable.h"
 #include "SaveGames/SaveGamePlayerScore.h"
+#include "Utilities/BSWidgetInterface.h"
 #include "Utilities/Buttons/MenuButton.h"
 #include "Widgets/BarChartWidget.h"
 #include "Widgets/HeatMapWidget.h"
@@ -204,6 +205,51 @@ int32 ComputeLabelPrecision(const double Step)
 	}
 
 	return FMath::Max(0, static_cast<int32>(FMath::CeilToInt(-FMath::LogX(10.0, Step))));
+}
+
+FText FormatTime(const float Seconds, TOptional<EGameModePlayTimeUnits> Units = TOptional<EGameModePlayTimeUnits>())
+{
+	FNumberFormattingOptions NumberFormattingOptions;
+	static const FTextFormat SpaceSeparatedFormat = FTextFormat::FromString("{0} {1}");
+	if (Units)
+	{
+		FText Text;
+		switch (Units.GetValue())
+		{
+		case EGameModePlayTimeUnits::Minutes:
+			{
+				NumberFormattingOptions.SetMaximumFractionalDigits(1);
+				const float Minutes = Seconds;
+				Text = FText::Format(SpaceSeparatedFormat, FText::AsNumber(Minutes, &NumberFormattingOptions),
+				                     IBSWidgetInterface::GetWidgetTextFromKey("Scores_Minutes"));
+			}
+			break;
+		case EGameModePlayTimeUnits::Hours:
+			{
+				NumberFormattingOptions.SetMaximumFractionalDigits(2);
+				const float Hours = Seconds;
+				Text = FText::Format(SpaceSeparatedFormat, FText::AsNumber(Hours, &NumberFormattingOptions),
+				                     IBSWidgetInterface::GetWidgetTextFromKey("Scores_Hours"));
+			}
+			break;
+		}
+		return Text;
+	}
+	else
+	{
+		if (Seconds < 3600.f)
+		{
+			NumberFormattingOptions.SetMaximumFractionalDigits(1);
+			return FText::Format(SpaceSeparatedFormat, FText::AsNumber(Seconds / 60.f, &NumberFormattingOptions),
+			                     IBSWidgetInterface::GetWidgetTextFromKey("Scores_Minutes"));
+		}
+		else
+		{
+			NumberFormattingOptions.SetMaximumFractionalDigits(2);
+			return FText::Format(SpaceSeparatedFormat, FText::AsNumber(Seconds / 3600.f, &NumberFormattingOptions),
+			                     IBSWidgetInterface::GetWidgetTextFromKey("Scores_Hours"));
+		}
+	}
 }
 }
 
@@ -480,12 +526,12 @@ FCalculateTimeStatisticsResult UScoreViewerWidget::CalculateTimeStatistics(
 	switch (DefaultGameModePlayTimeUnits)
 	{
 	case EGameModePlayTimeUnits::Minutes:
-		MostPlayedDefaultGameModes->GetOptions()->AxisOptions[EAxisType::Y].AxisTitle = FText::FromString(
-			"Total Time Played (Minutes)");
+		MostPlayedDefaultGameModes->GetOptions()->AxisOptions[EAxisType::Y].AxisTitle =
+			IBSWidgetInterface::GetWidgetTextFromKey("Scores_TotalTimePlayedMinutes");
 		break;
 	case EGameModePlayTimeUnits::Hours:
-		MostPlayedDefaultGameModes->GetOptions()->AxisOptions[EAxisType::Y].AxisTitle = FText::FromString(
-			"Total Time Played (Hours)");
+		MostPlayedDefaultGameModes->GetOptions()->AxisOptions[EAxisType::Y].AxisTitle =
+			IBSWidgetInterface::GetWidgetTextFromKey("Scores_TotalTimePlayedHours");
 		break;
 	}
 
@@ -495,12 +541,12 @@ FCalculateTimeStatisticsResult UScoreViewerWidget::CalculateTimeStatistics(
 	switch (CustomGameModePlayTimeUnits)
 	{
 	case EGameModePlayTimeUnits::Minutes:
-		MostPlayedCustomGameModes->GetOptions()->AxisOptions[EAxisType::Y].AxisTitle = FText::FromString(
-			"Total Time Played (Minutes)");
+		MostPlayedCustomGameModes->GetOptions()->AxisOptions[EAxisType::Y].AxisTitle =
+			IBSWidgetInterface::GetWidgetTextFromKey("Scores_TotalTimePlayedMinutes");
 		break;
 	case EGameModePlayTimeUnits::Hours:
-		MostPlayedCustomGameModes->GetOptions()->AxisOptions[EAxisType::Y].AxisTitle = FText::FromString(
-			"Total Time Played (Hours)");
+		MostPlayedCustomGameModes->GetOptions()->AxisOptions[EAxisType::Y].AxisTitle =
+			IBSWidgetInterface::GetWidgetTextFromKey("Scores_TotalTimePlayedHours");
 		break;
 	}
 
@@ -563,6 +609,8 @@ void UScoreViewerWidget::UpdateUserFacingTimeStatisticsLabels(
 	const float TotalTimeInAnyGameMode)
 {
 	TextBlock_TotalTimeInAnyGameMode->SetText(FormatTime(TotalTimeInAnyGameMode));
+
+	static const FTextFormat TimeForFormat = FTextFormat(IBSWidgetInterface::GetWidgetTextFromKey("Scores_TimeFor"));
 
 	EBaseGameMode MostPlayedDefaultGameMode = EBaseGameMode::None;
 	float TimePlayedForMostPlayedDefaultMode = 0.0f;
@@ -644,6 +692,7 @@ FText UScoreViewerWidget::HandlePlayFrequencyDisplayText(const int32 WeekIndex, 
 	const int32 DayIndex = WeekIndex * DaysInWeek + (DayOfWeekIndex - StartDow);
 	const FDateTime Date = StartDate + FTimespan::FromDays(DayIndex);
 	const FText DateText = FText::FromString(Date.ToFormattedString(TEXT("%Y-%m-%d")));
+	static const FTextFormat PlayFrequencyDisplayFormat = FTextFormat::FromString("{0}\n{1}");
 	return FText::Format(PlayFrequencyDisplayFormat, DateText, FormatTime(Value));
 }
 
@@ -657,7 +706,8 @@ FText UScoreViewerWidget::HandlePlayFrequencyValueText(const int32 WeekIndex, in
 			Total += CurrentValue;
 		}
 	}
-
+	static const FTextFormat PlayFrequencyValueFormat = FTextFormat(
+		IBSWidgetInterface::GetWidgetTextFromKey("Scores_TotalForWeek"));
 	return FText::Format(PlayFrequencyValueFormat, FormatTime(Total));
 }
 
@@ -737,46 +787,4 @@ FText UScoreViewerWidget::HandleMostPlayedCustomGameModesYAxisFormatter(const in
 	return FText::AsNumber(Value, &NumberFormattingOptions);
 }
 
-FText UScoreViewerWidget::FormatTime(const float Seconds, TOptional<EGameModePlayTimeUnits> Units)
-{
-	FNumberFormattingOptions NumberFormattingOptions;
-	if (Units)
-	{
-		FText Text;
-		switch (Units.GetValue())
-		{
-		case EGameModePlayTimeUnits::Minutes:
-			{
-				NumberFormattingOptions.SetMaximumFractionalDigits(1);
-				const float Minutes = Seconds;
-				Text = FText::Format(SpaceSeparatedFormat, FText::AsNumber(Minutes, &NumberFormattingOptions),
-				                     FText::FromString("Minutes"));
-			}
-			break;
-		case EGameModePlayTimeUnits::Hours:
-			{
-				NumberFormattingOptions.SetMaximumFractionalDigits(2);
-				const float Hours = Seconds;
-				Text = FText::Format(SpaceSeparatedFormat, FText::AsNumber(Hours, &NumberFormattingOptions),
-				                     FText::FromString("Hours"));
-			}
-			break;
-		}
-		return Text;
-	}
-	else
-	{
-		if (Seconds < 3600.f)
-		{
-			NumberFormattingOptions.SetMaximumFractionalDigits(1);
-			return FText::Format(SpaceSeparatedFormat, FText::AsNumber(Seconds / 60.f, &NumberFormattingOptions),
-			                     FText::FromString("Minutes"));
-		}
-		else
-		{
-			NumberFormattingOptions.SetMaximumFractionalDigits(2);
-			return FText::Format(SpaceSeparatedFormat, FText::AsNumber(Seconds / 3600.f, &NumberFormattingOptions),
-			                     FText::FromString("Hours"));
-		}
-	}
-}
+

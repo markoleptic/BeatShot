@@ -5,6 +5,10 @@
 #include "Components/HorizontalBoxSlot.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
+#include "Utilities/BSWidgetInterface.h"
+
+FNumberFormattingOptions UHitTimingWidget::NumberFormattingOptions = FNumberFormattingOptions().
+	SetMaximumFractionalDigits(0);
 
 void UHitTimingWidget::NativeConstruct()
 {
@@ -30,7 +34,8 @@ void UHitTimingWidget::Init(const FText& MinTickValue, const FText& MaxTickValue
 {
 	Tick_Min->SetText(MinTickValue);
 	Tick_Max->SetText(MaxTickValue);
-	Tick_Mid->SetText(FText::FromString(FString::FromInt(0) + "ms"));
+	static const FTextFormat TimeForFormat = FTextFormat(IBSWidgetInterface::GetWidgetTextFromKey("Scores_TimeFor"));
+	Tick_Mid->SetText(FText::Format(TimeForFormat, FText::AsNumber(0, &NumberFormattingOptions)));
 }
 
 void UHitTimingWidget::UpdateHitTiming(const float TimeOffsetNormalized, const float TimeOffsetRaw)
@@ -50,8 +55,8 @@ void UHitTimingWidget::UpdateHitTiming(const float TimeOffsetNormalized, const f
 
 FText UHitTimingWidget::MakeCurrentTickText(const float TimeOffsetRaw)
 {
-	const FString Offset = FString::FromInt(static_cast<int32>(TimeOffsetRaw * 100.f)) + "ms";
-	return FText::FromString(Offset);
+	static const FTextFormat TimeForFormat = FTextFormat(IBSWidgetInterface::GetWidgetTextFromKey("Scores_TimeFor"));
+	return FText::Format(TimeForFormat, FText::AsNumber(TimeOffsetRaw * 100.f, &NumberFormattingOptions));
 }
 
 void UHitTimingWidget::TickTransition(const float Value)

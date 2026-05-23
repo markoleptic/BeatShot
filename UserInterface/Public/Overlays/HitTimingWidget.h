@@ -55,4 +55,5 @@ protected:
 	float Tick_Current_Offset_Start = 0.f;
 	float Tick_Current_Offset_End = 0.f;
 	float LastTimeOffset = 0.5f;
+	static FNumberFormattingOptions NumberFormattingOptions;
 };
