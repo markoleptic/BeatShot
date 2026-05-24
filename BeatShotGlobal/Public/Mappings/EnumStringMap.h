@@ -15,6 +15,9 @@ struct BEATSHOTGLOBAL_API FEnumStringPair
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	FString DisplayName;
 
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	FText DisplayText;
+
 	UPROPERTY(BlueprintReadOnly, VisibleDefaultsOnly, meta = (NoResetToDefault))
 	uint8 Index;
 
@@ -23,6 +26,10 @@ struct BEATSHOTGLOBAL_API FEnumStringPair
 	}
 
 	FEnumStringPair(const FString& InEnumValue, const uint8 InIndex) : DisplayName(InEnumValue), Index(InIndex)
+	{
+	}
+
+	FEnumStringPair(const FText& InEnumValue, const uint8 InIndex) : DisplayText(InEnumValue), Index(InIndex)
 	{
 	}
 
@@ -46,6 +53,10 @@ struct BEATSHOTGLOBAL_API FEnumStringMapping
 	UPROPERTY(BlueprintReadOnly, VisibleDefaultsOnly, meta = (NoResetToDefault))
 	FString EnumClass;
 
+	/** String version of the Enum Class. */
+	UPROPERTY(BlueprintReadOnly, VisibleDefaultsOnly, meta = (NoResetToDefault))
+	FText EnumClassText;
+
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, meta = (TitleProperty="{DisplayName}"))
 	TMap<uint8, FEnumStringPair> EnumStringPairs;
 
@@ -62,7 +73,7 @@ struct BEATSHOTGLOBAL_API FEnumStringMapping
 		for (int64 i = 0; i < Enum->GetMaxEnumValue(); i++)
 		{
 			const FText EnumValueText = Enum->GetDisplayNameTextByValue(i);
-			EnumStringPairs.Emplace(i, FEnumStringPair(EnumValueText.ToString(), i));
+			EnumStringPairs.Emplace(i, FEnumStringPair(EnumValueText, i));
 		}
 	}
 
@@ -73,6 +84,7 @@ struct BEATSHOTGLOBAL_API FEnumStringMapping
 
 	FORCEINLINE bool operator<(const FEnumStringMapping& Other) const
 	{
+		/*return EnumClassText.CompareTo(Other.EnumClassText);*/
 		return EnumClass < Other.EnumClass;
 	}
 };
@@ -133,7 +145,7 @@ FString UEnumStringMap::FindStringFromEnum(const T& InEnum) const
 		return Found->DisplayName;
 	}
 
-	UE_LOG(LogTemp, Display, TEXT("Didn't find mapping for %d"), static_cast<uint8>(InEnum));
+	UE_LOG(LogTemp, Warning, TEXT("Didn't find mapping for %d"), static_cast<uint8>(InEnum));
 	return FString();
 }
 

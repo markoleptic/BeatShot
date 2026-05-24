@@ -55,8 +55,6 @@ protected:
 	UOverlay* Overlay_SaveMenu;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UOverlay* Overlay_Restart;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UOverlay* Overlay_SaveInProgress;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_QuitMainMenu;
@@ -90,8 +88,6 @@ protected:
 	UWidgetAnimation* FadeOutRestartMenu;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeOutBackgroundBlur;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
-	UWidgetAnimation* FadeOutSaveInProgress;
 
 	/** Delegate used to bind CollapseWidget to FadeOutBackgroundBlur. */
 	FWidgetAnimationDynamicEvent FadeOutWidgetDelegate;
@@ -118,10 +114,6 @@ private:
 	/** Fades out the RestartOverlay. */
 	UFUNCTION()
 	void PlayFadeOutRestartMenu() { PlayAnimationForward(FadeOutRestartMenu); }
-
-	/** Fades in the SaveInProgressOverlay. */
-	UFUNCTION()
-	void PlayFadeInSaveInProgress() { PlayAnimationReverse(FadeOutSaveInProgress); }
 
 	/** Called when either QuitAndSaveButton or Button_QuitWithoutSave is clicked. */
 	UFUNCTION()

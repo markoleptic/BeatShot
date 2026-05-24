@@ -97,6 +97,8 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* TextBlock_Username;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UTextBlock* TextBlock_SignedInThroughSteamAs;
 
 private:
 	void OnMenuButtonClicked_BSButton(const UBSButton* Button);

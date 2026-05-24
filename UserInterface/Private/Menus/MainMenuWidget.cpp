@@ -121,10 +121,12 @@ void UMainMenuWidget::UpdateLoginState(const FString& SteamPersonaName)
 {
 	if (SteamPersonaName.IsEmpty())
 	{
-		TextBlock_Username->SetText(IBSWidgetInterface::GetWidgetTextFromKey("Login_NotSignedIn"));
+		TextBlock_Username->SetText(FText::GetEmpty());
+		TextBlock_SignedInThroughSteamAs->SetVisibility(ESlateVisibility::Collapsed);
 	}
 	else
 	{
 		TextBlock_Username->SetText(FText::FromString(SteamPersonaName));
+		TextBlock_SignedInThroughSteamAs->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	}
 }

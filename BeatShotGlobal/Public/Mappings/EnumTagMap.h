@@ -26,6 +26,8 @@ struct BEATSHOTGLOBAL_API FEnumTagPair : public FEnumStringPair
 
 	FEnumTagPair(const FString& InEnumValue, const uint8 InIndex);
 
+	FEnumTagPair(const FText& InEnumValue, const uint8 InIndex);
+
 	void AddParentTags(const FGameplayTagContainer& InParentTags);
 
 	FORCEINLINE bool operator==(const FEnumTagPair& Other) const

@@ -127,10 +127,6 @@ void UQuitMenuWidget::OnQuitToMainMenu()
 
 void UQuitMenuWidget::OnQuitToDesktop()
 {
-	if (bShouldSaveScores)
-	{
-		PlayFadeInSaveInProgress();
-	}
 	FGameModeTransitionState TransitionState;
 	TransitionState.TransitionState = ETransitionState::QuitToDesktop;
 	TransitionState.bSaveCurrentScores = bShouldSaveScores;
