@@ -106,7 +106,7 @@ void UCustomGameModeTargetSizingWidget::NativeConstruct()
 
 	ComboBoxOption_ConsecutiveTargetScalePolicy->ComboBox->ClearOptions();
 
-	TArray<FString> Options;
+	TArray<FText> Options;
 	for (const EConsecutiveTargetScalePolicy& Method : TEnumRange<EConsecutiveTargetScalePolicy>())
 	{
 		Options.Add(GetStringFromEnum_FromTagMap(Method));

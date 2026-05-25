@@ -6,6 +6,7 @@
 #include "CustomGameModeCategoryWidget.h"
 #include "CustomGameModeStartWidget.generated.h"
 
+class UGameModeAndDifficultyStringMap;
 class UTextInputWidget;
 class UCheckBoxWidget;
 class UComboBoxWidget;
@@ -82,6 +83,8 @@ protected:
 	UComboBoxWidget* ComboBoxOption_GameModeDifficulty;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTextInputWidget* EditableTextBoxOption_CustomGameModeName;
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UGameModeAndDifficultyStringMap> GameModeAndDifficultyStringMap;
 
 	/** Start widget properties shared between instances of this class. */
 	static FStartWidgetProperties StartWidgetProperties;

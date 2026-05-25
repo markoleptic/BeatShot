@@ -23,10 +23,10 @@ BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
 void SPlayerScoreRow::Construct(const FArguments& InArgs, const TSharedRef<STableViewBase>& InOwnerTableView)
 {
 	Item = InArgs._Item;
-	BaseGameModeTextMap = InArgs._BaseGameModeTextMap;
-	DifficultyTextMap = InArgs._DifficultyTextMap;
-	checkf(BaseGameModeTextMap, TEXT("BaseGameModeTextMap must not be null."));
-	checkf(DifficultyTextMap, TEXT("DifficultyTextMap must not be null."));
+	BaseGameModeTextGetter = InArgs._BaseGameModeTextGetter;
+	DifficultyTextGetter = InArgs._DifficultyTextGetter;
+	checkf(BaseGameModeTextGetter->IsBound(), TEXT("BaseGameModeTextMap must be bound."));
+	checkf(DifficultyTextGetter->IsBound(), TEXT("DifficultyTextGetter must be bound."));
 	Font = InArgs._Font;
 	FSuperRowType::Construct(FTableRowArgs().Style(InArgs._TableRowStyle), InOwnerTableView);
 }
@@ -75,7 +75,7 @@ TSharedRef<SWidget> SPlayerScoreRow::GenerateWidgetForColumn(const FName& Column
 		FText Text;
 		if (Item->DefiningConfig.GameModeType == EGameModeType::Preset)
 		{
-			Text = *BaseGameModeTextMap->Find(Item->DefiningConfig.BaseGameMode);
+			Text = BaseGameModeTextGetter->Execute(Item->DefiningConfig.BaseGameMode);
 		}
 		else if (Item->DefiningConfig.GameModeType == EGameModeType::Custom)
 		{
@@ -96,7 +96,7 @@ TSharedRef<SWidget> SPlayerScoreRow::GenerateWidgetForColumn(const FName& Column
 		FText Text;
 		if (Item->DefiningConfig.GameModeType == EGameModeType::Preset)
 		{
-			Text = *DifficultyTextMap->Find(Item->DefiningConfig.Difficulty);
+			Text = DifficultyTextGetter->Execute(Item->DefiningConfig.Difficulty);
 		}
 		return SNew(SBox)
 			.Padding(FMargin(4.0, 0.0))

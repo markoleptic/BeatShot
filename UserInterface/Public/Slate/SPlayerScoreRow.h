@@ -6,8 +6,6 @@
 #include "SaveGames/SaveGamePlayerScore.h"
 #include "Widgets/Views/STableRow.h"
 
-using FBaseGameModeTextMap = TMap<EBaseGameMode, FText>;
-using FDifficultyTextMap = TMap<EGameModeDifficulty, FText>;
 
 class USERINTERFACE_API SPlayerScoreRow : public SMultiColumnTableRow<TSharedPtr<FPlayerScore>>
 {
@@ -17,9 +15,9 @@ public:
 		}
 
 		SLATE_ARGUMENT(TSharedPtr<FPlayerScore>, Item)
-		SLATE_ARGUMENT(FBaseGameModeTextMap*, BaseGameModeTextMap)
-		SLATE_ARGUMENT(FDifficultyTextMap*, DifficultyTextMap)
-		SLATE_STYLE_ARGUMENT(FTableRowStyle, TableRowStyle)
+	SLATE_ARGUMENT(const TDelegate<FText(EBaseGameMode)>*, BaseGameModeTextGetter)
+	SLATE_ARGUMENT(const TDelegate<FText(EGameModeDifficulty)>*, DifficultyTextGetter)
+	SLATE_STYLE_ARGUMENT(FTableRowStyle, TableRowStyle)
 		SLATE_ARGUMENT(FSlateFontInfo, Font)
 	SLATE_END_ARGS()
 
@@ -28,9 +26,9 @@ public:
 	virtual TSharedRef<SWidget> GenerateWidgetForColumn(const FName& ColumnName) override;
 
 private:
-	TSharedPtr<FPlayerScore> Item;
-	FBaseGameModeTextMap* BaseGameModeTextMap = nullptr;
-	FDifficultyTextMap* DifficultyTextMap = nullptr;
+	TSharedPtr<FPlayerScore> Item = nullptr;
+	const TDelegate<FText(EBaseGameMode)>* BaseGameModeTextGetter = nullptr;
+	const TDelegate<FText(EGameModeDifficulty)>* DifficultyTextGetter = nullptr;
 	FSlateFontInfo Font = FCoreStyle::GetDefaultFontStyle("Regular", 24);
 
 public:

@@ -3,11 +3,22 @@
 
 #include "GameModes/ScoreTable.h"
 #include "Fonts/FontMeasure.h"
+#include "Mappings/GameModeAndDifficultyStringMap.h"
 #include "SaveGames/SaveGamePlayerScore.h"
 #include "Slate/SPlayerScoreRow.h"
 
 TSharedRef<SWidget> UScoreTable::RebuildWidget()
 {
+	BaseGameModeTextGetter = TDelegate<FText(EBaseGameMode)>::CreateLambda([this](const EBaseGameMode BaseGameMode)
+	{
+		return GameModeAndDifficultyStringMap->FindTextFromEnum(BaseGameMode);
+	});
+	DifficultyTextGetter = TDelegate<FText(EGameModeDifficulty)>::CreateLambda(
+		[this](const EGameModeDifficulty GameModeDifficulty)
+		{
+			return GameModeAndDifficultyStringMap->FindTextFromEnum(GameModeDifficulty);
+		});
+	
 	if (HeaderColumnTextWidth.IsEmpty())
 	{
 		const TSharedRef<FSlateFontMeasure> FontMeasure = FSlateApplication::Get().GetRenderer()->
@@ -16,13 +27,24 @@ TSharedRef<SWidget> UScoreTable::RebuildWidget()
 		{
 			HeaderColumnTextWidth.Add(Name, FontMeasure->Measure(Text, HeaderFont).X);
 		}
-		for (const auto& [BaseGameMode, Text] : BaseGameModeText)
+		if (GameModeAndDifficultyStringMap)
 		{
-			BaseGameModeCellTextWidth.Add(BaseGameMode, FontMeasure->Measure(Text, TableCellFont).X);
-		}
-		for (const auto& [Difficulty, Text] : DifficultyText)
-		{
-			DifficultyCellTextWidth.Add(Difficulty, FontMeasure->Measure(Text, TableCellFont).X);
+			for (const auto BaseGameMode : TEnumRange<EBaseGameMode>())
+			{
+				if (BaseGameMode != EBaseGameMode::None)
+				{
+					BaseGameModeCellTextWidth.Add(BaseGameMode,
+					                              FontMeasure->Measure(
+						                              GameModeAndDifficultyStringMap->FindTextFromEnum(BaseGameMode),
+						                              TableCellFont).X);
+				}
+			}
+			for (const auto Difficulty : TEnumRange<EGameModeDifficulty>())
+			{
+				DifficultyCellTextWidth.Add(
+					Difficulty, FontMeasure->Measure(GameModeAndDifficultyStringMap->FindTextFromEnum(Difficulty),
+					                                 TableCellFont).X);
+			}
 		}
 		{
 			const auto TestText = FText::FromString("8888-88-88, 88:88PM");
@@ -86,16 +108,6 @@ TSharedRef<SWidget> UScoreTable::RebuildWidget()
 			SlateWidget
 			.ToSharedRef()
 		];
-}
-
-void UScoreTable::SetBaseGameModeText(const TMap<EBaseGameMode, FText>& InBaseGameModeText)
-{
-	BaseGameModeText = InBaseGameModeText;
-}
-
-void UScoreTable::SetDifficultyText(const TMap<EGameModeDifficulty, FText>& InGameModeDifficultyText)
-{
-	DifficultyText = InGameModeDifficultyText;
 }
 
 void UScoreTable::SetListItems(const TArray<TSharedPtr<FPlayerScore>>& InListItems)
@@ -162,7 +174,7 @@ void UScoreTable::SetListItems(const TArray<TSharedPtr<FPlayerScore>>& InListIte
 					{
 						if (Item->DefiningConfig.GameModeType == EGameModeType::Preset)
 						{
-							Text = *BaseGameModeText.Find(Item->DefiningConfig.BaseGameMode);
+							Text = GameModeAndDifficultyStringMap->FindTextFromEnum(Item->DefiningConfig.BaseGameMode);
 						}
 						else if (Item->DefiningConfig.GameModeType == EGameModeType::Custom)
 						{
@@ -173,7 +185,7 @@ void UScoreTable::SetListItems(const TArray<TSharedPtr<FPlayerScore>>& InListIte
 					{
 						if (Item->DefiningConfig.GameModeType == EGameModeType::Preset)
 						{
-							Text = *DifficultyText.Find(Item->DefiningConfig.Difficulty);
+							Text = GameModeAndDifficultyStringMap->FindTextFromEnum(Item->DefiningConfig.Difficulty);
 						}
 					}
 					else if (ColumnName == SPlayerScoreRow::SongColumnName)
@@ -211,8 +223,8 @@ TSharedRef<ITableRow> UScoreTable::OnGenerateRow(TSharedPtr<FPlayerScore> Item,
 {
 	return SNew(SPlayerScoreRow, OwnerTable)
 		.Item(Item)
-		.BaseGameModeTextMap(&BaseGameModeText)
-		.DifficultyTextMap(&DifficultyText)
+		.BaseGameModeTextGetter(&BaseGameModeTextGetter)
+		.DifficultyTextGetter(&DifficultyTextGetter)
 		.TableRowStyle(&TableRowStyle)
 		.Font(TableCellFont);
 }
@@ -267,7 +279,7 @@ void UScoreTable::SortItems()
 			FString TextL, TextR;
 			if (L->DefiningConfig.GameModeType == EGameModeType::Preset)
 			{
-				TextL = BaseGameModeText[L->DefiningConfig.BaseGameMode].ToString();
+				TextL = GameModeAndDifficultyStringMap->FindTextFromEnum(L->DefiningConfig.BaseGameMode).ToString();
 			}
 			else if (L->DefiningConfig.GameModeType == EGameModeType::Custom)
 			{
@@ -275,7 +287,7 @@ void UScoreTable::SortItems()
 			}
 			if (R->DefiningConfig.GameModeType == EGameModeType::Preset)
 			{
-				TextR = BaseGameModeText[R->DefiningConfig.BaseGameMode].ToString();
+				TextR = GameModeAndDifficultyStringMap->FindTextFromEnum(R->DefiningConfig.BaseGameMode).ToString();
 			}
 			else if (R->DefiningConfig.GameModeType == EGameModeType::Custom)
 			{
@@ -289,11 +301,11 @@ void UScoreTable::SortItems()
 			FString TextL, TextR;
 			if (L->DefiningConfig.GameModeType == EGameModeType::Preset)
 			{
-				TextL = DifficultyText[L->DefiningConfig.Difficulty].ToString();
+				TextL = GameModeAndDifficultyStringMap->FindTextFromEnum(L->DefiningConfig.Difficulty).ToString();
 			}
 			if (R->DefiningConfig.GameModeType == EGameModeType::Preset)
 			{
-				TextR = DifficultyText[R->DefiningConfig.Difficulty].ToString();
+				TextR = GameModeAndDifficultyStringMap->FindTextFromEnum(R->DefiningConfig.Difficulty).ToString();
 			}
 			return TextL < TextR;
 		}

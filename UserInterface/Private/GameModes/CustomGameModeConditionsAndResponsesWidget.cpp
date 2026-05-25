@@ -70,7 +70,7 @@ void UCustomGameModeConditionsAndResponsesWidget::NativeConstruct()
 	ComboBoxOption_TargetDeactivationResponses->ComboBox->ClearOptions();
 	ComboBoxOption_TargetDestructionConditions->ComboBox->ClearOptions();
 
-	TArray<FString> Options;
+	TArray<FText> Options;
 	for (const ETargetSpawnResponse& Method : TEnumRange<ETargetSpawnResponse>())
 	{
 		Options.Add(GetStringFromEnum_FromTagMap(Method));

@@ -73,7 +73,7 @@ void UCustomGameModeActivationWidget::NativeConstruct()
 
 	ComboBoxOption_TargetActivationSelectionPolicy->ComboBox->ClearOptions();
 
-	TArray<FString> Options;
+	TArray<FText> Options;
 	for (const ETargetActivationSelectionPolicy& Method : TEnumRange<ETargetActivationSelectionPolicy>())
 	{
 		Options.Add(GetStringFromEnum_FromTagMap(Method));

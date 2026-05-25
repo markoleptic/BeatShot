@@ -84,10 +84,10 @@ protected:
 	static bool UpdateValueIfDifferent(const USingleRangeInputWidget* Widget, const float Value);
 
 	/** Updates the combo box selection if NewOption is different from existing. */
-	static bool UpdateValueIfDifferent(const UComboBoxWidget* Widget, const FString& NewOption);
+	static bool UpdateValueIfDifferent(const UComboBoxWidget* Widget, const FText& NewOption);
 
 	/** Updates the combo box selection if NewOptions is different from existing. */
-	static bool UpdateValueIfDifferent(const UComboBoxWidget* Widget, const TArray<FString>& NewOptions);
+	static bool UpdateValueIfDifferent(const UComboBoxWidget* Widget, const TArray<FText>& NewOptions);
 
 	/** Updates the checkbox checked state if bIsChecked is different from existing. */
 	static bool UpdateValueIfDifferent(const UCheckBoxWidget* Widget, const bool bIsChecked);
@@ -128,11 +128,11 @@ protected:
 
 	/** Returns the string display name of the enum, or empty string if not found. Requires EnumTagMap.  */
 	template <typename T>
-	FString GetStringFromEnum_FromTagMap(const T& InEnum);
+	FText GetStringFromEnum_FromTagMap(const T& InEnum);
 
 	/** Returns an array of string display names corresponding to the InEnumArray. Requires EnumTagMap . */
 	template <typename T>
-	TArray<FString> GetStringArrayFromEnumArray_FromTagMap(const TArray<T>& InEnumArray);
+	TArray<FText> GetStringArrayFromEnumArray_FromTagMap(const TArray<T>& InEnumArray);
 
 	/** Returns the enum value based on the string display name. Requires EnumTagMap. */
 	template <typename T>
@@ -151,23 +151,23 @@ private:
 };
 
 template <typename T>
-FString UCustomGameModeCategoryWidget::GetStringFromEnum_FromTagMap(const T& InEnum)
+FText UCustomGameModeCategoryWidget::GetStringFromEnum_FromTagMap(const T& InEnum)
 {
 	if (EnumTagMap)
 	{
-		FString Found = EnumTagMap->FindStringFromEnum<T>(InEnum);
+		FText Found = EnumTagMap->FindTextFromEnum<T>(InEnum);
 		if (!Found.IsEmpty())
 		{
 			return Found;
 		}
 	}
-	return GetStringFromEnum(InEnum);
+	return FText::GetEmpty();
 }
 
 template <typename T>
-TArray<FString> UCustomGameModeCategoryWidget::GetStringArrayFromEnumArray_FromTagMap(const TArray<T>& InEnumArray)
+TArray<FText> UCustomGameModeCategoryWidget::GetStringArrayFromEnumArray_FromTagMap(const TArray<T>& InEnumArray)
 {
-	TArray<FString> OutArray;
+	TArray<FText> OutArray;
 	for (const T& InEnum : InEnumArray)
 	{
 		OutArray.Add(GetStringFromEnum_FromTagMap<T>(InEnum));
@@ -180,9 +180,9 @@ T UCustomGameModeCategoryWidget::GetEnumFromString_FromTagMap(const FString& InS
 {
 	if (EnumTagMap)
 	{
-		return EnumTagMap->FindEnumFromString<T>(InString);
+		return EnumTagMap->FindEnumFromText<T>(FText::FromString(InString));
 	}
-	return GetEnumFromString<T>(InString);
+	return static_cast<T>(0);
 }
 
 template <typename T>

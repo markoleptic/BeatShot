@@ -33,7 +33,7 @@ TMap<FString, uint8> UVideoSettingEnumStringMap::GetNvidiaSettingModes(const TAr
 	{
 		if (const FEnumStringPair* EnumTagPair = EnumStringMapping->EnumStringPairs.Find(static_cast<uint8>(Type)))
 		{
-			Map.Add(EnumTagPair->DisplayName, EnumTagPair->Index);
+			Map.Add(EnumTagPair->DisplayText.ToString(), EnumTagPair->Index);
 		}
 	}
 

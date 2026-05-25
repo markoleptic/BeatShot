@@ -7,6 +7,7 @@
 #include "SaveGames/SaveGamePlayerScore.h"
 #include "DefaultGameModeScoreViewerWidget.generated.h"
 
+class UGameModeAndDifficultyStringMap;
 class UBSVerticalBox;
 class UDateRangeWidget;
 class UTextBlock;
@@ -31,10 +32,6 @@ public:
 	 *  repopulates the game mode combo box. If there are no scores, the main box is hidden and the no scores message
 	 *  is shown. */
 	void RepopulatePlayerScoreByGameModeSongAndDifficulty();
-
-	void SetBaseGameModeText(const TMap<EBaseGameMode, FText>& InBaseGameModeText);
-
-	void SetDifficultyText(const TMap<EGameModeDifficulty, FText>& InGameModeDifficultyText);
 
 protected:
 	virtual void NativeConstruct() override;
@@ -76,13 +73,11 @@ protected:
 	UDateRangeWidget* DateRangeWidget;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UGameModeScoreViewerWidget* GameModeScoreViewerWidget;
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UGameModeAndDifficultyStringMap> GameModeAndDifficultyStringMap;
 
 	UPROPERTY()
 	TObjectPtr<USaveGamePlayerScore> SaveGamePlayerScore;
-
-	TMap<EBaseGameMode, FText> BaseGameModeText;
-
-	TMap<EGameModeDifficulty, FText> DifficultyText;
 
 	TMap<EBaseGameMode, TMap<FString, TMap<EGameModeDifficulty, TArray<TSharedPtr<FPlayerScore>>>>>
 	PlayerScoreByGameModeSongAndDifficulty;

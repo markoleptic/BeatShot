@@ -89,6 +89,7 @@ UWidget* IBSWidgetInterface::OnSelectionChanged_GenerateMultiSelectionItem(const
 	{
 		if (const FString Key = GetStringTableKeyFromComboBox(ComboBoxString, SelectedOptions[0]); !Key.IsEmpty())
 		{
+
 			TooltipText = GetTooltipTextFromKey(Key);
 		}
 	}

@@ -162,7 +162,7 @@ void UCustomGameModeGeneralWidget::NativeConstruct()
 	ComboBoxOption_DamageType->ComboBox->ClearOptions();
 	ComboBoxOption_HyperParameterMode->ComboBox->ClearOptions();
 
-	TArray<FString> Options;
+	TArray<FText> Options;
 	for (const ERecentTargetMemoryPolicy& Method : TEnumRange<ERecentTargetMemoryPolicy>())
 	{
 		Options.Add(GetStringFromEnum_FromTagMap(Method));

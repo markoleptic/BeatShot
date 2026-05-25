@@ -6,6 +6,7 @@
 #include "Components/CheckBox.h"
 #include "Components/EditableTextBox.h"
 #include "GameModes/CustomGameModeWidget.h"
+#include "Mappings/GameModeAndDifficultyStringMap.h"
 #include "MenuOptions/CheckBoxWidget.h"
 #include "MenuOptions/ComboBoxWidget.h"
 #include "MenuOptions/TextInputWidget.h"
@@ -87,12 +88,12 @@ void UCustomGameModeStartWidget::RefreshGameModes(const TArray<FBSConfig>& Custo
 {
 	ComboBoxOption_GameModeTemplates->ComboBox->ClearOptions();
 	TArray<FString> Options;
-
+	
 	for (const EBaseGameMode& GameMode : TEnumRange<EBaseGameMode>())
 	{
 		if (GameMode != EBaseGameMode::None)
 		{
-			Options.Add(GetStringFromEnum(GameMode));
+			Options.Add(GameModeAndDifficultyStringMap->FindTextFromEnum(GameMode).ToString());
 		}
 	}
 	for (const FString& Option : Options)

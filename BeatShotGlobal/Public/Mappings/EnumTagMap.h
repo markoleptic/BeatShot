@@ -14,19 +14,7 @@ struct BEATSHOTGLOBAL_API FEnumTagPair : public FEnumStringPair
 {
 	GENERATED_BODY()
 
-	/** Gameplay Tags inherited from the Enum Class. */
-	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	FGameplayTagContainer ParentTags;
-
-	/** Gameplay Tags associated with the Enum Value. */
-	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	FGameplayTagContainer Tags;
-
-	FEnumTagPair();
-
-	FEnumTagPair(const FString& InEnumValue, const uint8 InIndex);
-
-	FEnumTagPair(const FText& InEnumValue, const uint8 InIndex);
+	using FEnumStringPair::FEnumStringPair;
 
 	void AddParentTags(const FGameplayTagContainer& InParentTags);
 
@@ -34,6 +22,14 @@ struct BEATSHOTGLOBAL_API FEnumTagPair : public FEnumStringPair
 	{
 		return Index == Other.Index;
 	}
+
+	/** Gameplay Tags inherited from the Enum Class. */
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	FGameplayTagContainer ParentTags;
+
+	/** Gameplay Tags associated with the Enum Value. */
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	FGameplayTagContainer Tags;
 };
 
 /** A collection of FEnumTagPair for a particular enum type. */
@@ -42,23 +38,7 @@ struct BEATSHOTGLOBAL_API FEnumTagMapping
 {
 	GENERATED_BODY()
 
-	/** UEnum static Enum. */
-	UPROPERTY(BlueprintReadOnly)
-	const UEnum* Enum;
-
-	/** String version of the Enum Class. */
-	UPROPERTY(BlueprintReadOnly, VisibleDefaultsOnly, meta = (NoResetToDefault))
-	FString EnumClass;
-
-	/** Any EnumTagPairs inherit these tags. Must save to show changes in editor. */
-	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	FGameplayTagContainer ParentTags;
-
-	/** Gameplay Tags and Display Names associated with an Enum Value. */
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, meta = (TitleProperty="{DisplayName}"))
-	TMap<uint8, FEnumTagPair> EnumTagPairs;
-
-	FEnumTagMapping();
+	FEnumTagMapping() = default;
 
 	explicit FEnumTagMapping(const UEnum* InEnum);
 
@@ -71,6 +51,22 @@ struct BEATSHOTGLOBAL_API FEnumTagMapping
 	{
 		return EnumClass < Other.EnumClass;
 	}
+	
+	/** UEnum static Enum. */
+	UPROPERTY(BlueprintReadOnly)
+	const UEnum* Enum = nullptr;
+
+	/** String version of the Enum Class. */
+	UPROPERTY(BlueprintReadOnly, VisibleDefaultsOnly, meta = (NoResetToDefault))
+	FString EnumClass;
+
+	/** Any EnumTagPairs inherit these tags. Must save to show changes in editor. */
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	FGameplayTagContainer ParentTags;
+
+	/** Gameplay Tags and Display Names associated with an Enum Value. */
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, meta = (TitleProperty="{DisplayText}"))
+	TMap<uint8, FEnumTagPair> EnumTagPairs;
 };
 
 /** Since the combo boxes in the custom game mode menu are usually populated with enums, this data asset allows editing
@@ -81,9 +77,8 @@ class BEATSHOTGLOBAL_API UEnumTagMap : public UDataAsset
 	GENERATED_BODY()
 
 public:
-	UEnumTagMap();
-
 	virtual void PreSave(FObjectPreSaveContext ObjectSaveContext) override;
+	
 	virtual void PostLoad() override;
 
 	/** Returns a pointer to the entire EnumTagMappings array. */
@@ -95,16 +90,16 @@ public:
 
 	/** Returns the string associated with a specific full enum name. */
 	template <typename T>
-	FString FindStringFromEnum(const T& InEnum) const;
+	FText FindTextFromEnum(const T& InEnum) const;
 
 	/** Finds the full enum type from the Display Name. */
 	template <typename T>
-	T FindEnumFromString(const FString& EnumString) const;
+	T FindEnumFromText(const FText& InText) const;
 
 protected:
 	void PopulateEnumTypes(const TSet<UEnum*>& InTypes);
 
-	UPROPERTY(EditDefaultsOnly, meta = (TitleProperty="{EnumClass}"))
+	UPROPERTY(EditDefaultsOnly)
 	TMap<UEnum*, FEnumTagMapping> EnumTagMap;
 };
 
@@ -120,30 +115,31 @@ const FEnumTagMapping* UEnumTagMap::GetEnumTagMapping() const
 }
 
 template <typename T>
-FString UEnumTagMap::FindStringFromEnum(const T& InEnum) const
+FText UEnumTagMap::FindTextFromEnum(const T& InEnum) const
 {
 	const FEnumTagMapping* EnumTagMapping = GetEnumTagMapping<T>();
 	if (!EnumTagMapping)
 	{
-		return FString();
+		return FText::GetEmpty();
 	}
 	if (const auto Found = EnumTagMapping->EnumTagPairs.Find(static_cast<uint8>(InEnum)))
 	{
-		return Found->DisplayName;
+		return Found->DisplayText;
 	}
 
 	UE_LOG(LogTemp, Display, TEXT("Didn't find mapping for %d"), static_cast<uint8>(InEnum));
-	return FString();
+	return FText::GetEmpty();
 }
 
 template <typename T>
-T UEnumTagMap::FindEnumFromString(const FString& EnumString) const
+T UEnumTagMap::FindEnumFromText(const FText& InText) const
 {
+	const FString InString = InText.ToString();
 	if (const FEnumTagMapping* EnumTagMapping = GetEnumTagMapping<T>())
 	{
 		for (const auto& [Key, Value] : EnumTagMapping->EnumTagPairs)
 		{
-			if (Value.DisplayName.Equals(EnumString))
+			if (Value.DisplayText.ToString().Equals(InString))
 			{
 				return static_cast<T>(Value.Index);
 			}

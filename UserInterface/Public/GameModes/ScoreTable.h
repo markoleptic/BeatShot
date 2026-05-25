@@ -10,16 +10,14 @@
 #include "ScoreTable.generated.h"
 
 
+class UGameModeAndDifficultyStringMap;
+
 UCLASS(BlueprintType)
 class USERINTERFACE_API UScoreTable : public UWidget
 {
 	GENERATED_BODY()
 
 public:
-	void SetBaseGameModeText(const TMap<EBaseGameMode, FText>& InBaseGameModeText);
-
-	void SetDifficultyText(const TMap<EGameModeDifficulty, FText>& InGameModeDifficultyText);
-
 	void SetListItems(const TArray<TSharedPtr<FPlayerScore>>& InListItems);
 
 	virtual void ReleaseSlateResources(bool bReleaseChildren) override;
@@ -30,33 +28,6 @@ public:
 
 protected:
 	virtual TSharedRef<SWidget> RebuildWidget() override;
-
-private:
-	TSharedRef<ITableRow> OnGenerateRow(TSharedPtr<FPlayerScore> Item, const TSharedRef<STableViewBase>& OwnerTable);
-
-	void OnSortColumn(EColumnSortPriority::Type, const FName&, EColumnSortMode::Type);
-
-	EColumnSortPriority::Type GetColumnSortPriority(const FName InColumnId) const;
-
-	EColumnSortMode::Type GetSortModeForColumn(const FName InColumnId) const;
-
-	void SortItems();
-
-	void OnSelectionChanged(TSharedPtr<FPlayerScore> Selection, ESelectInfo::Type SelectInfo);
-
-	SHeaderRow::FColumn::FArguments MakeColumn(const FName& InColumnName);
-
-	TSharedPtr<SListView<TSharedPtr<FPlayerScore>>> SlateWidget;
-
-	TSharedPtr<SHeaderRow> Header;
-
-	TMap<EBaseGameMode, FText> BaseGameModeText;
-
-	TMap<EGameModeDifficulty, FText> DifficultyText;
-
-	TArray<TSharedPtr<FPlayerScore>> ListItems;
-
-	FName PrimarySortedColumn = SPlayerScoreRow::DateColumnName;
 
 	UPROPERTY(EditAnywhere)
 	FTableRowStyle TableRowStyle = FCoreStyle::Get().GetWidgetStyle<FTableRowStyle>("TableView.Row");
@@ -85,6 +56,36 @@ private:
 		{SPlayerScoreRow::TargetsSpawnedColumnName, FText()},
 		{SPlayerScoreRow::ReactionTimeColumnName, FText()},
 	};
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UGameModeAndDifficultyStringMap> GameModeAndDifficultyStringMap;
+
+private:
+	TSharedRef<ITableRow> OnGenerateRow(TSharedPtr<FPlayerScore> Item, const TSharedRef<STableViewBase>& OwnerTable);
+
+	void OnSortColumn(EColumnSortPriority::Type, const FName&, EColumnSortMode::Type);
+
+	EColumnSortPriority::Type GetColumnSortPriority(const FName InColumnId) const;
+
+	EColumnSortMode::Type GetSortModeForColumn(const FName InColumnId) const;
+
+	void SortItems();
+
+	void OnSelectionChanged(TSharedPtr<FPlayerScore> Selection, ESelectInfo::Type SelectInfo);
+
+	SHeaderRow::FColumn::FArguments MakeColumn(const FName& InColumnName);
+
+	TSharedPtr<SListView<TSharedPtr<FPlayerScore>>> SlateWidget;
+
+	TSharedPtr<SHeaderRow> Header;
+
+	TDelegate<FText(EBaseGameMode)> BaseGameModeTextGetter;
+
+	TDelegate<FText(EGameModeDifficulty)> DifficultyTextGetter;
+
+	TArray<TSharedPtr<FPlayerScore>> ListItems;
+
+	FName PrimarySortedColumn = SPlayerScoreRow::DateColumnName;
 
 	EColumnSortMode::Type PrimarySortMode = EColumnSortMode::Ascending;
 

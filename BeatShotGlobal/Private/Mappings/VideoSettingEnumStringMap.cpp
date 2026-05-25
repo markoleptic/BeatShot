@@ -16,6 +16,6 @@ UVideoSettingEnumStringMap::UVideoSettingEnumStringMap()
 		StaticEnum<UDLSSMode>(),
 		StaticEnum<EStreamlineDLSSGMode>(),
 		StaticEnum<ENISEnabledMode>(),
-		StaticEnum<UNISMode>()
+		StaticEnum<UNISMode>(),
 	}));
 }

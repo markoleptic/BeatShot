@@ -10,6 +10,7 @@
 #include "GameModes/DefaultGameModeScoreViewerWidget.h"
 #include "GameModes/GameModeScoreViewerWidget.h"
 #include "GameModes/ScoreTable.h"
+#include "Mappings/GameModeAndDifficultyStringMap.h"
 #include "SaveGames/SaveGamePlayerScore.h"
 #include "Utilities/BSWidgetInterface.h"
 #include "Utilities/Buttons/MenuButton.h"
@@ -256,14 +257,8 @@ FText FormatTime(const float Seconds, TOptional<EGameModePlayTimeUnits> Units = 
 void UScoreViewerWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-
-	ScoreTable->SetBaseGameModeText(BaseGameModeText);
-	ScoreTable->SetDifficultyText(DifficultyText);
+	
 	ScoreTable->OnSelectionChangedDelegate.BindUObject(this, &UScoreViewerWidget::OnSelectionChanged_ScoreTable);
-
-	DefaultGameModeScoreViewerWidget->SetBaseGameModeText(BaseGameModeText);
-	DefaultGameModeScoreViewerWidget->SetDifficultyText(DifficultyText);
-
 	MenuButton_Overview->OnBSButtonPressed.AddUObject(this, &ThisClass::OnButtonClicked_MenuButton);
 	MenuButton_DefaultModes->OnBSButtonPressed.AddUObject(this, &ThisClass::OnButtonClicked_MenuButton);
 	MenuButton_CustomModes->OnBSButtonPressed.AddUObject(this, &ThisClass::OnButtonClicked_MenuButton);
@@ -624,9 +619,10 @@ void UScoreViewerWidget::UpdateUserFacingTimeStatisticsLabels(
 	}
 	if (MostPlayedDefaultGameMode != EBaseGameMode::None)
 	{
-		TextBlock_MostPlayedDefaultMode->SetText(BaseGameModeText[MostPlayedDefaultGameMode]);
+		TextBlock_MostPlayedDefaultMode->SetText(
+			GameModeAndDifficultyStringMap->FindTextFromEnum(MostPlayedDefaultGameMode));
 		TextBlock_TimePlayedForMostPlayedDefaultModeLabel->SetText(FText::Format(TimeForFormat,
-			BaseGameModeText[MostPlayedDefaultGameMode]));
+			GameModeAndDifficultyStringMap->FindTextFromEnum(MostPlayedDefaultGameMode)));
 		TextBlock_TimePlayedForMostPlayedDefaultMode->SetText(FormatTime(TimePlayedForMostPlayedDefaultMode));
 
 		TextBlock_MostPlayedDefaultModeLabel->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
@@ -715,7 +711,7 @@ FText UScoreViewerWidget::HandleMostPlayedDefaultGameModesDisplayText(const int3
 {
 	if (DefaultGameModePlayTime.IsValidIndex(Index))
 	{
-		return BaseGameModeText[DefaultGameModePlayTime[Index].BaseGameMode];
+		return GameModeAndDifficultyStringMap->FindTextFromEnum(DefaultGameModePlayTime[Index].BaseGameMode);
 	}
 	return {};
 }
@@ -739,7 +735,7 @@ FText UScoreViewerWidget::HandleMostPlayedDefaultGameModesXAxisFormatter(const i
 {
 	if (DefaultGameModePlayTime.IsValidIndex(Index))
 	{
-		return BaseGameModeText[DefaultGameModePlayTime[Index].BaseGameMode];
+		return GameModeAndDifficultyStringMap->FindTextFromEnum(DefaultGameModePlayTime[Index].BaseGameMode);
 	}
 	return {};
 }

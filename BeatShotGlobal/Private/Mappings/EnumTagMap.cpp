@@ -4,17 +4,6 @@
 #include "Mappings/EnumTagMap.h"
 #include "UObject/ObjectSaveContext.h"
 
-FEnumTagPair::FEnumTagPair()
-{
-}
-
-FEnumTagPair::FEnumTagPair(const FString& InEnumValue, const uint8 InIndex) : FEnumStringPair(InEnumValue, InIndex)
-{
-}
-
-FEnumTagPair::FEnumTagPair(const FText& InEnumValue, const uint8 InIndex) : FEnumStringPair(InEnumValue, InIndex)
-{
-}
 
 void FEnumTagPair::AddParentTags(const FGameplayTagContainer& InParentTags)
 {
@@ -29,23 +18,20 @@ void FEnumTagPair::AddParentTags(const FGameplayTagContainer& InParentTags)
 	}
 }
 
-FEnumTagMapping::FEnumTagMapping() : Enum(nullptr)
-{
-}
-
 FEnumTagMapping::FEnumTagMapping(const UEnum* InEnum)
 {
 	Enum = InEnum;
 	EnumClass = Enum->CppType;
-	for (int64 i = 0; i < Enum->GetMaxEnumValue(); i++)
+	for (int32 Index = 0; Index < Enum->NumEnums(); Index++)
 	{
-		const FText EnumValueText = Enum->GetDisplayNameTextByValue(i);
-		EnumTagPairs.Emplace(i, FEnumTagPair(EnumValueText, i));
+		const int64 ValueByIndex = Enum->GetValueByIndex(Index);
+		// Skip hidden/max values if needed
+		if (Enum->HasMetaData(TEXT("Hidden"), Index) || Enum->GetMaxEnumValue() == ValueByIndex)
+		{
+			continue;
+		}
+		EnumTagPairs.Emplace(ValueByIndex, FEnumTagPair(GetEnumText(Enum, ValueByIndex), ValueByIndex));
 	}
-}
-
-UEnumTagMap::UEnumTagMap()
-{
 }
 
 void UEnumTagMap::PreSave(FObjectPreSaveContext ObjectSaveContext)
@@ -63,39 +49,29 @@ void UEnumTagMap::PreSave(FObjectPreSaveContext ObjectSaveContext)
 
 void UEnumTagMap::PostLoad()
 {
+	Super::PostLoad();
+	
 	for (auto& [Key, Value] : EnumTagMap)
 	{
 		// Add any Enum Values not present in EnumTagPairs
-		for (int64 i = 0; i < Key->GetMaxEnumValue(); i++)
+		for (int32 Index = 0; Index < Key->NumEnums(); Index++)
 		{
-			if (!Value.EnumTagPairs.Find(i))
+			const int64 ValueByIndex = Key->GetValueByIndex(Index);
+			// Skip hidden/max values if needed
+			if (Key->HasMetaData(TEXT("Hidden"), Index) || Key->GetMaxEnumValue() == ValueByIndex)
 			{
-				const FText EnumValueText = Key->GetDisplayNameTextByValue(i);
-				Value.EnumTagPairs.Emplace(i, FEnumTagPair(EnumValueText, i));
+				continue;
 			}
-			if (!Value.EnumTagPairs[i].DisplayText.IsFromStringTable())
+			if (!Value.EnumTagPairs.Find(ValueByIndex))
 			{
-				FString EnumClassName = Key->CppType;
-				if (EnumClassName.StartsWith("E"))
-				{
-					EnumClassName.RemoveAt(0);
-				}
-				const FString EnumValueString = Key->GetNameStringByValue(i);
-				const FString StringTableKey = EnumValueString == "None"
-				                               ? EnumValueString
-				                               : FString::Format(TEXT("{0}_{1}"), {EnumClassName, EnumValueString});
-				const FText StringTableText = FText::FromStringTable("/Game/StringTables/ST_Enums.ST_Enums",
-				                                                     StringTableKey);
-				if (!StringTableText.IsFromStringTable())
-				{
-					UE_LOG(LogTemp, Warning, TEXT("Couldn't find string table entry for %s"), *StringTableKey);
-				}
-				Value.EnumTagPairs[i].DisplayText = StringTableText;
+				Value.EnumTagPairs.Emplace(ValueByIndex, FEnumTagPair(GetEnumText(Key, ValueByIndex), ValueByIndex));
+			}
+			else if (!Value.EnumTagPairs[ValueByIndex].DisplayText.IsFromStringTable())
+			{
+				Value.EnumTagPairs[ValueByIndex].DisplayText = GetEnumText(Key, ValueByIndex);
 			}
 		}
 	}
-
-	Super::PostLoad();
 }
 
 const TMap<UEnum*, FEnumTagMapping>& UEnumTagMap::GetEnumTagMap() const

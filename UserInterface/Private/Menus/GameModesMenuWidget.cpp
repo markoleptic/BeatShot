@@ -12,6 +12,7 @@
 #include "GameModes/CustomGameModePreviewWidget.h"
 #include "GameModes/CustomGameModeStartWidget.h"
 #include "GameModes/PropertyViewWidget.h"
+#include "Mappings/GameModeAndDifficultyStringMap.h"
 #include "MenuOptions/DefaultGameModeSelectWidget.h"
 #include "Menus/GameModeMenuWidget.h"
 #include "Overlays/AudioSelectWidget.h"
@@ -25,7 +26,7 @@
 void UGameModeMenuWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-
+	
 	InitDefaultGameModesWidgets();
 
 	CustomGameModeImportSuccessFormattedText = FTextFormat(GetWidgetTextFromKey("GM_CustomGameModeImportSuccess"));
@@ -179,36 +180,55 @@ void UGameModeMenuWidget::NativeDestruct()
 
 void UGameModeMenuWidget::InitDefaultGameModesWidgets()
 {
-	TArray<UDefaultGameModeSelectWidget*> Temp;
 	Box_DefaultGameModesOptions->ClearChildren();
-	DefaultGameModesParams.ValueSort([&](const FDefaultGameModeParams& Params, const FDefaultGameModeParams& Params2)
+
+	if (GameModeAndDifficultyStringMap)
 	{
-		return Params < Params2;
-	});
-	for (TPair<EBaseGameMode, FDefaultGameModeParams>& Pair : DefaultGameModesParams)
-	{
-		UDefaultGameModeSelectWidget* Widget = CreateWidget<UDefaultGameModeSelectWidget>(
-			this, DefaultGameModesWidgetClass);
-		Widget->SetBaseGameMode(Pair.Key);
-		Widget->SetDescriptionText(Pair.Value.GameModeName);
-		Widget->SetAltDescriptionText(Pair.Value.AltDescriptionText);
-		Widget->SetShowTooltipIcon(false);
-		Temp.Add(Widget);
-		Box_DefaultGameModesOptions->AddChildToVerticalBox(Widget);
+		TArray<UDefaultGameModeSelectWidget*> Temp;
+		TArray<TTuple<EBaseGameMode, FText, FText>> GameModeNamesAndDescriptions;
+		for (const EBaseGameMode BaseGameMode : TEnumRange<EBaseGameMode>())
+		{
+			if (BaseGameMode != EBaseGameMode::None)
+			{
+				GameModeNamesAndDescriptions.Add({
+					BaseGameMode,
+					GameModeAndDifficultyStringMap->FindTextFromEnum(BaseGameMode),
+					GameModeAndDifficultyStringMap->GameModeDescriptions[BaseGameMode]
+				});
+			}
+		}
+		GameModeNamesAndDescriptions.Sort(
+			[](const TTuple<EBaseGameMode, FText, FText>& Left, const TTuple<EBaseGameMode, FText, FText>& Right)
+			{
+				return Left.Get<1>().CompareTo(Right.Get<1>()) < 0;
+			});
+
+		for (const auto& [GameMode, GameModeName, GameModeDescription] : GameModeNamesAndDescriptions)
+		{
+			UDefaultGameModeSelectWidget* Widget = CreateWidget<UDefaultGameModeSelectWidget>(
+				this, DefaultGameModesWidgetClass);
+			Widget->SetBaseGameMode(GameMode);
+			Widget->SetDescriptionText(GameModeName);
+			Widget->SetAltDescriptionText(GameModeDescription);
+			Widget->SetShowTooltipIcon(false);
+			Temp.Add(Widget);
+			Box_DefaultGameModesOptions->AddChildToVerticalBox(Widget);
+		}
+
+		for (int i = 0; i < Temp.Num(); i++)
+		{
+			if (!Temp.IsValidIndex(i))
+			{
+				continue;
+			}
+			const UDefaultGameModeSelectWidget* Widget = Temp[i];
+			const int NextIndex = i == Temp.Num() - 1 ? 0 : i + 1;
+			Widget->Button->SetDefaults(static_cast<uint8>(Widget->GetBaseGameMode()), Temp[NextIndex]->Button);
+			Widget->Button->OnBSButtonPressed.AddUObject(
+				this, &UGameModeMenuWidget::OnButtonClicked_SelectedDefaultGameMode);
+		}
 	}
 
-	for (int i = 0; i < Temp.Num(); i++)
-	{
-		if (!Temp.IsValidIndex(i))
-		{
-			continue;
-		}
-		const UDefaultGameModeSelectWidget* Widget = Temp[i];
-		const int NextIndex = i == Temp.Num() - 1 ? 0 : i + 1;
-		Widget->Button->SetDefaults(static_cast<uint8>(Widget->GetBaseGameMode()), Temp[NextIndex]->Button);
-		Widget->Button->OnBSButtonPressed.AddUObject(
-			this, &UGameModeMenuWidget::OnButtonClicked_SelectedDefaultGameMode);
-	}
 	Box_DefaultGameModesOptions->UpdateBrushColors();
 }
 
@@ -775,10 +795,12 @@ void UGameModeMenuWidget::PopulateGameModeOptions(const FBSConfig& InConfig)
 	StartWidgetProperties.bUseTemplateChecked = true;
 	StartWidgetProperties.GameModeName = StartWidgetProperties.bIsCustom
 	                                     ? BSConfig->DefiningConfig.CustomGameModeName
-	                                     : GetStringFromEnum(BSConfig->DefiningConfig.BaseGameMode);
+	                                     : GameModeAndDifficultyStringMap->FindTextFromEnum(
+		                                     BSConfig->DefiningConfig.BaseGameMode).ToString();
 	StartWidgetProperties.Difficulty = StartWidgetProperties.bIsCustom
 	                                   ? ""
-	                                   : GetStringFromEnum(InConfig.DefiningConfig.Difficulty);
+	                                   : GameModeAndDifficultyStringMap->FindTextFromEnum(
+		                                   InConfig.DefiningConfig.Difficulty).ToString();
 	StartWidgetProperties.NewCustomGameModeName.Empty();
 
 	GetCurrentStartWidget()->RefreshProperties();
@@ -1094,11 +1116,14 @@ void UGameModeMenuWidget::HandleStartWidgetPropertyChanged(FStartWidgetPropertie
 			Properties.bIsCustom = false;
 			if (Properties.Difficulty.IsEmpty())
 			{
-				Properties.Difficulty = GetStringFromEnum(EGameModeDifficulty::Normal);
+				Properties.Difficulty = GameModeAndDifficultyStringMap->FindTextFromEnum(EGameModeDifficulty::Normal).
+				                                                        ToString();
 			}
-			BSConfig->DefiningConfig.BaseGameMode = GetEnumFromString<EBaseGameMode>(Properties.GameModeName);
+			BSConfig->DefiningConfig.BaseGameMode = GameModeAndDifficultyStringMap->FindEnumFromString<EBaseGameMode>(
+				Properties.GameModeName);
 			BSConfig->DefiningConfig.GameModeType = EGameModeType::Preset;
-			BSConfig->DefiningConfig.Difficulty = GetEnumFromString<EGameModeDifficulty>(Properties.Difficulty);
+			BSConfig->DefiningConfig.Difficulty = GameModeAndDifficultyStringMap->FindEnumFromString<
+				EGameModeDifficulty>(Properties.Difficulty);
 			BSConfig->DefiningConfig.CustomGameModeName.Empty();
 		}
 		else if (IsCustomGameMode(Properties.GameModeName))
@@ -1116,8 +1141,10 @@ void UGameModeMenuWidget::HandleStartWidgetPropertyChanged(FStartWidgetPropertie
 		{
 			Properties.bIsPreset = true;
 			Properties.bIsCustom = false;
-			Properties.GameModeName = GetStringFromEnum(EBaseGameMode::MultiBeat);
-			Properties.Difficulty = GetStringFromEnum(EGameModeDifficulty::Normal);
+			Properties.GameModeName = GameModeAndDifficultyStringMap->FindTextFromEnum(EBaseGameMode::MultiBeat).
+			                                                          ToString();
+			Properties.Difficulty = GameModeAndDifficultyStringMap->FindTextFromEnum(EGameModeDifficulty::Normal).
+			                                                        ToString();
 
 			BSConfig->DefiningConfig.BaseGameMode = EBaseGameMode::MultiBeat;
 			BSConfig->DefiningConfig.GameModeType = EGameModeType::Preset;

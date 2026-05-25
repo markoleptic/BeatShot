@@ -139,7 +139,7 @@ bool UCustomGameModeCategoryWidget::UpdateValueIfDifferent(const USingleRangeInp
 	return true;
 }
 
-bool UCustomGameModeCategoryWidget::UpdateValueIfDifferent(const UComboBoxWidget* Widget, const FString& NewOption)
+bool UCustomGameModeCategoryWidget::UpdateValueIfDifferent(const UComboBoxWidget* Widget, const FText& NewOption)
 {
 	if (NewOption.IsEmpty())
 	{
@@ -150,16 +150,16 @@ bool UCustomGameModeCategoryWidget::UpdateValueIfDifferent(const UComboBoxWidget
 		Widget->ComboBox->ClearSelection();
 		return true;
 	}
-	if (Widget->ComboBox->GetSelectedOption() == NewOption)
+	if (Widget->ComboBox->GetSelectedOption() == NewOption.ToString())
 	{
 		return false;
 	}
-	Widget->ComboBox->SetSelectedOption(NewOption);
+	Widget->ComboBox->SetSelectedOption(NewOption.ToString());
 	return true;
 }
 
 bool UCustomGameModeCategoryWidget::UpdateValueIfDifferent(const UComboBoxWidget* Widget,
-                                                           const TArray<FString>& NewOptions)
+                                                           const TArray<FText>& NewOptions)
 {
 	const TArray<FString> SelectedOptions = Widget->ComboBox->GetSelectedOptions();
 
@@ -172,13 +172,18 @@ bool UCustomGameModeCategoryWidget::UpdateValueIfDifferent(const UComboBoxWidget
 		Widget->ComboBox->ClearSelection();
 		return true;
 	}
-
-	if (SelectedOptions == NewOptions && SelectedOptions.Num() == NewOptions.Num())
+	TArray<FString> NewOptionsStrings;
+	NewOptionsStrings.Reserve(NewOptions.Num());
+	for (const FText& Option : NewOptions)
+	{
+		NewOptionsStrings.Add(Option.ToString());
+	}
+	if (SelectedOptions == NewOptionsStrings && SelectedOptions.Num() == NewOptionsStrings.Num())
 	{
 		return false;
 	}
 
-	Widget->ComboBox->SetSelectedOptions(NewOptions);
+	Widget->ComboBox->SetSelectedOptions(NewOptionsStrings);
 	return true;
 }
 

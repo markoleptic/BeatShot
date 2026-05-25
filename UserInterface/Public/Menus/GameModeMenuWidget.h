@@ -11,6 +11,7 @@
 #include "Utilities/GameModeTransitionState.h"
 #include "GameModeMenuWidget.generated.h"
 
+class UGameModeAndDifficultyStringMap;
 struct FStartWidgetProperties;
 class UBSGameModeValidator;
 class UCommonWidgetCarousel;
@@ -33,34 +34,6 @@ class USlider;
 class UCheckBox;
 class UMenuButton;
 class UBSButton;
-
-USTRUCT(BlueprintType)
-struct FDefaultGameModeParams
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FText GameModeName;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FText AltDescriptionText;
-
-	FDefaultGameModeParams()
-	{
-		GameModeName = FText();
-		AltDescriptionText = FText();
-	}
-
-	FORCEINLINE bool operator==(const FDefaultGameModeParams& Other) const
-	{
-		return GameModeName.EqualTo(Other.GameModeName);
-	}
-
-	FORCEINLINE bool operator<(const FDefaultGameModeParams& Other) const
-	{
-		return GameModeName.ToString() < Other.GameModeName.ToString();
-	}
-};
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FRequestSimulateTargetManagerStateChange, const bool bSimulate)
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnGameModeBreakingChange, const bool bIsGameModeBreaking);
@@ -113,8 +86,6 @@ protected:
 	TSubclassOf<UGameModeSharingWidget> GameModeSharingClass;
 	UPROPERTY(EditDefaultsOnly, Category = "GameModesWidget|DefaultGameModes")
 	TSubclassOf<UDefaultGameModeSelectWidget> DefaultGameModesWidgetClass;
-	UPROPERTY(EditDefaultsOnly, Category = "GameModesWidget|DefaultGameModes", meta=(ForceInlineRow))
-	TMap<EBaseGameMode, FDefaultGameModeParams> DefaultGameModesParams;
 
 	UPROPERTY()
 	TObjectPtr<UBSGameModeValidator> GameModeValidator;
@@ -181,6 +152,9 @@ protected:
 	UCommonWidgetCarousel* Carousel_CreatorProperty;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSCarouselNavBar* CarouselNavBar_CreatorProperty;
+
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UGameModeAndDifficultyStringMap> GameModeAndDifficultyStringMap;
 
 private:
 	/** Initializes all Default Game Mode Menu Options found in Box_DefaultGameModesOptions. */

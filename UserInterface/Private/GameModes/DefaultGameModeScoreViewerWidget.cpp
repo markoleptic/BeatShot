@@ -5,6 +5,7 @@
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
 #include "GameModes/GameModeScoreViewerWidget.h"
+#include "Mappings/GameModeAndDifficultyStringMap.h"
 #include "MenuOptions/ComboBoxWidget.h"
 #include "MenuOptions/DateRangeWidget.h"
 #include "SaveGames/SaveGamePlayerScore.h"
@@ -21,7 +22,8 @@ void UDefaultGameModeScoreViewerWidget::SetActiveScores(const EBaseGameMode Base
                                                         const FString& SongTitle,
                                                         const EGameModeDifficulty Difficulty)
 {
-	GameModeComboBoxWidget->ComboBox->SetSelectedOption(BaseGameModeText[BaseGameMode].ToString());
+	GameModeComboBoxWidget->ComboBox->SetSelectedOption(
+		GameModeAndDifficultyStringMap->FindTextFromEnum(BaseGameMode).ToString());
 	FilterActiveScores(BaseGameMode, SongTitle, Difficulty);
 }
 
@@ -44,7 +46,7 @@ void UDefaultGameModeScoreViewerWidget::RepopulatePlayerScoreByGameModeSongAndDi
 	TSet<FString> GameModeOptions;
 	for (const auto& [GameMode, PlayerScoresBySong] : PlayerScoreByGameModeSongAndDifficulty)
 	{
-		GameModeOptions.Add(BaseGameModeText[GameMode].ToString());
+		GameModeOptions.Add(GameModeAndDifficultyStringMap->FindTextFromEnum(GameMode).ToString());
 		for (const auto& [Song, PlayerScoresForSongs] : PlayerScoresBySong)
 		{
 			for (const auto& [Difficulty, PlayerScoresForDifficulty] : PlayerScoresForSongs)
@@ -75,21 +77,10 @@ void UDefaultGameModeScoreViewerWidget::RepopulatePlayerScoreByGameModeSongAndDi
 	}
 }
 
-void UDefaultGameModeScoreViewerWidget::SetBaseGameModeText(const TMap<EBaseGameMode, FText>& InBaseGameModeText)
-{
-	BaseGameModeText = InBaseGameModeText;
-}
-
-void UDefaultGameModeScoreViewerWidget::SetDifficultyText(
-	const TMap<EGameModeDifficulty, FText>& InGameModeDifficultyText)
-{
-	DifficultyText = InGameModeDifficultyText;
-}
-
 void UDefaultGameModeScoreViewerWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-
+	
 	FilterVerticalBox->UpdateBrushColors();
 
 	GameModeComboBoxWidget->ComboBox->OnSelectionChanged.
@@ -144,26 +135,12 @@ void UDefaultGameModeScoreViewerWidget::OnSelectionChanged_Difficulty(const TArr
 
 EBaseGameMode UDefaultGameModeScoreViewerWidget::FindBaseGameMode(const FString& InGameModeName)
 {
-	for (const auto& [BaseGameMode, Text] : BaseGameModeText)
-	{
-		if (Text.ToString() == InGameModeName)
-		{
-			return BaseGameMode;
-		}
-	}
-	return EBaseGameMode::None;
+	return GameModeAndDifficultyStringMap->FindEnumFromString<EBaseGameMode>(InGameModeName);
 }
 
 EGameModeDifficulty UDefaultGameModeScoreViewerWidget::FindGameModeDifficulty(const FString& InGameModeDifficulty)
 {
-	for (const auto& [Difficulty, Text] : DifficultyText)
-	{
-		if (Text.ToString() == InGameModeDifficulty)
-		{
-			return Difficulty;
-		}
-	}
-	return EGameModeDifficulty::None;
+	return GameModeAndDifficultyStringMap->FindEnumFromString<EGameModeDifficulty>(InGameModeDifficulty);
 }
 
 void UDefaultGameModeScoreViewerWidget::OnDateChanged(const FDateTime& Start, const FDateTime& End)
@@ -217,7 +194,7 @@ void UDefaultGameModeScoreViewerWidget::FilterActiveScores(const EBaseGameMode C
 			HasDifficulty = PlayerScoreBySong.Contains(CurrentDifficulty);
 			for (const auto& [Difficulty, PlayerScores] : PlayerScoreBySong)
 			{
-				DifficultyOptions.Add(DifficultyText[Difficulty].ToString());
+				DifficultyOptions.Add(GameModeAndDifficultyStringMap->FindTextFromEnum(Difficulty).ToString());
 			}
 		}
 	}
@@ -232,7 +209,8 @@ void UDefaultGameModeScoreViewerWidget::FilterActiveScores(const EBaseGameMode C
 	const int32 DifficultyOptionIndex = CurrentDifficultyOverride == EGameModeDifficulty::None
 	                                    ? 0
 	                                    : DifficultyComboBoxWidget->ComboBox->GetIndexOfOption(
-		                                    DifficultyText[CurrentDifficultyOverride].ToString());
+		                                    GameModeAndDifficultyStringMap->FindTextFromEnum(CurrentDifficultyOverride).
+		                                                                    ToString());
 	DifficultyComboBoxWidget->ComboBox->SetSelectedIndex(FMath::Max(DifficultyOptionIndex, 0));
 
 	if (CurrentBaseGameMode != EBaseGameMode::None && !CurrentSongTitleOverride.IsEmpty() && CurrentDifficultyOverride

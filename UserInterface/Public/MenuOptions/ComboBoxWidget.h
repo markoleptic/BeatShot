@@ -31,6 +31,7 @@ public:
 	FGetComboBoxEntryTooltipStringTableKey GetComboBoxEntryTooltipStringTableKey;
 
 	/** Sorts the array alphabetically and adds each option to the ComboBox. */
+	void SortAndAddOptions(TArray<FText>& InOptions);
 	void SortAndAddOptions(TArray<FString>& InOptions);
 
 	/** Sets the correct EnumTagMapping from the EnumTagMap depending on the enum class. */
@@ -39,7 +40,7 @@ public:
 
 	/** Combines SetEnumType and SortAndAddOptions. */
 	template <typename T>
-	void SortAddOptionsAndSetEnumType(TArray<FString>& InOptions);
+	void SortAddOptionsAndSetEnumType(TArray<FText>& InOptions);
 
 	/** Sets the GameplayTagWidgetMap. */
 	void SetGameplayTagWidgetMap(const TObjectPtr<UGameModeCategoryTagMap> InMap);
@@ -93,7 +94,7 @@ void UComboBoxWidget::SetEnumType()
 {
 	if (!EnumTagMap)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("No EnumTagMap found."));
+		ensureMsgf(false, TEXT("No enum tag map found for class: %s"), *this->GetName());
 		return;
 	}
 	if (const FEnumTagMapping* FoundEnumTagMapping = EnumTagMap->GetEnumTagMapping<T>())
@@ -103,11 +104,11 @@ void UComboBoxWidget::SetEnumType()
 }
 
 template <typename T>
-void UComboBoxWidget::SortAddOptionsAndSetEnumType(TArray<FString>& InOptions)
+void UComboBoxWidget::SortAddOptionsAndSetEnumType(TArray<FText>& InOptions)
 {
 	if (!EnumTagMap)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("No EnumTagMap found."));
+		ensureMsgf(false, TEXT("No enum tag map found for class: %s"), *this->GetName());
 		return;
 	}
 	if (const FEnumTagMapping* FoundEnumTagMapping = EnumTagMap->GetEnumTagMapping<T>())

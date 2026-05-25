@@ -94,64 +94,6 @@ public:
 		return nullptr;
 	}
 
-	/** Returns the enum value corresponding to the string, or if not found, the enum byte value of 0 for T. */
-	template <typename T>
-	static T GetEnumFromString(const FString& InString)
-	{
-		const FString NewString = InString.Replace(*FString(" "), *FString("")).Replace(*FString("-"), *FString(""));
-		const UEnum* const EnumClass = StaticEnum<T>();
-		if (!EnumClass)
-		{
-			return static_cast<T>(0);
-		}
-		const int64 Value = EnumClass->GetValueByNameString(NewString);
-		if (Value == INDEX_NONE)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Couldn't find Enum from String: %s"), *InString);
-		}
-		return Value == INDEX_NONE ? static_cast<T>(0) : static_cast<T>(Value);
-	}
-
-	/** Returns the string display name of the enum, or empty string if not found. */
-	template <typename T>
-	static FString GetStringFromEnum(const T& InEnum)
-	{
-		const UEnum* const EnumClass = StaticEnum<T>();
-		if (!EnumClass)
-		{
-			return FString();
-		}
-		return EnumClass->GetDisplayValueAsText(InEnum).ToString();
-	}
-
-	/** Returns an array of strings corresponding to each enum value using GetStringFromEnum. */
-	template <typename T>
-	static TArray<FString> GetStringArrayFromEnumArray(const TArray<T>& InEnumArray)
-	{
-		TArray<FString> OutArray;
-		for (const T& InEnum : InEnumArray)
-		{
-			OutArray.Add(GetStringFromEnum(InEnum));
-		}
-		return OutArray;
-	}
-
-	/** Returns an array of enums corresponding to each string using GetEnumFromString. */
-	template <typename T>
-	static TArray<T> GetEnumArrayFromStringArray(const TArray<FString>& InStringArray)
-	{
-		TArray<T> OutArray;
-		if (InStringArray.IsEmpty())
-		{
-			return OutArray;
-		}
-		for (const FString& InString : InStringArray)
-		{
-			OutArray.Add(GetEnumFromString<T>(InString));
-		}
-		return OutArray;
-	}
-
 	/** Returns the String table key for an enum provided that the string table key format is EnumName_EnumValue. */
 	template <typename T>
 	static FString GetStringTableKeyNameFromEnum(const T& InEnum)
@@ -170,23 +112,13 @@ public:
 	/** Returns the String Table entry for a tooltip, provided a valid key. */
 	static FText GetTooltipTextFromKey(const FString& InKey)
 	{
-		const FText StringTableEntry = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", InKey);
-		if (InKey.IsEmpty() || StringTableEntry.IsEmpty())
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Couldn't find String Table entry for key: %s"), *InKey);
-		}
-		return StringTableEntry;
+		return FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", InKey);
 	}
 
 	/** Returns the String Table entry from the ST_Widgets string table, provided a valid key. */
 	static FText GetWidgetTextFromKey(const FString& InKey)
 	{
-		const FText StringTableEntry = FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", InKey);
-		if (InKey.IsEmpty() || StringTableEntry.IsEmpty())
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Couldn't find ST_Widgets entry for key: %s"), *InKey);
-		}
-		return StringTableEntry;
+		return FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", InKey);;
 	}
 
 	/** Returns an array of pointers of type T, recursively searching for all instances of T inside the PanelWidget. */

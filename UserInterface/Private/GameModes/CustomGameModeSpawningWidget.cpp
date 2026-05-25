@@ -111,7 +111,7 @@ void UCustomGameModeSpawningWidget::NativeConstruct()
 	ComboBoxOption_TargetSpawningPolicy->ComboBox->ClearOptions();
 	ComboBoxOption_RuntimeTargetSpawningLocationSelectionMode->ComboBox->ClearOptions();
 
-	TArray<FString> Options;
+	TArray<FText> Options;
 	for (const ETargetSpawningPolicy& Method : TEnumRange<ETargetSpawningPolicy>())
 	{
 		Options.Add(GetStringFromEnum_FromTagMap(Method));
@@ -184,7 +184,8 @@ void UCustomGameModeSpawningWidget::UpdateDependentOptions_TargetSpawningPolicy(
 			BSConfig->TargetConfig.RuntimeTargetSpawningLocationSelectionMode =
 				ERuntimeTargetSpawningLocationSelectionMode::Random;
 			ComboBoxOption_RuntimeTargetSpawningLocationSelectionMode->ComboBox->SetSelectedOption(
-				GetStringFromEnum_FromTagMap(BSConfig->TargetConfig.RuntimeTargetSpawningLocationSelectionMode));
+				GetStringFromEnum_FromTagMap(BSConfig->TargetConfig.RuntimeTargetSpawningLocationSelectionMode).
+				ToString());
 			ComboBoxOption_RuntimeTargetSpawningLocationSelectionMode->SetMenuOptionEnabledState(
 				EMenuOptionEnabledState::DependentMissing,
 				GetTooltipTextFromKey("DM_RuntimeTargetSpawningLocationSelectionMode_NonGrid"));

@@ -145,7 +145,7 @@ void UCustomGameModeSpawnAreaWidget::NativeConstruct()
 
 	ComboBoxOption_TargetDistributionPolicy->ComboBox->ClearOptions();
 
-	TArray<FString> Options;
+	TArray<FText> Options;
 	for (const ETargetDistributionPolicy& Method : TEnumRange<ETargetDistributionPolicy>())
 	{
 		Options.Add(GetStringFromEnum_FromTagMap(Method));

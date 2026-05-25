@@ -78,7 +78,7 @@ void UCustomGameModeMovementWidget::NativeConstruct()
 		this, &ThisClass::GetComboBoxEntryTooltipStringTableKey_MovingTargetDirectionMode);
 	ComboBoxOption_MovingTargetDirectionMode->ComboBox->ClearOptions();
 
-	TArray<FString> Options;
+	TArray<FText> Options;
 	for (const EMovingTargetDirectionMode& Method : TEnumRange<EMovingTargetDirectionMode>())
 	{
 		Options.Add(GetStringFromEnum_FromTagMap(Method));

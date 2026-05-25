@@ -7,6 +7,7 @@
 #include "SaveGames/SaveGamePlayerScore.h"
 #include "ScoreViewerWidget.generated.h"
 
+class UGameModeAndDifficultyStringMap;
 class UScoreTable;
 class UTextBlock;
 class UBSButton;
@@ -108,11 +109,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* BSButton_DeleteSelectedScores;
-
+	
 	UPROPERTY(EditDefaultsOnly)
-	TMap<EBaseGameMode, FText> BaseGameModeText;
-	UPROPERTY(EditDefaultsOnly)
-	TMap<EGameModeDifficulty, FText> DifficultyText;
+	TObjectPtr<UGameModeAndDifficultyStringMap> GameModeAndDifficultyStringMap;
 
 private:
 	void OnButtonClicked_MenuButton(const UBSButton* Button);

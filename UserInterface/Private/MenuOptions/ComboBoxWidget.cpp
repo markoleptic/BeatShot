@@ -70,7 +70,7 @@ UWidget* UComboBoxWidget::AddGameModeCategoryTagWidgets(UBSTaggedComboBoxEntry* 
 
 	for (auto& [Index, EnumTagPair] : EnumTagMapping.EnumTagPairs)
 	{
-		if (EnumTagPair.DisplayName.Equals(CompareString))
+		if (EnumTagPair.DisplayText.ToString().Equals(CompareString))
 		{
 			TArray<UGameModeCategoryTagWidget*> ParentTagWidgetsToAdd;
 			TArray<UGameModeCategoryTagWidget*> TagWidgetsToAdd;
@@ -111,13 +111,25 @@ UWidget* UComboBoxWidget::AddGameModeCategoryTagWidgets(UBSTaggedComboBoxEntry* 
 	return ComboBoxEntry;
 }
 
+void UComboBoxWidget::SortAndAddOptions(TArray<FText>& InOptions)
+{
+	InOptions.Sort([](const FText& FirstOption, const FText& SecondOption)
+	{
+		return FirstOption.CompareTo(SecondOption) < 0;
+	});
+	for (const FText& Option : InOptions)
+	{
+		ComboBox->AddOption(Option.ToString());
+	}
+}
+
 void UComboBoxWidget::SortAndAddOptions(TArray<FString>& InOptions)
 {
 	InOptions.Sort([](const FString& FirstOption, const FString& SecondOption)
 	{
 		return FirstOption < SecondOption;
 	});
-	for (const FString Option : InOptions)
+	for (const FString& Option : InOptions)
 	{
 		ComboBox->AddOption(Option);
 	}
