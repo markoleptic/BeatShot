@@ -12,7 +12,7 @@ class UQuitMenuWidget;
 class UVerticalBox;
 class UWidgetSwitcher;
 class USettingsMenuWidget;
-class UFAQWidget;
+class UHelpWidget;
 class UTextBlock;
 class UBSButton;
 class UMenuButton;
@@ -26,7 +26,7 @@ class USERINTERFACE_API UPauseMenuWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	/** Delegate that gets bound to lambda function in DefaultPlayerController. */
+	/** Delegate that gets bound to a lambda function in DefaultPlayerController. */
 	TDelegate<void()> ResumeGame;
 
 	/** Executes when the user is exiting the GameModesWidget, broadcast to GameInstance to handle transition. */
@@ -52,7 +52,7 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UVerticalBox* Box_SettingsMenu;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UVerticalBox* Box_FAQ;
+	UVerticalBox* Box_Help;
 
 public:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -60,7 +60,7 @@ public:
 
 protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UFAQWidget* FAQWidget;
+	UHelpWidget* HelpWidget;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UMenuButton* MenuButton_Resume;
@@ -69,7 +69,7 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UMenuButton* MenuButton_Settings;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UMenuButton* MenuButton_FAQ;
+	UMenuButton* MenuButton_Help;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UMenuButton* MenuButton_Quit;
 

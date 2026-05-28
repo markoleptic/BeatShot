@@ -1,12 +1,12 @@
 // Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 
-#include "Menus/FAQWidget.h"
+#include "Menus/HelpWidget.h"
 #include "Components/VerticalBox.h"
 #include "Components/WidgetSwitcher.h"
 #include "Utilities/Buttons/MenuButton.h"
 
-void UFAQWidget::NativeConstruct()
+void UHelpWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
@@ -19,10 +19,10 @@ void UFAQWidget::NativeConstruct()
 	MenuButton_AudioAnalyzer->OnBSButtonPressed.AddUObject(this, &ThisClass::OnButtonClicked_BSButton);
 
 	MenuButton_GameModes->SetActive();
-	FAQSwitcher->SetActiveWidget(MenuButton_GameModes->GetAssociatedWidget());
+	Switcher->SetActiveWidget(MenuButton_GameModes->GetAssociatedWidget());
 }
 
-void UFAQWidget::OnButtonClicked_BSButton(const UBSButton* Button)
+void UHelpWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 {
-	FAQSwitcher->SetActiveWidget(Cast<UMenuButton>(Button)->GetAssociatedWidget());
+	Switcher->SetActiveWidget(Cast<UMenuButton>(Button)->GetAssociatedWidget());
 }

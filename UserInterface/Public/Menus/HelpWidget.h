@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "FAQWidget.generated.h"
+#include "HelpWidget.generated.h"
 
 class UVerticalBox;
 class UBSButton;
@@ -12,9 +12,9 @@ class UBorder;
 class UWidgetSwitcher;
 class UMenuButton;
 
-/** FAQ widget. */
+/** Help widget. */
 UCLASS()
-class USERINTERFACE_API UFAQWidget : public UUserWidget
+class USERINTERFACE_API UHelpWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
@@ -29,7 +29,7 @@ protected:
 	UMenuButton* MenuButton_AudioAnalyzer;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UWidgetSwitcher* FAQSwitcher;
+	UWidgetSwitcher* Switcher;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UVerticalBox* Box_GameModes;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))

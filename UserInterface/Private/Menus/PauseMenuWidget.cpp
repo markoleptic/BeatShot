@@ -16,14 +16,14 @@ void UPauseMenuWidget::NativeConstruct()
 	Super::NativeConstruct();
 	SetStyles();
 	MenuButton_Resume->SetDefaults(Box_PauseScreen, MenuButton_Settings);
-	MenuButton_Settings->SetDefaults(Box_SettingsMenu, MenuButton_FAQ);
-	MenuButton_FAQ->SetDefaults(Box_FAQ, MenuButton_RestartCurrentMode);
+	MenuButton_Settings->SetDefaults(Box_SettingsMenu, MenuButton_Help);
+	MenuButton_Help->SetDefaults(Box_Help, MenuButton_RestartCurrentMode);
 	MenuButton_RestartCurrentMode->SetDefaults(Box_PauseScreen, MenuButton_Quit);
 	MenuButton_Quit->SetDefaults(Box_PauseScreen, MenuButton_Resume);
 
 	MenuButton_Resume->OnBSButtonPressed.AddUObject(this, &ThisClass::OnButtonClicked_BSButton);
 	MenuButton_Settings->OnBSButtonPressed.AddUObject(this, &ThisClass::OnButtonClicked_BSButton);
-	MenuButton_FAQ->OnBSButtonPressed.AddUObject(this, &ThisClass::OnButtonClicked_BSButton);
+	MenuButton_Help->OnBSButtonPressed.AddUObject(this, &ThisClass::OnButtonClicked_BSButton);
 	MenuButton_RestartCurrentMode->OnBSButtonPressed.AddUObject(this, &ThisClass::OnButtonClicked_BSButton);
 	MenuButton_Quit->OnBSButtonPressed.AddUObject(this, &ThisClass::OnButtonClicked_BSButton);
 	SettingsMenuWidget->OnRestartButtonClicked.BindLambda([this]

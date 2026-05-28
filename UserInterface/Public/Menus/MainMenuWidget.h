@@ -15,7 +15,7 @@ class UVerticalBox;
 class UWidgetSwitcher;
 class UGameModeMenuWidget;
 class USettingsMenuWidget;
-class UFAQWidget;
+class UHelpWidget;
 class UTextBlock;
 class UMenuButton;
 
@@ -72,10 +72,10 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UVerticalBox* Box_Settings;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UVerticalBox* Box_FAQ;
+	UVerticalBox* Box_Help;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UFAQWidget* FAQWidget;
+	UHelpWidget* HelpWidget;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UMenuButton* MenuButton_PatchNotes;
@@ -86,7 +86,7 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UMenuButton* MenuButton_Scores;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UMenuButton* MenuButton_FAQ;
+	UMenuButton* MenuButton_Help;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UMenuButton* MenuButton_Quit;
 

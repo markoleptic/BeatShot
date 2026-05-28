@@ -21,15 +21,15 @@ void UMainMenuWidget::NativeConstruct()
 	MenuButton_PatchNotes->SetDefaults(Box_PatchNotes, MenuButton_GameModes);
 	MenuButton_GameModes->SetDefaults(Box_GameModes, MenuButton_Scores);
 	MenuButton_Scores->SetDefaults(Box_Scores, MenuButton_Settings);
-	MenuButton_Settings->SetDefaults(Box_Settings, MenuButton_FAQ);
-	MenuButton_FAQ->SetDefaults(Box_FAQ, MenuButton_Quit);
+	MenuButton_Settings->SetDefaults(Box_Settings, MenuButton_Help);
+	MenuButton_Help->SetDefaults(Box_Help, MenuButton_Quit);
 	MenuButton_Quit->SetDefaults(Box_PatchNotes, MenuButton_PatchNotes);
 
 	MenuButton_PatchNotes->OnBSButtonPressed.AddUObject(this, &ThisClass::OnMenuButtonClicked_BSButton);
 	MenuButton_GameModes->OnBSButtonPressed.AddUObject(this, &ThisClass::OnMenuButtonClicked_BSButton);
 	MenuButton_Scores->OnBSButtonPressed.AddUObject(this, &ThisClass::OnMenuButtonClicked_BSButton);
 	MenuButton_Settings->OnBSButtonPressed.AddUObject(this, &ThisClass::OnMenuButtonClicked_BSButton);
-	MenuButton_FAQ->OnBSButtonPressed.AddUObject(this, &ThisClass::OnMenuButtonClicked_BSButton);
+	MenuButton_Help->OnBSButtonPressed.AddUObject(this, &ThisClass::OnMenuButtonClicked_BSButton);
 	MenuButton_Quit->OnBSButtonPressed.AddUObject(this, &ThisClass::OnMenuButtonClicked_BSButton);
 
 	MenuButton_PatchNotes->SetActive();
