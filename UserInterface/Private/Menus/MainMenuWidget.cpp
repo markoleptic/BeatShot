@@ -8,7 +8,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "Menus/GameModeMenuWidget.h"
 #include "Menus/ScoreViewerWidget.h"
-#include "Overlays/FeedbackWidget.h"
 #include "Styles/MenuStyle.h"
 #include "Utilities/BSWidgetInterface.h"
 #include "Utilities/Buttons/MenuButton.h"
@@ -23,8 +22,7 @@ void UMainMenuWidget::NativeConstruct()
 	MenuButton_GameModes->SetDefaults(Box_GameModes, MenuButton_Scores);
 	MenuButton_Scores->SetDefaults(Box_Scores, MenuButton_Settings);
 	MenuButton_Settings->SetDefaults(Box_Settings, MenuButton_FAQ);
-	MenuButton_FAQ->SetDefaults(Box_FAQ, Button_Feedback);
-	Button_Feedback->SetDefaults(nullptr, MenuButton_Quit);
+	MenuButton_FAQ->SetDefaults(Box_FAQ, MenuButton_Quit);
 	MenuButton_Quit->SetDefaults(Box_PatchNotes, MenuButton_PatchNotes);
 
 	MenuButton_PatchNotes->OnBSButtonPressed.AddUObject(this, &ThisClass::OnMenuButtonClicked_BSButton);
@@ -32,7 +30,6 @@ void UMainMenuWidget::NativeConstruct()
 	MenuButton_Scores->OnBSButtonPressed.AddUObject(this, &ThisClass::OnMenuButtonClicked_BSButton);
 	MenuButton_Settings->OnBSButtonPressed.AddUObject(this, &ThisClass::OnMenuButtonClicked_BSButton);
 	MenuButton_FAQ->OnBSButtonPressed.AddUObject(this, &ThisClass::OnMenuButtonClicked_BSButton);
-	Button_Feedback->OnBSButtonPressed.AddUObject(this, &ThisClass::OnMenuButtonClicked_BSButton);
 	MenuButton_Quit->OnBSButtonPressed.AddUObject(this, &ThisClass::OnMenuButtonClicked_BSButton);
 
 	MenuButton_PatchNotes->SetActive();
@@ -86,26 +83,7 @@ void UMainMenuWidget::OnMenuButtonClicked_BSButton(const UBSButton* Button)
 		GameModesWidget->StopGameModePreview();
 	}
 
-	// Feedback button
-	if (Button == Button_Feedback)
-	{
-		auto* FeedbackWidget = CreateWidget<UFeedbackWidget>(this, FeedbackWidgetClass);
-		FeedbackWidget->OnExitFeedback.BindLambda([this]
-		{
-			Button_Feedback->SetInActive();
-			if (auto* LastMenuButtonLock = LastMenuButton.Get())
-			{
-				if (const auto AssociatedWidget = LastMenuButtonLock->GetAssociatedWidget())
-				{
-					LastMenuButtonLock->SetActive();
-					MainMenuSwitcher->SetActiveWidget(AssociatedWidget);
-				}
-			}
-		});
-		FeedbackWidget->AddToViewport();
-		FeedbackWidget->ShowFeedbackWidget();
-	}
-	else if (const auto AssociatedWidget = MenuButton->GetAssociatedWidget())
+	if (const auto AssociatedWidget = MenuButton->GetAssociatedWidget())
 	{
 		MainMenuSwitcher->SetActiveWidget(AssociatedWidget);
 		LastMenuButton = MakeWeakObjectPtr(const_cast<UMenuButton*>(MenuButton));

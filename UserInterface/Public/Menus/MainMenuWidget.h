@@ -11,7 +11,6 @@ class USaveGamePlayerScore;
 class UScoreViewerWidget;
 class UBSButton;
 class UMenuStyle;
-class UFeedbackWidget;
 class UVerticalBox;
 class UWidgetSwitcher;
 class UGameModeMenuWidget;
@@ -74,13 +73,9 @@ protected:
 	UVerticalBox* Box_Settings;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UVerticalBox* Box_FAQ;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UMenuButton* Button_Feedback;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UFAQWidget* FAQWidget;
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UFeedbackWidget> FeedbackWidgetClass;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UMenuButton* MenuButton_PatchNotes;
