@@ -91,11 +91,11 @@ protected:
 	TObjectPtr<UBSGameModeValidator> GameModeValidator;
 
 public:
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UCreatorViewWidget> CustomGameModesWidget_CreatorView;
 
 protected:
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UPropertyViewWidget> CustomGameModesWidget_PropertyView;
 	UPROPERTY()
 	TObjectPtr<UCustomGameModeWidget> CurrentCustomGameModesWidget;
@@ -108,7 +108,7 @@ protected:
 	UVerticalBox* Box_DefaultGameModes;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UVerticalBox* Box_CustomGameModes;
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UVerticalBox* Box_PropertyView;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSVerticalBox* Box_DefaultGameModesOptions;

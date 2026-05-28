@@ -28,7 +28,7 @@ public:
 	void SetTargetPosition(const FVector2d& InPosition) const;
 
 protected:
-	UPROPERTY(EditDefaultsOnly, meta=(BindWidget))
+	UPROPERTY(meta=(BindWidget))
 	UImage* TargetImage;
 
 	UPROPERTY()

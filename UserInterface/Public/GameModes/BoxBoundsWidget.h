@@ -25,8 +25,8 @@ public:
 protected:
 	virtual void NativeConstruct() override;
 
-	UPROPERTY(EditDefaultsOnly, meta=(BindWidget))
+	UPROPERTY(BlueprintReadOnly, meta=(BindWidget))
 	USizeBox* BoxBounds;
-	UPROPERTY(EditDefaultsOnly, meta=(BindWidget))
+	UPROPERTY(BlueprintReadOnly, meta=(BindWidget))
 	UImage* BoxBoundsImage;
 };

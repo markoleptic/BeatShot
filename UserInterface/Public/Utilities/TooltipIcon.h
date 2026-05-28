@@ -81,10 +81,10 @@ public:
 	FOnTooltipIconHovered OnTooltipIconHovered;
 
 protected:
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UButton* Button;
 
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UImage* Image;
 
 	/** Data that is broadcast to the tooltip widget. */

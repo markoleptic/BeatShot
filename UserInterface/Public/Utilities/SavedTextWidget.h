@@ -16,10 +16,10 @@ class USERINTERFACE_API USavedTextWidget : public UUserWidget
 	GENERATED_BODY()
 
 protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UTextBlock* SavedText;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
+	UPROPERTY(Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeInFadeOut;
 
 public:

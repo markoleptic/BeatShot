@@ -41,7 +41,7 @@ public:
 	static UTooltipWidget* InitializeTooltipWidget(const TSubclassOf<UTooltipWidget>& TooltipWidgetClass);
 
 protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UTextBlock* TooltipDescriptor;
 
 private:

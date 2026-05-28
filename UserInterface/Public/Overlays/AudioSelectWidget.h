@@ -54,49 +54,49 @@ protected:
 	UPROPERTY()
 	UPopupMessageWidget* PopupMessageWidget;
 
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UTooltipIcon* QMark_PlaybackAudio;
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UTooltipIcon* QMark_Input;
 
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UBSButton* Button_AudioFromFile;
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UBSButton* Button_CaptureAudio;
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UBSButton* Button_Back;
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UBSButton* Button_Start;
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UBSButton* Button_LoadFile;
 
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UVerticalBox* Box_AudioDevice;
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UVerticalBox* Box_SongTitleLength;
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UHorizontalBox* Box_SongLength;
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UVerticalBox* Box_SongTitle;
 
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UComboBoxString* ComboBox_InAudioDevices;
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UComboBoxString* ComboBox_SongTitle;
 
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UCheckBox* Checkbox_PlaybackAudio;
 
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UEditableTextBox* Value_SongTitle;
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UEditableTextBox* Value_Minutes;
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UEditableTextBox* Value_Seconds;
 
-	UPROPERTY(EditDefaultsOnly, Transient, meta = (BindWidgetAnim))
+	UPROPERTY(Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeOutAnim;
-	UPROPERTY(EditDefaultsOnly, Transient, meta = (BindWidgetAnim))
+	UPROPERTY(Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeInAnim;
 
 private:

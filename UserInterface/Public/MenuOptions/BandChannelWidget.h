@@ -44,13 +44,13 @@ public:
 	UFUNCTION()
 	void OnValueCommitted_Max(const FText& NewValue, ETextCommit::Type CommitType);
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UEditableTextBox* Value_BandChannelMin;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UEditableTextBox* Value_BandChannelMax;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UTextBlock* TextBlock_Lower;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UTextBlock* TextBlock_Upper;
 };

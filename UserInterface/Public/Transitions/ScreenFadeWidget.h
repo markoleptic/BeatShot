@@ -30,12 +30,12 @@ public:
 	void FadeToBlack(const float FadeOutTime);
 
 private:
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UImage* BlackScreen;
 
-	UPROPERTY(EditDefaultsOnly, Transient, meta = (BindWidgetAnim))
+	UPROPERTY(Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeOutBlackScreen;
-	UPROPERTY(EditDefaultsOnly, Transient, meta = (BindWidgetAnim))
+	UPROPERTY(Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeInBlackScreen;
 
 	FWidgetAnimationDynamicEvent FadeFromBlackFinishDelegate;

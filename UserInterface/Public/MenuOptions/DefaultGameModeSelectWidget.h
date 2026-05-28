@@ -29,13 +29,13 @@ public:
 
 	void SetAltDescriptionText(const FText& Text);
 
-	UPROPERTY(EditDefaultsOnly, meta=(BindWidget))
+	UPROPERTY(meta=(BindWidget))
 	UBSButton* Button;
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "DefaultGameModeOptionWidget")
 	EBaseGameMode BaseGameMode;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(BindWidget))
+	UPROPERTY(BlueprintReadOnly, meta=(BindWidget))
 	UCommonTextBlock* AltDescriptionText;
 };

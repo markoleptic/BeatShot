@@ -20,21 +20,21 @@ public:
 	void SetNumCautions(const uint32 InNumCautions);
 
 protected:
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UTextBlock* TextBlock_NumWarnings;
 
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UTextBlock* TextBlock_NumCautions;
 
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UOverlay* Overlay_Warnings;
 
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UOverlay* Overlay_Cautions;
 
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	USpacer* Spacer_Mid;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "BSButton|Notification")
+	UPROPERTY(EditAnywhere, Category = "BSButton|Notification")
 	float NotificationImageSpacing = 5.f;
 };

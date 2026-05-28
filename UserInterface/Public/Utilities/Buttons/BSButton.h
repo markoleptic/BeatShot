@@ -72,16 +72,16 @@ protected:
 	void SetHasSetDefaults(const bool bHasSet) { bHasSetDefaults = bHasSet; }
 
 	/** TextBlock to show on top of the ImageMaterial. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "BSButton|Widgets", meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, Category = "BSButton|Widgets", meta = (BindWidget))
 	UCommonTextBlock* TextBlock;
 
 	/** Invisible button used to access hovered/pressed events. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "BSButton|Widgets", meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, Category = "BSButton|Widgets", meta = (BindWidget))
 	UButton* Button;
 
 	/** Image shown as the button; Expected to be a material instance with parameters that change the material when
 	 * pressed or hovered. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "BSButton|Widgets|Image", meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, Category = "BSButton|Widgets|Image", meta = (BindWidget))
 	UImage* ImageMaterial;
 
 	/** Name of the Hovered scalar material parameter for the ImageMaterial. */
@@ -118,11 +118,11 @@ protected:
 	bool bRestoreClickedButtonState = false;
 
 	/** Animation to play when the button is pressed. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "BSButton|Animation", Transient, meta = (BindWidgetAnim))
+	UPROPERTY(BlueprintReadOnly, Category = "BSButton|Animation", Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* Anim_OnPressed;
 
 	/** Animation to play when the button is hovered. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "BSButton|Animation", Transient, meta = (BindWidgetAnim))
+	UPROPERTY(BlueprintReadOnly, Category = "BSButton|Animation", Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* Anim_OnHovered;
 
 	/** Pointer to the next BSButton in a collection of them. */

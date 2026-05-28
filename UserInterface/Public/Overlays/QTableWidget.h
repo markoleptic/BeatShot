@@ -77,10 +77,10 @@ public:
 	TArray<FAgentPoint> Points2;
 
 private:
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UUniformGridPanel* GridPanel;
 
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UUniformGridPanel* GridPanel2;
 
 	FNumberFormattingOptions NumberFormattingOptions;

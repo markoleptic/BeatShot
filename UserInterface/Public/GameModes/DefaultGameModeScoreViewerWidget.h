@@ -57,21 +57,21 @@ protected:
 	                        const FDateTime& StartDate = FDateTime::MaxValue(),
 	                        const FDateTime& EndDate = FDateTime::MinValue());
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UVerticalBox* MainBox;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSVerticalBox* FilterVerticalBox;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* TextBlock_NoScores;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxWidget* GameModeComboBoxWidget;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxWidget* DifficultyComboBoxWidget;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxWidget* SongComboBoxWidget;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UDateRangeWidget* DateRangeWidget;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UGameModeScoreViewerWidget* GameModeScoreViewerWidget;
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UGameModeAndDifficultyStringMap> GameModeAndDifficultyStringMap;

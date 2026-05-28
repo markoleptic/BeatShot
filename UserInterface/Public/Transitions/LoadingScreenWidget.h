@@ -31,17 +31,17 @@ protected:
 	UFUNCTION()
 	void OnFadeInFinishedCallback();
 
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UImage* Icon;
 
 	FWidgetAnimationDynamicEvent OnFadeOutFinished;
 	FWidgetAnimationDynamicEvent OnFadeInFinished;
 
-	UPROPERTY(EditDefaultsOnly, Transient, meta = (BindWidgetAnim))
+	UPROPERTY(Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeOutAnim;
-	UPROPERTY(EditDefaultsOnly, Transient, meta = (BindWidgetAnim))
+	UPROPERTY(Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeInAnim;
-	UPROPERTY(EditDefaultsOnly, Transient, meta = (BindWidgetAnim))
+	UPROPERTY(Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* SpinLoop;
 
 	float LoadingScreenTime = 0.75f;

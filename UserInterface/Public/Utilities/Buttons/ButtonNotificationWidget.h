@@ -19,15 +19,15 @@ public:
 	void SetNumCautions(const uint32 InNumCautions);
 
 protected:
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UTextBlock* TextBlock_NumWarnings;
 
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UTextBlock* TextBlock_NumCautions;
 
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UOverlay* Overlay_Warnings;
 
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UOverlay* Overlay_Cautions;
 };

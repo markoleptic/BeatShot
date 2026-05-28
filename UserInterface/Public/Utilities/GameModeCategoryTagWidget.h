@@ -25,9 +25,10 @@ protected:
 	virtual void NativePreConstruct() override;
 	virtual void NativeConstruct() override;
 
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UTextBlock* TextBlock_Category;
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+
+	UPROPERTY(meta = (BindWidget))
 	UImage* Image_Material;
 
 	UPROPERTY(EditDefaultsOnly, Category = "GameModeCategoryTagWidget")

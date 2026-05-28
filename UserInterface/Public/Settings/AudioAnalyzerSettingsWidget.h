@@ -55,24 +55,24 @@ protected:
 	UPROPERTY()
 	UPopupMessageWidget* PopupMessageWidget;
 
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	USavedTextWidget* SavedTextWidget;
 
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UComboBoxWidget* ComboBoxOption_NumBandChannels;
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	USingleRangeInputWidget* SliderTextBoxOption_TimeWindow;
 
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UBSVerticalBox* Box_BandChannelBounds;
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UBSVerticalBox* Box_BandThresholdBounds;
 
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UBSButton* Button_Reset;
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UBSButton* Button_Save;
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UBSButton* Button_SaveAndRestart;
 
 	UPROPERTY()
