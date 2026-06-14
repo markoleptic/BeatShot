@@ -119,121 +119,126 @@ protected:
 	UPROPERTY()
 	UBSAbilitySystemComponent* AbilitySystemComponent;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly)
 	UStaticMeshComponent* Corkboard;
+	UPROPERTY(EditDefaultsOnly)
+	UStaticMeshComponent* SM_RightPillar;
+	UPROPERTY(EditDefaultsOnly)
+	UStaticMeshComponent* SM_LeftPillar;
+	UPROPERTY(EditDefaultsOnly)
+	UStaticMeshComponent* SM_WallMenuBoardOutline;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY()
 	UText3DComponent* MainText_Enable_LightVisualizers;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY()
 	UText3DComponent* ToggleText_LightVisualizers_On;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY()
 	UText3DComponent* ToggleText_LightVisualizers_Off;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY()
 	UBoxComponent* Box_LightVisualizers_On;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY()
 	UBoxComponent* Box_LightVisualizers_Off;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY()
 	UText3DComponent* MainText_Enable_NightMode;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY()
 	UText3DComponent* ToggleText_NightMode_On;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY()
 	UText3DComponent* ToggleText_NightMode_Off;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY()
 	UBoxComponent* Box_NightMode_On;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY()
 	UBoxComponent* Box_NightMode_Off;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY()
 	UText3DComponent* MainText_Enable_LVFrontBeam;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY()
 	UText3DComponent* ToggleText_LVFrontBeam_On;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY()
 	UText3DComponent* ToggleText_LVFrontBeam_Off;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY()
 	UBoxComponent* Box_LVFrontBeam_On;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY()
 	UBoxComponent* Box_LVFrontBeam_Off;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY()
 	UText3DComponent* MainText_Enable_LVLeftBeam;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY()
 	UText3DComponent* ToggleText_LVLeftBeam_On;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY()
 	UText3DComponent* ToggleText_LVLeftBeam_Off;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY()
 	UBoxComponent* Box_LVLeftBeam_On;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY()
 	UBoxComponent* Box_LVLeftBeam_Off;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY()
 	UText3DComponent* MainText_Enable_LVRightBeam;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY()
 	UText3DComponent* ToggleText_LVRightBeam_On;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY()
 	UText3DComponent* ToggleText_LVRightBeam_Off;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY()
 	UBoxComponent* Box_LVRightBeam_On;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY()
 	UBoxComponent* Box_LVRightBeam_Off;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY()
 	UText3DComponent* MainText_EnableLV_TopBeam;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY()
 	UText3DComponent* ToggleText_LV_TopBeam_On;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY()
 	UText3DComponent* ToggleText_LV_TopBeam_Off;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY()
 	UBoxComponent* Box_LV_TopBeam_On;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY()
 	UBoxComponent* Box_LV_TopBeam_Off;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY()
 	UText3DComponent* MainText_EnableLV_LeftCube;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY()
 	UText3DComponent* ToggleText_LV_LeftCube_On;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY()
 	UText3DComponent* ToggleText_LV_LeftCube_Off;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY()
 	UBoxComponent* Box_LV_LeftCube_On;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY()
 	UBoxComponent* Box_LV_LeftCube_Off;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY()
 	UText3DComponent* MainText_EnableLV_RightCube;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY()
 	UText3DComponent* ToggleText_LV_RightCube_On;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY()
 	UText3DComponent* ToggleText_LV_RightCube_Off;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY()
 	UBoxComponent* Box_LV_RightCube_On;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY()
 	UBoxComponent* Box_LV_RightCube_Off;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "BeatShot|References")
+	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|References")
 	TSoftObjectPtr<ATimeOfDayManager> TimeOfDayManager;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "BeatShot|Text3D|Materials")
+	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Text3D|Materials")
 	UMaterialInterface* Material_Main_Front_Text3D;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "BeatShot|Text3D|Materials")
+	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Text3D|Materials")
 	UMaterialInterface* Material_Toggle;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "BeatShot|Text3D|Materials")
+	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Text3D|Materials")
 	UMaterialInterface* Material_Extrude;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "BeatShot|Text3D|Materials")
+	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Text3D|Materials")
 	UMaterialInterface* Material_Bevel;
 
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "BeatShot|Text3D")
+	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Text3D")
 	UFont* Font_Text3D;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "BeatShot|Text3D")
+	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Text3D")
 	FVector Offset_MainText = {0.f, 0.f, -42.f};
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "BeatShot|Text3D")
+	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Text3D")
 	FVector Indent = {0.f, 40.f, 0.f};
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "BeatShot|Text3D")
+	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Text3D")
 	float MaxHeightMainText = 55.f;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "BeatShot|Text3D")
+	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Text3D")
 	float MaxHeightIndentedText = 55.f;
-
-
+	
 	virtual void OnPlayerSettingsChanged(const FPlayerSettings_Game& GameSettings) override;
 	virtual void OnPlayerSettingsChanged(const FPlayerSettings_User& UserSettings) override;
 

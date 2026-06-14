@@ -7,9 +7,19 @@
 #include "AbilitySystem/BSAbilitySystemComponent.h"
 #include "BeatShot/BSGameplayTags.h"
 #include "Components/BoxComponent.h"
+#include "Extensions/Text3DDefaultMaterialExtension.h"
 #include "Kismet/GameplayStatics.h"
 #include "RangeActors/TimeOfDayManager.h"
 #include "SaveGames/SaveGamePlayerSettings.h"
+
+namespace
+{
+auto LeftPillarLocation = FVector(0.0, 175.0, 25.0);
+auto RightPillarLocation = FVector(0.0, 1025.0, 25.0);
+auto PillarRotation = FRotator(-90.0, 0.0, 0.0);
+auto BoardOutlineLocation = FVector(350.0, 1150.00, -12.50);
+auto BoardOutlineScale = FVector(1.0, 1.0, 1.5);
+}
 
 AWallMenu::AWallMenu()
 {
@@ -21,6 +31,27 @@ AWallMenu::AWallMenu()
 	Corkboard->SetGenerateOverlapEvents(false);
 	Corkboard->SetCollisionProfileName(FName("BlockAll"));
 
+	SM_LeftPillar = CreateDefaultSubobject<UStaticMeshComponent>("SM_LeftPillar");
+	SM_LeftPillar->SetupAttachment(RootComponent);
+	SM_LeftPillar->SetRelativeLocation(LeftPillarLocation);
+	SM_LeftPillar->SetRelativeRotation(PillarRotation);
+	SM_LeftPillar->SetGenerateOverlapEvents(false);
+	SM_LeftPillar->SetCollisionProfileName(FName("BlockAll"));
+
+	SM_RightPillar = CreateDefaultSubobject<UStaticMeshComponent>("SM_RightPillar");
+	SM_RightPillar->SetupAttachment(RootComponent);
+	SM_RightPillar->SetRelativeLocation(RightPillarLocation);
+	SM_RightPillar->SetRelativeRotation(PillarRotation);
+	SM_RightPillar->SetGenerateOverlapEvents(false);
+	SM_RightPillar->SetCollisionProfileName(FName("BlockAll"));
+
+	SM_WallMenuBoardOutline = CreateDefaultSubobject<UStaticMeshComponent>("SM_WallMenuBoardOutline");
+	SM_WallMenuBoardOutline->SetupAttachment(RootComponent);
+	SM_WallMenuBoardOutline->SetRelativeLocation(BoardOutlineLocation);
+	SM_WallMenuBoardOutline->SetRelativeScale3D(BoardOutlineScale);
+	SM_WallMenuBoardOutline->SetGenerateOverlapEvents(false);
+	SM_WallMenuBoardOutline->SetCollisionProfileName(FName("BlockAll"));
+	
 	// Create ability system component, and set it to be explicitly replicated
 	if (!AbilitySystemComponent)
 	{
@@ -28,109 +59,6 @@ AWallMenu::AWallMenu()
 		// Minimal Mode means that no GameplayEffects will replicate. They will only live on the Server.
 		AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Minimal);
 	}
-
-	// Main Light Visualizer Enable
-	MainText_Enable_LightVisualizers = CreateDefaultSubobject<UText3DComponent>(FName("Enable Light Visualizers"));
-	SetupMainText(MainText_Enable_LightVisualizers, Corkboard, true, "WallMenu_LightVisualizer");
-
-	ToggleText_LightVisualizers_On = CreateDefaultSubobject<UText3DComponent>(FName("Light Visualizers On"));
-	ToggleText_LightVisualizers_Off = CreateDefaultSubobject<UText3DComponent>(FName("Light Visualizers Off"));
-	Box_LightVisualizers_On = CreateDefaultSubobject<UBoxComponent>(FName("Box Light Visualizers On"));
-	Box_LightVisualizers_Off = CreateDefaultSubobject<UBoxComponent>(FName("Box Light Visualizers Off"));
-
-	SetupToggleText(MainText_Enable_LightVisualizers, ToggleText_LightVisualizers_On, ToggleText_LightVisualizers_Off,
-	                Box_LightVisualizers_On, Box_LightVisualizers_Off);
-
-	// Front Beam Visualizer
-	MainText_Enable_LVFrontBeam = CreateDefaultSubobject<UText3DComponent>(FName("Enable Front Beam"));
-	SetupMainText(MainText_Enable_LVFrontBeam, MainText_Enable_LightVisualizers, false, "WallMenu_LVFrontBeam", Indent);
-
-	ToggleText_LVFrontBeam_On = CreateDefaultSubobject<UText3DComponent>(FName("Front Beam On"));
-	ToggleText_LVFrontBeam_Off = CreateDefaultSubobject<UText3DComponent>(FName("Front Beam Off"));
-	Box_LVFrontBeam_On = CreateDefaultSubobject<UBoxComponent>(FName("Box Front Beam On"));
-	Box_LVFrontBeam_Off = CreateDefaultSubobject<UBoxComponent>(FName("Box Front Beam Off"));
-
-	SetupToggleText(MainText_Enable_LVFrontBeam, ToggleText_LVFrontBeam_On, ToggleText_LVFrontBeam_Off,
-	                Box_LVFrontBeam_On, Box_LVFrontBeam_Off, -Indent);
-
-	// Top Beam Visualizer
-	MainText_EnableLV_TopBeam = CreateDefaultSubobject<UText3DComponent>(FName("Enable Top Beam"));
-	SetupMainText(MainText_EnableLV_TopBeam, MainText_Enable_LightVisualizers, false, "WallMenu_LVTopBeam",
-	              Offset_MainText + Indent);
-
-	ToggleText_LV_TopBeam_On = CreateDefaultSubobject<UText3DComponent>(FName("Top Beam On"));
-	ToggleText_LV_TopBeam_Off = CreateDefaultSubobject<UText3DComponent>(FName("Top Beam Off"));
-	Box_LV_TopBeam_On = CreateDefaultSubobject<UBoxComponent>(FName("Box Top Beam On"));
-	Box_LV_TopBeam_Off = CreateDefaultSubobject<UBoxComponent>(FName("Box Top Beam Off"));
-
-	SetupToggleText(MainText_EnableLV_TopBeam, ToggleText_LV_TopBeam_On, ToggleText_LV_TopBeam_Off, Box_LV_TopBeam_On,
-	                Box_LV_TopBeam_Off, -Indent);
-
-	// Left Beam Visualizer
-	MainText_Enable_LVLeftBeam = CreateDefaultSubobject<UText3DComponent>(FName("Enable Left Beam"));
-	SetupMainText(MainText_Enable_LVLeftBeam, MainText_Enable_LightVisualizers, false, "WallMenu_LVLeftBeam",
-	              Offset_MainText * 2 + Indent);
-
-	ToggleText_LVLeftBeam_On = CreateDefaultSubobject<UText3DComponent>(FName("Left Beam On"));
-	ToggleText_LVLeftBeam_Off = CreateDefaultSubobject<UText3DComponent>(FName("Left Beam Off"));
-	Box_LVLeftBeam_On = CreateDefaultSubobject<UBoxComponent>(FName("Box Left Beam On"));
-	Box_LVLeftBeam_Off = CreateDefaultSubobject<UBoxComponent>(FName("Box Left Beam Off"));
-
-	SetupToggleText(MainText_Enable_LVLeftBeam, ToggleText_LVLeftBeam_On, ToggleText_LVLeftBeam_Off, Box_LVLeftBeam_On,
-	                Box_LVLeftBeam_Off, -Indent);
-
-	// Right Beam Visualizer
-	MainText_Enable_LVRightBeam = CreateDefaultSubobject<UText3DComponent>(FName("Enable Right Beam"));
-	SetupMainText(MainText_Enable_LVRightBeam, MainText_Enable_LightVisualizers, false, "WallMenu_LVRightBeam",
-	              Offset_MainText * 3 + Indent);
-
-	ToggleText_LVRightBeam_On = CreateDefaultSubobject<UText3DComponent>(FName("Right Beam On"));
-	ToggleText_LVRightBeam_Off = CreateDefaultSubobject<UText3DComponent>(FName("Right Beam Off"));
-	Box_LVRightBeam_On = CreateDefaultSubobject<UBoxComponent>(FName("Box Right Beam On"));
-	Box_LVRightBeam_Off = CreateDefaultSubobject<UBoxComponent>(FName("Box Right Beam Off"));
-
-	SetupToggleText(MainText_Enable_LVRightBeam, ToggleText_LVRightBeam_On, ToggleText_LVRightBeam_Off,
-	                Box_LVRightBeam_On, Box_LVRightBeam_Off, -Indent);
-
-	// Left Cube Visualizer
-	MainText_EnableLV_LeftCube = CreateDefaultSubobject<UText3DComponent>(FName("Enable Left Cube"));
-	SetupMainText(MainText_EnableLV_LeftCube, MainText_Enable_LightVisualizers, false, "WallMenu_LVLeftCube",
-	              Offset_MainText * 4 + Indent);
-
-	ToggleText_LV_LeftCube_On = CreateDefaultSubobject<UText3DComponent>(FName("Left Cube On"));
-	ToggleText_LV_LeftCube_Off = CreateDefaultSubobject<UText3DComponent>(FName("Left Cube Off"));
-	Box_LV_LeftCube_On = CreateDefaultSubobject<UBoxComponent>(FName("Box Left Cube On"));
-	Box_LV_LeftCube_Off = CreateDefaultSubobject<UBoxComponent>(FName("Box Left Cube Off"));
-
-	SetupToggleText(MainText_EnableLV_LeftCube, ToggleText_LV_LeftCube_On, ToggleText_LV_LeftCube_Off,
-	                Box_LV_LeftCube_On, Box_LV_LeftCube_Off, -Indent);
-
-	// Right Cube Visualizer
-	MainText_EnableLV_RightCube = CreateDefaultSubobject<UText3DComponent>(FName("Enable Right Cube"));
-	SetupMainText(MainText_EnableLV_RightCube, MainText_Enable_LightVisualizers, false, "WallMenu_LVRightCube",
-	              Offset_MainText * 5 + Indent);
-
-	ToggleText_LV_RightCube_On = CreateDefaultSubobject<UText3DComponent>(FName("Right Cube On"));
-	ToggleText_LV_RightCube_Off = CreateDefaultSubobject<UText3DComponent>(FName("Right Cube Off"));
-	Box_LV_RightCube_On = CreateDefaultSubobject<UBoxComponent>(FName("Box Right Cube On"));
-	Box_LV_RightCube_Off = CreateDefaultSubobject<UBoxComponent>(FName("Box Right Cube Off"));
-
-	SetupToggleText(MainText_EnableLV_RightCube, ToggleText_LV_RightCube_On, ToggleText_LV_RightCube_Off,
-	                Box_LV_RightCube_On, Box_LV_RightCube_Off, -Indent);
-
-
-	// Night Mode Enable
-	MainText_Enable_NightMode = CreateDefaultSubobject<UText3DComponent>(FName("Enable Night Mode"));
-	SetupMainText(MainText_Enable_NightMode, MainText_Enable_LightVisualizers, false, "WallMenu_NightMode",
-	              Offset_MainText * 6);
-
-	ToggleText_NightMode_On = CreateDefaultSubobject<UText3DComponent>(FName("Night Mode On"));
-	ToggleText_NightMode_Off = CreateDefaultSubobject<UText3DComponent>(FName("Night Mode Off"));
-	Box_NightMode_On = CreateDefaultSubobject<UBoxComponent>(FName("Box Night Mode On"));
-	Box_NightMode_Off = CreateDefaultSubobject<UBoxComponent>(FName("Box Night Mode Off"));
-
-	SetupToggleText(MainText_Enable_NightMode, ToggleText_NightMode_On, ToggleText_NightMode_Off, Box_NightMode_On,
-	                Box_NightMode_Off);
 }
 
 void AWallMenu::PostInitializeComponents()
@@ -148,6 +76,135 @@ void AWallMenu::PostInitializeComponents()
 void AWallMenu::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// Main Light Visualizer Enable
+	MainText_Enable_LightVisualizers = NewObject<UText3DComponent>(this, UText3DComponent::StaticClass(),
+	                                                               FName("Enable Light Visualizers"));
+
+	SetupMainText(MainText_Enable_LightVisualizers, Corkboard, true, "WallMenu_LightVisualizer");
+
+	ToggleText_LightVisualizers_On = NewObject<UText3DComponent>(this, UText3DComponent::StaticClass(),
+	                                                             FName("Light Visualizers On"));
+	ToggleText_LightVisualizers_Off = NewObject<UText3DComponent>(this, UText3DComponent::StaticClass(),
+	                                                              FName("Light Visualizers Off"));
+	Box_LightVisualizers_On = NewObject<UBoxComponent>(this, UBoxComponent::StaticClass(),
+	                                                   FName("Box Light Visualizers On"));
+	Box_LightVisualizers_Off = NewObject<UBoxComponent>(this, UBoxComponent::StaticClass(),
+	                                                    FName("Box Light Visualizers Off"));
+
+	SetupToggleText(MainText_Enable_LightVisualizers, ToggleText_LightVisualizers_On, ToggleText_LightVisualizers_Off,
+	                Box_LightVisualizers_On, Box_LightVisualizers_Off);
+
+	// Front Beam Visualizer
+	MainText_Enable_LVFrontBeam = NewObject<UText3DComponent>(this, UText3DComponent::StaticClass(),
+	                                                          FName("Enable Front Beam"));
+	SetupMainText(MainText_Enable_LVFrontBeam, MainText_Enable_LightVisualizers, false, "WallMenu_LVFrontBeam", Indent);
+
+	ToggleText_LVFrontBeam_On = NewObject<UText3DComponent>(this, UText3DComponent::StaticClass(),
+	                                                        FName("Front Beam On"));
+	ToggleText_LVFrontBeam_Off = NewObject<UText3DComponent>(this, UText3DComponent::StaticClass(),
+	                                                         FName("Front Beam Off"));
+	Box_LVFrontBeam_On = NewObject<UBoxComponent>(this, UBoxComponent::StaticClass(), FName("Box Front Beam On"));
+	Box_LVFrontBeam_Off = NewObject<UBoxComponent>(this, UBoxComponent::StaticClass(), FName("Box Front Beam Off"));
+
+	SetupToggleText(MainText_Enable_LVFrontBeam, ToggleText_LVFrontBeam_On, ToggleText_LVFrontBeam_Off,
+	                Box_LVFrontBeam_On, Box_LVFrontBeam_Off, -Indent);
+
+	// Top Beam Visualizer
+	MainText_EnableLV_TopBeam = NewObject<UText3DComponent>(this, UText3DComponent::StaticClass(),
+	                                                        FName("Enable Top Beam"));
+	SetupMainText(MainText_EnableLV_TopBeam, MainText_Enable_LightVisualizers, false, "WallMenu_LVTopBeam",
+	              Offset_MainText + Indent);
+
+	ToggleText_LV_TopBeam_On = NewObject<UText3DComponent>(this, UText3DComponent::StaticClass(), FName("Top Beam On"));
+	ToggleText_LV_TopBeam_Off = NewObject<UText3DComponent>(this, UText3DComponent::StaticClass(),
+	                                                        FName("Top Beam Off"));
+	Box_LV_TopBeam_On = NewObject<UBoxComponent>(this, UBoxComponent::StaticClass(), FName("Box Top Beam On"));
+	Box_LV_TopBeam_Off = NewObject<UBoxComponent>(this, UBoxComponent::StaticClass(), FName("Box Top Beam Off"));
+
+	SetupToggleText(MainText_EnableLV_TopBeam, ToggleText_LV_TopBeam_On, ToggleText_LV_TopBeam_Off, Box_LV_TopBeam_On,
+	                Box_LV_TopBeam_Off, -Indent);
+
+	// Left Beam Visualizer
+	MainText_Enable_LVLeftBeam = NewObject<UText3DComponent>(this, UText3DComponent::StaticClass(),
+	                                                         FName("Enable Left Beam"));
+	SetupMainText(MainText_Enable_LVLeftBeam, MainText_Enable_LightVisualizers, false, "WallMenu_LVLeftBeam",
+	              Offset_MainText * 2 + Indent);
+
+	ToggleText_LVLeftBeam_On = NewObject<
+		UText3DComponent>(this, UText3DComponent::StaticClass(), FName("Left Beam On"));
+	ToggleText_LVLeftBeam_Off = NewObject<UText3DComponent>(this, UText3DComponent::StaticClass(),
+	                                                        FName("Left Beam Off"));
+	Box_LVLeftBeam_On = NewObject<UBoxComponent>(this, UBoxComponent::StaticClass(), FName("Box Left Beam On"));
+	Box_LVLeftBeam_Off = NewObject<UBoxComponent>(this, UBoxComponent::StaticClass(), FName("Box Left Beam Off"));
+
+	SetupToggleText(MainText_Enable_LVLeftBeam, ToggleText_LVLeftBeam_On, ToggleText_LVLeftBeam_Off, Box_LVLeftBeam_On,
+	                Box_LVLeftBeam_Off, -Indent);
+
+	// Right Beam Visualizer
+	MainText_Enable_LVRightBeam = NewObject<UText3DComponent>(this, UText3DComponent::StaticClass(),
+	                                                          FName("Enable Right Beam"));
+	SetupMainText(MainText_Enable_LVRightBeam, MainText_Enable_LightVisualizers, false, "WallMenu_LVRightBeam",
+	              Offset_MainText * 3 + Indent);
+
+	ToggleText_LVRightBeam_On = NewObject<UText3DComponent>(this, UText3DComponent::StaticClass(),
+	                                                        FName("Right Beam On"));
+	ToggleText_LVRightBeam_Off = NewObject<UText3DComponent>(this, UText3DComponent::StaticClass(),
+	                                                         FName("Right Beam Off"));
+	Box_LVRightBeam_On = NewObject<UBoxComponent>(this, UBoxComponent::StaticClass(), FName("Box Right Beam On"));
+	Box_LVRightBeam_Off = NewObject<UBoxComponent>(this, UBoxComponent::StaticClass(), FName("Box Right Beam Off"));
+
+	SetupToggleText(MainText_Enable_LVRightBeam, ToggleText_LVRightBeam_On, ToggleText_LVRightBeam_Off,
+	                Box_LVRightBeam_On, Box_LVRightBeam_Off, -Indent);
+
+	// Left Cube Visualizer
+	MainText_EnableLV_LeftCube = NewObject<UText3DComponent>(this, UText3DComponent::StaticClass(),
+	                                                         FName("Enable Left Cube"));
+	SetupMainText(MainText_EnableLV_LeftCube, MainText_Enable_LightVisualizers, false, "WallMenu_LVLeftCube",
+	              Offset_MainText * 4 + Indent);
+
+	ToggleText_LV_LeftCube_On = NewObject<UText3DComponent>(this, UText3DComponent::StaticClass(),
+	                                                        FName("Left Cube On"));
+	ToggleText_LV_LeftCube_Off = NewObject<UText3DComponent>(this, UText3DComponent::StaticClass(),
+	                                                         FName("Left Cube Off"));
+	Box_LV_LeftCube_On = NewObject<UBoxComponent>(this, UBoxComponent::StaticClass(), FName("Box Left Cube On"));
+	Box_LV_LeftCube_Off = NewObject<UBoxComponent>(this, UBoxComponent::StaticClass(), FName("Box Left Cube Off"));
+
+	SetupToggleText(MainText_EnableLV_LeftCube, ToggleText_LV_LeftCube_On, ToggleText_LV_LeftCube_Off,
+	                Box_LV_LeftCube_On, Box_LV_LeftCube_Off, -Indent);
+
+	// Right Cube Visualizer
+	MainText_EnableLV_RightCube = NewObject<UText3DComponent>(this, UText3DComponent::StaticClass(),
+	                                                          FName("Enable Right Cube"));
+	SetupMainText(MainText_EnableLV_RightCube, MainText_Enable_LightVisualizers, false, "WallMenu_LVRightCube",
+	              Offset_MainText * 5 + Indent);
+
+	ToggleText_LV_RightCube_On = NewObject<UText3DComponent>(this, UText3DComponent::StaticClass(),
+	                                                         FName("Right Cube On"));
+	ToggleText_LV_RightCube_Off = NewObject<UText3DComponent>(this, UText3DComponent::StaticClass(),
+	                                                          FName("Right Cube Off"));
+	Box_LV_RightCube_On = NewObject<UBoxComponent>(this, UBoxComponent::StaticClass(), FName("Box Right Cube On"));
+	Box_LV_RightCube_Off = NewObject<UBoxComponent>(this, UBoxComponent::StaticClass(), FName("Box Right Cube Off"));
+
+	SetupToggleText(MainText_EnableLV_RightCube, ToggleText_LV_RightCube_On, ToggleText_LV_RightCube_Off,
+	                Box_LV_RightCube_On, Box_LV_RightCube_Off, -Indent);
+
+
+	// Night Mode Enable
+	MainText_Enable_NightMode = NewObject<UText3DComponent>(this, UText3DComponent::StaticClass(),
+	                                                        FName("Enable Night Mode"));
+	SetupMainText(MainText_Enable_NightMode, MainText_Enable_LightVisualizers, false, "WallMenu_NightMode",
+	              Offset_MainText * 6);
+
+	ToggleText_NightMode_On = NewObject<
+		UText3DComponent>(this, UText3DComponent::StaticClass(), FName("Night Mode On"));
+	ToggleText_NightMode_Off = NewObject<UText3DComponent>(this, UText3DComponent::StaticClass(),
+	                                                       FName("Night Mode Off"));
+	Box_NightMode_On = NewObject<UBoxComponent>(this, UBoxComponent::StaticClass(), FName("Box Night Mode On"));
+	Box_NightMode_Off = NewObject<UBoxComponent>(this, UBoxComponent::StaticClass(), FName("Box Night Mode Off"));
+
+	SetupToggleText(MainText_Enable_NightMode, ToggleText_NightMode_On, ToggleText_NightMode_Off, Box_NightMode_On,
+	                Box_NightMode_Off);
 
 	if (UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld())))
 	{
@@ -227,17 +284,20 @@ void AWallMenu::BeginPlay()
 		{
 			if (UText3DComponent* CastedParent = Cast<UText3DComponent>(Pair.Value.Parent))
 			{
+				const auto MaterialExtension = CastedParent->GetCastedMaterialExtension<
+					UText3DDefaultMaterialExtension>();
+				MaterialExtension->SetStyle(EText3DMaterialStyle::Custom);
 				if (Material_Main_Front_Text3D)
 				{
-					CastedParent->SetFrontMaterial(Material_Main_Front_Text3D);
+					MaterialExtension->SetFrontMaterial(Material_Main_Front_Text3D);
 				}
 				if (Material_Bevel)
 				{
-					CastedParent->SetBevelMaterial(Material_Bevel);
+					MaterialExtension->SetBevelMaterial(Material_Bevel);
 				}
 				if (Material_Extrude)
 				{
-					CastedParent->SetExtrudeMaterial(Material_Extrude);
+					MaterialExtension->SetExtrudeMaterial(Material_Extrude);
 				}
 				if (Font_Text3D)
 				{
@@ -250,15 +310,22 @@ void AWallMenu::BeginPlay()
 			continue;
 		}
 
+		const auto OnTextMaterialExtension = Pair.Value.OnText->GetCastedMaterialExtension<
+			UText3DDefaultMaterialExtension>();
+		OnTextMaterialExtension->SetStyle(EText3DMaterialStyle::Custom);
+		const auto OffTextMaterialExtension = Pair.Value.OffText->GetCastedMaterialExtension<
+			UText3DDefaultMaterialExtension>();
+		OffTextMaterialExtension->SetStyle(EText3DMaterialStyle::Custom);
+
 		if (Material_Bevel)
 		{
-			Pair.Value.OnText->SetBevelMaterial(Material_Bevel);
-			Pair.Value.OffText->SetBevelMaterial(Material_Bevel);
+			OnTextMaterialExtension->SetBevelMaterial(Material_Bevel);
+			OffTextMaterialExtension->SetBevelMaterial(Material_Bevel);
 		}
 		if (Material_Extrude)
 		{
-			Pair.Value.OnText->SetExtrudeMaterial(Material_Extrude);
-			Pair.Value.OffText->SetExtrudeMaterial(Material_Extrude);
+			OnTextMaterialExtension->SetExtrudeMaterial(Material_Extrude);
+			OffTextMaterialExtension->SetExtrudeMaterial(Material_Extrude);
 		}
 		if (Font_Text3D)
 		{
@@ -280,9 +347,8 @@ void AWallMenu::BeginPlay()
 		{
 			continue;
 		}
-
-		Pair.Value.OnText->SetFrontMaterial(DynamicMatFrontOn);
-		Pair.Value.OffText->SetFrontMaterial(DynamicMatFrontOff);
+		OnTextMaterialExtension->SetFrontMaterial(DynamicMatFrontOn);
+		OffTextMaterialExtension->SetFrontMaterial(DynamicMatFrontOff);
 	}
 
 	const FPlayerSettings PlayerSettings = LoadPlayerSettings();
@@ -458,7 +524,8 @@ void AWallMenu::SetupMainText(UText3DComponent* InComponent,
                               const FString& Key,
                               const FVector& AdditionalOffset) const
 {
-	InComponent->SetupAttachment(InParent);
+	InComponent->AttachToComponent(InParent, FAttachmentTransformRules::KeepRelativeTransform);
+	InComponent->RegisterComponent();
 	InComponent->SetRelativeLocation(bFirstText ? Position_FirstMainText : Offset_MainText + AdditionalOffset);
 	if (bFirstText)
 	{
@@ -481,7 +548,8 @@ void AWallMenu::SetupToggleText(USceneComponent* InParent,
                                 UBoxComponent* InBoxOff,
                                 const FVector& AdditionalOffset)
 {
-	InToggleTextOn->SetupAttachment(InParent);
+	InToggleTextOn->AttachToComponent(InParent, FAttachmentTransformRules::KeepRelativeTransform);
+	InToggleTextOn->RegisterComponent();
 	InToggleTextOn->SetRelativeLocation(Offset_OnText + AdditionalOffset);
 	InToggleTextOn->SetExtrude(5.f);
 	InToggleTextOn->SetBevel(2.f);
@@ -489,7 +557,8 @@ void AWallMenu::SetupToggleText(USceneComponent* InParent,
 	InToggleTextOn->SetCastShadow(false);
 	InToggleTextOn->SetHorizontalAlignment(EText3DHorizontalTextAlignment::Center);
 
-	InToggleTextOff->SetupAttachment(InParent);
+	InToggleTextOff->AttachToComponent(InParent, FAttachmentTransformRules::KeepRelativeTransform);
+	InToggleTextOff->RegisterComponent();
 	InToggleTextOff->SetRelativeLocation(Offset_OffText + AdditionalOffset);
 	InToggleTextOff->SetExtrude(5.f);
 	InToggleTextOff->SetBevel(2.f);
@@ -514,14 +583,16 @@ void AWallMenu::SetupToggleText(USceneComponent* InParent,
 		InToggleTextOff->SetMaxHeight(MaxHeightIndentedText);
 	}
 
-	InBoxOn->SetupAttachment(InToggleTextOn);
+	InBoxOn->AttachToComponent(InToggleTextOn, FAttachmentTransformRules::KeepRelativeTransform);
+	InBoxOn->RegisterComponent();
 	InBoxOn->SetRelativeLocation(Position_BoxCollision);
 	InBoxOn->SetRelativeScale3D(Scale_BoxCollision_On);
 	InBoxOn->SetBoxExtent(Extents_BoxCollision);
 	InBoxOn->SetGenerateOverlapEvents(false);
 	InBoxOn->SetCollisionProfileName(FName("BlockAll"));
 
-	InBoxOff->SetupAttachment(InToggleTextOff);
+	InBoxOff->AttachToComponent(InToggleTextOff, FAttachmentTransformRules::KeepRelativeTransform);
+	InBoxOff->RegisterComponent();
 	InBoxOff->SetRelativeLocation(Position_BoxCollision);
 	InBoxOff->SetRelativeScale3D(Scale_BoxCollision_Off);
 	InBoxOff->SetBoxExtent(Extents_BoxCollision);
