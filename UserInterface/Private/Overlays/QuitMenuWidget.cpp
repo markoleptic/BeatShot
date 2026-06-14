@@ -30,59 +30,64 @@ void UQuitMenuWidget::SetIsPostGameModeMenuChild(const bool IsPostGameModeMenuCh
 	}
 }
 
+void UQuitMenuWidget::PlayInitialFadeInMenu()
+{
+	PlayAnimationReverse(FadeOutMenu);
+	PlayAnimationReverse(FadeOutBackgroundBlur);
+}
+
+void UQuitMenuWidget::PlayFadeInRestartMenu()
+{
+	PlayAnimationReverse(FadeOutRestartMenu);
+	PlayAnimationReverse(FadeOutBackgroundBlur);
+}
+
 void UQuitMenuWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 {
-	if (bIsPostGameMenuChild)
-	{
-		if (Button == Button_QuitMainMenu)
-		{
-			PlayFadeOutMenu();
-			SetGotoMainMenuTrue();
-			Quit();
-		}
-		else if (Button == Button_QuitDesktop)
-		{
-			PlayFadeOutMenu();
-			SetGotoMainMenuFalse();
-			Quit();
-		}
-		else if (Button == Button_QuitBack)
-		{
-			PlayFadeOutMenu();
-			InitializeExit();
-		}
-		return;
-	}
-
-	if (Button == Button_QuitMainMenu)
+	if (Button == Button_QuitBack)
 	{
 		PlayFadeOutMenu();
-		PlayFadeInSaveMenu();
-		SetGotoMainMenuTrue();
-		SetSaveMenuTitleMainMenu();
+		OnExitQuitMenu.ExecuteIfBound();
+		InitializeExit();
+	}
+	else if (Button == Button_QuitMainMenu)
+	{
+		PlayFadeOutMenu();
+		SetGoToMainMenu(true);
+		if (bIsPostGameMenuChild)
+		{
+			Quit();
+		}
+		else
+		{
+			PlayFadeInSaveMenu();
+			TextBlock_SaveMenuTitle->SetText(IBSWidgetInterface::GetWidgetTextFromKey("QM_QuitMainMenuButtonText"));
+		}
 	}
 	else if (Button == Button_QuitDesktop)
 	{
 		PlayFadeOutMenu();
-		PlayFadeInSaveMenu();
-		SetGotoMainMenuFalse();
-		SetSaveMenuTitleDesktop();
-	}
-	else if (Button == Button_QuitBack)
-	{
-		PlayFadeOutMenu();
-		InitializeExit();
+		SetGoToMainMenu(false);
+		if (bIsPostGameMenuChild)
+		{
+			Quit();
+		}
+		else
+		{
+			PlayFadeInSaveMenu();
+			TextBlock_SaveMenuTitle->SetText(IBSWidgetInterface::GetWidgetTextFromKey("QM_QuitDesktopButtonText"));
+		}
 	}
 	else if (Button == Button_QuitAndSave)
 	{
 		PlayFadeOutSaveMenu();
-		SetShouldSaveScoresTrue();
+		SetShouldSaveScores(true);
 		Quit();
 	}
 	else if (Button == Button_QuitWithoutSave)
 	{
 		PlayFadeOutSaveMenu();
-		SetShouldSaveScoresFalse();
+		SetShouldSaveScores(false);
 		Quit();
 	}
 	else if (Button == Button_SaveBack)
@@ -92,17 +97,22 @@ void UQuitMenuWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 	}
 	else if (Button == Button_RestartAndSave)
 	{
-		SetShouldSaveScoresTrue();
+		PlayFadeOutRestartMenu();
+		SetShouldSaveScores(true);
 		OnRestart();
+		InitializeExit();
 	}
 	else if (Button == Button_RestartWithoutSave)
 	{
-		SetShouldSaveScoresFalse();
+		PlayFadeOutRestartMenu();
+		SetShouldSaveScores(false);
 		OnRestart();
+		InitializeExit();
 	}
 	else if (Button == Button_RestartBack)
 	{
 		PlayFadeOutRestartMenu();
+		OnExitQuitMenu.ExecuteIfBound();
 		InitializeExit();
 	}
 }
@@ -141,20 +151,19 @@ void UQuitMenuWidget::OnRestart()
 	OnGameModeStateChanged.ExecuteIfBound(TransitionState);
 }
 
-void UQuitMenuWidget::SetSaveMenuTitleMainMenu()
-{
-	TextBlock_SaveMenuTitle->SetText(IBSWidgetInterface::GetWidgetTextFromKey("QM_QuitMainMenuButtonText"));
-}
-
-void UQuitMenuWidget::SetSaveMenuTitleDesktop()
-{
-	TextBlock_SaveMenuTitle->SetText(IBSWidgetInterface::GetWidgetTextFromKey("QM_QuitDesktopButtonText"));
-}
-
 void UQuitMenuWidget::InitializeExit()
 {
 	FadeOutWidgetDelegate.BindDynamic(this, &UQuitMenuWidget::RemoveFromParent);
 	BindToAnimationFinished(FadeOutBackgroundBlur, FadeOutWidgetDelegate);
 	PlayAnimationForward(FadeOutBackgroundBlur);
-	OnExitQuitMenu.ExecuteIfBound();
+}
+
+void UQuitMenuWidget::SetGoToMainMenu(const bool GoToMainMenu)
+{
+	bGotoMainMenu = GoToMainMenu;
+}
+
+void UQuitMenuWidget::SetShouldSaveScores(const bool ShouldSaveScores)
+{
+	bShouldSaveScores = ShouldSaveScores;
 }

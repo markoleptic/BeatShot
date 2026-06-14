@@ -24,26 +24,16 @@ class USERINTERFACE_API UQuitMenuWidget : public UUserWidget
 public:
 	void SetIsPostGameModeMenuChild(bool IsPostGameModeMenuChild);
 
-	/** Fades in the MenuOverlay, and also fades in the background blur. */
-	UFUNCTION()
-	void PlayInitialFadeInMenu()
-	{
-		PlayAnimationReverse(FadeOutMenu);
-		PlayAnimationReverse(FadeOutBackgroundBlur);
-	}
+	/** Fades in the MenuOverlay and fades in the background blur. */
+	void PlayInitialFadeInMenu();
 
-	/** Fades in the RestartOverlay. */
-	UFUNCTION()
-	void PlayFadeInRestartMenu()
-	{
-		PlayAnimationReverse(FadeOutRestartMenu);
-		PlayAnimationReverse(FadeOutBackgroundBlur);
-	}
+	/** Fades in the RestartOverlay and fades in the background blur. */
+	void PlayFadeInRestartMenu();
 
-	/** Broadcasts to parent so it can slide menu button back to starting position. */
+	/** Executed if the user exits the quit menu using a cancel button. */
 	TDelegate<void()> OnExitQuitMenu;
 
-	/** Bound to DefaultGameInstance when constructed in DefaultPlayerController. */
+	/** Executed when the user has elected to restart, quit to the main menu, or quit to desktop. */
 	TDelegate<void(const FGameModeTransitionState& TransitionState)> OnGameModeStateChanged;
 
 protected:
@@ -89,70 +79,45 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeOutBackgroundBlur;
 
-	/** Delegate used to bind CollapseWidget to FadeOutBackgroundBlur. */
+	/** Delegate used to bind RemoveFromParent to FadeOutBackgroundBlur. */
 	FWidgetAnimationDynamicEvent FadeOutWidgetDelegate;
 
 private:
 	void OnButtonClicked_BSButton(const UBSButton* Button);
 
 	/** Fades in the MenuOverlay. */
-	UFUNCTION()
 	void PlayFadeInMenu() { PlayAnimationReverse(FadeOutMenu); }
 
 	/** Fades out the MenuOverlay. */
-	UFUNCTION()
 	void PlayFadeOutMenu() { PlayAnimationForward(FadeOutMenu); }
 
 	/** Fades in the SaveMenuOverlay. */
-	UFUNCTION()
 	void PlayFadeInSaveMenu() { PlayAnimationReverse(FadeOutSaveMenu); }
 
 	/** Fades out the SaveMenuOverlay. */
-	UFUNCTION()
 	void PlayFadeOutSaveMenu() { PlayAnimationForward(FadeOutSaveMenu); }
 
 	/** Fades out the RestartOverlay. */
-	UFUNCTION()
 	void PlayFadeOutRestartMenu() { PlayAnimationForward(FadeOutRestartMenu); }
 
 	/** Called when either QuitAndSaveButton or Button_QuitWithoutSave is clicked. */
-	UFUNCTION()
 	void Quit();
 
 	/** Called from Quit() if bGotoMainMenu is true. */
-	UFUNCTION()
 	void OnQuitToMainMenu();
 
 	/** Called from Quit() if bGotoMainMenu is false. */
-	UFUNCTION()
 	void OnQuitToDesktop();
 
 	/** Called when either Button_RestartAndSave or Button_RestartWithoutSave is clicked. */
-	UFUNCTION()
 	void OnRestart();
 
-	/** Plays FadeOutBackgroundBlur, binds FadeOutWidgetDelegate to ShowAudioFormatSelect and executes
-	 *  OnExitQuitMenu. */
-	UFUNCTION()
+	/** Fades out the background blur. The widget will be removed from parent when the animation is completed. */
 	void InitializeExit();
 
-	UFUNCTION()
-	void SetGotoMainMenuTrue() { bGotoMainMenu = true; }
+	void SetGoToMainMenu(bool GoToMainMenu);
 
-	UFUNCTION()
-	void SetGotoMainMenuFalse() { bGotoMainMenu = false; }
-
-	UFUNCTION()
-	void SetShouldSaveScoresTrue() { bShouldSaveScores = true; }
-
-	UFUNCTION()
-	void SetShouldSaveScoresFalse() { bShouldSaveScores = false; }
-
-	UFUNCTION()
-	void SetSaveMenuTitleMainMenu();
-
-	UFUNCTION()
-	void SetSaveMenuTitleDesktop();
+	void SetShouldSaveScores(bool ShouldSaveScores);
 
 	/** Whether this instance of QuitMenu belongs to The PostGameMenuWidget or not. */
 	bool bIsPostGameMenuChild;
