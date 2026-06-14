@@ -81,7 +81,7 @@ void AWallMenu::BeginPlay()
 	MainText_Enable_LightVisualizers = NewObject<UText3DComponent>(this, UText3DComponent::StaticClass(),
 	                                                               FName("Enable Light Visualizers"));
 
-	SetupMainText(MainText_Enable_LightVisualizers, Corkboard, true, "WallMenu_LightVisualizer");
+	SetupMainText(MainText_Enable_LightVisualizers, Corkboard, true, "LightVisualizer");
 
 	ToggleText_LightVisualizers_On = NewObject<UText3DComponent>(this, UText3DComponent::StaticClass(),
 	                                                             FName("Light Visualizers On"));
@@ -98,7 +98,7 @@ void AWallMenu::BeginPlay()
 	// Front Beam Visualizer
 	MainText_Enable_LVFrontBeam = NewObject<UText3DComponent>(this, UText3DComponent::StaticClass(),
 	                                                          FName("Enable Front Beam"));
-	SetupMainText(MainText_Enable_LVFrontBeam, MainText_Enable_LightVisualizers, false, "WallMenu_LVFrontBeam", Indent);
+	SetupMainText(MainText_Enable_LVFrontBeam, MainText_Enable_LightVisualizers, false, "LVFrontBeam", Indent);
 
 	ToggleText_LVFrontBeam_On = NewObject<UText3DComponent>(this, UText3DComponent::StaticClass(),
 	                                                        FName("Front Beam On"));
@@ -113,7 +113,7 @@ void AWallMenu::BeginPlay()
 	// Top Beam Visualizer
 	MainText_EnableLV_TopBeam = NewObject<UText3DComponent>(this, UText3DComponent::StaticClass(),
 	                                                        FName("Enable Top Beam"));
-	SetupMainText(MainText_EnableLV_TopBeam, MainText_Enable_LightVisualizers, false, "WallMenu_LVTopBeam",
+	SetupMainText(MainText_EnableLV_TopBeam, MainText_Enable_LightVisualizers, false, "LVTopBeam",
 	              Offset_MainText + Indent);
 
 	ToggleText_LV_TopBeam_On = NewObject<UText3DComponent>(this, UText3DComponent::StaticClass(), FName("Top Beam On"));
@@ -128,7 +128,7 @@ void AWallMenu::BeginPlay()
 	// Left Beam Visualizer
 	MainText_Enable_LVLeftBeam = NewObject<UText3DComponent>(this, UText3DComponent::StaticClass(),
 	                                                         FName("Enable Left Beam"));
-	SetupMainText(MainText_Enable_LVLeftBeam, MainText_Enable_LightVisualizers, false, "WallMenu_LVLeftBeam",
+	SetupMainText(MainText_Enable_LVLeftBeam, MainText_Enable_LightVisualizers, false, "LVLeftBeam",
 	              Offset_MainText * 2 + Indent);
 
 	ToggleText_LVLeftBeam_On = NewObject<
@@ -144,7 +144,7 @@ void AWallMenu::BeginPlay()
 	// Right Beam Visualizer
 	MainText_Enable_LVRightBeam = NewObject<UText3DComponent>(this, UText3DComponent::StaticClass(),
 	                                                          FName("Enable Right Beam"));
-	SetupMainText(MainText_Enable_LVRightBeam, MainText_Enable_LightVisualizers, false, "WallMenu_LVRightBeam",
+	SetupMainText(MainText_Enable_LVRightBeam, MainText_Enable_LightVisualizers, false, "LVRightBeam",
 	              Offset_MainText * 3 + Indent);
 
 	ToggleText_LVRightBeam_On = NewObject<UText3DComponent>(this, UText3DComponent::StaticClass(),
@@ -160,7 +160,7 @@ void AWallMenu::BeginPlay()
 	// Left Cube Visualizer
 	MainText_EnableLV_LeftCube = NewObject<UText3DComponent>(this, UText3DComponent::StaticClass(),
 	                                                         FName("Enable Left Cube"));
-	SetupMainText(MainText_EnableLV_LeftCube, MainText_Enable_LightVisualizers, false, "WallMenu_LVLeftCube",
+	SetupMainText(MainText_EnableLV_LeftCube, MainText_Enable_LightVisualizers, false, "LVLeftCube",
 	              Offset_MainText * 4 + Indent);
 
 	ToggleText_LV_LeftCube_On = NewObject<UText3DComponent>(this, UText3DComponent::StaticClass(),
@@ -176,7 +176,7 @@ void AWallMenu::BeginPlay()
 	// Right Cube Visualizer
 	MainText_EnableLV_RightCube = NewObject<UText3DComponent>(this, UText3DComponent::StaticClass(),
 	                                                          FName("Enable Right Cube"));
-	SetupMainText(MainText_EnableLV_RightCube, MainText_Enable_LightVisualizers, false, "WallMenu_LVRightCube",
+	SetupMainText(MainText_EnableLV_RightCube, MainText_Enable_LightVisualizers, false, "LVRightCube",
 	              Offset_MainText * 5 + Indent);
 
 	ToggleText_LV_RightCube_On = NewObject<UText3DComponent>(this, UText3DComponent::StaticClass(),
@@ -193,7 +193,7 @@ void AWallMenu::BeginPlay()
 	// Night Mode Enable
 	MainText_Enable_NightMode = NewObject<UText3DComponent>(this, UText3DComponent::StaticClass(),
 	                                                        FName("Enable Night Mode"));
-	SetupMainText(MainText_Enable_NightMode, MainText_Enable_LightVisualizers, false, "WallMenu_NightMode",
+	SetupMainText(MainText_Enable_NightMode, MainText_Enable_LightVisualizers, false, "NightMode",
 	              Offset_MainText * 6);
 
 	ToggleText_NightMode_On = NewObject<
@@ -534,7 +534,7 @@ void AWallMenu::SetupMainText(UText3DComponent* InComponent,
 	InComponent->SetScaleProportionally(true);
 	InComponent->SetHasMaxHeight(true);
 	InComponent->SetMaxHeight(AdditionalOffset == FVector::ZeroVector ? MaxHeightMainText : MaxHeightIndentedText);
-	InComponent->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", Key));
+	InComponent->SetText(FText::FromStringTable("/Game/StringTables/ST_WallMenu.ST_WallMenu", Key));
 	InComponent->SetExtrude(5.f);
 	InComponent->SetBevel(2.f);
 	InComponent->SetCastShadow(false);
@@ -553,7 +553,7 @@ void AWallMenu::SetupToggleText(USceneComponent* InParent,
 	InToggleTextOn->SetRelativeLocation(Offset_OnText + AdditionalOffset);
 	InToggleTextOn->SetExtrude(5.f);
 	InToggleTextOn->SetBevel(2.f);
-	InToggleTextOn->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", FString("WallMenu_On")));
+	InToggleTextOn->SetText(FText::FromStringTable("/Game/StringTables/ST_WallMenu.ST_WallMenu", FString("On")));
 	InToggleTextOn->SetCastShadow(false);
 	InToggleTextOn->SetHorizontalAlignment(EText3DHorizontalTextAlignment::Center);
 
@@ -562,8 +562,7 @@ void AWallMenu::SetupToggleText(USceneComponent* InParent,
 	InToggleTextOff->SetRelativeLocation(Offset_OffText + AdditionalOffset);
 	InToggleTextOff->SetExtrude(5.f);
 	InToggleTextOff->SetBevel(2.f);
-	InToggleTextOff->SetText(
-		FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", FString("WallMenu_Off")));
+	InToggleTextOff->SetText(FText::FromStringTable("/Game/StringTables/ST_WallMenu.ST_WallMenu", FString("Off")));
 	InToggleTextOff->SetCastShadow(false);
 	InToggleTextOff->SetHorizontalAlignment(EText3DHorizontalTextAlignment::Center);
 
