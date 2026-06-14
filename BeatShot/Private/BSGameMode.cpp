@@ -404,7 +404,7 @@ void ABSGameMode::StartAAManagerPlayback()
 			auto HandleTimerFinished = [this]
 			{
 				AudioComponent->Play();
-				UE_LOG(LogBSGameMode, Display, TEXT("Now Playing AudioComponent"));
+				AAPlayer->Play();
 			};
 			GetWorldTimerManager().SetTimer(PlayerDelayTimer, HandleTimerFinished, BSConfig->AudioConfig.PlayerDelay,
 			                                false);
@@ -529,9 +529,7 @@ bool ABSGameMode::InitializeAudioManagers()
 	AATracker->InitBeatTrackingConfigWLimits(EAA_ChannelSelectionMode::All_in_one, 0, AASettings.BandLimits,
 	                                         AASettings.TimeWindow, 10 / AASettings.TimeWindow, false, 100, 2.1);
 	AATracker->InitSpectrumConfigWLimits(EAA_ChannelSelectionMode::All_in_one, -1, AASettings.BandLimits,
-	                                     AASettings.TimeWindow, 10 / AASettings.TimeWindow, true,
-	                                     AASettings.NumBandChannels);
-
+	                                     AASettings.TimeWindow, 10 / AASettings.TimeWindow, true, 1);
 	AATracker->SetPlaybackVolume(0.0);
 
 	// AAPlayer will only be used if AudioFormat is File and PlayerDelay > 0.01f
@@ -545,8 +543,7 @@ bool ABSGameMode::InitializeAudioManagers()
 		AAPlayer->InitBeatTrackingConfigWLimits(EAA_ChannelSelectionMode::All_in_one, 0, AASettings.BandLimits,
 		                                        AASettings.TimeWindow, AASettings.HistorySize, false, 100, 2.1);
 		AAPlayer->InitSpectrumConfigWLimits(EAA_ChannelSelectionMode::All_in_one, -1, AASettings.BandLimits,
-		                                    AASettings.TimeWindow, 10 / AASettings.TimeWindow, true,
-		                                    AASettings.NumBandChannels);
+		                                    AASettings.TimeWindow, 10 / AASettings.TimeWindow, true, 1);
 		AAPlayer->SetPlaybackVolume(0.0);
 	}
 
@@ -557,8 +554,7 @@ void ABSGameMode::OnTick_AudioAnalyzers(const float DeltaSeconds)
 {
 	Elapsed += DeltaSeconds;
 
-	AATracker->GetBeatTrackingWLimitsWThreshold(Beats, SpectrumValues, BpmCurrent, BpmTotal,
-	                                            AASettings.BandLimitsThreshold);
+	AATracker->GetBeatTrackingWLimits(Beats, SpectrumValues, BpmCurrent, BpmTotal);
 	for (const bool Beat : Beats)
 	{
 		SpawnNewTarget(Beat);
@@ -568,10 +564,12 @@ void ABSGameMode::OnTick_AudioAnalyzers(const float DeltaSeconds)
 	{
 		AAPlayer->GetBeatTrackingWLimitsWThreshold(Beats, SpectrumValues, BpmCurrent, BpmTotal,
 		                                           AASettings.BandLimitsThreshold);
+		// These arguments appear to be swapped
 		AAPlayer->GetBeatTrackingAverageAndVariance(SpectrumVariance, VisualizerManager->AvgSpectrumValues);
 	}
 	else
 	{
+		// These arguments appear to be swapped
 		AATracker->GetBeatTrackingAverageAndVariance(SpectrumVariance, VisualizerManager->AvgSpectrumValues);
 	}
 	VisualizerManager->UpdateVisualizers(SpectrumValues);
