@@ -14,7 +14,7 @@ USTRUCT()
 struct FTooltipData
 {
 	GENERATED_BODY()
-	
+
 	FTooltipData();
 
 	/** @return formatted tooltip text according to tooltip data. */

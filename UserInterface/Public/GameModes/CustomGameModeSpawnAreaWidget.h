@@ -53,7 +53,7 @@ public:
 
 protected:
 	virtual void NativeConstruct() override;
-	
+
 	void UpdateDependentOptions_TargetDistributionPolicy();
 
 	void UpdateSpread();

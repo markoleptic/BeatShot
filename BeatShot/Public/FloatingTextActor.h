@@ -27,7 +27,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void PostInitializeComponents() override;
-	
+
 	/** Sets the CombatTextWidgetComponent's widget's text. */
 	void SetText(const FText& InText);
 

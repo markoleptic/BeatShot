@@ -17,6 +17,6 @@ public:
 
 	// Returns the AssetManager singleton object.
 	static UBSAssetManager& Get();
-	
+
 	virtual void StartInitialLoading() override;
 };

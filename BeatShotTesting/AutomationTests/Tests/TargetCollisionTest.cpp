@@ -30,6 +30,7 @@ public:
 	virtual FString GetTestSourceFileName() const override { return "TargetCollisionTest.cpp"; }
 	virtual int32 GetTestSourceFileLine() const override { return 7; }
 	virtual FString GetBeautifiedTestName() const override { return "TargetManager.TargetCollision"; }
+
 protected:
 	virtual void GetTests(TArray<FString>& OutBeautifiedNames, TArray<FString>& OutTestCommands) const override;
 	virtual bool RunTest(const FString& Parameters) override;

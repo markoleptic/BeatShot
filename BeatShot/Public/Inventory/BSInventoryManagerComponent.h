@@ -124,9 +124,7 @@ public:
 	bool ConsumeItemsByDefinition(TSubclassOf<UBSInventoryItemDefinition> ItemDef, int32 NumToConsume);
 
 	//~UObject interface
-	virtual bool ReplicateSubobjects(UActorChannel* Channel,
-	                                 FOutBunch* Bunch,
-	                                 FReplicationFlags* RepFlags) override;
+	virtual bool ReplicateSubobjects(UActorChannel* Channel, FOutBunch* Bunch, FReplicationFlags* RepFlags) override;
 	virtual void ReadyForReplication() override;
 	//~End of UObject interface
 

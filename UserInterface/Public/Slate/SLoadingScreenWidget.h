@@ -133,8 +133,10 @@ public:
 	virtual int32 OnPaint(const FPaintArgs& Args,
 	                      const FGeometry& AllottedGeometry,
 	                      const FSlateRect& MyCullingRect,
-	                      FSlateWindowElementList& OutDrawElements, const int32 LayerId,
-	                      const FWidgetStyle& InWidgetStyle, const bool bParentEnabled) const override
+	                      FSlateWindowElementList& OutDrawElements,
+	                      const int32 LayerId,
+	                      const FWidgetStyle& InWidgetStyle,
+	                      const bool bParentEnabled) const override
 	{
 		const int32 MaxLayerId = SCompoundWidget::OnPaint(Args, AllottedGeometry, MyCullingRect, OutDrawElements,
 		                                                  LayerId, InWidgetStyle, bParentEnabled);

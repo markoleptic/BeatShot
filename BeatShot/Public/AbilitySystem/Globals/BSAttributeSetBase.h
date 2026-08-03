@@ -130,7 +130,7 @@ public:
 	/** Delegate to broadcast when IncomingTrackingDamage, IncomingHitDamage, or IncomingSelfDamage is changed by
 	 *  a GameplayEffect. */
 	mutable FBSDamageEvent OnDamageTaken;
-	
+
 	/**
 	 *	Called just before any modification happens to an attribute. This is lower level than PreAttributeModify/
 	 *	PostAttribute modify. There is no additional context provided here since anything can trigger this. Executed

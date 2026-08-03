@@ -20,7 +20,7 @@ struct BEATSHOTGLOBAL_API FEnumStringPair
 	{
 		return Index == Other.Index;
 	}
-	
+
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	FText DisplayText;
 

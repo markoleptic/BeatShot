@@ -50,7 +50,7 @@ void UEnumTagMap::PreSave(FObjectPreSaveContext ObjectSaveContext)
 void UEnumTagMap::PostLoad()
 {
 	Super::PostLoad();
-	
+
 	for (auto& [Key, Value] : EnumTagMap)
 	{
 		// Add any Enum Values not present in EnumTagPairs

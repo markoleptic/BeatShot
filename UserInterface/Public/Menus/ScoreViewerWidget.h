@@ -109,7 +109,7 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* BSButton_DeleteSelectedScores;
-	
+
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UGameModeAndDifficultyStringMap> GameModeAndDifficultyStringMap;
 
@@ -153,7 +153,7 @@ private:
 	FText HandleMostPlayedCustomGameModesXAxisFormatter(int32, float);
 
 	FText HandleMostPlayedCustomGameModesYAxisFormatter(int32, float);
-	
+
 	UPROPERTY()
 	TObjectPtr<USaveGamePlayerScore> SaveGamePlayerScore;
 

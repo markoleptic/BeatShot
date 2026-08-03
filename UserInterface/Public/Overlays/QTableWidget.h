@@ -42,7 +42,7 @@ class USERINTERFACE_API UQTableWidget : public UUserWidget
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
-	
+
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UImage> DefaultImage;
 

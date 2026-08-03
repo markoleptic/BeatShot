@@ -19,10 +19,10 @@ public:
 	UCustomGameModeConditionsAndResponsesWidget();
 
 	virtual void UpdateOptionsFromConfig() override;
-	
+
 protected:
 	virtual void NativeConstruct() override;
-	
+
 	void UpdateDependentOptions_TargetSpawnResponses(const TArray<ETargetSpawnResponse>& Responses);
 
 	void UpdateDependentOptions_TargetActivationResponses(const TArray<ETargetActivationResponse>& Responses);

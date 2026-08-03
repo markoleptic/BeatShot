@@ -65,7 +65,7 @@ public:
 	DECLARE_DELEGATE_RetVal_EightParams(int32, FOnPaintDropIndicator, EItemDropZone, const FPaintArgs&,
 	                                    const FGeometry&, const FSlateRect&, FSlateWindowElementList&, int32,
 	                                    const FWidgetStyle&, bool);
-	
+
 	SLATE_BEGIN_ARGS(SBSTableRow< ItemType >) :
 			_Style(&FCoreStyle::Get().GetWidgetStyle<FTableRowStyle>("TableView.Row")),
 			_ExpanderStyleSet(&FCoreStyle::Get()),
@@ -1215,7 +1215,7 @@ protected:
 	{
 		return bCanSelectNone;
 	}
-	
+
 	/** The list that owns this Selectable. */
 	TWeakPtr<ITypedTableView<ItemType>> OwnerTablePtr;
 

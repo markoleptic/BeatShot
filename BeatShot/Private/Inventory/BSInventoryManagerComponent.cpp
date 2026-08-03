@@ -89,8 +89,7 @@ void FBSInventoryList::RemoveEntry(UBSInventoryItemInstance* Instance)
 	}
 }
 
-UBSInventoryManagerComponent::UBSInventoryManagerComponent() :
-	InventoryList(this)
+UBSInventoryManagerComponent::UBSInventoryManagerComponent() : InventoryList(this)
 {
 	SetIsReplicatedByDefault(true);
 }

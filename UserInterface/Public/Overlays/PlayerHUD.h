@@ -28,7 +28,7 @@ protected:
 public:
 	/** Called when another class saves Game settings. */
 	virtual void OnPlayerSettingsChanged(const FPlayerSettings_Game& GameSettings) override;
-	
+
 	void Init(const TSharedPtr<FBSConfig>& InConfig);
 
 	FOnPlayerSettingsChanged_Game& GetGameDelegate() { return OnPlayerSettingsChangedDelegate_Game; }

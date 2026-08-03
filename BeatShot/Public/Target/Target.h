@@ -204,7 +204,7 @@ protected:
 
 public:
 	virtual void PostInitializeComponents() override;
-	
+
 	virtual void Tick(float DeltaSeconds) override;
 
 	/** Called in TargetManager to initialize the target. */

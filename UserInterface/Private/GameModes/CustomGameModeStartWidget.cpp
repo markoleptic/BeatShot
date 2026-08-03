@@ -88,7 +88,7 @@ void UCustomGameModeStartWidget::RefreshGameModes(const TArray<FBSConfig>& Custo
 {
 	ComboBoxOption_GameModeTemplates->ComboBox->ClearOptions();
 	TArray<FString> Options;
-	
+
 	for (const EBaseGameMode& GameMode : TEnumRange<EBaseGameMode>())
 	{
 		if (GameMode != EBaseGameMode::None)

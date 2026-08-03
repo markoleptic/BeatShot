@@ -27,7 +27,7 @@ FEnumStringMapping::FEnumStringMapping(const UEnum* InEnum)
 void UEnumStringMap::PostLoad()
 {
 	Super::PostLoad();
-	
+
 	for (auto& [Key, Value] : EnumStringMap)
 	{
 		// Add any Enum Values not present in EnumTagPairs

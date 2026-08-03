@@ -28,7 +28,7 @@ public:
 
 protected:
 	virtual void NativeConstruct() override;
-	
+
 	/** Updates options that depend on the value selection of RecentTargetMemoryPolicy. */
 	void UpdateDependentOptions_RecentTargetMemoryPolicy(const ERecentTargetMemoryPolicy InRecentTargetMemoryPolicy);
 

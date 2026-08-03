@@ -18,7 +18,7 @@ TSharedRef<SWidget> UScoreTable::RebuildWidget()
 		{
 			return GameModeAndDifficultyStringMap->FindTextFromEnum(GameModeDifficulty);
 		});
-	
+
 	if (HeaderColumnTextWidth.IsEmpty())
 	{
 		const TSharedRef<FSlateFontMeasure> FontMeasure = FSlateApplication::Get().GetRenderer()->

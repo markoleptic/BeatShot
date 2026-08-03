@@ -33,7 +33,7 @@ void UPostGameMenuWidget::NativeConstruct()
 	MenuButton_Scores->SetActive();
 	MenuSwitcher->SetActiveWidget(MenuButton_Scores->GetAssociatedWidget());
 	LastMenuButton = MakeWeakObjectPtr(MenuButton_Scores);
-	
+
 	PlayFadeInWidget();
 }
 

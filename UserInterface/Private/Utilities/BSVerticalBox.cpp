@@ -112,5 +112,3 @@ bool UBSVerticalBox::UpdateBrushColors_Private(TArray<TObjectPtr<UPanelSlot>>& I
 	}
 	return bLastLeftBorderDark;
 }
-
-

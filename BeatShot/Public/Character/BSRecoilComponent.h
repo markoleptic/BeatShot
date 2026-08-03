@@ -16,9 +16,9 @@ class BEATSHOT_API UBSRecoilComponent : public USceneComponent
 
 public:
 	UBSRecoilComponent();
-	
+
 	virtual void BeginPlay() override;
-	
+
 	virtual void TickComponent(float DeltaTime,
 	                           ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;

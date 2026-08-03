@@ -32,11 +32,11 @@ struct FText3DToggle
 
 	UPROPERTY()
 	TObjectPtr<UText3DComponent> OffText;
-	
+
 	FGuid Guid;
-	
+
 	bool bIsOnText;
-	
+
 	FString SettingType;
 
 	FText3DToggle()
@@ -102,7 +102,7 @@ public:
 	AWallMenu();
 
 	virtual void PostInitializeComponents() override;
-	
+
 	/* ~Begin IAbilitySystemInterface */
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	/* ~End IAbilitySystemInterface */
@@ -110,12 +110,12 @@ public:
 	void OnGameplayEffectAppliedToSelf(UAbilitySystemComponent* ABS,
 	                                   const FGameplayEffectSpec& EffectSpec,
 	                                   FActiveGameplayEffectHandle EffectHandle);
-	
+
 	void OnTimeOfDayChangeCompleted(const ETimeOfDay NewTimeOfDay);
 
 protected:
 	virtual void BeginPlay() override;
-	
+
 	UPROPERTY()
 	UBSAbilitySystemComponent* AbilitySystemComponent;
 
@@ -238,7 +238,7 @@ protected:
 	float MaxHeightMainText = 55.f;
 	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Text3D")
 	float MaxHeightIndentedText = 55.f;
-	
+
 	virtual void OnPlayerSettingsChanged(const FPlayerSettings_Game& GameSettings) override;
 	virtual void OnPlayerSettingsChanged(const FPlayerSettings_User& UserSettings) override;
 

@@ -24,7 +24,7 @@ public:
 	// AFunctionalTest
 	virtual void FinishTest(EFunctionalTestResult TestResult, const FString& Message) override;
 	virtual void CleanUp() override;
-	
+
 protected:
 	virtual void PrepareTest() override;
 	virtual bool IsReady_Implementation() override;

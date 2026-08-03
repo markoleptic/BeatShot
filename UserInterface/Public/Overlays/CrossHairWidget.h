@@ -93,7 +93,7 @@ public:
 
 	/** Sets the color of the CrossHair Dot Outline. */
 	void SetCrossHairDotOutlineColor(const FLinearColor NewColor);
-	
+
 	/** Reinitialize CrossHair if Player Settings change. */
 	virtual void OnPlayerSettingsChanged(const FPlayerSettings_CrossHair& CrossHairSettings) override;
 };

@@ -14,7 +14,7 @@ void USettingsMenuWidget::NativeConstruct()
 	Super::NativeConstruct();
 
 	AudioAnalyzer_Widget->OnRestartButtonClicked.BindUFunction(this, "OnRestartButtonClicked_AudioAnalyzer");
-	
+
 	Carousel->SetActiveWidgetIndex(0);
 	CarouselNavBar->SetLinkedCarousel(Carousel);
 

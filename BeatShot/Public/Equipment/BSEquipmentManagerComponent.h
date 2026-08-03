@@ -113,9 +113,7 @@ public:
 	void UnequipItem(UBSEquipmentInstance* ItemInstance, const bool bCallOnUnequipped = true);
 
 	//~UObject interface
-	virtual bool ReplicateSubobjects(UActorChannel* Channel,
-	                                 FOutBunch* Bunch,
-	                                 FReplicationFlags* RepFlags) override;
+	virtual bool ReplicateSubobjects(UActorChannel* Channel, FOutBunch* Bunch, FReplicationFlags* RepFlags) override;
 	//~End of UObject interface
 
 	//~UActorComponent interface

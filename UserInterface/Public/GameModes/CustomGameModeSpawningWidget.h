@@ -18,7 +18,7 @@ class USERINTERFACE_API UCustomGameModeSpawningWidget : public UCustomGameModeCa
 
 public:
 	virtual void UpdateOptionsFromConfig() override;
-	
+
 protected:
 	UCustomGameModeSpawningWidget();
 

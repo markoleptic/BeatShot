@@ -435,8 +435,8 @@ bool ABSCharacterBase::CanJumpInternal_Implementation() const
 			// B) The jump limit hasn't been met OR
 			// C) The jump limit has been met AND we were already jumping
 			const bool bJumpKeyHeld = bPressedJump && JumpKeyHoldTime < GetJumpMaxHoldTime();
-			bCanJump = bJumpKeyHeld && (GetCharacterMovement()->IsMovingOnGround() || JumpCurrentCount < JumpMaxCount
-			                            || (bWasJumping && JumpCurrentCount == JumpMaxCount));
+			bCanJump = bJumpKeyHeld && (GetCharacterMovement()->IsMovingOnGround() || JumpCurrentCount < JumpMaxCount ||
+			                            (bWasJumping && JumpCurrentCount == JumpMaxCount));
 		}
 		if (GetCharacterMovement()->IsMovingOnGround())
 		{

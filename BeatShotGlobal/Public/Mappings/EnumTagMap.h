@@ -51,7 +51,7 @@ struct BEATSHOTGLOBAL_API FEnumTagMapping
 	{
 		return EnumClass < Other.EnumClass;
 	}
-	
+
 	/** UEnum static Enum. */
 	UPROPERTY(BlueprintReadOnly)
 	const UEnum* Enum = nullptr;
@@ -78,7 +78,7 @@ class BEATSHOTGLOBAL_API UEnumTagMap : public UDataAsset
 
 public:
 	virtual void PreSave(FObjectPreSaveContext ObjectSaveContext) override;
-	
+
 	virtual void PostLoad() override;
 
 	/** Returns a pointer to the entire EnumTagMappings array. */

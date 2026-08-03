@@ -21,7 +21,7 @@ protected:
 	virtual void NativePreConstruct() override;
 	virtual void NativeConstruct() override;
 	virtual void SetStyles();
-	
+
 	UPROPERTY(EditDefaultsOnly, Category = "BSComboBoxEntry|Style")
 	TSubclassOf<UMenuOptionStyle> MenuOptionStyleClass;
 

@@ -70,8 +70,7 @@ void UInputSettingsWidget::InitializeInputSettings(const TMap<FName, FKeyMapping
 	if (InPlayerMappedRows.IsEmpty())
 	{
 		const UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<
-			UEnhancedInputLocalPlayerSubsystem>(
-			GetOwningPlayer()->GetLocalPlayer());
+			UEnhancedInputLocalPlayerSubsystem>(GetOwningPlayer()->GetLocalPlayer());
 		Rows = Subsystem->GetUserSettings()->GetActiveKeyProfile()->GetPlayerMappingRows();
 	}
 
@@ -261,8 +260,7 @@ void UInputSettingsWidget::OnButtonClicked_Save()
 	MenuOption_CurrentSensitivity->EditableTextBox->SetText(FText::AsNumber(Sensitivity));
 
 	const UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<
-		UEnhancedInputLocalPlayerSubsystem>(
-		GetOwningPlayer()->GetLocalPlayer());
+		UEnhancedInputLocalPlayerSubsystem>(GetOwningPlayer()->GetLocalPlayer());
 
 	for (const TPair<FName, UInputMappingWidget*>& WidgetMapping : InputMappingWidgetMap)
 	{
@@ -291,8 +289,7 @@ void UInputSettingsWidget::OnButtonClicked_Save()
 void UInputSettingsWidget::OnButtonClicked_Reset()
 {
 	const UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<
-		UEnhancedInputLocalPlayerSubsystem>(
-		GetOwningPlayer()->GetLocalPlayer());
+		UEnhancedInputLocalPlayerSubsystem>(GetOwningPlayer()->GetLocalPlayer());
 	UEnhancedPlayerMappableKeyProfile* KeyProfile = Subsystem->GetUserSettings()->GetActiveKeyProfile();
 	KeyProfile->ResetToDefault();
 	Subsystem->GetUserSettings()->SaveSettings();

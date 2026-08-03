@@ -44,7 +44,7 @@ protected:
 
 public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	
+
 	/** Initialize the component using an ability system component. */
 	UFUNCTION(BlueprintCallable, Category = "BeatShot")
 	void InitializeWithAbilitySystem(UBSAbilitySystemComponent* InASC);

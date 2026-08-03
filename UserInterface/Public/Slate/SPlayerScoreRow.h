@@ -15,9 +15,9 @@ public:
 		}
 
 		SLATE_ARGUMENT(TSharedPtr<FPlayerScore>, Item)
-	SLATE_ARGUMENT(const TDelegate<FText(EBaseGameMode)>*, BaseGameModeTextGetter)
-	SLATE_ARGUMENT(const TDelegate<FText(EGameModeDifficulty)>*, DifficultyTextGetter)
-	SLATE_STYLE_ARGUMENT(FTableRowStyle, TableRowStyle)
+		SLATE_ARGUMENT(const TDelegate<FText(EBaseGameMode)>*, BaseGameModeTextGetter)
+		SLATE_ARGUMENT(const TDelegate<FText(EGameModeDifficulty)>*, DifficultyTextGetter)
+		SLATE_STYLE_ARGUMENT(FTableRowStyle, TableRowStyle)
 		SLATE_ARGUMENT(FSlateFontInfo, Font)
 	SLATE_END_ARGS()
 

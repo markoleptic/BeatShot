@@ -49,7 +49,7 @@ public:
 	/** Returns the ability system component. */
 	UFUNCTION(BlueprintCallable, Category = "BeatShot")
 	UBSAbilitySystemComponent* GetBSAbilitySystemComponent() const;
-	
+
 	/** Returns the possessed character. */
 	ABSCharacterBase* GetBSCharacter() const;
 

@@ -80,7 +80,7 @@ void UDefaultGameModeScoreViewerWidget::RepopulatePlayerScoreByGameModeSongAndDi
 void UDefaultGameModeScoreViewerWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	
+
 	FilterVerticalBox->UpdateBrushColors();
 
 	GameModeComboBoxWidget->ComboBox->OnSelectionChanged.

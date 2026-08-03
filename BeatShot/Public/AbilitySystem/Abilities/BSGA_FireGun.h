@@ -26,7 +26,7 @@ protected:
 	                        const FGameplayAbilityActivationInfo ActivationInfo,
 	                        bool bReplicateEndAbility,
 	                        bool bWasCancelled) override;
-	
+
 	/** The firing animation to play. */
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	UAnimMontage* FireHipMontage;

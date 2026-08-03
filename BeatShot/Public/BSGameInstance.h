@@ -55,7 +55,7 @@ protected:
 
 public:
 	virtual void Shutdown() override;
-	
+
 	/** Handles game mode transitions initiated by Main Menu, Pause Menu, or Post Game Menu. */
 	void HandleGameModeTransition(const FGameModeTransitionState& NewGameModeTransitionState);
 

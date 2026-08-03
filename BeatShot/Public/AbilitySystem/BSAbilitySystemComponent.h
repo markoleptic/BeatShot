@@ -60,7 +60,7 @@ public:
 
 	/** Wrapper around GetActivatableGameplayAbilitySpecsByAllMatchingTags to shorten code. */
 	TArray<FGameplayAbilitySpec*> GetAbilitySpecsFromGameplayTag(const FGameplayTag& InputTag) const;
-	
+
 	virtual void AbilitySpecInputPressed(FGameplayAbilitySpec& Spec) override;
 	virtual void AbilitySpecInputReleased(FGameplayAbilitySpec& Spec) override;
 

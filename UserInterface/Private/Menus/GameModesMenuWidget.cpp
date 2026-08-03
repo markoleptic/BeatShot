@@ -26,7 +26,7 @@
 void UGameModeMenuWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	
+
 	InitDefaultGameModesWidgets();
 
 	CustomGameModeImportSuccessFormattedText = FTextFormat(GetWidgetTextFromKey("GM_CustomGameModeImportSuccess"));

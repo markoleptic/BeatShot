@@ -51,7 +51,7 @@ AWallMenu::AWallMenu()
 	SM_WallMenuBoardOutline->SetRelativeScale3D(BoardOutlineScale);
 	SM_WallMenuBoardOutline->SetGenerateOverlapEvents(false);
 	SM_WallMenuBoardOutline->SetCollisionProfileName(FName("BlockAll"));
-	
+
 	// Create ability system component, and set it to be explicitly replicated
 	if (!AbilitySystemComponent)
 	{
@@ -193,8 +193,7 @@ void AWallMenu::BeginPlay()
 	// Night Mode Enable
 	MainText_Enable_NightMode = NewObject<UText3DComponent>(this, UText3DComponent::StaticClass(),
 	                                                        FName("Enable Night Mode"));
-	SetupMainText(MainText_Enable_NightMode, MainText_Enable_LightVisualizers, false, "NightMode",
-	              Offset_MainText * 6);
+	SetupMainText(MainText_Enable_NightMode, MainText_Enable_LightVisualizers, false, "NightMode", Offset_MainText * 6);
 
 	ToggleText_NightMode_On = NewObject<
 		UText3DComponent>(this, UText3DComponent::StaticClass(), FName("Night Mode On"));

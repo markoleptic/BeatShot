@@ -18,7 +18,7 @@ UCLASS(BlueprintType)
 class BEATSHOT_API UBSInventoryItemInstance : public UObject
 {
 	GENERATED_BODY()
-	
+
 public:
 	//~UObject interface
 	virtual bool IsSupportedForNetworking() const override { return true; }

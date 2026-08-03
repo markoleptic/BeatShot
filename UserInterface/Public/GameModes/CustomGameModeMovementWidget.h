@@ -24,7 +24,7 @@ public:
 
 protected:
 	virtual void NativeConstruct() override;
-	
+
 	/** Updates options that depend on TargetSpawnResponses (and ConstantSpawnedTargetVelocity). */
 	void UpdateDependentOptions_SpawnResponses(const TArray<ETargetSpawnResponse>& Responses, const bool bConstant);
 

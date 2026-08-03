@@ -668,7 +668,7 @@ private:
 
 	/** The padding around each menu row. */
 	FMargin MenuRowPadding;
-	
+
 	/** Delegate that is invoked when the selected item in the combo box changes. */
 	FOnSelectionChanged OnSelectionChanged;
 	/** Delegate that is invoked when the selected items in the combo box changes. */

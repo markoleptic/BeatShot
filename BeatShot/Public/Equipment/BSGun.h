@@ -28,7 +28,7 @@ public:
 	/** ~IBSPlayerSettingsInterface begin */
 	virtual void OnPlayerSettingsChanged(const FPlayerSettings_Game& GameSettings) override;
 	/** ~IBSPlayerSettingsInterface end */
-	
+
 	/** Increments ShotsFired, executes OnShotFired. */
 	UFUNCTION(BlueprintCallable)
 	virtual void Fire();
