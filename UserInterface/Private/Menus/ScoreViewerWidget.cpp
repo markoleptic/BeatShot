@@ -17,8 +17,12 @@
 #include "Widgets/BarChartWidget.h"
 #include "Widgets/HeatMapWidget.h"
 
+
 namespace
 {
+constexpr int DaysInWeek = 7;
+
+#if !UE_BUILD_SHIPPING
 TArray<FPlayerScore> GenerateTestScores(int32 NumEntries)
 {
 	TArray<FPlayerScore> Scores;
@@ -35,11 +39,7 @@ TArray<FPlayerScore> GenerateTestScores(int32 NumEntries)
 		EBaseGameMode::BeatTrack
 	};
 
-	const TArray Difficulties = {
-		EGameModeDifficulty::Normal,
-		EGameModeDifficulty::Hard,
-		EGameModeDifficulty::Death
-	};
+	const TArray Difficulties = {EGameModeDifficulty::Normal, EGameModeDifficulty::Hard, EGameModeDifficulty::Death};
 
 	const FDateTime Now = FDateTime::UtcNow();
 	const FTimespan UtcOffset = Now - FDateTime::UtcNow();
@@ -81,8 +81,7 @@ TArray<FPlayerScore> GenerateTestScores(int32 NumEntries)
 
 		Scores.Add(MoveTemp(Score));
 	}
-	
-	
+
 	for (int32 i = 0; i < NumEntries; ++i)
 	{
 		FPlayerScore Score;
@@ -139,8 +138,7 @@ TArray<FPlayerScore> GenerateTestScores(int32 NumEntries)
 
 	return Scores;
 }
-
-constexpr int DaysInWeek = 7;
+#endif
 
 TMap<int32, FText> CreateDaysOfWeekMap(const FDateTime& StartDate)
 {
@@ -149,7 +147,7 @@ TMap<int32, FText> CreateDaysOfWeekMap(const FDateTime& StartDate)
 	while (DaysOfWeek.Num() != DaysInWeek)
 	{
 		DaysOfWeek.Add(static_cast<int32>(CurrentDate.GetDayOfWeek()),
-		               FText::FromString(CurrentDate.ToFormattedString(TEXT("%a"))));
+			FText::FromString(CurrentDate.ToFormattedString(TEXT("%a"))));
 		CurrentDate = CurrentDate + FTimespan::FromDays(1);
 	}
 	return DaysOfWeek;
@@ -166,8 +164,8 @@ void SortGameModePlayTime(TArray<FGameModePlayTime>& GameModePlayTime)
 
 template <typename T>
 EGameModePlayTimeUnits SortAndUpdateGameModePlayTimeData(const TMap<T, FGameModePlayTime>& PlayTimeMap,
-                                                         TArray<FGameModePlayTime>& PlayTimeArray,
-                                                         TArray<float>& Points)
+	TArray<FGameModePlayTime>& PlayTimeArray,
+	TArray<float>& Points)
 {
 	PlayTimeArray.Empty(PlayTimeMap.Num());
 	float MaxPlayTime = 0;
@@ -222,7 +220,7 @@ FText FormatTime(const float Seconds, TOptional<EGameModePlayTimeUnits> Units = 
 				NumberFormattingOptions.SetMaximumFractionalDigits(1);
 				const float Minutes = Seconds;
 				Text = FText::Format(SpaceSeparatedFormat, FText::AsNumber(Minutes, &NumberFormattingOptions),
-				                     IBSWidgetInterface::GetWidgetTextFromKey("Scores_Minutes"));
+					IBSWidgetInterface::GetWidgetTextFromKey("Scores_Minutes"));
 			}
 			break;
 		case EGameModePlayTimeUnits::Hours:
@@ -230,7 +228,7 @@ FText FormatTime(const float Seconds, TOptional<EGameModePlayTimeUnits> Units = 
 				NumberFormattingOptions.SetMaximumFractionalDigits(2);
 				const float Hours = Seconds;
 				Text = FText::Format(SpaceSeparatedFormat, FText::AsNumber(Hours, &NumberFormattingOptions),
-				                     IBSWidgetInterface::GetWidgetTextFromKey("Scores_Hours"));
+					IBSWidgetInterface::GetWidgetTextFromKey("Scores_Hours"));
 			}
 			break;
 		}
@@ -242,13 +240,13 @@ FText FormatTime(const float Seconds, TOptional<EGameModePlayTimeUnits> Units = 
 		{
 			NumberFormattingOptions.SetMaximumFractionalDigits(1);
 			return FText::Format(SpaceSeparatedFormat, FText::AsNumber(Seconds / 60.f, &NumberFormattingOptions),
-			                     IBSWidgetInterface::GetWidgetTextFromKey("Scores_Minutes"));
+				IBSWidgetInterface::GetWidgetTextFromKey("Scores_Minutes"));
 		}
 		else
 		{
 			NumberFormattingOptions.SetMaximumFractionalDigits(2);
 			return FText::Format(SpaceSeparatedFormat, FText::AsNumber(Seconds / 3600.f, &NumberFormattingOptions),
-			                     IBSWidgetInterface::GetWidgetTextFromKey("Scores_Hours"));
+				IBSWidgetInterface::GetWidgetTextFromKey("Scores_Hours"));
 		}
 	}
 }
@@ -257,14 +255,14 @@ FText FormatTime(const float Seconds, TOptional<EGameModePlayTimeUnits> Units = 
 void UScoreViewerWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	
+
 	ScoreTable->OnSelectionChangedDelegate.BindUObject(this, &UScoreViewerWidget::OnSelectionChanged_ScoreTable);
 	MenuButton_Overview->OnBSButtonPressed.AddUObject(this, &ThisClass::OnButtonClicked_MenuButton);
 	MenuButton_DefaultModes->OnBSButtonPressed.AddUObject(this, &ThisClass::OnButtonClicked_MenuButton);
 	MenuButton_CustomModes->OnBSButtonPressed.AddUObject(this, &ThisClass::OnButtonClicked_MenuButton);
 	MenuButton_History->OnBSButtonPressed.AddUObject(this, &ThisClass::OnButtonClicked_MenuButton);
-	BSButton_DeleteSelectedScores->OnBSButtonPressed.AddUObject(
-		this, &ThisClass::OnButtonClicked_DeleteSelectedScoresButton);
+	BSButton_DeleteSelectedScores->OnBSButtonPressed.AddUObject(this,
+		&ThisClass::OnButtonClicked_DeleteSelectedScoresButton);
 	BSButton_DeleteSelectedScores->SetIsEnabled(false);
 
 	MenuButton_Overview->SetDefaults(Box_Overview, MenuButton_DefaultModes);
@@ -314,62 +312,62 @@ void UScoreViewerWidget::NativeConstruct()
 	});
 	PlayFrequency->GetOptions()->AxisOptions[EAxisType::Y].AxisLabelGenerator = TDelegate<FText
 		(int32, float)>::CreateLambda([DaysOfWeek](const int32 DayOfWeekIndex, float)
-		{
-			return DaysOfWeek[DayOfWeekIndex];
-		});
-	PlayFrequency->GetOptions()->TooltipTitleTextGenerator = TDelegate<FText (int32, int32)>::CreateUObject(
-		this, &ThisClass::HandlePlayFrequencyDisplayText);
-	PlayFrequency->GetOptions()->TooltipTextGenerator = TDelegate<FText(int32, int32, float)>::CreateUObject(
-		this, &ThisClass::HandlePlayFrequencyValueText);
+	{
+		return DaysOfWeek[DayOfWeekIndex];
+	});
+	PlayFrequency->GetOptions()->TooltipTitleTextGenerator = TDelegate<FText (int32, int32)>::CreateUObject(this,
+		&ThisClass::HandlePlayFrequencyDisplayText);
+	PlayFrequency->GetOptions()->TooltipTextGenerator = TDelegate<FText(int32, int32, float)>::CreateUObject(this,
+		&ThisClass::HandlePlayFrequencyValueText);
 	PlayFrequency->SetData(NormalizedPlayFrequencyData);
 
 	MostPlayedDefaultGameModesData = MakeShared<TArray<float>>();
 	{
 		auto& XAxisOptions = MostPlayedDefaultGameModes->GetOptions()->AxisOptions[EAxisType::X];
 		XAxisOptions.AxisGridOptions.StartAtZero = false;
-		XAxisOptions.AxisLabelGenerator = TDelegate<FText(int32, float)>::CreateUObject(
-			this, &ThisClass::HandleMostPlayedDefaultGameModesXAxisFormatter);
+		XAxisOptions.AxisLabelGenerator = TDelegate<FText(int32, float)>::CreateUObject(this,
+			&ThisClass::HandleMostPlayedDefaultGameModesXAxisFormatter);
 
 		auto& YAxisOptions = MostPlayedDefaultGameModes->GetOptions()->AxisOptions[EAxisType::Y];
 		YAxisOptions.AxisGridOptions.StartAtZero = true;
 		YAxisOptions.AxisGridOptions.MinGridLineCount = 3;
-		YAxisOptions.AxisLabelGenerator = TDelegate<FText(int32, float)>::CreateUObject(
-			this, &ThisClass::HandleMostPlayedDefaultGameModesYAxisFormatter);
+		YAxisOptions.AxisLabelGenerator = TDelegate<FText(int32, float)>::CreateUObject(this,
+			&ThisClass::HandleMostPlayedDefaultGameModesYAxisFormatter);
 	}
 
 	MostPlayedCustomGameModesData = MakeShared<TArray<float>>();
 	{
 		auto& XAxisOptions = MostPlayedCustomGameModes->GetOptions()->AxisOptions[EAxisType::X];
 		XAxisOptions.AxisGridOptions.StartAtZero = false;
-		XAxisOptions.AxisLabelGenerator = TDelegate<FText(int32, float)>::CreateUObject(
-			this, &ThisClass::HandleMostPlayedCustomGameModesXAxisFormatter);
+		XAxisOptions.AxisLabelGenerator = TDelegate<FText(int32, float)>::CreateUObject(this,
+			&ThisClass::HandleMostPlayedCustomGameModesXAxisFormatter);
 
 		auto& YAxisOptions = MostPlayedCustomGameModes->GetOptions()->AxisOptions[EAxisType::Y];
 		YAxisOptions.AxisGridOptions.StartAtZero = true;
 		YAxisOptions.AxisGridOptions.MinGridLineCount = 3;
-		YAxisOptions.AxisLabelGenerator = TDelegate<FText(int32, float)>::CreateUObject(
-			this, &ThisClass::HandleMostPlayedCustomGameModesYAxisFormatter);
+		YAxisOptions.AxisLabelGenerator = TDelegate<FText(int32, float)>::CreateUObject(this,
+			&ThisClass::HandleMostPlayedCustomGameModesYAxisFormatter);
 	}
 
-	MostPlayedDefaultGameModes->GetOptions()->TooltipTitleTextGenerator = TDelegate<FText(int32)>::CreateUObject(
-		this, &ThisClass::HandleMostPlayedDefaultGameModesDisplayText);
-	MostPlayedDefaultGameModes->GetOptions()->TooltipTextGenerator = TDelegate<FText(int32, float)>::CreateUObject(
-		this, &ThisClass::HandleMostPlayedDefaultGameModesValueText);
+	MostPlayedDefaultGameModes->GetOptions()->TooltipTitleTextGenerator = TDelegate<FText(int32)>::CreateUObject(this,
+		&ThisClass::HandleMostPlayedDefaultGameModesDisplayText);
+	MostPlayedDefaultGameModes->GetOptions()->TooltipTextGenerator = TDelegate<FText(int32, float)>::CreateUObject(this,
+		&ThisClass::HandleMostPlayedDefaultGameModesValueText);
 	MostPlayedDefaultGameModes->SetData(MostPlayedDefaultGameModesData, TDelegate<void(float)>::CreateLambda(
-		                                    [this](const float Value)
-		                                    {
-			                                    DefaultGameModePrecision = ComputeLabelPrecision(Value);
-		                                    }));
+		[this](const float Value)
+		{
+			DefaultGameModePrecision = ComputeLabelPrecision(Value);
+		}));
 
-	MostPlayedCustomGameModes->GetOptions()->TooltipTitleTextGenerator = TDelegate<FText(int32)>::CreateUObject(
-		this, &ThisClass::HandleMostPlayedCustomGameModesDisplayText);
-	MostPlayedCustomGameModes->GetOptions()->TooltipTextGenerator = TDelegate<FText(int32, float)>::CreateUObject(
-		this, &ThisClass::HandleMostPlayedCustomGameModesValueText);
+	MostPlayedCustomGameModes->GetOptions()->TooltipTitleTextGenerator = TDelegate<FText(int32)>::CreateUObject(this,
+		&ThisClass::HandleMostPlayedCustomGameModesDisplayText);
+	MostPlayedCustomGameModes->GetOptions()->TooltipTextGenerator = TDelegate<FText(int32, float)>::CreateUObject(this,
+		&ThisClass::HandleMostPlayedCustomGameModesValueText);
 	MostPlayedCustomGameModes->SetData(MostPlayedCustomGameModesData, TDelegate<void(float)>::CreateLambda(
-		                                   [this](const float Value)
-	                                   {
-		                                   CustomGameModePrecision = ComputeLabelPrecision(Value);
-	                                   }));
+		[this](const float Value)
+		{
+			CustomGameModePrecision = ComputeLabelPrecision(Value);
+		}));
 
 	MenuButton_Overview->SetActive();
 	Switcher->SetActiveWidget(MenuButton_Overview->GetAssociatedWidget());
@@ -381,13 +379,15 @@ void UScoreViewerWidget::LoadScores(USaveGamePlayerScore* InSaveGamePlayerScore,
 	{
 		SaveGamePlayerScore = InSaveGamePlayerScore;
 		InSaveGamePlayerScore->OnScoresDeleted.AddUObject(this, &UScoreViewerWidget::LoadScores,
-		                                                  SaveGamePlayerScore.Get(), false);
+			SaveGamePlayerScore.Get(), false);
 	}
 
+#if !UE_BUILD_SHIPPING
 	for (const auto& Score : GenerateTestScores(500))
 	{
 		SaveGamePlayerScore->AddPlayerScoreInstance(Score);
 	}
+#endif
 
 	*NormalizedPlayFrequencyData = InitialPlayFrequencyData;
 	PlayFrequencyData = InitialPlayFrequencyData;
@@ -397,7 +397,7 @@ void UScoreViewerWidget::LoadScores(USaveGamePlayerScore* InSaveGamePlayerScore,
 	TMap<FString, FGameModePlayTime> PlayTimeByCustomGameModeName;
 	const auto [MostRecentPlayerScore,MostRecentDefaultPlayerScore,MostRecentCustomPlayerScore,
 		TotalSecondsInAnyGameMode] = CalculateTimeStatistics(PlayerScoresPtr, PlayTimeByBaseGameMode,
-		                                                     PlayTimeByCustomGameModeName);
+		PlayTimeByCustomGameModeName);
 
 	const bool PlayerScoresEmpty = PlayerScoresPtr.IsEmpty();
 	if (PlayerScoresEmpty)
@@ -414,7 +414,7 @@ void UScoreViewerWidget::LoadScores(USaveGamePlayerScore* InSaveGamePlayerScore,
 	MenuButton_History->SetIsEnabled(!PlayerScoresEmpty);
 
 	UpdateUserFacingTimeStatisticsLabels(PlayTimeByBaseGameMode, PlayTimeByCustomGameModeName,
-	                                     TotalSecondsInAnyGameMode);
+		TotalSecondsInAnyGameMode);
 	MostPlayedCustomGameModes->Redraw();
 	MostPlayedDefaultGameModes->Redraw();
 	PlayFrequency->Redraw();
@@ -426,13 +426,12 @@ void UScoreViewerWidget::LoadScores(USaveGamePlayerScore* InSaveGamePlayerScore,
 	if (MostRecentDefaultPlayerScore)
 	{
 		DefaultGameModeScoreViewerWidget->SetActiveScores(MostRecentDefaultPlayerScore->DefiningConfig.BaseGameMode,
-		                                                  MostRecentDefaultPlayerScore->SongTitle,
-		                                                  MostRecentDefaultPlayerScore->DefiningConfig.Difficulty);
+			MostRecentDefaultPlayerScore->SongTitle, MostRecentDefaultPlayerScore->DefiningConfig.Difficulty);
 	}
 	if (MostRecentCustomPlayerScore)
 	{
 		CustomGameModeScoreViewerWidget->SetActiveScores(MostRecentCustomPlayerScore->DefiningConfig.CustomGameModeName,
-		                                                 MostRecentCustomPlayerScore->SongTitle);
+			MostRecentCustomPlayerScore->SongTitle);
 	}
 
 	if (SwitchToMostRecent && MostRecentPlayerScore)
@@ -517,7 +516,7 @@ FCalculateTimeStatisticsResult UScoreViewerWidget::CalculateTimeStatistics(
 	UpdateRelativePlayFrequency();
 
 	DefaultGameModePlayTimeUnits = SortAndUpdateGameModePlayTimeData(PlayTimeByBaseGameMode, DefaultGameModePlayTime,
-	                                                                 *MostPlayedDefaultGameModesData);
+		*MostPlayedDefaultGameModesData);
 	switch (DefaultGameModePlayTimeUnits)
 	{
 	case EGameModePlayTimeUnits::Minutes:
@@ -531,8 +530,7 @@ FCalculateTimeStatisticsResult UScoreViewerWidget::CalculateTimeStatistics(
 	}
 
 	CustomGameModePlayTimeUnits = SortAndUpdateGameModePlayTimeData(PlayTimeByCustomGameModeName,
-	                                                                CustomGameModePlayTime,
-	                                                                *MostPlayedCustomGameModesData);
+		CustomGameModePlayTime, *MostPlayedCustomGameModesData);
 	switch (CustomGameModePlayTimeUnits)
 	{
 	case EGameModePlayTimeUnits::Minutes:
@@ -782,5 +780,3 @@ FText UScoreViewerWidget::HandleMostPlayedCustomGameModesYAxisFormatter(const in
 
 	return FText::AsNumber(Value, &NumberFormattingOptions);
 }
-
-
