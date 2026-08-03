@@ -87,7 +87,7 @@ private:
 
 	FName PrimarySortedColumn = SPlayerScoreRow::DateColumnName;
 
-	EColumnSortMode::Type PrimarySortMode = EColumnSortMode::Ascending;
+	EColumnSortMode::Type PrimarySortMode = EColumnSortMode::Descending;
 
 	TMap<FName, float> HeaderColumnTextWidth;
 	TMap<EBaseGameMode, float> BaseGameModeCellTextWidth;
