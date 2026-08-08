@@ -43,18 +43,18 @@ TSharedRef<SWidget> SPlayerScoreRow::GenerateWidgetForColumn(const FName& Column
 		return FText::Format(PercentFormat, FText::AsNumber(Value * 100.f, &ZeroDecimalNumberFormattingOptions));
 	};
 
-	static auto ZeroDecimalTimesOneHundredFormatter = [](const float Value)
-	{
-		static const auto ZeroDecimalNumberFormattingOptions = FNumberFormattingOptions().SetMinimumFractionalDigits(0).
-			SetMaximumFractionalDigits(0);
-		return FText::AsNumber(Value * 100.f, &ZeroDecimalNumberFormattingOptions);
-	};
-
 	static auto ZeroDecimalFormatter = [](const float Value)
 	{
 		static const auto ZeroDecimalNumberFormattingOptions = FNumberFormattingOptions().SetMinimumFractionalDigits(0).
 			SetMaximumFractionalDigits(0);
 		return FText::AsNumber(Value, &ZeroDecimalNumberFormattingOptions);
+	};
+
+	static auto MillisecondFormatter = [](const float Value)
+	{
+		static const auto ZeroDecimalNumberFormattingOptions = FNumberFormattingOptions().SetMinimumFractionalDigits(0).
+			SetMaximumFractionalDigits(0);
+		return FText::AsNumber(Value * 1000.f, &ZeroDecimalNumberFormattingOptions);
 	};
 
 	if (ColumnName == DateColumnName)
@@ -213,7 +213,7 @@ TSharedRef<SWidget> SPlayerScoreRow::GenerateWidgetForColumn(const FName& Column
 			[
 				SNew(STextBlock)
 				.Font(Font)
-				.Text(ZeroDecimalTimesOneHundredFormatter(Item->AvgTimeOffset))
+				.Text(MillisecondFormatter(Item->AvgTimeOffset))
 			];
 	}
 	return SNullWidget::NullWidget;

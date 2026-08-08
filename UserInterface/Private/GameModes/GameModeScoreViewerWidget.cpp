@@ -133,8 +133,8 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 		[](int32, int32, const float Value)
 		{
 			FNumberFormattingOptions NumberFormattingOptions;
-			NumberFormattingOptions.MaximumFractionalDigits = 1;
-			NumberFormattingOptions.MinimumFractionalDigits = 1;
+			NumberFormattingOptions.MaximumFractionalDigits = 0;
+			NumberFormattingOptions.MinimumFractionalDigits = 0;
 			static const FTextFormat MillisecondFormat = FTextFormat(
 				IBSWidgetInterface::GetWidgetTextFromKey("Scores_MillisecondFormat"));
 			return FText::Format(MillisecondFormat, FText::AsNumber(Value, &NumberFormattingOptions));
@@ -254,13 +254,14 @@ void UGameModeScoreViewerWidget::UpdateDataVisualization()
 		TextBlock_BestScore->SetText(FText::AsNumber(BestScore, &NumberFormattingOptions));
 		TextBlock_AverageScore->SetText(FText::AsNumber(AverageScore, &NumberFormattingOptions));
 
-		NumberFormattingOptions.MinimumFractionalDigits = 1;
-		NumberFormattingOptions.MaximumFractionalDigits = 1;
 		static const FTextFormat MillisecondFormat = FTextFormat(
 			IBSWidgetInterface::GetWidgetTextFromKey("Scores_MillisecondFormat"));
 		TextBlock_BestReactionTime->SetText(FText::Format(MillisecondFormat,
 		                                                  FText::AsNumber(
-			                                                  BestReactionTime * 100.f, &NumberFormattingOptions)));
+			                                                  BestReactionTime * 1000.f, &NumberFormattingOptions)));
+
+		NumberFormattingOptions.MinimumFractionalDigits = 1;
+		NumberFormattingOptions.MaximumFractionalDigits = 1;
 		TextBlock_AverageReactionTime->SetText(FText::Format(MillisecondFormat,
 		                                                     FText::AsNumber(
 			                                                     AvgReactionTime, &NumberFormattingOptions)));
@@ -295,7 +296,7 @@ void UGameModeScoreViewerWidget::UpdateDataVisualization()
 		{
 			ScoreVsTimeLineChartSeries.Points.Add({Index, PlayerScore->Score / 1000.f});
 			StreakVsTimeLineChartSeries.Points.Add({Index, static_cast<float>(PlayerScore->Streak)});
-			AverageReactionTimeLineChartSeries.Points.Add({Index, PlayerScore->AvgTimeOffset * 100.f});
+			AverageReactionTimeLineChartSeries.Points.Add({Index, PlayerScore->AvgTimeOffset * 1000.f});
 			AverageTargetsDestroyedLineChartSeries.Points.Add({Index, PlayerScore->Completion * 100.f});
 			AccuracyVsTimeLineChartSeries.Points.Add({Index, PlayerScore->Accuracy * 100.f});
 			Index++;
