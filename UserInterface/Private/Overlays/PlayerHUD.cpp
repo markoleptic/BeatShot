@@ -10,7 +10,6 @@
 #include "Overlays/HitTimingWidget.h"
 #include "SaveGames/SaveGamePlayerScore.h"
 #include "SaveGames/SaveGamePlayerSettings.h"
-#include "Utilities/BSWidgetInterface.h"
 
 void UPlayerHUD::NativeConstruct()
 {
@@ -25,7 +24,7 @@ void UPlayerHUD::NativeConstruct()
 void UPlayerHUD::Init(const TSharedPtr<FBSConfig>& InConfig)
 {
 	Config = InConfig;
-	static const FTextFormat TimeForFormat = FTextFormat(IBSWidgetInterface::GetWidgetTextFromKey("Scores_TimeFor"));
+
 	switch (InConfig->TargetConfig.TargetDamageType)
 	{
 	case ETargetDamageType::Tracking:
@@ -42,24 +41,18 @@ void UPlayerHUD::Init(const TSharedPtr<FBSConfig>& InConfig)
 		break;
 	case ETargetDamageType::Combined:
 		{
-			const FNumberFormattingOptions Options = FNumberFormattingOptions().SetMaximumFractionalDigits(0);
-			const float Min = -InConfig->TargetConfig.SpawnBeatDelay * 100.f;
-			const FText MinTick = FText::Format(TimeForFormat, FText::AsNumber(Min, &Options));
-			const float Max = (InConfig->TargetConfig.TargetMaxLifeSpan - InConfig->TargetConfig.SpawnBeatDelay) *
-			                  100.f;
-			const FText MaxTick = FText::Format(TimeForFormat, FText::AsNumber(Max, &Options));
-			HitTimingWidget->Init(MinTick, MaxTick);
+			const float MinTickValueInMilliseconds = -InConfig->TargetConfig.SpawnBeatDelay * 1000.f;
+			const float MaxTickValueInMilliseconds =
+				(InConfig->TargetConfig.TargetMaxLifeSpan - InConfig->TargetConfig.SpawnBeatDelay) * 1000.f;
+			HitTimingWidget->Init(MinTickValueInMilliseconds, MaxTickValueInMilliseconds);
 		}
 	case ETargetDamageType::Hit:
 		{
 			Box_TrackingAccuracy->SetVisibility(ESlateVisibility::Collapsed);
-			const FNumberFormattingOptions Options = FNumberFormattingOptions().SetMaximumFractionalDigits(0);
-			const float Min = -InConfig->TargetConfig.SpawnBeatDelay * 100.f;
-			const FText MinTick = FText::Format(TimeForFormat, FText::AsNumber(Min, &Options));
-			const float Max = (InConfig->TargetConfig.TargetMaxLifeSpan - InConfig->TargetConfig.SpawnBeatDelay) *
-			                  100.f;
-			const FText MaxTick = FText::Format(TimeForFormat, FText::AsNumber(Max, &Options));
-			HitTimingWidget->Init(MinTick, MaxTick);
+			const float MinTickValueInMilliseconds = -InConfig->TargetConfig.SpawnBeatDelay * 1000.f;
+			const float MaxTickValueInMilliseconds =
+				(InConfig->TargetConfig.TargetMaxLifeSpan - InConfig->TargetConfig.SpawnBeatDelay) * 1000.f;
+			HitTimingWidget->Init(MinTickValueInMilliseconds, MaxTickValueInMilliseconds);
 		}
 		break;
 	case ETargetDamageType::None:

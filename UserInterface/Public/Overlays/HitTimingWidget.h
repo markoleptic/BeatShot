@@ -18,7 +18,7 @@ class USERINTERFACE_API UHitTimingWidget : public UUserWidget
 public:
 	void UpdateHitTiming(float TimeOffsetNormalized = -1.f, float TimeOffsetRaw = -1.f);
 
-	void Init(const FText& MinTickValue, const FText& MaxTickValue);
+	void Init(const float MinTickValueInMilliseconds, const float MaxTickValueInMilliseconds);
 
 protected:
 	virtual void NativeConstruct() override;

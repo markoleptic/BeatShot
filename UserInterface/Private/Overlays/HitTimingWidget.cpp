@@ -30,12 +30,16 @@ void UHitTimingWidget::NativeTick(const FGeometry& MyGeometry, const float InDel
 	Tick_Transition_Timeline.TickTimeline(InDeltaTime);
 }
 
-void UHitTimingWidget::Init(const FText& MinTickValue, const FText& MaxTickValue)
+void UHitTimingWidget::Init(const float MinTickValueInMilliseconds, const float MaxTickValueInMilliseconds)
 {
-	Tick_Min->SetText(MinTickValue);
-	Tick_Max->SetText(MaxTickValue);
-	static const FTextFormat TimeForFormat = FTextFormat(IBSWidgetInterface::GetWidgetTextFromKey("Scores_TimeFor"));
-	Tick_Mid->SetText(FText::Format(TimeForFormat, FText::AsNumber(0, &NumberFormattingOptions)));
+	static const FTextFormat MillisecondFormat = FTextFormat(
+		IBSWidgetInterface::GetWidgetTextFromKey("Scores_MillisecondFormat"));
+
+	Tick_Min->SetText(FText::Format(MillisecondFormat,
+	                                FText::AsNumber(MinTickValueInMilliseconds, &NumberFormattingOptions)));
+	Tick_Max->SetText(FText::Format(MillisecondFormat,
+	                                FText::AsNumber(MaxTickValueInMilliseconds, &NumberFormattingOptions)));
+	Tick_Mid->SetText(FText::Format(MillisecondFormat, FText::AsNumber(0, &NumberFormattingOptions)));
 }
 
 void UHitTimingWidget::UpdateHitTiming(const float TimeOffsetNormalized, const float TimeOffsetRaw)
@@ -55,8 +59,9 @@ void UHitTimingWidget::UpdateHitTiming(const float TimeOffsetNormalized, const f
 
 FText UHitTimingWidget::MakeCurrentTickText(const float TimeOffsetRaw)
 {
-	static const FTextFormat TimeForFormat = FTextFormat(IBSWidgetInterface::GetWidgetTextFromKey("Scores_TimeFor"));
-	return FText::Format(TimeForFormat, FText::AsNumber(TimeOffsetRaw * 100.f, &NumberFormattingOptions));
+	static const FTextFormat TimeForFormat = FTextFormat(
+		IBSWidgetInterface::GetWidgetTextFromKey("Scores_MillisecondFormat"));
+	return FText::Format(TimeForFormat, FText::AsNumber(TimeOffsetRaw * 1000.f, &NumberFormattingOptions));
 }
 
 void UHitTimingWidget::TickTransition(const float Value)
