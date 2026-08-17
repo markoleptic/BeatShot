@@ -104,42 +104,12 @@ bool UBSGA_AimBot::TargetLocationIsInIgnoreRange(const FVector& Loc) const
 	{
 		return false;
 	}
-	// Only consider Y values
-	if (!bYZero && bZZero)
-	{
-		if ((bYPositive && Loc.Y > IgnoreStartLocation.Y) || (bYNegative && Loc.Y < IgnoreStartLocation.Y))
-		{
-			return true;
-		}
-		return false;
-	}
-	// Only consider Z values
-	if (bYZero && !bZZero)
-	{
-		if ((bZPositive && Loc.Z > IgnoreStartLocation.Z) || (bZNegative && Loc.Z < IgnoreStartLocation.Z))
-		{
-			return true;
-		}
-		return false;
-	}
-	// Consider both
-	if (!bYZero && !bZZero)
-	{
-		if (bZPositive && Loc.Z > IgnoreStartLocation.Z)
-		{
-			if ((bYPositive && Loc.Y > IgnoreStartLocation.Y) || (bYNegative && Loc.Y < IgnoreStartLocation.Y))
-			{
-				return true;
-			}
-		}
-		else if (bZNegative && Loc.Z < IgnoreStartLocation.Z)
-		{
-			if ((bYPositive && Loc.Y > IgnoreStartLocation.Y) || (bYNegative && Loc.Y < IgnoreStartLocation.Y))
-			{
-				return true;
-			}
-		}
-		return false;
-	}
-	return false;
+
+	const bool bYInRange = bYZero || (bYPositive && Loc.Y > IgnoreStartLocation.Y) || (
+		                       bYNegative && Loc.Y < IgnoreStartLocation.Y);
+
+	const bool bZInRange = bZZero || (bZPositive && Loc.Z > IgnoreStartLocation.Z) || (
+		                       bZNegative && Loc.Z < IgnoreStartLocation.Z);
+
+	return !bYInRange || !bZInRange;
 }
