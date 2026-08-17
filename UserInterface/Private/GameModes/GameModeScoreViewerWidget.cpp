@@ -324,15 +324,24 @@ void UGameModeScoreViewerWidget::UpdateDataVisualization()
 		LocationAccuracyData->Empty();
 		if (CommonScoreInfoMap.Contains(ActiveScores[0]->DefiningConfig))
 		{
-			const auto& AccuracyRows = CommonScoreInfoMap[ActiveScores[0]->DefiningConfig].AccuracyData.AccuracyRows;
-			LocationAccuracyData->Init({}, AccuracyRows.Num());
-			for (int i = 0; i < AccuracyRows.Num(); i++)
+			const auto& AccuracyData = CommonScoreInfoMap[ActiveScores[0]->DefiningConfig].AccuracyData;
+			if (!AccuracyData.AccuracyRows.IsEmpty())
 			{
-				const auto& AccuracyRow = AccuracyRows[i];
-				LocationAccuracyData->operator[](i).Reserve(AccuracyRow.Size);
-				for (const float Accuracy : AccuracyRow.Accuracy)
+				const auto& AccuracyRows = AccuracyData.AccuracyRows;
+				const int RowCount = AccuracyRows.Num();
+				const int ColumnCount = AccuracyRows[0].Accuracy.Num();
+				LocationAccuracyData->SetNum(ColumnCount);
+
+				// Transpose and reverse order rows
+				for (int32 ColumnIndex = 0; ColumnIndex < ColumnCount; ++ColumnIndex)
 				{
-					LocationAccuracyData->operator[](i).Add(Accuracy);
+					auto& NewRow = (*LocationAccuracyData)[ColumnIndex];
+					NewRow.Reserve(RowCount);
+
+					for (int32 RowIndex = RowCount - 1; RowIndex >= 0; --RowIndex)
+					{
+						NewRow.Add(AccuracyRows[RowIndex].Accuracy[ColumnIndex]);
+					}
 				}
 			}
 		}
@@ -365,19 +374,27 @@ FText UGameModeScoreViewerWidget::HandleLocationAccuracyDisplayText(const int32 
 {
 	if (!ActiveScores.IsEmpty() && TimesByPlayerScore.Contains(ActiveScores[0]))
 	{
-		const auto& AccuracyRows = CommonScoreInfoMap[ActiveScores[0]->DefiningConfig].AccuracyData.AccuracyRows;
-		if (AccuracyRows.IsValidIndex(XIndex) && AccuracyRows[XIndex].Accuracy.IsValidIndex(YIndex))
+		const auto& AccuracyData = CommonScoreInfoMap[ActiveScores[0]->DefiningConfig].AccuracyData;
+		if (!AccuracyData.AccuracyRows.IsEmpty())
 		{
-			const float Value = AccuracyRows[XIndex].Accuracy[YIndex];
-			if (Value < 0.f)
+			const auto AccuracyRows = AccuracyData.AccuracyRows;
+			const int ColumnCount = AccuracyRows[0].Accuracy.Num();
+			const int AccuracyRowsIndex = ColumnCount - 1 - YIndex;
+			const int AccuracyIndex = XIndex;
+			if (AccuracyRows.IsValidIndex(AccuracyRowsIndex) && AccuracyRows[XIndex].Accuracy.IsValidIndex(
+				    AccuracyIndex))
 			{
-				return IBSWidgetInterface::GetWidgetTextFromKey("Scores_NoTargetSpawned");
+				const float Value = AccuracyRows[AccuracyRowsIndex].Accuracy[AccuracyIndex];
+				if (Value < 0.f)
+				{
+					return IBSWidgetInterface::GetWidgetTextFromKey("Scores_NoTargetSpawned");
+				}
+				FNumberFormattingOptions NumberFormattingOptions;
+				NumberFormattingOptions.MaximumFractionalDigits = 0;
+				NumberFormattingOptions.MinimumFractionalDigits = 0;
+				static const FTextFormat PercentFormat = FTextFormat::FromString("{0}%");
+				return FText::Format(PercentFormat, FText::AsNumber(Value * 100.f, &NumberFormattingOptions));
 			}
-			FNumberFormattingOptions NumberFormattingOptions;
-			NumberFormattingOptions.MaximumFractionalDigits = 0;
-			NumberFormattingOptions.MinimumFractionalDigits = 0;
-			static const FTextFormat PercentFormat = FTextFormat::FromString("{0}%");
-			return FText::Format(PercentFormat, FText::AsNumber(Value * 100.f, &NumberFormattingOptions));
 		}
 	}
 	return {};
