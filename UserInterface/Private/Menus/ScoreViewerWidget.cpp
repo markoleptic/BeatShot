@@ -385,14 +385,14 @@ void UScoreViewerWidget::LoadScores(USaveGamePlayerScore* InSaveGamePlayerScore,
 		SaveGamePlayerScore = InSaveGamePlayerScore;
 		InSaveGamePlayerScore->OnScoresDeleted.AddUObject(this, &UScoreViewerWidget::LoadScores,
 		                                                  SaveGamePlayerScore.Get(), false);
-	}
 
 #if !UE_BUILD_SHIPPING
-	for (const auto& Score : GenerateTestScores(100))
-	{
-		SaveGamePlayerScore->AddPlayerScoreInstance(Score);
-	}
+		for (const auto& Score : GenerateTestScores(100))
+		{
+			SaveGamePlayerScore->AddPlayerScoreInstance(Score);
+		}
 #endif
+	}
 
 	*NormalizedPlayFrequencyData = InitialPlayFrequencyData;
 	PlayFrequencyData = InitialPlayFrequencyData;
@@ -440,11 +440,18 @@ void UScoreViewerWidget::LoadScores(USaveGamePlayerScore* InSaveGamePlayerScore,
 	MenuButton_CustomModes->SetIsEnabled(!PlayerScoresEmpty);
 	MenuButton_History->SetIsEnabled(!PlayerScoresEmpty);
 
+	MostPlayedDefaultGameModes->SetVisibility(CalcTimeStatResult.PlayTimeByBaseGameMode.IsEmpty()
+	                                          ? ESlateVisibility::Collapsed
+	                                          : ESlateVisibility::Visible);
+	MostPlayedCustomGameModes->SetVisibility(CalcTimeStatResult.PlayTimeByCustomGameModeName.IsEmpty()
+	                                         ? ESlateVisibility::Collapsed
+	                                         : ESlateVisibility::Visible);
+
 	UpdateUserFacingTimeStatisticsLabels(CalcTimeStatResult.PlayTimeByBaseGameMode,
 	                                     CalcTimeStatResult.PlayTimeByCustomGameModeName,
 	                                     CalcTimeStatResult.TotalSecondsInAnyGameMode);
-	MostPlayedCustomGameModes->Redraw();
 	MostPlayedDefaultGameModes->Redraw();
+	MostPlayedCustomGameModes->Redraw();
 	PlayFrequency->Redraw();
 	ScoreTable->SetListItems(PlayerScoresPtr);
 
