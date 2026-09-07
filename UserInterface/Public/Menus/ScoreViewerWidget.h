@@ -41,6 +41,8 @@ struct FCalculateTimeStatisticsResult
 	float TotalSecondsInAnyGameMode = 0.f;
 	EGameModePlayTimeUnits DefaultGameModePlayTimeUnits;
 	EGameModePlayTimeUnits CustomGameModePlayTimeUnits;
+	TMap<EBaseGameMode, FGameModePlayTime> PlayTimeByBaseGameMode;
+	TMap<FString, FGameModePlayTime> PlayTimeByCustomGameModeName;
 };
 
 UCLASS()
@@ -128,12 +130,11 @@ private:
 
 	void OnButtonClicked_DeleteSelectedScoresButton(const UBSButton* Button);
 
-	/** Calculates and updates the data for most played default modes, most played custom modes, and play frequency. */
-	FCalculateTimeStatisticsResult CalculateTimeStatistics(const TArray<TSharedPtr<FPlayerScore>>& PlayerScoresPtr,
-	                                                       TMap<EBaseGameMode, FGameModePlayTime>&
-	                                                       PlayTimeByBaseGameMode,
-	                                                       TMap<FString, FGameModePlayTime>&
-	                                                       PlayTimeByCustomGameModeName);
+	/** Calculates and updates the data for most played default modes, most played custom modes, and play frequency.
+	 *  Mutates PlayFrequencyData, DefaultGameModePlayTime, MostPlayedDefaultGameModesData, CustomGameModePlayTime,
+	 *  MostPlayedCustomGameModesData.
+	 */
+	FCalculateTimeStatisticsResult CalculateTimeStatistics(const TArray<TSharedPtr<FPlayerScore>>& PlayerScoresPtr);
 
 	/** Updates relative play frequency data using absolute play frequency data. */
 	void UpdateRelativePlayFrequency();

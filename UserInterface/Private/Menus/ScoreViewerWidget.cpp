@@ -388,7 +388,7 @@ void UScoreViewerWidget::LoadScores(USaveGamePlayerScore* InSaveGamePlayerScore,
 	}
 
 #if !UE_BUILD_SHIPPING
-	for (const auto& Score : GenerateTestScores(500))
+	for (const auto& Score : GenerateTestScores(100))
 	{
 		SaveGamePlayerScore->AddPlayerScoreInstance(Score);
 	}
@@ -398,13 +398,33 @@ void UScoreViewerWidget::LoadScores(USaveGamePlayerScore* InSaveGamePlayerScore,
 	PlayFrequencyData = InitialPlayFrequencyData;
 
 	const auto& PlayerScoresPtr = SaveGamePlayerScore->GetPlayerScoresPtr();
-	TMap<EBaseGameMode, FGameModePlayTime> PlayTimeByBaseGameMode;
-	TMap<FString, FGameModePlayTime> PlayTimeByCustomGameModeName;
-	const auto [MostRecentPlayerScore, MostRecentDefaultPlayerScore, MostRecentCustomPlayerScore,
-		TotalSecondsInAnyGameMode, DefaultUnits, CustomUnits] = CalculateTimeStatistics(
-		PlayerScoresPtr, PlayTimeByBaseGameMode, PlayTimeByCustomGameModeName);
-	DefaultGameModePlayTimeUnits = DefaultUnits;
-	CustomGameModePlayTimeUnits = CustomUnits;
+	const FCalculateTimeStatisticsResult CalcTimeStatResult = CalculateTimeStatistics(PlayerScoresPtr);
+	UpdateRelativePlayFrequency();
+	DefaultGameModePlayTimeUnits = CalcTimeStatResult.DefaultGameModePlayTimeUnits;
+	CustomGameModePlayTimeUnits = CalcTimeStatResult.CustomGameModePlayTimeUnits;
+
+	switch (DefaultGameModePlayTimeUnits)
+	{
+	case EGameModePlayTimeUnits::Minutes:
+		MostPlayedDefaultGameModes->GetOptions()->AxisOptions[EAxisType::Y].AxisTitle =
+			IBSWidgetInterface::GetWidgetTextFromKey("Scores_TotalTimePlayedMinutes");
+		break;
+	case EGameModePlayTimeUnits::Hours:
+		MostPlayedDefaultGameModes->GetOptions()->AxisOptions[EAxisType::Y].AxisTitle =
+			IBSWidgetInterface::GetWidgetTextFromKey("Scores_TotalTimePlayedHours");
+		break;
+	}
+	switch (CustomGameModePlayTimeUnits)
+	{
+	case EGameModePlayTimeUnits::Minutes:
+		MostPlayedCustomGameModes->GetOptions()->AxisOptions[EAxisType::Y].AxisTitle =
+			IBSWidgetInterface::GetWidgetTextFromKey("Scores_TotalTimePlayedMinutes");
+		break;
+	case EGameModePlayTimeUnits::Hours:
+		MostPlayedCustomGameModes->GetOptions()->AxisOptions[EAxisType::Y].AxisTitle =
+			IBSWidgetInterface::GetWidgetTextFromKey("Scores_TotalTimePlayedHours");
+		break;
+	}
 
 	const bool PlayerScoresEmpty = PlayerScoresPtr.IsEmpty();
 	if (PlayerScoresEmpty)
@@ -420,8 +440,9 @@ void UScoreViewerWidget::LoadScores(USaveGamePlayerScore* InSaveGamePlayerScore,
 	MenuButton_CustomModes->SetIsEnabled(!PlayerScoresEmpty);
 	MenuButton_History->SetIsEnabled(!PlayerScoresEmpty);
 
-	UpdateUserFacingTimeStatisticsLabels(PlayTimeByBaseGameMode, PlayTimeByCustomGameModeName,
-	                                     TotalSecondsInAnyGameMode);
+	UpdateUserFacingTimeStatisticsLabels(CalcTimeStatResult.PlayTimeByBaseGameMode,
+	                                     CalcTimeStatResult.PlayTimeByCustomGameModeName,
+	                                     CalcTimeStatResult.TotalSecondsInAnyGameMode);
 	MostPlayedCustomGameModes->Redraw();
 	MostPlayedDefaultGameModes->Redraw();
 	PlayFrequency->Redraw();
@@ -430,21 +451,24 @@ void UScoreViewerWidget::LoadScores(USaveGamePlayerScore* InSaveGamePlayerScore,
 	DefaultGameModeScoreViewerWidget->SetSaveGamePlayerScore(SaveGamePlayerScore);
 	CustomGameModeScoreViewerWidget->SetSaveGamePlayerScore(SaveGamePlayerScore);
 
-	if (MostRecentDefaultPlayerScore)
+	if (CalcTimeStatResult.MostRecentDefaultPlayerScore)
 	{
-		DefaultGameModeScoreViewerWidget->SetActiveScores(MostRecentDefaultPlayerScore->DefiningConfig.BaseGameMode,
-		                                                  MostRecentDefaultPlayerScore->SongTitle,
-		                                                  MostRecentDefaultPlayerScore->DefiningConfig.Difficulty);
+		DefaultGameModeScoreViewerWidget->SetActiveScores(
+			CalcTimeStatResult.MostRecentDefaultPlayerScore->DefiningConfig.BaseGameMode,
+			CalcTimeStatResult.MostRecentDefaultPlayerScore->SongTitle,
+			CalcTimeStatResult.MostRecentDefaultPlayerScore->DefiningConfig.Difficulty);
 	}
-	if (MostRecentCustomPlayerScore)
+	if (CalcTimeStatResult.MostRecentCustomPlayerScore)
 	{
-		CustomGameModeScoreViewerWidget->SetActiveScores(MostRecentCustomPlayerScore->DefiningConfig.CustomGameModeName,
-		                                                 MostRecentCustomPlayerScore->SongTitle);
+		CustomGameModeScoreViewerWidget->SetActiveScores(
+			CalcTimeStatResult.MostRecentCustomPlayerScore->DefiningConfig.CustomGameModeName,
+			CalcTimeStatResult.MostRecentCustomPlayerScore->SongTitle);
 	}
 
-	if (SwitchToMostRecent && MostRecentPlayerScore)
+	if (SwitchToMostRecent && CalcTimeStatResult.MostRecentPlayerScore)
 	{
-		UMenuButton* ButtonToSetActive = MostRecentPlayerScore->DefiningConfig.GameModeType == EGameModeType::Preset
+		UMenuButton* ButtonToSetActive = CalcTimeStatResult.MostRecentPlayerScore->DefiningConfig.GameModeType ==
+		                                 EGameModeType::Preset
 		                                 ? MenuButton_DefaultModes
 		                                 : MenuButton_CustomModes;
 		ButtonToSetActive->SetActive();
@@ -468,16 +492,14 @@ void UScoreViewerWidget::OnButtonClicked_DeleteSelectedScoresButton(const UBSBut
 }
 
 FCalculateTimeStatisticsResult UScoreViewerWidget::CalculateTimeStatistics(
-	const TArray<TSharedPtr<FPlayerScore>>& PlayerScoresPtr,
-	TMap<EBaseGameMode, FGameModePlayTime>& PlayTimeByBaseGameMode,
-	TMap<FString, FGameModePlayTime>& PlayTimeByCustomGameModeName)
+	const TArray<TSharedPtr<FPlayerScore>>& PlayerScoresPtr)
 {
-	FCalculateTimeStatisticsResult CalculateTimeStatisticsResult;
-
 	FDateTime MostRecentDefaultTime = FDateTime::MinValue();
 	FDateTime MostRecentCustomTime = FDateTime::MinValue();
 	TSharedPtr<FPlayerScore> MostRecentDefaultScore;
 	TSharedPtr<FPlayerScore> MostRecentCustomScore;
+	TMap<EBaseGameMode, FGameModePlayTime> PlayTimeByBaseGameMode;
+	TMap<FString, FGameModePlayTime> PlayTimeByCustomGameModeName;
 	float TotalSecondsInAnyGameMode = 0.0f;
 
 	for (const auto& PlayerScore : PlayerScoresPtr)
@@ -521,35 +543,10 @@ FCalculateTimeStatisticsResult UScoreViewerWidget::CalculateTimeStatistics(
 		}
 	}
 
-	UpdateRelativePlayFrequency();
-
 	const EGameModePlayTimeUnits DefaultUnits = SortAndUpdateGameModePlayTimeData(
 		PlayTimeByBaseGameMode, DefaultGameModePlayTime, *MostPlayedDefaultGameModesData, MaxDefaultGameModesBarChart);
-	switch (DefaultGameModePlayTimeUnits)
-	{
-	case EGameModePlayTimeUnits::Minutes:
-		MostPlayedDefaultGameModes->GetOptions()->AxisOptions[EAxisType::Y].AxisTitle =
-			IBSWidgetInterface::GetWidgetTextFromKey("Scores_TotalTimePlayedMinutes");
-		break;
-	case EGameModePlayTimeUnits::Hours:
-		MostPlayedDefaultGameModes->GetOptions()->AxisOptions[EAxisType::Y].AxisTitle =
-			IBSWidgetInterface::GetWidgetTextFromKey("Scores_TotalTimePlayedHours");
-		break;
-	}
-
 	const EGameModePlayTimeUnits CustomUnits = SortAndUpdateGameModePlayTimeData(PlayTimeByCustomGameModeName,
 		CustomGameModePlayTime, *MostPlayedCustomGameModesData, MaxCustomGameModesBarChart);
-	switch (CustomGameModePlayTimeUnits)
-	{
-	case EGameModePlayTimeUnits::Minutes:
-		MostPlayedCustomGameModes->GetOptions()->AxisOptions[EAxisType::Y].AxisTitle =
-			IBSWidgetInterface::GetWidgetTextFromKey("Scores_TotalTimePlayedMinutes");
-		break;
-	case EGameModePlayTimeUnits::Hours:
-		MostPlayedCustomGameModes->GetOptions()->AxisOptions[EAxisType::Y].AxisTitle =
-			IBSWidgetInterface::GetWidgetTextFromKey("Scores_TotalTimePlayedHours");
-		break;
-	}
 
 	TSharedPtr<FPlayerScore> MostRecentPlayerScore;
 	if (MostRecentDefaultScore && MostRecentCustomScore)
@@ -574,6 +571,8 @@ FCalculateTimeStatisticsResult UScoreViewerWidget::CalculateTimeStatistics(
 		.TotalSecondsInAnyGameMode = TotalSecondsInAnyGameMode,
 		.DefaultGameModePlayTimeUnits = DefaultUnits,
 		.CustomGameModePlayTimeUnits = CustomUnits,
+		.PlayTimeByBaseGameMode = PlayTimeByBaseGameMode,
+		.PlayTimeByCustomGameModeName = PlayTimeByCustomGameModeName,
 	};
 }
 
