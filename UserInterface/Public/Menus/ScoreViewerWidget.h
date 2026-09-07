@@ -39,6 +39,8 @@ struct FCalculateTimeStatisticsResult
 	TSharedPtr<FPlayerScore> MostRecentDefaultPlayerScore;
 	TSharedPtr<FPlayerScore> MostRecentCustomPlayerScore;
 	float TotalSecondsInAnyGameMode = 0.f;
+	EGameModePlayTimeUnits DefaultGameModePlayTimeUnits;
+	EGameModePlayTimeUnits CustomGameModePlayTimeUnits;
 };
 
 UCLASS()
@@ -113,6 +115,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UGameModeAndDifficultyStringMap> GameModeAndDifficultyStringMap;
 
+	/** Maximum bars to show for Default Game Modes bar chart on the Overview page. */
+	UPROPERTY(EditDefaultsOnly)
+	int MaxDefaultGameModesBarChart = 8;
+
+	/** Maximum bars to show for Custom Game Modes bar chart on the Overview page. */
+	UPROPERTY(EditDefaultsOnly)
+	int MaxCustomGameModesBarChart = 8;
+
 private:
 	void OnButtonClicked_MenuButton(const UBSButton* Button);
 
@@ -164,7 +174,7 @@ private:
 	/** Initialized with zeros for the past year. */
 	TArray<TArray<float>> InitialPlayFrequencyData;
 
-	/** Absolute (total seconds per day) play frequency data. */
+	/** Absolute (total seconds per day) play frequency data ([WeekIndex][DayIndex]). Only for the past 365 days. */
 	TArray<TArray<float>> PlayFrequencyData;
 
 	/** Normalized play frequency data shared with the PlayFrequency widget. */

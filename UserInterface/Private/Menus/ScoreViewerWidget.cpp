@@ -50,7 +50,7 @@ TArray<FPlayerScore> GenerateTestScores(int32 NumEntries)
 
 		// ----- Defining Config -----
 		Score.DefiningConfig.GameModeType = EGameModeType::Custom;
-		Score.DefiningConfig.CustomGameModeName = FString::Printf(TEXT("CustomMode_%d"), 1);
+		Score.DefiningConfig.CustomGameModeName = "AKindaReallyLongGameModeName";
 		Score.DefiningConfig.BaseGameMode = BaseModes[0];
 		Score.SongTitle = Songs[0];
 		Score.SongLength = SongLengths[0];
@@ -97,7 +97,7 @@ TArray<FPlayerScore> GenerateTestScores(int32 NumEntries)
 		}
 		else
 		{
-			Score.DefiningConfig.CustomGameModeName = FString::Printf(TEXT("CustomMode_%d"), FMath::RandRange(1, 5));
+			Score.DefiningConfig.CustomGameModeName = FString::Printf(TEXT("CustomMode_%d"), FMath::RandRange(1, 20));
 
 			Score.DefiningConfig.BaseGameMode = BaseModes[FMath::RandRange(0, BaseModes.Num() - 1)];
 		}
@@ -161,11 +161,11 @@ void SortGameModePlayTime(TArray<FGameModePlayTime>& GameModePlayTime)
 	});
 }
 
-
 template <typename T>
 EGameModePlayTimeUnits SortAndUpdateGameModePlayTimeData(const TMap<T, FGameModePlayTime>& PlayTimeMap,
                                                          TArray<FGameModePlayTime>& PlayTimeArray,
-                                                         TArray<float>& Points)
+                                                         TArray<float>& Points,
+                                                         const int MaxNumberOfGameModes)
 {
 	PlayTimeArray.Empty(PlayTimeMap.Num());
 	float MaxPlayTime = 0;
@@ -176,6 +176,11 @@ EGameModePlayTimeUnits SortAndUpdateGameModePlayTimeData(const TMap<T, FGameMode
 	}
 
 	SortGameModePlayTime(PlayTimeArray);
+	if (PlayTimeArray.Num() > MaxNumberOfGameModes)
+	{
+		PlayTimeArray.SetNum(MaxNumberOfGameModes);
+	}
+
 	EGameModePlayTimeUnits GameModePlayTimeUnits;
 	float DivideBy;
 	if (MaxPlayTime < 3600.f)
@@ -395,9 +400,11 @@ void UScoreViewerWidget::LoadScores(USaveGamePlayerScore* InSaveGamePlayerScore,
 	const auto& PlayerScoresPtr = SaveGamePlayerScore->GetPlayerScoresPtr();
 	TMap<EBaseGameMode, FGameModePlayTime> PlayTimeByBaseGameMode;
 	TMap<FString, FGameModePlayTime> PlayTimeByCustomGameModeName;
-	const auto [MostRecentPlayerScore,MostRecentDefaultPlayerScore,MostRecentCustomPlayerScore,
-		TotalSecondsInAnyGameMode] = CalculateTimeStatistics(PlayerScoresPtr, PlayTimeByBaseGameMode,
-		                                                     PlayTimeByCustomGameModeName);
+	const auto [MostRecentPlayerScore, MostRecentDefaultPlayerScore, MostRecentCustomPlayerScore,
+		TotalSecondsInAnyGameMode, DefaultUnits, CustomUnits] = CalculateTimeStatistics(
+		PlayerScoresPtr, PlayTimeByBaseGameMode, PlayTimeByCustomGameModeName);
+	DefaultGameModePlayTimeUnits = DefaultUnits;
+	CustomGameModePlayTimeUnits = CustomUnits;
 
 	const bool PlayerScoresEmpty = PlayerScoresPtr.IsEmpty();
 	if (PlayerScoresEmpty)
@@ -516,8 +523,8 @@ FCalculateTimeStatisticsResult UScoreViewerWidget::CalculateTimeStatistics(
 
 	UpdateRelativePlayFrequency();
 
-	DefaultGameModePlayTimeUnits = SortAndUpdateGameModePlayTimeData(PlayTimeByBaseGameMode, DefaultGameModePlayTime,
-	                                                                 *MostPlayedDefaultGameModesData);
+	const EGameModePlayTimeUnits DefaultUnits = SortAndUpdateGameModePlayTimeData(
+		PlayTimeByBaseGameMode, DefaultGameModePlayTime, *MostPlayedDefaultGameModesData, MaxDefaultGameModesBarChart);
 	switch (DefaultGameModePlayTimeUnits)
 	{
 	case EGameModePlayTimeUnits::Minutes:
@@ -530,9 +537,8 @@ FCalculateTimeStatisticsResult UScoreViewerWidget::CalculateTimeStatistics(
 		break;
 	}
 
-	CustomGameModePlayTimeUnits = SortAndUpdateGameModePlayTimeData(PlayTimeByCustomGameModeName,
-	                                                                CustomGameModePlayTime,
-	                                                                *MostPlayedCustomGameModesData);
+	const EGameModePlayTimeUnits CustomUnits = SortAndUpdateGameModePlayTimeData(PlayTimeByCustomGameModeName,
+		CustomGameModePlayTime, *MostPlayedCustomGameModesData, MaxCustomGameModesBarChart);
 	switch (CustomGameModePlayTimeUnits)
 	{
 	case EGameModePlayTimeUnits::Minutes:
@@ -565,7 +571,9 @@ FCalculateTimeStatisticsResult UScoreViewerWidget::CalculateTimeStatistics(
 		.MostRecentPlayerScore = MoveTemp(MostRecentPlayerScore),
 		.MostRecentDefaultPlayerScore = MoveTemp(MostRecentDefaultScore),
 		.MostRecentCustomPlayerScore = MoveTemp(MostRecentCustomScore),
-		.TotalSecondsInAnyGameMode = TotalSecondsInAnyGameMode
+		.TotalSecondsInAnyGameMode = TotalSecondsInAnyGameMode,
+		.DefaultGameModePlayTimeUnits = DefaultUnits,
+		.CustomGameModePlayTimeUnits = CustomUnits,
 	};
 }
 
