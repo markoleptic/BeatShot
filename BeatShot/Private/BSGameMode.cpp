@@ -781,7 +781,7 @@ void ABSGameMode::UpdateTargetsSpawned(const ETargetDamageType& DamageType)
 
 void ABSGameMode::UpdateShotsFired(ABSPlayerController* Controller)
 {
-	if (Controller)
+	if (Controller && GetWorldTimerManager().IsTimerActive(GameModeLengthTimer))
 	{
 		if (FPlayerScore* Score = CurrentPlayerScores.Find(Controller))
 		{
