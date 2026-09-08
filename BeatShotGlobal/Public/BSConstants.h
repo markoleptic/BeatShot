@@ -5,7 +5,10 @@
 namespace Constants
 {
 /** Version used for SaveGameCustomGameMode. */
-inline constexpr int32 CustomGameModeVersion = 1;
+inline constexpr int32 CustomGameModeVersion = 2;
+
+/** Version used for SaveGamePlayerScore. */
+inline constexpr int32 PlayerScoreVersion = 1;
 
 /** Version used for BSGameUserSettings. */
 inline constexpr int32 BSGameUserSettingsVersion = 1;

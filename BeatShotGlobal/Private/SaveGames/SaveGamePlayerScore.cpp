@@ -9,6 +9,62 @@ namespace
 constexpr int ScoreSlotIndex = 1;
 constexpr auto ScoreSlotName = TEXT("ScoreSlot");
 
+void UpdateScoreToVersion1(FPlayerScore& PlayerScore)
+{
+	if (PlayerScore.DefiningConfig.GameModeType == EGameModeType::Custom)
+	{
+		if (PlayerScore.DefiningConfig.CustomGameModeName.Len() > Constants::MaxCustomGameModeNameLength)
+		{
+			PlayerScore.DefiningConfig.CustomGameModeName.LeftInline(Constants::MaxCustomGameModeNameLength);
+		}
+	}
+}
+
+void UpdateCommonScoreInfoToVersion1(TMap<FBS_DefiningConfig, FCommonScoreInfo>& CommonScoreInfoMap)
+{
+	TArray<FBS_DefiningConfig> DefiningConfigsToReplace;
+	for (const auto& [DefiningConfig, CommonScoreInfo] : CommonScoreInfoMap)
+	{
+		if (DefiningConfig.GameModeType == EGameModeType::Custom)
+		{
+			if (DefiningConfig.CustomGameModeName.Len() > Constants::MaxCustomGameModeNameLength)
+			{
+				DefiningConfigsToReplace.Add(DefiningConfig);
+			}
+		}
+	}
+	for (auto& DefiningConfig : DefiningConfigsToReplace)
+	{
+		if (CommonScoreInfoMap.Contains(DefiningConfig))
+		{
+			auto Value = MoveTemp(CommonScoreInfoMap[DefiningConfig]);
+			CommonScoreInfoMap.Remove(DefiningConfig);
+			DefiningConfig.CustomGameModeName.LeftInline(Constants::MaxCustomGameModeNameLength);
+			CommonScoreInfoMap.Add(DefiningConfig, MoveTemp(Value));
+		}
+	}
+}
+
+void RemoveDuplicatesIfNecessary(TArray<TSharedPtr<FPlayerScore>>& PlayerScoreArrayPtr)
+{
+	TSet<FString> Seen;
+	for (int32 i = PlayerScoreArrayPtr.Num() - 1; i >= 0; i--)
+	{
+		const auto& PlayerScore = PlayerScoreArrayPtr[i];
+		if (PlayerScore->DefiningConfig.GameModeType == EGameModeType::Custom)
+		{
+			if (Seen.Contains(PlayerScore->DefiningConfig.CustomGameModeName))
+			{
+				PlayerScoreArrayPtr.RemoveAt(i);
+			}
+			else
+			{
+				Seen.Add(PlayerScore->DefiningConfig.CustomGameModeName);
+			}
+		}
+	}
+}
+
 /** Prints 5x5 accuracy to log/console.
  *  @param InDefiningConfig defining config
  * 	@param InCommonScoreInfo CommonScoreInfo to print out
@@ -126,15 +182,49 @@ void PrintTrainingSamples(const FBS_DefiningConfig& InDefiningConfig,
 
 USaveGamePlayerScore* USaveGamePlayerScore::LoadFromSlot()
 {
-	USaveGamePlayerScore* SaveGamePlayerScore = SaveLoadCommon::LoadFromSlot<USaveGamePlayerScore>(ScoreSlotName, ScoreSlotIndex);
-	SaveGamePlayerScore->BuildRuntimeData();
-	return SaveGamePlayerScore;
+	if (UGameplayStatics::DoesSaveGameExist(ScoreSlotName, ScoreSlotIndex))
+	{
+		return Cast<USaveGamePlayerScore>(UGameplayStatics::LoadGameFromSlot(ScoreSlotName, ScoreSlotIndex));
+	}
+	else
+	{
+		auto* NewObject = Cast<USaveGamePlayerScore>(
+			UGameplayStatics::CreateSaveGameObject(USaveGamePlayerScore::StaticClass()));
+		NewObject->LastLoadedVersion = Constants::PlayerScoreVersion;
+		NewObject->Version = Constants::PlayerScoreVersion;
+		return NewObject;
+	}
 }
 
 void USaveGamePlayerScore::SaveToSlot()
 {
 	CommitRuntimeData();
 	SaveLoadCommon::SaveToSlot(this, ScoreSlotName, ScoreSlotIndex);
+}
+
+void USaveGamePlayerScore::Serialize(FStructuredArchive::FRecord Record)
+{
+	if (Record.GetArchiveState().IsSaving())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Committing runtime data in USaveGamePlayerScore::Serialize"));
+		CommitRuntimeData();
+	}
+
+	Super::Serialize(Record);
+
+	if (Record.GetArchiveState().IsLoading())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Building runtime data in USaveGamePlayerScore::Serialize"));
+		BuildRuntimeData();
+		LastLoadedVersion = Version;
+		if (LastLoadedVersion < Constants::PlayerScoreVersion)
+		{
+			UpgradeVersion();
+			SaveToSlot();
+			UE_LOG(LogTemp, Warning, TEXT("Upgraded USaveGamePlayerScore from Version %d to %d"), LastLoadedVersion,
+			       Version);
+		}
+	}
 }
 
 USaveGamePlayerScore::USaveGamePlayerScore()
@@ -152,6 +242,29 @@ USaveGamePlayerScore::USaveGamePlayerScore()
 	TrainingSamplesFormat.MaximumFractionalDigits = 0;
 	TrainingSamplesFormat.MaximumIntegralDigits = 4;
 	TrainingSamplesFormat.MinimumIntegralDigits = 1;
+}
+
+void USaveGamePlayerScore::UpgradeVersion()
+{
+	while (Version < Constants::PlayerScoreVersion)
+	{
+		switch (Version)
+		{
+		case 0:
+			{
+				for (const auto& PlayerScorePtr : PlayerScoreArrayPtr)
+				{
+					UpdateScoreToVersion1(*PlayerScorePtr);
+				}
+				RemoveDuplicatesIfNecessary(PlayerScoreArrayPtr);
+				UpdateCommonScoreInfoToVersion1(CommonScoreInfo);
+			}
+			break;
+		default:
+			break;
+		}
+		Version++;
+	}
 }
 
 void USaveGamePlayerScore::BuildRuntimeData()

@@ -24,6 +24,8 @@ public:
 	/** Saves the save game to disk. */
 	void SaveToSlot();
 
+	virtual void Serialize(FStructuredArchive::FRecord Record) override;
+
 	float GetHighScore(const FPlayerScore& PlayerScoreToMatch) const;
 
 	const TArray<TSharedPtr<FPlayerScore>>& GetPlayerScoresPtr() const;
@@ -87,6 +89,8 @@ public:
 	TMulticastDelegate<void()> OnScoresDeleted;
 
 private:
+	void UpgradeVersion();
+
 	/** Populates PlayerScoreArrayPtr. */
 	void BuildRuntimeData();
 
@@ -110,6 +114,12 @@ private:
 	/** Map containing common score info for each unique defining config. */
 	UPROPERTY()
 	TMap<FBS_DefiningConfig, FCommonScoreInfo> CommonScoreInfo;
+
+	UPROPERTY()
+	int32 Version = 0;
+
+	UPROPERTY(Transient)
+	int32 LastLoadedVersion = -1;
 
 	FNumberFormattingOptions PercentFormat;
 	FNumberFormattingOptions QTableFormat;

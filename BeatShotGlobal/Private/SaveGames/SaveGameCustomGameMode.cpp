@@ -10,6 +10,42 @@ namespace
 {
 constexpr int CustomGameModeSlotIndex = 3;
 constexpr auto CustomGameModeSlotName = TEXT("CustomGameModesSlot");
+
+/** Upgrades an FBSConfig struct to Version 1 from Version 0.
+ *  @param InConfig game mode configuration to upgrade
+ */
+void UpgradeCustomGameModeToVersion1(FBSConfig& InConfig)
+{
+	if (InConfig.TargetConfig.BoundsScalingPolicy == EBoundsScalingPolicy::Static)
+	{
+		InConfig.DynamicSpawnAreaScaling.StartBounds = InConfig.TargetConfig.BoxBounds;
+	}
+	if (InConfig.TargetConfig.TargetDeactivationConditions.
+	             Contains(ETargetDeactivationCondition::Persistent_DEPRECATED))
+	{
+		InConfig.TargetConfig.TargetDeactivationConditions.Remove(ETargetDeactivationCondition::Persistent_DEPRECATED);
+	}
+	if (InConfig.TargetConfig.TargetDestructionConditions.Contains(ETargetDestructionCondition::Persistent_DEPRECATED))
+	{
+		InConfig.TargetConfig.TargetDestructionConditions.Remove(ETargetDestructionCondition::Persistent_DEPRECATED);
+		if (InConfig.TargetConfig.TargetDestructionConditions.IsEmpty())
+		{
+			InConfig.TargetConfig.TargetDestructionConditions.Add(ETargetDestructionCondition::OnHealthReachedZero);
+			InConfig.TargetConfig.MaxHealth = -1.f;
+		}
+	}
+}
+
+void UpgradeCustomGameModeToVersion2(FBSConfig& InConfig)
+{
+	if (InConfig.DefiningConfig.GameModeType == EGameModeType::Custom)
+	{
+		if (InConfig.DefiningConfig.CustomGameModeName.Len() > Constants::MaxCustomGameModeNameLength)
+		{
+			InConfig.DefiningConfig.CustomGameModeName.LeftInline(Constants::MaxCustomGameModeNameLength);
+		}
+	}
+}
 }
 
 USaveGameCustomGameMode::USaveGameCustomGameMode()
@@ -49,7 +85,7 @@ void USaveGameCustomGameMode::Serialize(const FStructuredArchive::FRecord Record
 			UpgradeCustomGameModes();
 			SaveToSlot();
 			UE_LOG(LogTemp, Warning, TEXT("Upgraded USaveGameCustomGameMode from Version %d to %d"), LastLoadedVersion,
-			       GetVersion());
+			       Version);
 		}
 	}
 }
@@ -125,31 +161,17 @@ void USaveGameCustomGameMode::UpgradeCustomGameModes()
 				}
 			}
 			break;
+		case 1:
+			{
+				for (FBSConfig& Mode : CustomGameModes)
+				{
+					UpgradeCustomGameModeToVersion2(Mode);
+				}
+			}
+			break;
 		default:
 			break;
 		}
 		Version++;
-	}
-}
-
-void USaveGameCustomGameMode::UpgradeCustomGameModeToVersion1(FBSConfig& InConfig)
-{
-	if (InConfig.TargetConfig.BoundsScalingPolicy == EBoundsScalingPolicy::Static)
-	{
-		InConfig.DynamicSpawnAreaScaling.StartBounds = InConfig.TargetConfig.BoxBounds;
-	}
-	if (InConfig.TargetConfig.TargetDeactivationConditions.
-	             Contains(ETargetDeactivationCondition::Persistent_DEPRECATED))
-	{
-		InConfig.TargetConfig.TargetDeactivationConditions.Remove(ETargetDeactivationCondition::Persistent_DEPRECATED);
-	}
-	if (InConfig.TargetConfig.TargetDestructionConditions.Contains(ETargetDestructionCondition::Persistent_DEPRECATED))
-	{
-		InConfig.TargetConfig.TargetDestructionConditions.Remove(ETargetDestructionCondition::Persistent_DEPRECATED);
-		if (InConfig.TargetConfig.TargetDestructionConditions.IsEmpty())
-		{
-			InConfig.TargetConfig.TargetDestructionConditions.Add(ETargetDestructionCondition::OnHealthReachedZero);
-			InConfig.TargetConfig.MaxHealth = -1.f;
-		}
 	}
 }

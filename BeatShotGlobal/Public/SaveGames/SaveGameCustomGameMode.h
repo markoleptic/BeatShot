@@ -52,21 +52,10 @@ public:
 	/** @return true if there is a CustomGameMode matching the GameModeName. */
 	bool IsCustomGameMode(const FString& GameModeName) const;
 
-	/** @return the version of the SaveGame. */
-	int32 GetVersion() const { return Version; }
-
-	/** @return the last loaded version of the SaveGame. */
-	int32 GetLastLoadedVersion() const { return LastLoadedVersion; }
-
+private:
 	/** Upgrades all Custom Game Modes in CustomGameModes to the latest Version. */
 	void UpgradeCustomGameModes();
 
-	/** Upgrades an FBSConfig struct to Version 1 from Version 0.
-	 *  @param InConfig game mode configuration to upgrade
-	 */
-	static void UpgradeCustomGameModeToVersion1(FBSConfig& InConfig);
-
-private:
 	UPROPERTY()
 	TArray<FBSConfig> CustomGameModes;
 
