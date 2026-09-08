@@ -6,18 +6,18 @@
 
 namespace
 {
-constexpr int SlotIndex = 0;
-constexpr auto SlotName = TEXT("SettingsSlot");
+constexpr int PlayerSettingsSlotIndex = 0;
+constexpr auto PlayerSettingsSlotName = TEXT("SettingsSlot");
 }
 
 USaveGamePlayerSettings* USaveGamePlayerSettings::LoadFromSlot()
 {
-	return SaveLoadCommon::LoadFromSlot<USaveGamePlayerSettings>(SlotName, SlotIndex);
+	return SaveLoadCommon::LoadFromSlot<USaveGamePlayerSettings>(PlayerSettingsSlotName, PlayerSettingsSlotIndex);
 }
 
 void USaveGamePlayerSettings::SaveToSlot()
 {
-	SaveLoadCommon::SaveToSlot(this, SlotName, SlotIndex);
+	SaveLoadCommon::SaveToSlot(this, PlayerSettingsSlotName, PlayerSettingsSlotIndex);
 }
 
 FPlayerSettings USaveGamePlayerSettings::GetPlayerSettings() const

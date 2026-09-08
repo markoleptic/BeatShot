@@ -8,8 +8,8 @@
 
 namespace
 {
-constexpr int SlotIndex = 3;
-constexpr auto SlotName = TEXT("CustomGameModesSlot");
+constexpr int CustomGameModeSlotIndex = 3;
+constexpr auto CustomGameModeSlotName = TEXT("CustomGameModesSlot");
 }
 
 USaveGameCustomGameMode::USaveGameCustomGameMode()
@@ -18,9 +18,10 @@ USaveGameCustomGameMode::USaveGameCustomGameMode()
 
 USaveGameCustomGameMode* USaveGameCustomGameMode::LoadFromSlot()
 {
-	if (UGameplayStatics::DoesSaveGameExist(SlotName, SlotIndex))
+	if (UGameplayStatics::DoesSaveGameExist(CustomGameModeSlotName, CustomGameModeSlotIndex))
 	{
-		return Cast<USaveGameCustomGameMode>(UGameplayStatics::LoadGameFromSlot(SlotName, SlotIndex));
+		return Cast<USaveGameCustomGameMode>(
+			UGameplayStatics::LoadGameFromSlot(CustomGameModeSlotName, CustomGameModeSlotIndex));
 	}
 	else
 	{
@@ -34,7 +35,7 @@ USaveGameCustomGameMode* USaveGameCustomGameMode::LoadFromSlot()
 
 void USaveGameCustomGameMode::SaveToSlot()
 {
-	SaveLoadCommon::SaveToSlot(this, SlotName, SlotIndex);
+	SaveLoadCommon::SaveToSlot(this, CustomGameModeSlotName, CustomGameModeSlotIndex);
 }
 
 void USaveGameCustomGameMode::Serialize(const FStructuredArchive::FRecord Record)
