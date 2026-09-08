@@ -2,6 +2,7 @@
 
 
 #include "GameModes/CustomGameModeStartWidget.h"
+#include "BSConstants.h"
 #include "BSGameModeConfig/BSGameModeValidator.h"
 #include "Components/CheckBox.h"
 #include "Components/EditableTextBox.h"
@@ -124,6 +125,14 @@ void UCustomGameModeStartWidget::OnCheckStateChanged_UseTemplate(const bool bChe
 
 void UCustomGameModeStartWidget::OnTextChanged_CustomGameModeName(const FText& Text)
 {
+	FString MaybeShortenedString = Text.ToString();
+	if (MaybeShortenedString.Len() > Constants::MaxCustomGameModeNameLength)
+	{
+		MaybeShortenedString.LeftInline(Constants::MaxCustomGameModeNameLength);
+		EditableTextBoxOption_CustomGameModeName->EditableTextBox->SetText(FText::FromString(MaybeShortenedString));
+		return;
+	}
+
 	StartWidgetProperties.NewCustomGameModeName = Text.ToString();
 	OnStartWidgetPropertyChanged.Execute(StartWidgetProperties);
 }

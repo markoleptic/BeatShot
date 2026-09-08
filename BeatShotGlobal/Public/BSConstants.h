@@ -61,6 +61,8 @@ inline constexpr int32 DefaultNumberOfAccuracyDataColumns = 5;
 /** Default width/height of a SpawnArea. */
 inline constexpr int32 DefaultSpawnAreaDimension = 50;
 
+inline constexpr int32 MaxCustomGameModeNameLength = 40;
+
 #pragma region DefaultSettings
 
 inline const TArray DefaultBandLimits = {
