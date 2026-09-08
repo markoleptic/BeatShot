@@ -13,6 +13,12 @@ class BEATSHOTGLOBAL_API USaveGamePlayerSettings : public USaveGame
 	GENERATED_BODY()
 
 public:
+	/** Loads or creates a save game. */
+	static USaveGamePlayerSettings* LoadFromSlot();
+
+	/** Saves the save game to disk. */
+	void SaveToSlot();
+
 	/** @return a copy of PlayerSettings */
 	FPlayerSettings GetPlayerSettings() const;
 

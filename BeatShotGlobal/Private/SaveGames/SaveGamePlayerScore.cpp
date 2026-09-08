@@ -6,6 +6,9 @@
 
 namespace
 {
+constexpr int SlotIndex = 1;
+constexpr auto SlotName = TEXT("ScoreSlot");
+
 /** Prints 5x5 accuracy to log/console.
  *  @param InDefiningConfig defining config
  * 	@param InCommonScoreInfo CommonScoreInfo to print out
@@ -123,8 +126,7 @@ void PrintTrainingSamples(const FBS_DefiningConfig& InDefiningConfig,
 
 USaveGamePlayerScore* USaveGamePlayerScore::LoadFromSlot()
 {
-	USaveGamePlayerScore* SaveGamePlayerScore = SaveLoadCommon::LoadFromSlot<
-		USaveGamePlayerScore>(TEXT("ScoreSlot"), 1);
+	USaveGamePlayerScore* SaveGamePlayerScore = SaveLoadCommon::LoadFromSlot<USaveGamePlayerScore>(SlotName, SlotIndex);
 	SaveGamePlayerScore->BuildRuntimeData();
 	return SaveGamePlayerScore;
 }
@@ -132,7 +134,7 @@ USaveGamePlayerScore* USaveGamePlayerScore::LoadFromSlot()
 void USaveGamePlayerScore::SaveToSlot()
 {
 	CommitRuntimeData();
-	SaveLoadCommon::SaveToSlot(this, TEXT("ScoreSlot"), 1);
+	SaveLoadCommon::SaveToSlot(this, SlotName, SlotIndex);
 }
 
 USaveGamePlayerScore::USaveGamePlayerScore()

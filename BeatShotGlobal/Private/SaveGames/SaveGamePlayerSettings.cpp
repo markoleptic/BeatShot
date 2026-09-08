@@ -2,6 +2,23 @@
 
 
 #include "SaveGames/SaveGamePlayerSettings.h"
+#include "Utilities/SaveLoadCommon.h"
+
+namespace
+{
+constexpr int SlotIndex = 0;
+constexpr auto SlotName = TEXT("SettingsSlot");
+}
+
+USaveGamePlayerSettings* USaveGamePlayerSettings::LoadFromSlot()
+{
+	return SaveLoadCommon::LoadFromSlot<USaveGamePlayerSettings>(SlotName, SlotIndex);
+}
+
+void USaveGamePlayerSettings::SaveToSlot()
+{
+	SaveLoadCommon::SaveToSlot(this, SlotName, SlotIndex);
+}
 
 FPlayerSettings USaveGamePlayerSettings::GetPlayerSettings() const
 {

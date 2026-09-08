@@ -3,12 +3,10 @@
 
 #include "BSPlayerSettingsInterface.h"
 #include "SaveGames/SaveGamePlayerSettings.h"
-#include "Utilities/SaveLoadCommon.h"
 
 FPlayerSettings IBSPlayerSettingsInterface::LoadPlayerSettings()
 {
-	if (const USaveGamePlayerSettings* SaveGamePlayerSettings = SaveLoadCommon::LoadFromSlot<USaveGamePlayerSettings>(
-		TEXT("SettingsSlot"), 0))
+	if (const USaveGamePlayerSettings* SaveGamePlayerSettings = USaveGamePlayerSettings::LoadFromSlot())
 	{
 		return SaveGamePlayerSettings->GetPlayerSettings();
 	}
@@ -17,44 +15,40 @@ FPlayerSettings IBSPlayerSettingsInterface::LoadPlayerSettings()
 
 void IBSPlayerSettingsInterface::SavePlayerSettings(const FPlayerSettings_AudioAnalyzer& InSettingsStruct)
 {
-	if (USaveGamePlayerSettings* Settings = SaveLoadCommon::LoadFromSlot<USaveGamePlayerSettings>(
-		TEXT("SettingsSlot"), 0))
+	if (USaveGamePlayerSettings* Settings = USaveGamePlayerSettings::LoadFromSlot())
 	{
 		Settings->SavePlayerSettings(InSettingsStruct);
-		SaveLoadCommon::SaveToSlot(Settings, TEXT("SettingsSlot"), 0);
+		Settings->SaveToSlot();
 		OnPlayerSettingsChangedDelegate_AudioAnalyzer.Broadcast(InSettingsStruct);
 	}
 }
 
 void IBSPlayerSettingsInterface::SavePlayerSettings(const FPlayerSettings_CrossHair& InSettingsStruct)
 {
-	if (USaveGamePlayerSettings* Settings = SaveLoadCommon::LoadFromSlot<USaveGamePlayerSettings>(
-		TEXT("SettingsSlot"), 0))
+	if (USaveGamePlayerSettings* Settings = USaveGamePlayerSettings::LoadFromSlot())
 	{
 		Settings->SavePlayerSettings(InSettingsStruct);
-		SaveLoadCommon::SaveToSlot(Settings, TEXT("SettingsSlot"), 0);
+		Settings->SaveToSlot();
 		OnPlayerSettingsChangedDelegate_CrossHair.Broadcast(InSettingsStruct);
 	}
 }
 
 void IBSPlayerSettingsInterface::SavePlayerSettings(const FPlayerSettings_Game& InSettingsStruct)
 {
-	if (USaveGamePlayerSettings* Settings = SaveLoadCommon::LoadFromSlot<USaveGamePlayerSettings>(
-		TEXT("SettingsSlot"), 0))
+	if (USaveGamePlayerSettings* Settings = USaveGamePlayerSettings::LoadFromSlot())
 	{
 		Settings->SavePlayerSettings(InSettingsStruct);
-		SaveLoadCommon::SaveToSlot(Settings, TEXT("SettingsSlot"), 0);
+		Settings->SaveToSlot();
 		OnPlayerSettingsChangedDelegate_Game.Broadcast(InSettingsStruct);
 	}
 }
 
 void IBSPlayerSettingsInterface::SavePlayerSettings(const FPlayerSettings_User& InSettingsStruct)
 {
-	if (USaveGamePlayerSettings* Settings = SaveLoadCommon::LoadFromSlot<USaveGamePlayerSettings>(
-		TEXT("SettingsSlot"), 0))
+	if (USaveGamePlayerSettings* Settings = USaveGamePlayerSettings::LoadFromSlot())
 	{
 		Settings->SavePlayerSettings(InSettingsStruct);
-		SaveLoadCommon::SaveToSlot(Settings, TEXT("SettingsSlot"), 0);
+		Settings->SaveToSlot();
 		OnPlayerSettingsChangedDelegate_User.Broadcast(InSettingsStruct);
 	}
 }
