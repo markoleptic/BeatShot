@@ -601,44 +601,10 @@ inline constexpr float MaxSpectrumValueDecrementDivide = 500.f;
 #pragma region URLs
 
 /** base url. */
-#if UE_BUILD_DEVELOPMENT && !WITH_EDITOR
 const FString OriginURL = TEXT("https://beatshot.gg");
-#else
-const FString OriginURL = TEXT("https://beatshot.gg");
-#endif
-/** endpoint, safe to use as standalone URL. */
-const FString Endpoint_PatchNotes = OriginURL + TEXT("/patchnotes");
-
-/** endpoint, safe to use as standalone URL. */
-const FString Endpoint_Login = OriginURL + TEXT("/api/login");
-
-/** endpoint, safe to use as standalone URL. */
-const FString Endpoint_Refresh = OriginURL + TEXT("/api/refresh");
 
 /** endpoint, safe to use as standalone URL. */
 const FString Endpoint_SendFeedback = OriginURL + TEXT("/api/sendfeedback");
-
-/** endpoint, safe to use as standalone URL WITH an AuthTicket appended. */
-const FString Endpoint_AuthenticateUserTicket = OriginURL + TEXT("/login/steam/authenticate/");
-
-/** endpoint, safe to use as standalone URL WITH an AuthTicket appended. */
-const FString Endpoint_AuthenticateUserTicketNoRedirect = OriginURL + TEXT("/login/steam/authenticate/noredirect/");
-
-/** Segment only containing origin+profile+/ , NOT standalone URL*/
-const FString Segment_Profile = OriginURL + TEXT("/profile/");
-
-/** Segment only containing origin+api+profile+/ NOT standalone URL, needs a suffix to be used, like
- *  (Segment_ApiProfile + userID + Segment_SaveScores). */
-const FString Segment_ApiProfile = OriginURL + TEXT("/api/profile/");
-
-/** Segment, NOT standalone URL, needs a prefix to be used. */
-const FString Segment_SaveScores = TEXT("/savescores");
-
-/** Segment, NOT standalone URL, needs a prefix to be used, like (Segment_Profile+userID+Segment_DefaultModes). */
-const FString Segment_DefaultModes = TEXT("/stats/defaultmodes");
-
-/** Segment, NOT standalone URL, needs a prefix to be used, like (Segment_Profile+userID+Segment_CustomModes). */
-const FString Segment_CustomModes = TEXT("/stats/custommodes");
 
 #pragma endregion
 }
