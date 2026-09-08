@@ -3,15 +3,54 @@
 
 #include "SaveGames/SaveGameCustomGameMode.h"
 #include "BSGameModeConfig/BSConfig.h"
+#include "Kismet/GameplayStatics.h"
+#include "Utilities/SaveLoadCommon.h"
+
+namespace
+{
+constexpr int SlotIndex = 3;
+constexpr auto SlotName = TEXT("CustomGameModesSlot");
+}
 
 USaveGameCustomGameMode::USaveGameCustomGameMode()
 {
 }
 
-void USaveGameCustomGameMode::Serialize(FStructuredArchive::FRecord Record)
+USaveGameCustomGameMode* USaveGameCustomGameMode::LoadFromSlot()
+{
+	if (UGameplayStatics::DoesSaveGameExist(SlotName, SlotIndex))
+	{
+		return Cast<USaveGameCustomGameMode>(UGameplayStatics::LoadGameFromSlot(SlotName, SlotIndex));
+	}
+	else
+	{
+		auto* NewObject = Cast<USaveGameCustomGameMode>(
+			UGameplayStatics::CreateSaveGameObject(USaveGameCustomGameMode::StaticClass()));
+		NewObject->LastLoadedVersion = Constants::CustomGameModeVersion;
+		NewObject->Version = Constants::CustomGameModeVersion;
+		return NewObject;
+	}
+}
+
+void USaveGameCustomGameMode::SaveToSlot()
+{
+	SaveLoadCommon::SaveToSlot(this, SlotName, SlotIndex);
+}
+
+void USaveGameCustomGameMode::Serialize(const FStructuredArchive::FRecord Record)
 {
 	Super::Serialize(Record);
-	LastLoadedVersion = Version;
+	if (Record.GetArchiveState().IsLoading())
+	{
+		LastLoadedVersion = Version;
+		if (LastLoadedVersion < Constants::CustomGameModeVersion)
+		{
+			UpgradeCustomGameModes();
+			SaveToSlot();
+			UE_LOG(LogTemp, Warning, TEXT("Upgraded USaveGameCustomGameMode from Version %d to %d"), LastLoadedVersion,
+			       GetVersion());
+		}
+	}
 }
 
 TArray<FBSConfig> USaveGameCustomGameMode::GetCustomGameModes() const
@@ -75,7 +114,7 @@ void USaveGameCustomGameMode::UpgradeCustomGameModes()
 {
 	while (Version < Constants::CustomGameModeVersion)
 	{
-		switch (Version++)
+		switch (Version)
 		{
 		case 0:
 			{
@@ -88,6 +127,7 @@ void USaveGameCustomGameMode::UpgradeCustomGameModes()
 		default:
 			break;
 		}
+		Version++;
 	}
 }
 

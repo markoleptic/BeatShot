@@ -16,6 +16,12 @@ class BEATSHOTGLOBAL_API USaveGameCustomGameMode : public USaveGame
 public:
 	USaveGameCustomGameMode();
 
+	/** Loads or creates a save game. */
+	static USaveGameCustomGameMode* LoadFromSlot();
+
+	/** Saves the save game to disk. */
+	void SaveToSlot();
+
 	virtual void Serialize(FStructuredArchive::FRecord Record) override;
 
 	/** @return a copy of CustomGameModes. */

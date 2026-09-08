@@ -2,32 +2,38 @@
 
 #pragma once
 
-class USaveGamePlayerScore;
-class USaveGamePlayerSettings;
-class USaveGameCustomGameMode;
+#include "Kismet/GameplayStatics.h"
 
 namespace SaveLoadCommon
 {
 template <typename T>
-T* LoadFromSlot(const FString& InSlotName, const int32 InSlotIndex);
-
-template <typename T>
-bool SaveToSlot(T* SaveGameClass, const FString& InSlotName, const int32 InSlotIndex);
+T* LoadFromSlot(const FString& InSlotName, const int32 InSlotIndex)
+{
+	if (UGameplayStatics::DoesSaveGameExist(InSlotName, InSlotIndex))
+	{
+		if (T* SaveGameObject = Cast<T>(UGameplayStatics::LoadGameFromSlot(InSlotName, InSlotIndex)))
+		{
+			return SaveGameObject;
+		}
+	}
+	else
+	{
+		if (T* SaveGameObject = Cast<T>(UGameplayStatics::CreateSaveGameObject(T::StaticClass())))
+		{
+			return SaveGameObject;
+		}
+	}
+	return nullptr;
 }
 
-template bool SaveLoadCommon::SaveToSlot(USaveGameCustomGameMode* SaveGameClass,
-                                         const FString& InSlotName,
-                                         const int32 InSlotIndex);
-template bool SaveLoadCommon::SaveToSlot(USaveGamePlayerSettings* SaveGameClass,
-                                         const FString& InSlotName,
-                                         const int32 InSlotIndex);
-template bool SaveLoadCommon::SaveToSlot(USaveGamePlayerScore* SaveGameClass,
-                                         const FString& InSlotName,
-                                         const int32 InSlotIndex);
-
-template <>
-USaveGameCustomGameMode* SaveLoadCommon::LoadFromSlot(const FString& InSlotName, const int32 InSlotIndex);
-
-template USaveGamePlayerSettings* SaveLoadCommon::LoadFromSlot(const FString& InSlotName, const int32 InSlotIndex);
-
-template USaveGamePlayerScore* SaveLoadCommon::LoadFromSlot(const FString& InSlotName, const int32 InSlotIndex);
+template <typename T>
+bool SaveToSlot(T* SaveGameClass, const FString& InSlotName, const int32 InSlotIndex)
+{
+	if (UGameplayStatics::SaveGameToSlot(SaveGameClass, InSlotName, InSlotIndex))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Save Succeeded"));
+		return true;
+	}
+	return false;
+}
+}
