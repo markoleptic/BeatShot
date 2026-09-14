@@ -15,8 +15,15 @@ FEnumStringMapping::FEnumStringMapping(const UEnum* InEnum)
 	for (int32 Index = 0; Index < Enum->NumEnums(); Index++)
 	{
 		const int64 ValueByIndex = Enum->GetValueByIndex(Index);
-		// Skip hidden/max values if needed
-		if (Enum->HasMetaData(TEXT("Hidden"), Index) || Enum->GetMaxEnumValue() == ValueByIndex)
+		// Skip hidden values if needed
+#if WITH_METADATA
+		if (Enum->HasMetaData(TEXT("Hidden"), Index))
+		{
+			continue;
+		}
+#endif
+		// Skip max values if needed
+		if (Enum->GetMaxEnumValue() == ValueByIndex)
 		{
 			continue;
 		}
@@ -34,8 +41,15 @@ void UEnumStringMap::PostLoad()
 		for (int32 Index = 0; Index < Key->NumEnums(); Index++)
 		{
 			const int64 ValueByIndex = Key->GetValueByIndex(Index);
-			// Skip hidden/max values if needed
-			if (Key->HasMetaData(TEXT("Hidden"), Index) || Key->GetMaxEnumValue() == ValueByIndex)
+			// Skip hidden values if needed
+#if WITH_METADATA
+			if (Key->HasMetaData(TEXT("Hidden"), Index))
+			{
+				continue;
+			}
+#endif
+			// Skip max values if needed
+			if (Key->GetMaxEnumValue() == ValueByIndex)
 			{
 				continue;
 			}

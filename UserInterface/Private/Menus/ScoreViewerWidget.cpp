@@ -44,7 +44,7 @@ TArray<FPlayerScore> GenerateTestScores(int32 NumEntries)
 	const FDateTime Now = FDateTime::UtcNow();
 	const FTimespan UtcOffset = Now - FDateTime::UtcNow();
 
-	for (int32 i = 0; i < 50; ++i)
+	for (int32 i = 0; i < 100; ++i)
 	{
 		FPlayerScore Score;
 
@@ -97,7 +97,7 @@ TArray<FPlayerScore> GenerateTestScores(int32 NumEntries)
 		}
 		else
 		{
-			Score.DefiningConfig.CustomGameModeName = FString::Printf(TEXT("CustomMode_%d"), FMath::RandRange(1, 20));
+			Score.DefiningConfig.CustomGameModeName = FString::Printf(TEXT("CustomMode_%d"), FMath::RandRange(1, 3));
 
 			Score.DefiningConfig.BaseGameMode = BaseModes[FMath::RandRange(0, BaseModes.Num() - 1)];
 		}

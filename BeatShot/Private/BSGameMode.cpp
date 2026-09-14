@@ -646,9 +646,9 @@ void ABSGameMode::HandleScoreSaving()
 			if (TimePlayedGameMode > Constants::MinStatRequirement_Duration_NumGamesPlayed)
 			{
 				SteamManager->UpdateStat_NumGamesPlayed(
-					CurrentPlayerScore.Value.DefiningConfig.GameModeType == EGameModeType::Custom
+					CurrentPlayerScore.DefiningConfig.GameModeType == EGameModeType::Custom
 					? EBaseGameMode::None
-					: CurrentPlayerScore.Value.DefiningConfig.BaseGameMode, 1);
+					: CurrentPlayerScore.DefiningConfig.BaseGameMode, 1);
 			}
 #else // !UE_BUILD_SHIPPING
 			SteamManager->UpdateStat_NumGamesPlayed(
