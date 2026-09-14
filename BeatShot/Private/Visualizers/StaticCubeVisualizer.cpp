@@ -35,6 +35,10 @@ void AStaticCubeVisualizer::CreateCubeInstances()
 	InstancedVerticalOutlineMesh->ClearInstances();
 	InstancedTopMesh->ClearInstances();
 
+	InstancedBaseMesh->UpdateBounds();
+	InstancedVerticalOutlineMesh->UpdateBounds();
+	InstancedTopMesh->UpdateBounds();
+
 	TArray<FTransform> SpawnTransforms;
 
 	switch (CubeVisualizerDefinition->VisualizerLightSpawningMethod)
@@ -131,6 +135,9 @@ void AStaticCubeVisualizer::SetActivationState(const bool bActivate)
 		InstancedBaseMesh->ClearInstances();
 		InstancedVerticalOutlineMesh->ClearInstances();
 		InstancedTopMesh->ClearInstances();
+		InstancedBaseMesh->UpdateBounds();
+		InstancedVerticalOutlineMesh->UpdateBounds();
+		InstancedTopMesh->UpdateBounds();
 		IndexTransformMap.Empty();
 	}
 }

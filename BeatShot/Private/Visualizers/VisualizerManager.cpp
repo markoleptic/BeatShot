@@ -61,9 +61,8 @@ void AVisualizerManager::InitializeVisualizers(const FPlayerSettings_Game& Playe
 			}
 			FTransform Transform(CDO->GetVisualizerDefinition()->Rotation, CDO->GetVisualizerDefinition()->Location,
 			                     CDO->GetVisualizerDefinition()->Scale);
-			AVisualizerBase* SpawnedVisualizer = GetWorld()->SpawnActorDeferred<AVisualizerBase>(Visualizer, Transform);
+			AVisualizerBase* SpawnedVisualizer = GetWorld()->SpawnActor<AVisualizerBase>(Visualizer, Transform);
 			SpawnedVisualizer->InitializeVisualizer(InAASettings);
-			SpawnedVisualizer->FinishSpawning(Transform, true);
 			Visualizers.AddUnique(SpawnedVisualizer);
 		}
 	}
