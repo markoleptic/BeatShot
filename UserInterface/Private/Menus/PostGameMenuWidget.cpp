@@ -34,6 +34,12 @@ void UPostGameMenuWidget::NativeConstruct()
 	MenuSwitcher->SetActiveWidget(MenuButton_Scores->GetAssociatedWidget());
 	LastMenuButton = MakeWeakObjectPtr(MenuButton_Scores);
 
+	GameModesWidget->bIsMainMenuChild = true;
+	GameModesWidget->OnGameModeStateChanged.BindLambda([this](auto&&... Args)
+	{
+		OnGameModeStateChanged.ExecuteIfBound(Forward<decltype(Args)>(Args)...);
+	});
+
 	PlayFadeInWidget();
 }
 
