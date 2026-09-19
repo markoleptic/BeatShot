@@ -23,7 +23,7 @@ void UMainMenuWidget::NativeConstruct()
 	MenuButton_Scores->SetDefaults(Box_Scores, MenuButton_Settings);
 	MenuButton_Settings->SetDefaults(Box_Settings, MenuButton_Help);
 	MenuButton_Help->SetDefaults(Box_Help, MenuButton_Quit);
-	MenuButton_Quit->SetDefaults(Box_PatchNotes, MenuButton_PatchNotes);
+	MenuButton_Quit->SetDefaults(nullptr, MenuButton_PatchNotes);
 
 	MenuButton_PatchNotes->OnBSButtonPressed.AddUObject(this, &ThisClass::OnMenuButtonClicked_BSButton);
 	MenuButton_GameModes->OnBSButtonPressed.AddUObject(this, &ThisClass::OnMenuButtonClicked_BSButton);
