@@ -22,7 +22,7 @@ namespace
 {
 constexpr int DaysInWeek = 7;
 
-#if !UE_BUILD_SHIPPING
+#if WITH_EDITOR
 TArray<FPlayerScore> GenerateTestScores(int32 NumEntries)
 {
 	TArray<FPlayerScore> Scores;
@@ -386,7 +386,7 @@ void UScoreViewerWidget::LoadScores(USaveGamePlayerScore* InSaveGamePlayerScore,
 		InSaveGamePlayerScore->OnScoresDeleted.AddUObject(this, &UScoreViewerWidget::LoadScores,
 		                                                  SaveGamePlayerScore.Get(), false);
 
-#if !UE_BUILD_SHIPPING
+#if WITH_EDITOR
 		for (const auto& Score : GenerateTestScores(100))
 		{
 			SaveGamePlayerScore->AddPlayerScoreInstance(Score);
