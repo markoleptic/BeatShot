@@ -8,7 +8,6 @@
 #include "MetasoundOutput.h"
 #include "MetasoundOutputSubsystem.h"
 #include "MoviePlayer.h"
-#include "Blueprint/UserWidget.h"
 #include "Components/AudioComponent.h"
 #include "DeveloperSettings/BSLoadingScreenSettings.h"
 #include "Kismet/GameplayStatics.h"
@@ -28,7 +27,8 @@ void UBSGameInstance::Init()
 #endif // !WITH_EDITOR
 
 	GetMoviePlayer()->OnPrepareLoadingScreen().AddUObject(this, &ThisClass::PrepareLoadingScreen);
-
+	// OnPostLoadMapWithWorld does not get executed without this...
+	GetMoviePlayer()->SetIsPlayOnBlockingEnabled(true);
 	SetBSConfig(FBSConfig());
 	SteamManager = NewObject<USteamManager>(this);
 	SteamManager->AssignGameInstance(this);
@@ -93,7 +93,7 @@ void UBSGameInstance::PrepareLoadingScreen()
 {
 	FLoadingScreenAttributes Attributes;
 	Attributes.bAutoCompleteWhenLoadingCompletes = false;
-	Attributes.bAllowEngineTick = true;
+	Attributes.bAllowEngineTick = false; // Avoid double Engine tick when the loading screen is fading out
 	Attributes.bMoviesAreSkippable = false;
 	Attributes.bWaitForManualStop = true;
 	const UBSLoadingScreenSettings* LoadingScreenSettings = GetDefault<UBSLoadingScreenSettings>();
