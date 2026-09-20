@@ -137,7 +137,7 @@ void UGameModeScoreViewerWidget::NativeConstruct()
 			NumberFormattingOptions.MinimumFractionalDigits = 0;
 			static const FTextFormat MillisecondFormat = FTextFormat(
 				IBSWidgetInterface::GetWidgetTextFromKey("Scores_MillisecondFormat"));
-			return FText::Format(MillisecondFormat, FText::AsNumber(Value, &NumberFormattingOptions));
+			return FText::Format(MillisecondFormat, FText::AsNumber(Value * 1000.f, &NumberFormattingOptions));
 		});
 
 	const auto GenericPercentValueTextDelegate = TDelegate<FText(int32, int32, float)>::CreateLambda(
@@ -259,12 +259,9 @@ void UGameModeScoreViewerWidget::UpdateDataVisualization()
 		TextBlock_BestReactionTime->SetText(FText::Format(MillisecondFormat,
 		                                                  FText::AsNumber(
 			                                                  BestReactionTime * 1000.f, &NumberFormattingOptions)));
-
-		NumberFormattingOptions.MinimumFractionalDigits = 1;
-		NumberFormattingOptions.MaximumFractionalDigits = 1;
 		TextBlock_AverageReactionTime->SetText(FText::Format(MillisecondFormat,
 		                                                     FText::AsNumber(
-			                                                     AvgReactionTime, &NumberFormattingOptions)));
+			                                                     AvgReactionTime * 1000.f, &NumberFormattingOptions)));
 
 		NumberFormattingOptions.MinimumFractionalDigits = 0;
 		NumberFormattingOptions.MaximumFractionalDigits = 0;
