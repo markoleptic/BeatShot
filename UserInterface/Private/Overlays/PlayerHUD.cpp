@@ -71,8 +71,9 @@ void UPlayerHUD::Init(const TSharedPtr<FBSConfig>& InConfig)
 		TextBlock_GameModeName->SetText(FText::FromString(InConfig->DefiningConfig.CustomGameModeName));
 	}
 
-	TextBlock_SongTitle->SetText(FText::FromString(InConfig->AudioConfig.SongTitle));
-	const FString Time = UKismetStringLibrary::TimeSecondsToString(InConfig->AudioConfig.SongLength).LeftChop(3);
+	TextBlock_SongTitle->SetText(FText::FromString(InConfig->AudioConfig.SongMetadata.Title));
+	const FString Time = UKismetStringLibrary::TimeSecondsToString(InConfig->AudioConfig.SongMetadata.Length).
+		LeftChop(3);
 	TextBlock_TotalSongLength->SetText(FText::FromString(Time));
 }
 

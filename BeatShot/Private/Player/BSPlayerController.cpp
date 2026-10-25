@@ -414,7 +414,7 @@ void ABSPlayerController::HandleLeftClick()
 		if (GI && GI->GetBSConfig().IsValid())
 		{
 			CountdownWidget->StartCountdown(Constants::CountdownTimerLength,
-			                                GI->GetBSConfig()->AudioConfig.PlayerDelay);
+			                                GI->GetBSConfig()->TargetConfig.SpawnBeatDelay);
 		}
 	}
 }

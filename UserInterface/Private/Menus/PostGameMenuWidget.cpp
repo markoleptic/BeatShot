@@ -64,19 +64,14 @@ void UPostGameMenuWidget::SetStyles()
 void UPostGameMenuWidget::ShowAudioFormatSelect()
 {
 	auto* AudioSelectWidget = CreateWidget<UAudioSelectWidget>(this, AudioSelectClass);
-	AudioSelectWidget->SetSongs(SaveGamePlayerScore->CreateSongDurationMap());
+	AudioSelectWidget->SetSaveGamePlayerScore(SaveGamePlayerScore);
 	AudioSelectWidget->OnStartButtonClickedDelegate.BindLambda(
 		[this, AudioSelectWidget](const FBS_AudioConfig& AudioConfig)
 		{
 			FGameModeTransitionState GameModeTransitionState;
 			GameModeTransitionState.TransitionState = ETransitionState::PlayAgain;
 			GameModeTransitionState.bSaveCurrentScores = false;
-			GameModeTransitionState.BSConfig.AudioConfig.SongTitle = AudioConfig.SongTitle;
-			GameModeTransitionState.BSConfig.AudioConfig.SongLength = AudioConfig.SongLength;
-			GameModeTransitionState.BSConfig.AudioConfig.InAudioDevice = AudioConfig.InAudioDevice;
-			GameModeTransitionState.BSConfig.AudioConfig.SongPath = AudioConfig.SongPath;
-			GameModeTransitionState.BSConfig.AudioConfig.bPlaybackAudio = AudioConfig.bPlaybackAudio;
-			GameModeTransitionState.BSConfig.AudioConfig.AudioFormat = AudioConfig.AudioFormat;
+			GameModeTransitionState.BSConfig.AudioConfig = AudioConfig;
 			OnGameModeStateChanged.ExecuteIfBound(GameModeTransitionState);
 			AudioSelectWidget->FadeOut();
 		});

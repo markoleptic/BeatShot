@@ -7,14 +7,19 @@
 #include "Blueprint/UserWidget.h"
 #include "BSGameModeConfig/AudioConfig.h"
 #include "Delegates/DelegateCombinations.h"
+#include "PlayerSettings/PlayerSettings_User.h"
 #include "Utilities/BSWidgetInterface.h"
 #include "AudioSelectWidget.generated.h"
 
+class USongMetadataWidget;
+class USaveGamePlayerScore;
+class UAudioAnalyzerManager;
 class UComboBoxString;
 class UVerticalBox;
 class UHorizontalBox;
 class UPopupMessageWidget;
 class UBSButton;
+class UBSComboBoxString;
 class UBorder;
 class UTextBlock;
 class UTooltipIcon;
@@ -42,10 +47,10 @@ public:
 
 	TDelegate<void(const FBS_AudioConfig& AudioConfig)> OnStartButtonClickedDelegate;
 
+	void SetSaveGamePlayerScore(USaveGamePlayerScore* InSaveGamePlayerScore);
+
 	/** Broadcasts to parent so it can slide menu button back to starting position. */
 	TDelegate<void()> OnExitAudioSelect;
-
-	void SetSongs(const TMap<FString, float>& InSongDurationMap);
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Audio Select Widget | Classes")
@@ -58,6 +63,8 @@ protected:
 	UTooltipIcon* QMark_PlaybackAudio;
 	UPROPERTY(meta = (BindWidget))
 	UTooltipIcon* QMark_Input;
+	UPROPERTY(meta = (BindWidget))
+	UTooltipIcon* QMark_AudioDeviceSong;
 
 	UPROPERTY(meta = (BindWidget))
 	UBSButton* Button_AudioFromFile;
@@ -69,30 +76,27 @@ protected:
 	UBSButton* Button_Start;
 	UPROPERTY(meta = (BindWidget))
 	UBSButton* Button_LoadFile;
+	UPROPERTY(meta = (BindWidget))
+	UBSButton* Button_AddSong;
 
+	UPROPERTY(meta = (BindWidget))
+	UVerticalBox* Box_AudioFromFile;
 	UPROPERTY(meta = (BindWidget))
 	UVerticalBox* Box_AudioDevice;
 	UPROPERTY(meta = (BindWidget))
-	UVerticalBox* Box_SongTitleLength;
+	UVerticalBox* Box_SongMetadata;
 	UPROPERTY(meta = (BindWidget))
-	UHorizontalBox* Box_SongLength;
-	UPROPERTY(meta = (BindWidget))
-	UVerticalBox* Box_SongTitle;
+	USongMetadataWidget* SongMetadataWidget;
 
 	UPROPERTY(meta = (BindWidget))
-	UComboBoxString* ComboBox_InAudioDevices;
+	UBSComboBoxString* ComboBox_InAudioDevices;
 	UPROPERTY(meta = (BindWidget))
-	UComboBoxString* ComboBox_SongTitle;
+	UBSComboBoxString* ComboBox_AudioFromFileSongs;
+	UPROPERTY(meta = (BindWidget))
+	UBSComboBoxString* ComboBox_AudioDeviceSongs;
 
 	UPROPERTY(meta = (BindWidget))
 	UCheckBox* Checkbox_PlaybackAudio;
-
-	UPROPERTY(meta = (BindWidget))
-	UEditableTextBox* Value_SongTitle;
-	UPROPERTY(meta = (BindWidget))
-	UEditableTextBox* Value_Minutes;
-	UPROPERTY(meta = (BindWidget))
-	UEditableTextBox* Value_Seconds;
 
 	UPROPERTY(Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeOutAnim;
@@ -103,29 +107,45 @@ private:
 	UFUNCTION()
 	void OnFadeOutFinish();
 
-	UFUNCTION()
-	void OnButtonPressed_BSButton(const UBSButton* Button);
+	void HandleLoadFileButtonClicked(const UBSButton*);
+
+	void HandleAudioFromFileButtonClicked(const UBSButton*);
+
+	void HandleCaptureAudioButtonClicked(const UBSButton*);
+
+	void HandleAddSongButtonClicked(const UBSButton*);
+
+	void HandleBackButtonClicked(const UBSButton*);
+
+	void HandleStartButtonClicked(const UBSButton*);
+
+	void HandleCancelButtonClicked();
+
+	void HandleEditButtonClicked();
+
+	void HandleRemoveButtonClicked();
+
+	void HandleAddButtonClicked();
+
+	void HandleCommitButtonClicked();
 
 	UFUNCTION()
-	void OnButtonClicked_AudioFromFile();
+	void OnSelectionChanged_InAudioDevice(const TArray<FString>& ActiveSelections, ESelectInfo::Type SelectionType);
 	UFUNCTION()
-	void OnButtonClicked_CaptureAudio();
+	void OnSelectionChanged_AudioFromFileSongs(const TArray<FString>& ActiveSelections,
+	                                           ESelectInfo::Type SelectionType);
 	UFUNCTION()
-	void OnButtonClicked_Start();
-	UFUNCTION()
-	void OnButtonClicked_LoadFile();
-	UFUNCTION()
-	void OnValueChanged_SongTitle(const FText& NewSongTitle, ETextCommit::Type CommitType);
-	UFUNCTION()
-	void OnValueChanged_Minutes(const FText& NewMinutes, ETextCommit::Type CommitType);
-	UFUNCTION()
-	void OnValueChanged_Seconds(const FText& NewSeconds, ETextCommit::Type CommitType);
-	UFUNCTION()
-	void OnSelectionChanged_InAudioDevice(const FString SelectedInAudioDevice, ESelectInfo::Type SelectionType);
-	UFUNCTION()
-	void OnSelectionChanged_SongTitle(const FString NewSongTitle, ESelectInfo::Type SelectionType);
+	void OnSelectionChanged_AudioDeviceSongs(const TArray<FString>& ActiveSelections, ESelectInfo::Type SelectionType);
 	UFUNCTION()
 	void OnCheckStateChanged_PlaybackAudio(bool bIsChecked);
+
+	void UpdateSongInfoWidgets(EAudioFormat AudioFormat);
+
+	/** Rebuilds the capture song options from the saved list, then selects the given entry. */
+	void RebuildDeviceSongOptions(const FSongMetadata& SelectedSongMetadata);
+
+	/** Rebuilds the file song options from the saved list, then selects the given path. */
+	void RebuildFileSongOptions(const FString& SelectedSongFilePath);
 
 	/** Displays an error message upon failed AudioAnalyzer initialization. */
 	UFUNCTION()
@@ -151,11 +171,17 @@ private:
 
 	/** Contains information relating to the audio format the user has selected. Passed to GameModesWidget
 	 *  using OnStartButtonClickedDelegate. */
-	FBS_AudioConfig AudioConfig;
+	FBS_AudioConfig AudioFromFileAudioConfig;
+	FBS_AudioConfig AudioDeviceAudioConfig;
 
 	UPROPERTY()
 	UTooltipWidget* ActiveTooltipWidget;
 
 	UPROPERTY()
-	TMap<FString, float> SongDurationMap;
+	TObjectPtr<UAudioAnalyzerManager> Manager;
+
+	UPROPERTY()
+	TObjectPtr<USaveGamePlayerScore> SaveGamePlayerScore;
+
+	TMap<FString, FSongMetadata> FilePathsAndSongMetadata;
 };

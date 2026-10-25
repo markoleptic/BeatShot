@@ -923,7 +923,7 @@ void UGameModeMenuWidget::UpdateSaveStartButtonStates()
 void UGameModeMenuWidget::ShowAudioFormatSelect(const bool bStartFromDefaultGameMode)
 {
 	auto* AudioSelectWidget = CreateWidget<UAudioSelectWidget>(this, AudioSelectClass);
-	AudioSelectWidget->SetSongs(SaveGamePlayerScore->CreateSongDurationMap());
+	AudioSelectWidget->SetSaveGamePlayerScore(SaveGamePlayerScore);
 	AudioSelectWidget->OnStartButtonClickedDelegate.BindLambda(
 		[this, AudioSelectWidget, bStartFromDefaultGameMode](const FBS_AudioConfig& AudioConfig)
 		{
@@ -944,13 +944,7 @@ void UGameModeMenuWidget::ShowAudioFormatSelect(const bool bStartFromDefaultGame
 				GameModeTransitionState.BSConfig = GetCustomGameModeOptions();
 			}
 
-			GameModeTransitionState.BSConfig.AudioConfig.SongTitle = AudioConfig.SongTitle;
-			GameModeTransitionState.BSConfig.AudioConfig.SongLength = AudioConfig.SongLength;
-			GameModeTransitionState.BSConfig.AudioConfig.InAudioDevice = AudioConfig.InAudioDevice;
-			GameModeTransitionState.BSConfig.AudioConfig.SongPath = AudioConfig.SongPath;
-			GameModeTransitionState.BSConfig.AudioConfig.bPlaybackAudio = AudioConfig.bPlaybackAudio;
-			GameModeTransitionState.BSConfig.AudioConfig.AudioFormat = AudioConfig.AudioFormat;
-
+			GameModeTransitionState.BSConfig.AudioConfig = AudioConfig;
 			GameModeTransitionState.BSConfig.OnCreate();
 			if (!bStartFromDefaultGameMode)
 			{

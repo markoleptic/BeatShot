@@ -241,15 +241,15 @@ void ABSGameMode::StartGameMode()
 
 void ABSGameMode::StartGameModeTimers()
 {
-	if (BSConfig->AudioConfig.SongLength == 0.f)
+	const float SongLength = BSConfig->AudioConfig.SongMetadata.Length;
+	if (FMath::IsNearlyEqual(SongLength, 0.f))
 	{
 		GetWorldTimerManager().SetTimer(GameModeLengthTimer, 31536000, false);
 	}
 	else
 	{
 		GameModeLengthTimerDelegate.BindUObject(this, &ABSGameMode::EndGameMode, true, ETransitionState::None);
-		GetWorldTimerManager().SetTimer(GameModeLengthTimer, GameModeLengthTimerDelegate,
-		                                BSConfig->AudioConfig.SongLength, false);
+		GetWorldTimerManager().SetTimer(GameModeLengthTimer, GameModeLengthTimerDelegate, SongLength, false);
 	}
 	GetWorldTimerManager().SetTimer(OnSecondPassedTimer, this, &ABSGameMode::HandleSecondPassed, 1.f, true);
 }
@@ -406,8 +406,8 @@ void ABSGameMode::StartAAManagerPlayback()
 				AudioComponent->Play();
 				AAPlayer->Play();
 			};
-			GetWorldTimerManager().SetTimer(PlayerDelayTimer, HandleTimerFinished, BSConfig->AudioConfig.PlayerDelay,
-			                                false);
+			GetWorldTimerManager().SetTimer(PlayerDelayTimer, HandleTimerFinished,
+			                                BSConfig->TargetConfig.SpawnBeatDelay, false);
 		}
 		else
 		{
@@ -475,7 +475,7 @@ bool ABSGameMode::InitializeAudioManagers()
 	{
 	case EAudioFormat::File:
 		{
-			if (!AATracker->InitPlayerAudio(BSConfig->AudioConfig.SongPath))
+			if (!AATracker->InitPlayerAudio(BSConfig->AudioConfig.SongFilePath))
 			{
 				return false;
 			}
@@ -484,7 +484,7 @@ bool ABSGameMode::InitializeAudioManagers()
 				AudioImporter = URuntimeAudioImporterLibrary::CreateRuntimeAudioImporter();
 				AudioImporter->OnResultNative.AddUObject(this, &ABSGameMode::HandleAudioImporterResult);
 			}
-			AudioImporter->ImportAudioFromFile(BSConfig->AudioConfig.SongPath, ERuntimeAudioFormat::Auto);
+			AudioImporter->ImportAudioFromFile(BSConfig->AudioConfig.SongFilePath, ERuntimeAudioFormat::Auto);
 		}
 		break;
 	case EAudioFormat::Capture:
@@ -533,10 +533,10 @@ bool ABSGameMode::InitializeAudioManagers()
 	AATracker->SetPlaybackVolume(0.0);
 
 	// AAPlayer will only be used if AudioFormat is File and PlayerDelay > 0.01f
-	if (BSConfig->AudioConfig.PlayerDelay >= 0.01f)
+	if (BSConfig->TargetConfig.SpawnBeatDelay >= 0.01f)
 	{
 		AAPlayer = NewObject<UAudioAnalyzerManager>(this);
-		if (!AAPlayer->InitPlayerAudio(BSConfig->AudioConfig.SongPath))
+		if (!AAPlayer->InitPlayerAudio(BSConfig->AudioConfig.SongFilePath))
 		{
 			return false;
 		}
@@ -594,22 +594,21 @@ void ABSGameMode::GoToMainMenu()
 
 void ABSGameMode::LoadMatchingPlayerScores()
 {
-	if (BSConfig->AudioConfig.SongLength == 0.f)
+	const float SongLength = BSConfig->AudioConfig.SongMetadata.Length;
+	if (FMath::IsNearlyEqual(SongLength, 0.f))
 	{
 		MaxScorePerTarget = 1000.f;
 	}
 	else
 	{
-		MaxScorePerTarget = 100000.f / ((BSConfig->AudioConfig.SongLength - 1.f) / BSConfig->TargetConfig.
-		                                TargetSpawnCD);
+		MaxScorePerTarget = 100000.f / ((SongLength - 1.f) / BSConfig->TargetConfig.TargetSpawnCD);
 	}
 
 	for (auto& [Controller, CurrentPlayerScore] : CurrentPlayerScores)
 	{
 		CurrentPlayerScore = FPlayerScore();
 		CurrentPlayerScore.DefiningConfig = BSConfig->DefiningConfig;
-		CurrentPlayerScore.SongTitle = BSConfig->AudioConfig.SongTitle;
-		CurrentPlayerScore.SongLength = BSConfig->AudioConfig.SongLength;
+		CurrentPlayerScore.PopulateAudioInfo(BSConfig->AudioConfig);
 		CurrentPlayerScore.TotalPossibleDamage = 0.f;
 		CurrentPlayerScore.HighScore = Controller->GetSaveGamePlayerScore()->GetHighScore(CurrentPlayerScore);
 	}

@@ -141,6 +141,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "ComboBox")
 	void AddOption(const FString& Option);
 
+	/** Adds multiple options to the combo box. */
+	UFUNCTION(BlueprintCallable, Category = "ComboBox")
+	void AddOptions(const TArray<FString>& InOptions);
+
 	/** Adds a new option to the combo box at the specified index. */
 	UFUNCTION(BlueprintCallable, Category = "ComboBox")
 	void InsertOptionAt(const FString& Option, const int32 Index);
@@ -217,6 +221,9 @@ public:
 	/** Clears all selected options. */
 	UFUNCTION(BlueprintCallable, Category = "ComboBox")
 	void ClearSelection();
+
+	UFUNCTION(BlueprintCallable, Category = "ComboBox")
+	void Sort();
 
 	/** Executed to allow other widgets to create a combo box row. */
 	UPROPERTY(EditAnywhere, Category=Events, meta=( IsBindableEvent="True" ))

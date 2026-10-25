@@ -316,6 +316,15 @@ void UBSComboBoxString::AddOption(const FString& Option)
 	RefreshOptions();
 }
 
+void UBSComboBoxString::AddOptions(const TArray<FString>& InOptions)
+{
+	for (const FString& Option : InOptions)
+	{
+		Options.Add(MakeShareable(new FString(Option)));
+	}
+	RefreshOptions();
+}
+
 void UBSComboBoxString::InsertOptionAt(const FString& Option, const int32 Index)
 {
 	Options.Insert(MakeShareable(new FString(Option)), Index);
@@ -562,6 +571,11 @@ void UBSComboBoxString::ClearSelection()
 	{
 		ComboBoxContent->SetContent(SNullWidget::NullWidget);
 	}
+}
+
+void UBSComboBoxString::Sort()
+{
+	Options.Sort([](const TSharedPtr<FString>& Left, const TSharedPtr<FString>& Right) { return *Left < *Right; });
 }
 
 #undef LOCTEXT_NAMESPACE

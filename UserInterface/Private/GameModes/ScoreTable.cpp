@@ -190,7 +190,7 @@ void UScoreTable::SetListItems(const TArray<TSharedPtr<FPlayerScore>>& InListIte
 					}
 					else if (ColumnName == SPlayerScoreRow::SongColumnName)
 					{
-						Text = FText::FromString(Item->SongTitle);
+						Text = FText::FromString(Item->SongMetadata.Title);
 					}
 					Width = FMath::Max(FontMeasure->Measure(Text, TableCellFont).X, Width);
 				}
@@ -311,7 +311,7 @@ void UScoreTable::SortItems()
 		}
 		if (Column == SPlayerScoreRow::SongColumnName)
 		{
-			return L->SongTitle < R->SongTitle;
+			return L->SongMetadata.Title < R->SongMetadata.Title;
 		}
 		if (Column == SPlayerScoreRow::ScoreColumnName)
 		{

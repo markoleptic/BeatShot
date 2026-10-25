@@ -117,7 +117,7 @@ TSharedRef<SWidget> SPlayerScoreRow::GenerateWidgetForColumn(const FName& Column
 			[
 				SNew(STextBlock)
 				.Font(Font)
-				.Text(FText::FromString(Item->SongTitle))
+				.Text(FText::FromString(Item->SongMetadata.Title))
 			];
 	}
 	else if (ColumnName == ScoreColumnName)

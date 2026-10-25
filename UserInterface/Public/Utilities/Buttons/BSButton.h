@@ -42,6 +42,8 @@ public:
 	/** Sets bIsClicked to true and sets all other buttons as inactive. Plays animation, but broadcasts no delegates. */
 	virtual void SetActive();
 
+	bool IsActive();
+
 	/** Create functions like this with additional parameters to store info about the button being pressed. Remember to
 	 *  call SetHasSetDefaults in any child implementations. */
 	void SetDefaults(const uint8 InEnum, UBSButton* NextButton = nullptr);

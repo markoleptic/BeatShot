@@ -74,8 +74,10 @@ public:
 	 */
 	int32 RemoveAllCommonScoreInfoAndMatchingPlayerScores();
 
-	/** @return A map containing song names and durations for saved scores. */
-	TMap<FString, float> CreateSongDurationMap() const;
+	/** @return True if any player scores with matching song titles and durations were updated with more complete song
+	 *  metadata.
+	 */
+	bool MaybeUpdateSongMetadata(const FSongMetadata& SongMetadata);
 
 	/** Prints full QTable array to log/console.
 	 * 	@param InDefiningConfig defining config

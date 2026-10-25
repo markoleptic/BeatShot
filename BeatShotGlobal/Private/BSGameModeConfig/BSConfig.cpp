@@ -40,10 +40,8 @@ void FBSConfig::OnCreate()
 	// Override the player delay to zero if using Capture
 	if (AudioConfig.AudioFormat == EAudioFormat::Capture || AudioConfig.AudioFormat == EAudioFormat::Loopback)
 	{
-		AudioConfig.PlayerDelay = 0.f;
 		TargetConfig.SpawnBeatDelay = 0.f;
 	}
-	AudioConfig.PlayerDelay = TargetConfig.SpawnBeatDelay;
 
 	// Set the Reinforcement Learning Mode
 	if (IsCompatibleWithReinforcementLearning())
@@ -123,41 +121,17 @@ void FBSConfig::InitColors(const bool bUseSeparateOutlineColor,
 	TargetConfig.NotTakingTrackingDamageColor = NotTrackingDam;
 }
 
-FString FBSConfig::ToString() const
+FString FBSConfig::EncodeToString() const
 {
+	FString JsonString;
 	const TSharedPtr<FJsonObject> JsonObject = FJsonObjectConverter::UStructToJsonObject<FBSConfig>(
 		*this, 0, CPF_Transient | CPF_SkipSerialization, nullptr);
 	if (JsonObject.IsValid())
 	{
-		FString JsonString;
 		const TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&JsonString);
 		FJsonSerializer::Serialize(JsonObject.ToSharedRef(), Writer);
-		return JsonString;
 	}
-	return FString();
-}
-
-FString FBSConfig::EncodeToString() const
-{
-	const FString JsonString = ToString();
-	if (!JsonString.IsEmpty())
-	{
-		return FBase64::Encode(JsonString);
-	}
-	return FString();
-}
-
-bool FBSConfig::FromString(const FString& JsonString, FBSConfig& OutConfig, FText* OutFailReason)
-{
-	TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject());
-	const TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(JsonString);
-	if (FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid())
-	{
-		return FJsonObjectConverter::JsonObjectToUStruct<FBSConfig>(JsonObject.ToSharedRef(), &OutConfig, 0,
-		                                                            CPF_Transient | CPF_SkipSerialization, false,
-		                                                            OutFailReason);
-	}
-	return false;
+	return JsonString;
 }
 
 bool FBSConfig::DecodeFromString(const FString& EncodedString, FBSConfig& OutConfig, FText* OutFailReason)
@@ -166,9 +140,15 @@ bool FBSConfig::DecodeFromString(const FString& EncodedString, FBSConfig& OutCon
 	if (FBase64::Decode(EncodedString, DecodedBytes))
 	{
 		const FString JsonString(DecodedBytes.Num(), UTF8_TO_TCHAR(DecodedBytes.GetData()));
-
 		// Deserialize the JSON string to the struct
-		return FromString(JsonString, OutConfig, OutFailReason);
+		TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject());
+		const TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(JsonString);
+		if (FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid())
+		{
+			return FJsonObjectConverter::JsonObjectToUStruct<FBSConfig>(JsonObject.ToSharedRef(), &OutConfig, 0,
+			                                                            CPF_Transient | CPF_SkipSerialization, false,
+			                                                            OutFailReason);
+		}
 	}
 	return false;
 }

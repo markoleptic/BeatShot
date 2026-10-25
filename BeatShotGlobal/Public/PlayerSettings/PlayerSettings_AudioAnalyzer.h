@@ -35,9 +35,6 @@ struct BEATSHOTGLOBAL_API FPlayerSettings_AudioAnalyzer
 	/** Max number of band channels allowed */
 	int32 MaxNumBandChannels;
 
-	UPROPERTY(BlueprintReadOnly)
-	FString LastSelectedInputAudioDevice;
-
 	FPlayerSettings_AudioAnalyzer()
 	{
 		BandLimits = Constants::DefaultBandLimits;
@@ -47,7 +44,6 @@ struct BEATSHOTGLOBAL_API FPlayerSettings_AudioAnalyzer
 		TimeWindow = Constants::DefaultTimeWindow;
 		HistorySize = Constants::DefaultHistorySize;
 		MaxNumBandChannels = Constants::DefaultMaxNumBandChannels;
-		LastSelectedInputAudioDevice = "";
 	}
 
 	/** Resets all settings to default, but keeps audio device information */

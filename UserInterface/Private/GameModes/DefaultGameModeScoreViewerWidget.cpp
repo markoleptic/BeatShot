@@ -37,7 +37,7 @@ void UDefaultGameModeScoreViewerWidget::RepopulatePlayerScoreByGameModeSongAndDi
 		if (PlayerScore->DefiningConfig.GameModeType == EGameModeType::Preset)
 		{
 			PlayerScoreByGameModeSongAndDifficulty.FindOrAdd(PlayerScore->DefiningConfig.BaseGameMode).
-			                                       FindOrAdd(PlayerScore->SongTitle).FindOrAdd(
+			                                       FindOrAdd(PlayerScore->SongMetadata.Title).FindOrAdd(
 				                                       PlayerScore->DefiningConfig.Difficulty).Add(PlayerScore);
 			TimesByPlayerScore.Add(PlayerScore, PlayerScore->LocalDateTime);
 		}

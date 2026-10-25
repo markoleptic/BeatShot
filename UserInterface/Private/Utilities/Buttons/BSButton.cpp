@@ -104,6 +104,11 @@ void UBSButton::SetActive()
 	}
 }
 
+bool UBSButton::IsActive()
+{
+	return bIsClicked;
+}
+
 void UBSButton::SetDefaults(const uint8 InEnum, UBSButton* NextButton)
 {
 	Next = NextButton;

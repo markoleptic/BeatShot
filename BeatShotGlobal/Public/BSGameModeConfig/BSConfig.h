@@ -80,15 +80,9 @@ struct BEATSHOTGLOBAL_API FBSConfig
 	                const FLinearColor& TrackingDam,
 	                const FLinearColor& NotTrackingDam);
 
-	/** Returns a Json Object representation of the struct. */
-	FString ToString() const;
-
-	/** Returns a serialized Json object representation of the struct. */
+	/** Returns a serialized JSON object representation of the struct. */
 	FString EncodeToString() const;
 
-	/** Initializes the OutConfig from a Json object, returns true if successful. */
-	static bool FromString(const FString& JsonString, FBSConfig& OutConfig, FText* OutFailReason = nullptr);
-
-	/** Initializes the OutConfig from a serialized Json object, returns true if successful. */
+	/** Initializes the OutConfig from a serialized JSON object, returns true if successful. */
 	static bool DecodeFromString(const FString& EncodedString, FBSConfig& OutConfig, FText* OutFailReason = nullptr);
 };

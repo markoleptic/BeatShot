@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BSConstants.h"
+#include "Utilities/SongMetadata.h"
 #include "AudioConfig.generated.h"
 
 /** The player chosen audio format for the current game mode. */
@@ -23,41 +23,24 @@ struct BEATSHOTGLOBAL_API FBS_AudioConfig
 {
 	GENERATED_BODY()
 
+	/** The path to the song file. */
 	UPROPERTY(BlueprintReadOnly, Transient)
-	FString SongTitle;
+	FString SongFilePath;
+
+	UPROPERTY(BlueprintReadOnly, Transient)
+	FSongMetadata SongMetadata;
 
 	/** Whether to playback streamed audio. */
 	UPROPERTY(BlueprintReadOnly, Transient)
-	bool bPlaybackAudio;
+	bool bPlaybackAudio = true;
 
 	/** The audio format type used for the AudioAnalyzer. */
 	UPROPERTY(BlueprintReadOnly, Transient)
-	EAudioFormat AudioFormat;
+	EAudioFormat AudioFormat = EAudioFormat::None;
 
 	/** The input audio device. */
 	UPROPERTY(BlueprintReadOnly, Transient)
 	FString InAudioDevice;
 
-	/** The path to the song file. */
-	UPROPERTY(BlueprintReadOnly, Transient)
-	FString SongPath;
-
-	/** Delay between AudioAnalyzer Tracker and Player. */
-	UPROPERTY(BlueprintReadOnly, Transient)
-	float PlayerDelay;
-
-	/** Length of song. */
-	UPROPERTY(BlueprintReadOnly, Transient)
-	float SongLength;
-
-	FBS_AudioConfig()
-	{
-		bPlaybackAudio = true;
-		AudioFormat = EAudioFormat::None;
-		InAudioDevice = "";
-		SongPath = "";
-		SongTitle = "";
-		SongLength = 0.f;
-		PlayerDelay = Constants::DefaultPlayerDelay;
-	}
+	FBS_AudioConfig() = default;
 };

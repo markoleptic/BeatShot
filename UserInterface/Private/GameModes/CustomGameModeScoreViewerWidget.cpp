@@ -32,7 +32,7 @@ void UCustomGameModeScoreViewerWidget::RepopulatePlayerScoreByGameModeAndSong()
 		if (PlayerScore->DefiningConfig.GameModeType == EGameModeType::Custom)
 		{
 			PlayerScoreByGameModeAndSong.FindOrAdd(PlayerScore->DefiningConfig.CustomGameModeName).FindOrAdd(
-				PlayerScore->SongTitle).Add(PlayerScore);
+				PlayerScore->SongMetadata.Title).Add(PlayerScore);
 			TimesByPlayerScore.Add(PlayerScore, PlayerScore->LocalDateTime);
 		}
 	}

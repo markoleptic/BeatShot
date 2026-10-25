@@ -20,6 +20,14 @@ void UpdateScoreToVersion1(FPlayerScore& PlayerScore)
 	}
 }
 
+void UpdateScoreToVersion2(FPlayerScore& PlayerScore)
+{
+	PlayerScore.SongMetadata.Title = PlayerScore.SongTitle;
+	PlayerScore.SongTitle.Empty();
+	PlayerScore.SongMetadata.Length = PlayerScore.SongLength;
+	PlayerScore.SongLength = 0.f;
+}
+
 void UpdateCommonScoreInfoToVersion1(TMap<FBS_DefiningConfig, FCommonScoreInfo>& CommonScoreInfoMap)
 {
 	TArray<FBS_DefiningConfig> DefiningConfigsToReplace;
@@ -260,6 +268,14 @@ void USaveGamePlayerScore::UpgradeVersion()
 				UpdateCommonScoreInfoToVersion1(CommonScoreInfo);
 			}
 			break;
+		case 1:
+			{
+				for (const auto& PlayerScorePtr : PlayerScoreArrayPtr)
+				{
+					UpdateScoreToVersion2(*PlayerScorePtr);
+				}
+			}
+			break;
 		default:
 			break;
 		}
@@ -453,14 +469,26 @@ int32 USaveGamePlayerScore::RemoveAllCommonScoreInfoAndMatchingPlayerScores()
 	return NumScoresRemoved;
 }
 
-TMap<FString, float> USaveGamePlayerScore::CreateSongDurationMap() const
+bool USaveGamePlayerScore::MaybeUpdateSongMetadata(const FSongMetadata& SongMetadata)
 {
-	TMap<FString, float> Map;
-	for (const TSharedPtr<FPlayerScore>& Score : PlayerScoreArrayPtr)
+	bool Changed = false;
+
+	for (const auto& PlayerScore : PlayerScoreArrayPtr)
 	{
-		Map.Add(Score->SongTitle, Score->SongLength);
+		const auto& CurrentSongMetadata = PlayerScore->SongMetadata;
+		if (CurrentSongMetadata.Title == SongMetadata.Title && FMath::IsNearlyEqual(
+			    CurrentSongMetadata.Length, SongMetadata.Length))
+		{
+			if (CurrentSongMetadata.Album.IsEmpty() && CurrentSongMetadata.Artist.IsEmpty() && CurrentSongMetadata.Genre
+			    .IsEmpty() && CurrentSongMetadata.Year.IsEmpty())
+			{
+				PlayerScore->SongMetadata = SongMetadata;
+				Changed = true;
+			}
+		}
 	}
-	return Map;
+
+	return Changed;
 }
 
 void USaveGamePlayerScore::PrintQTable(const FBS_DefiningConfig& InDefiningConfig,

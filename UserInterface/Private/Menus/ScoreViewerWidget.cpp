@@ -52,8 +52,8 @@ TArray<FPlayerScore> GenerateTestScores(int32 NumEntries)
 		Score.DefiningConfig.GameModeType = EGameModeType::Custom;
 		Score.DefiningConfig.CustomGameModeName = "AKindaReallyLongGameModeName";
 		Score.DefiningConfig.BaseGameMode = BaseModes[0];
-		Score.SongTitle = Songs[0];
-		Score.SongLength = SongLengths[0];
+		Score.SongMetadata.Title = Songs[0];
+		Score.SongMetadata.Length = SongLengths[0];
 
 		Score.TargetsSpawned = FMath::RandRange(50, 300);
 		Score.TargetsHit = FMath::RandRange(FMath::RoundToInt(Score.TargetsSpawned * 0.5f), Score.TargetsSpawned);
@@ -104,9 +104,9 @@ TArray<FPlayerScore> GenerateTestScores(int32 NumEntries)
 
 		// ----- Song -----
 		int SongIndex = FMath::RandRange(0, Songs.Num() - 1);
-		Score.SongTitle = Songs[SongIndex];
+		Score.SongMetadata.Title = Songs[SongIndex];
 
-		Score.SongLength = SongLengths[SongIndex];
+		Score.SongMetadata.Length = SongLengths[SongIndex];
 
 		// ----- Gameplay Stats -----
 		Score.TargetsSpawned = FMath::RandRange(50, 300);
@@ -462,14 +462,14 @@ void UScoreViewerWidget::LoadScores(USaveGamePlayerScore* InSaveGamePlayerScore,
 	{
 		DefaultGameModeScoreViewerWidget->SetActiveScores(
 			CalcTimeStatResult.MostRecentDefaultPlayerScore->DefiningConfig.BaseGameMode,
-			CalcTimeStatResult.MostRecentDefaultPlayerScore->SongTitle,
+			CalcTimeStatResult.MostRecentDefaultPlayerScore->SongMetadata.Title,
 			CalcTimeStatResult.MostRecentDefaultPlayerScore->DefiningConfig.Difficulty);
 	}
 	if (CalcTimeStatResult.MostRecentCustomPlayerScore)
 	{
 		CustomGameModeScoreViewerWidget->SetActiveScores(
 			CalcTimeStatResult.MostRecentCustomPlayerScore->DefiningConfig.CustomGameModeName,
-			CalcTimeStatResult.MostRecentCustomPlayerScore->SongTitle);
+			CalcTimeStatResult.MostRecentCustomPlayerScore->SongMetadata.Title);
 	}
 
 	if (SwitchToMostRecent && CalcTimeStatResult.MostRecentPlayerScore)
@@ -516,10 +516,10 @@ FCalculateTimeStatisticsResult UScoreViewerWidget::CalculateTimeStatistics(
 			const int32 DayIndex = (PlayerScore->LocalDateTime - StartDate).GetTotalDays();
 			const int32 WeekIndex = (StartDow + DayIndex) / DaysInWeek;
 			const int32 DayOfWeekIndex = static_cast<int32>(PlayerScore->LocalDateTime.GetDayOfWeek());
-			PlayFrequencyData[WeekIndex][DayOfWeekIndex] += PlayerScore->SongLength;
+			PlayFrequencyData[WeekIndex][DayOfWeekIndex] += PlayerScore->SongMetadata.Length;
 		}
 
-		TotalSecondsInAnyGameMode += PlayerScore->SongLength;
+		TotalSecondsInAnyGameMode += PlayerScore->SongMetadata.Length;
 
 		if (PlayerScore->DefiningConfig.GameModeType == EGameModeType::Preset)
 		{
@@ -532,7 +532,7 @@ FCalculateTimeStatisticsResult UScoreViewerWidget::CalculateTimeStatistics(
 			auto& Current = PlayTimeByBaseGameMode.FindOrAdd(BaseGameMode);
 			Current.BaseGameMode = BaseGameMode;
 			Current.GameModeType = PlayerScore->DefiningConfig.GameModeType;
-			Current.PlayTime += PlayerScore->SongLength;
+			Current.PlayTime += PlayerScore->SongMetadata.Length;
 		}
 		else if (PlayerScore->DefiningConfig.GameModeType == EGameModeType::Custom)
 		{
@@ -546,7 +546,7 @@ FCalculateTimeStatisticsResult UScoreViewerWidget::CalculateTimeStatistics(
 			Current.BaseGameMode = EBaseGameMode::None;
 			Current.GameModeType = PlayerScore->DefiningConfig.GameModeType;
 			Current.CustomGameModeName = CustomGameModeName;
-			Current.PlayTime += PlayerScore->SongLength;
+			Current.PlayTime += PlayerScore->SongMetadata.Length;
 		}
 	}
 
