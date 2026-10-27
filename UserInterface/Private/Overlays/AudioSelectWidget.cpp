@@ -549,6 +549,7 @@ void UAudioSelectWidget::UpdateSongInfoWidgets(const EAudioFormat AudioFormat)
 		{
 			RebuildDeviceSongOptions(AudioConfig->SongMetadata);
 			Button_AddSong->SetIsEnabled(true);
+			Button_AddSong->SetInActive();
 			if (ShowSongMetadata)
 			{
 				SongMetadataWidget->Populate(AudioConfig->SongMetadata, AudioFormat, USongMetadataWidget::EMode::Edit);
