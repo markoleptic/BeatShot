@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Templates/TypeHash.h"
 #include "SongMetadata.generated.h"
 
 USTRUCT(BlueprintType)
@@ -43,5 +44,17 @@ struct FSongMetadata
 	bool IsValid() const
 	{
 		return !Title.IsEmpty();
+	}
+
+	/** Length is hashed in whole seconds so values that `IsNearlyEqual` treats as equal also hash equal. */
+	friend FORCEINLINE uint32 GetTypeHash(const FSongMetadata& InSongMetadata)
+	{
+		uint32 KeyHash = GetTypeHash(InSongMetadata.Title);
+		KeyHash = HashCombine(KeyHash, GetTypeHash(InSongMetadata.Artist));
+		KeyHash = HashCombine(KeyHash, GetTypeHash(InSongMetadata.Album));
+		KeyHash = HashCombine(KeyHash, GetTypeHash(InSongMetadata.Year));
+		KeyHash = HashCombine(KeyHash, GetTypeHash(InSongMetadata.Genre));
+		KeyHash = HashCombine(KeyHash, GetTypeHash(FMath::RoundToInt(InSongMetadata.Length)));
+		return KeyHash;
 	}
 };

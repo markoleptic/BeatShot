@@ -24,9 +24,9 @@ public:
 	/** Adds a reference to the save game and calls RepopulatePlayerScoreByGameModeAndSong. */
 	void SetSaveGamePlayerScore(USaveGamePlayerScore* InSaveGamePlayerScore);
 
-	/** Filters the active scores based on CustomGameModeName and SongTitle. Always updates the song
+	/** Filters the active scores based on CustomGameModeName and Song. Always updates the song
 	 *  combo box and all data visualizations. */
-	void SetActiveScores(const FString& CustomGameModeName, const FString& SongTitle);
+	void SetActiveScores(const FString& CustomGameModeName, const FSongMetadata& Song);
 
 	/** Repopulates all custom game mode player scores from the save game. Updates the time for each player score and 
 	 *  repopulates the game mode combo box. If there are no scores, the main box is hidden and the no scores 
@@ -44,8 +44,11 @@ protected:
 
 	void OnDateChanged(const FDateTime& Start, const FDateTime& End);
 
+	/** Resolves the song selected in the song combo box back to its metadata, or an empty metadata if none. */
+	FSongMetadata GetSelectedSong() const;
+
 	void FilterActiveScores(const FString& CurrentCustomGameModeName,
-	                        const FString& CurrentSongTitle,
+	                        const FSongMetadata& CurrentSong,
 	                        const FDateTime& StartDate = FDateTime::MaxValue(),
 	                        const FDateTime& EndDate = FDateTime::MinValue());
 
@@ -67,5 +70,8 @@ protected:
 	UPROPERTY()
 	TObjectPtr<USaveGamePlayerScore> SaveGamePlayerScore;
 
-	TMap<FString, TMap<FString, TArray<TSharedPtr<FPlayerScore>>>> PlayerScoreByGameModeAndSong;
+	/** The distinct songs currently loaded into the song combo box; the option label of each entry is unique. */
+	TArray<FSongMetadata> SongOptionEntries;
+
+	TMap<FString, TMap<FSongMetadata, TArray<TSharedPtr<FPlayerScore>>>> PlayerScoreByGameModeAndSong;
 };

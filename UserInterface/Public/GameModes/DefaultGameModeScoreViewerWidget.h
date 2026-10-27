@@ -24,9 +24,9 @@ public:
 	/** Adds a reference to the save game and calls RepopulatePlayerScoreByGameModeSongAndDifficulty. */
 	void SetSaveGamePlayerScore(USaveGamePlayerScore* InSaveGamePlayerScore);
 
-	/** Filters the active scores based on BaseGameMode, SongTitle, and Difficulty. Always updates the
+	/** Filters the active scores based on BaseGameMode, Song, and Difficulty. Always updates the
 	 *  song and difficulty combo boxes and all data visualizations. */
-	void SetActiveScores(EBaseGameMode BaseGameMode, const FString& SongTitle, EGameModeDifficulty Difficulty);
+	void SetActiveScores(EBaseGameMode BaseGameMode, const FSongMetadata& Song, EGameModeDifficulty Difficulty);
 
 	/** Repopulates all default game mode player scores from the save game. Updates the time for each player score and
 	 *  repopulates the game mode combo box. If there are no scores, the main box is hidden and the no scores message
@@ -51,8 +51,11 @@ protected:
 
 	void OnDateChanged(const FDateTime& Start, const FDateTime& End);
 
+	/** Resolves the song selected in the song combo box back to its metadata, or an empty metadata if none. */
+	FSongMetadata GetSelectedSong() const;
+
 	void FilterActiveScores(EBaseGameMode CurrentBaseGameMode,
-	                        const FString& CurrentSongTitle,
+	                        const FSongMetadata& CurrentSong,
 	                        EGameModeDifficulty CurrentDifficulty,
 	                        const FDateTime& StartDate = FDateTime::MaxValue(),
 	                        const FDateTime& EndDate = FDateTime::MinValue());
@@ -79,6 +82,9 @@ protected:
 	UPROPERTY()
 	TObjectPtr<USaveGamePlayerScore> SaveGamePlayerScore;
 
-	TMap<EBaseGameMode, TMap<FString, TMap<EGameModeDifficulty, TArray<TSharedPtr<FPlayerScore>>>>>
+	/** The distinct songs currently loaded into the song combo box; the option label of each entry is unique. */
+	TArray<FSongMetadata> SongOptionEntries;
+
+	TMap<EBaseGameMode, TMap<FSongMetadata, TMap<EGameModeDifficulty, TArray<TSharedPtr<FPlayerScore>>>>>
 	PlayerScoreByGameModeSongAndDifficulty;
 };

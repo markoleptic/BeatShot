@@ -462,14 +462,14 @@ void UScoreViewerWidget::LoadScores(USaveGamePlayerScore* InSaveGamePlayerScore,
 	{
 		DefaultGameModeScoreViewerWidget->SetActiveScores(
 			CalcTimeStatResult.MostRecentDefaultPlayerScore->DefiningConfig.BaseGameMode,
-			CalcTimeStatResult.MostRecentDefaultPlayerScore->SongMetadata.Title,
+			CalcTimeStatResult.MostRecentDefaultPlayerScore->SongMetadata,
 			CalcTimeStatResult.MostRecentDefaultPlayerScore->DefiningConfig.Difficulty);
 	}
 	if (CalcTimeStatResult.MostRecentCustomPlayerScore)
 	{
 		CustomGameModeScoreViewerWidget->SetActiveScores(
 			CalcTimeStatResult.MostRecentCustomPlayerScore->DefiningConfig.CustomGameModeName,
-			CalcTimeStatResult.MostRecentCustomPlayerScore->SongMetadata.Title);
+			CalcTimeStatResult.MostRecentCustomPlayerScore->SongMetadata);
 	}
 
 	if (SwitchToMostRecent && CalcTimeStatResult.MostRecentPlayerScore)

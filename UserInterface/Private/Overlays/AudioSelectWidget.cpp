@@ -12,6 +12,7 @@
 #include "SaveGames/SaveGamePlayerScore.h"
 #include "SaveGames/SaveGamePlayerSettings.h"
 #include "Utilities/SongMetadataWidget.h"
+#include "Utilities/SongOptionLabels.h"
 #include "Utilities/Buttons/BSButton.h"
 #include "Utilities/ComboBox/BSComboBoxString.h"
 
@@ -52,7 +53,7 @@ bool TryGetMetadata(const TObjectPtr<UAudioAnalyzerManager>& Manager,
 	return true;
 }
 
-FString MakeSongOptionLabel(const FSongMetadata& SongMetadata, const FString& SongFilePath)
+FString MakeSongPathOptionLabel(const FSongMetadata& SongMetadata, const FString& SongFilePath)
 {
 	// Full paths are unique, so labels are unique, and the box may key on them.
 	FString Label = SongMetadata.Title.IsEmpty() ? FPaths::GetBaseFilename(SongFilePath) : SongMetadata.Title;
@@ -68,142 +69,12 @@ FString FindSongPathByOptionLabel(const TMap<FString, FSongMetadata>& FilePathsA
 {
 	for (const TPair<FString, FSongMetadata>& Current : FilePathsAndSongMetadata)
 	{
-		if (MakeSongOptionLabel(Current.Value, Current.Key) == OptionLabel)
+		if (MakeSongPathOptionLabel(Current.Value, Current.Key) == OptionLabel)
 		{
 			return Current.Key;
 		}
 	}
 	return FString();
-}
-
-constexpr int32 MaxSongMetadataFields = 5;
-
-FString MakeDeviceSongOptionLabel(const FSongMetadata& SongMetadata,
-                                  const int32 MaxFieldCount,
-                                  const bool bUseFieldPrefixes)
-{
-	FString Label = SongMetadata.Title;
-	if (MaxFieldCount >= 2 && !SongMetadata.Artist.IsEmpty())
-	{
-		Label += TEXT(" — ") + SongMetadata.Artist;
-	}
-	TArray<FString> ParentheticalParts;
-	if (MaxFieldCount >= 3 && !SongMetadata.Album.IsEmpty())
-	{
-		if (bUseFieldPrefixes)
-		{
-			static const FString AlbumText = IBSWidgetInterface::GetWidgetTextFromKey("AF_SongAlbum").ToString();
-			ParentheticalParts.Add(AlbumText + TEXT(" ") + SongMetadata.Album);
-		}
-		else
-		{
-			ParentheticalParts.Add(SongMetadata.Album);
-		}
-	}
-	if (MaxFieldCount >= 4 && !SongMetadata.Year.IsEmpty())
-	{
-		if (bUseFieldPrefixes)
-		{
-			static const FString YearText = IBSWidgetInterface::GetWidgetTextFromKey("AF_SongYear").ToString();
-			ParentheticalParts.Add(YearText + TEXT(" ") + SongMetadata.Year);
-		}
-		else
-		{
-			ParentheticalParts.Add(SongMetadata.Year);
-		}
-	}
-	if (MaxFieldCount >= 5 && !SongMetadata.Genre.IsEmpty())
-	{
-		if (bUseFieldPrefixes)
-		{
-			static const FString GenreText = IBSWidgetInterface::GetWidgetTextFromKey("AF_SongGenre").ToString();
-			ParentheticalParts.Add(GenreText + TEXT(" ") + SongMetadata.Genre);
-		}
-		else
-		{
-			ParentheticalParts.Add(SongMetadata.Genre);
-		}
-	}
-	if (ParentheticalParts.Num() > 0)
-	{
-		Label += TEXT(" (") + FString::Join(ParentheticalParts, TEXT(", ")) + TEXT(")");
-	}
-	return Label;
-}
-
-struct FDeviceSongLabelSpec
-{
-	int32 FieldCount = 1;
-	bool bUseFieldPrefixes = false;
-
-	FDeviceSongLabelSpec(const int32 InFieldCount, const bool bInUseFieldPrefixes)
-		: FieldCount(InFieldCount), bUseFieldPrefixes(bInUseFieldPrefixes)
-	{
-	}
-};
-
-/** Smallest-distinguishing label config for one shared-title group; the clean format is preferred, and field prefixes
- * (Album:, Year:, Genre:) are used only when it cannot disambiguate. */
-FDeviceSongLabelSpec ComputeLabelSpec(const TArray<FSongMetadata>& TitleGroup)
-{
-	for (const bool bUseFieldPrefixes : {false, true})
-	{
-		for (int32 FieldCount = 1; FieldCount <= MaxSongMetadataFields; FieldCount++)
-		{
-			TSet<FString> DistinctLabels;
-			for (const FSongMetadata& Current : TitleGroup)
-			{
-				DistinctLabels.Add(MakeDeviceSongOptionLabel(Current, FieldCount, bUseFieldPrefixes));
-			}
-			if (DistinctLabels.Num() == TitleGroup.Num())
-			{
-				return FDeviceSongLabelSpec(FieldCount, bUseFieldPrefixes);
-			}
-		}
-	}
-	// Unreachable: max fields with prefixes is an injective function of the unique 5-tuple.
-	return FDeviceSongLabelSpec(MaxSongMetadataFields, true);
-}
-
-/** One option label per entry: bare Title, or extended per shared-title group as needed, with the field-prefix
- * fallback from ComputeLabelSpec when clean parts cannot disambiguate. */
-TArray<FString> MakeDeviceSongOptionLabels(const TArray<FSongMetadata>& Entries)
-{
-	TArray<FString> OptionLabels;
-	OptionLabels.SetNum(Entries.Num());
-	TMap<FString, TArray<int32>> TitleToIndices;
-	for (int32 Index = 0; Index < Entries.Num(); Index++)
-	{
-		TitleToIndices.FindOrAdd(Entries[Index].Title).Add(Index);
-	}
-	for (const TPair<FString, TArray<int32>>& TitlePair : TitleToIndices)
-	{
-		TArray<FSongMetadata> TitleGroup;
-		for (const int32 Index : TitlePair.Value)
-		{
-			TitleGroup.Add(Entries[Index]);
-		}
-		const FDeviceSongLabelSpec LabelSpec = ComputeLabelSpec(TitleGroup);
-		for (const int32 Index : TitlePair.Value)
-		{
-			OptionLabels[Index] = MakeDeviceSongOptionLabel(Entries[Index], LabelSpec.FieldCount,
-			                                                LabelSpec.bUseFieldPrefixes);
-		}
-	}
-	return OptionLabels;
-}
-
-const FSongMetadata* FindDeviceSongByOptionLabel(const TArray<FSongMetadata>& Entries, const FString& OptionLabel)
-{
-	const TArray<FString> OptionLabels = MakeDeviceSongOptionLabels(Entries);
-	for (int32 Index = 0; Index < Entries.Num(); Index++)
-	{
-		if (OptionLabels[Index] == OptionLabel)
-		{
-			return &Entries[Index];
-		}
-	}
-	return nullptr;
 }
 }
 
@@ -320,7 +191,7 @@ void UAudioSelectWidget::HandleLoadFileButtonClicked(const UBSButton*)
 			SaveGamePlayerScore->SaveToSlot();
 		}
 
-		const auto OptionLabel = MakeSongOptionLabel(AudioFromFileAudioConfig.SongMetadata, SongFilePath);
+		const auto OptionLabel = MakeSongPathOptionLabel(AudioFromFileAudioConfig.SongMetadata, SongFilePath);
 		if (!ComboBox_AudioFromFileSongs->HasOption(OptionLabel))
 		{
 			ComboBox_AudioFromFileSongs->AddOption(OptionLabel);
@@ -346,7 +217,7 @@ void UAudioSelectWidget::HandleAudioFromFileButtonClicked(const UBSButton*)
 			if (TryGetMetadata(Manager, PlayerSettings.LastUsedSongFilePath, AudioFromFileAudioConfig, false))
 			{
 				AudioFromFileAudioConfig.SongMetadata = FilePathsAndSongMetadata[PlayerSettings.LastUsedSongFilePath];
-				ComboBox_AudioFromFileSongs->SetSelectedOption(MakeSongOptionLabel(
+				ComboBox_AudioFromFileSongs->SetSelectedOption(MakeSongPathOptionLabel(
 					AudioFromFileAudioConfig.SongMetadata, PlayerSettings.LastUsedSongFilePath));
 			}
 		}
@@ -390,6 +261,8 @@ void UAudioSelectWidget::HandleAddSongButtonClicked(const UBSButton*)
 	SongMetadataWidget->Populate(FSongMetadata{}, EAudioFormat::Capture, USongMetadataWidget::EMode::Add);
 	// Indicate that the next steps need to be completed in the SongMetadata widget
 	Button_AddSong->SetIsEnabled(false);
+	// Adds must be canceled or commited before starting game mode.
+	Button_Start->SetIsEnabled(false);
 }
 
 void UAudioSelectWidget::HandleBackButtonClicked(const UBSButton*)
@@ -473,8 +346,8 @@ void UAudioSelectWidget::OnSelectionChanged_AudioDeviceSongs(const TArray<FStrin
 	if (!OptionLabel.TrimStartAndEnd().IsEmpty())
 	{
 		const auto PlayerSettings = LoadPlayerSettings().User;
-		const FSongMetadata* MatchingEntry = FindDeviceSongByOptionLabel(PlayerSettings.RecentAudioDeviceSongMetadata,
-		                                                                 OptionLabel);
+		const FSongMetadata* MatchingEntry = FindSongByOptionLabel(PlayerSettings.RecentAudioDeviceSongMetadata,
+		                                                           OptionLabel);
 		if (ensureMsgf(MatchingEntry, TEXT("Song option has no backing entry: %s"), *OptionLabel))
 		{
 			AudioDeviceAudioConfig.SongMetadata = *MatchingEntry;
@@ -532,8 +405,8 @@ void UAudioSelectWidget::HandleRemoveButtonClicked()
 		FilePathsAndSongMetadata = PlayerSettings.FilePathsAndSongMetadata;
 		SavePlayerSettings(PlayerSettings);
 
-		const auto RemovedOptionLabel = MakeSongOptionLabel(AudioFromFileAudioConfig.SongMetadata,
-		                                                    AudioFromFileAudioConfig.SongFilePath);
+		const auto RemovedOptionLabel = MakeSongPathOptionLabel(AudioFromFileAudioConfig.SongMetadata,
+		                                                        AudioFromFileAudioConfig.SongFilePath);
 		ComboBox_AudioFromFileSongs->RemoveOption(RemovedOptionLabel);
 
 		if (FilePathsAndSongMetadata.Contains(PlayerSettings.LastUsedSongFilePath))
@@ -541,8 +414,9 @@ void UAudioSelectWidget::HandleRemoveButtonClicked()
 			AudioFromFileAudioConfig.SongMetadata = FilePathsAndSongMetadata[PlayerSettings.LastUsedSongFilePath];
 			if (TryGetMetadata(Manager, PlayerSettings.LastUsedSongFilePath, AudioFromFileAudioConfig, false))
 			{
-				ComboBox_AudioFromFileSongs->SetSelectedOption(MakeSongOptionLabel(
-					AudioFromFileAudioConfig.SongMetadata, PlayerSettings.LastUsedSongFilePath));
+				ComboBox_AudioFromFileSongs->SetSelectedOption(
+					MakeSongPathOptionLabel(AudioFromFileAudioConfig.SongMetadata,
+					                        PlayerSettings.LastUsedSongFilePath));
 			}
 		}
 		else
@@ -611,14 +485,15 @@ void UAudioSelectWidget::RebuildFileSongOptions(const FString& SelectedSongFileP
 	ComboBox_AudioFromFileSongs->ClearOptions();
 	for (const TPair<FString, FSongMetadata>& FilePathToMetadata : PlayerSettings.FilePathsAndSongMetadata)
 	{
-		ComboBox_AudioFromFileSongs->AddOption(MakeSongOptionLabel(FilePathToMetadata.Value, FilePathToMetadata.Key));
+		ComboBox_AudioFromFileSongs->AddOption(
+			MakeSongPathOptionLabel(FilePathToMetadata.Value, FilePathToMetadata.Key));
 	}
 	ComboBox_AudioFromFileSongs->Sort();
 
 	const FSongMetadata* FoundMetadata = PlayerSettings.FilePathsAndSongMetadata.Find(SelectedSongFilePath);
 	if (FoundMetadata)
 	{
-		ComboBox_AudioFromFileSongs->SetSelectedOption(MakeSongOptionLabel(*FoundMetadata, SelectedSongFilePath));
+		ComboBox_AudioFromFileSongs->SetSelectedOption(MakeSongPathOptionLabel(*FoundMetadata, SelectedSongFilePath));
 	}
 }
 
@@ -626,7 +501,7 @@ void UAudioSelectWidget::RebuildDeviceSongOptions(const FSongMetadata& SelectedS
 {
 	const auto PlayerSettings = LoadPlayerSettings().User;
 	const auto& Entries = PlayerSettings.RecentAudioDeviceSongMetadata;
-	const TArray<FString> OptionLabels = MakeDeviceSongOptionLabels(Entries);
+	const TArray<FString> OptionLabels = MakeSongOptionLabels(Entries);
 	ComboBox_AudioDeviceSongs->ClearOptions();
 	for (const FString& OptionLabel : OptionLabels)
 	{
@@ -669,11 +544,11 @@ void UAudioSelectWidget::UpdateSongInfoWidgets(const EAudioFormat AudioFormat)
 		{
 			RebuildFileSongOptions(AudioConfig->SongFilePath);
 			SongMetadataWidget->Populate(AudioConfig->SongMetadata, AudioFormat, USongMetadataWidget::EMode::Edit);
-			Button_AddSong->SetIsEnabled(true);
 		}
 		else if (AudioFormat == EAudioFormat::Capture)
 		{
 			RebuildDeviceSongOptions(AudioConfig->SongMetadata);
+			Button_AddSong->SetIsEnabled(true);
 			if (ShowSongMetadata)
 			{
 				SongMetadataWidget->Populate(AudioConfig->SongMetadata, AudioFormat, USongMetadataWidget::EMode::Edit);
