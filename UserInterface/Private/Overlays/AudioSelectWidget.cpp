@@ -76,6 +76,71 @@ FString FindSongPathByOptionLabel(const TMap<FString, FSongMetadata>& FilePathsA
 	}
 	return FString();
 }
+
+/** Given Songs (which includes the removed entry), returns the index of the option that sorts directly below the
+ *  removed option by option-label order, or the one directly above it if it is the last. INDEX_NONE if there is no
+ *  neighbor (the removed option was the only one). */
+int32 FindNeighborSongIndex(const TArray<FSongMetadata>& Songs,
+                            const FSongMetadata& RemovedSong)
+{
+	const int32 RemovedIndex = Songs.IndexOfByPredicate([&RemovedSong](const FSongMetadata& Current)
+	{
+		return Current.IsEqualExcludingLength(RemovedSong);
+	});
+	if (RemovedIndex == INDEX_NONE || Songs.Num() <= 1)
+	{
+		return INDEX_NONE;
+	}
+
+	const TArray<FString> OptionLabels = MakeSongOptionLabels(Songs);
+	TArray<int32> SortedIndices;
+	for (int32 Index = 0; Index < Songs.Num(); Index++)
+	{
+		SortedIndices.Add(Index);
+	}
+	SortedIndices.Sort([&OptionLabels](const int32 Left, const int32 Right)
+	{
+		return OptionLabels[Left] < OptionLabels[Right];
+	});
+
+	const int32 RemovedPosition = SortedIndices.IndexOfByPredicate([&RemovedIndex](const int32 Current)
+	{
+		return Current == RemovedIndex;
+	});
+	const int32 NeighborPosition = (RemovedPosition + 1 < SortedIndices.Num()) ? RemovedPosition + 1 : RemovedPosition - 1;
+	return SortedIndices[NeighborPosition];
+}
+
+/** Given the remaining Songs, returns the path of the option that sorts directly below the removed option by
+ *  option-label order, or the one directly above it if it is the last. Empty path if no entry remains. */
+FString FindNeighborSongFilePath(const TMap<FString, FSongMetadata>& Songs,
+                                 const FString& RemovedFilePath,
+                                 const FSongMetadata& RemovedMetadata)
+{
+	if (Songs.Num() == 0)
+	{
+		return FString();
+	}
+
+	const FString RemovedLabel = MakeSongPathOptionLabel(RemovedMetadata, RemovedFilePath);
+	TArray<TPair<FString, FString>> LabeledPaths;
+	for (const TPair<FString, FSongMetadata>& Current : Songs)
+	{
+		LabeledPaths.Emplace(MakeSongPathOptionLabel(Current.Value, Current.Key), Current.Key);
+	}
+	LabeledPaths.Emplace(RemovedLabel, RemovedFilePath);
+	LabeledPaths.Sort([](const TPair<FString, FString>& Left, const TPair<FString, FString>& Right)
+	{
+		return Left.Key < Right.Key;
+	});
+
+	const int32 RemovedPosition = LabeledPaths.IndexOfByPredicate([&RemovedLabel](const TPair<FString, FString>& Current)
+	{
+		return Current.Key == RemovedLabel;
+	});
+	const int32 NeighborPosition = (RemovedPosition + 1 < LabeledPaths.Num()) ? RemovedPosition + 1 : RemovedPosition - 1;
+	return LabeledPaths[NeighborPosition].Value;
+}
 }
 
 void UAudioSelectWidget::NativeConstruct()
@@ -394,7 +459,18 @@ void UAudioSelectWidget::HandleRemoveButtonClicked()
 		}
 		else
 		{
-			AudioDeviceAudioConfig.SongMetadata = {};
+			// Fall back to the option adjacent (below, else above) to the one just removed, before resetting to empty.
+			TArray<FSongMetadata> SongsWithRemoved = PlayerSettings.RecentAudioDeviceSongMetadata;
+			SongsWithRemoved.Add(AudioDeviceAudioConfig.SongMetadata);
+			const int32 NeighborIndex = FindNeighborSongIndex(SongsWithRemoved, AudioDeviceAudioConfig.SongMetadata);
+			if (NeighborIndex != INDEX_NONE)
+			{
+				AudioDeviceAudioConfig.SongMetadata = SongsWithRemoved[NeighborIndex];
+			}
+			else
+			{
+				AudioDeviceAudioConfig.SongMetadata = {};
+			}
 		}
 
 		UpdateSongInfoWidgets(EAudioFormat::Capture);
@@ -421,8 +497,24 @@ void UAudioSelectWidget::HandleRemoveButtonClicked()
 		}
 		else
 		{
-			AudioFromFileAudioConfig.SongMetadata = {};
-			AudioFromFileAudioConfig.SongFilePath.Empty();
+			// Fall back to the option adjacent (below, else above) to the one just removed, before resetting to empty.
+			const FString NeighborFilePath = FindNeighborSongFilePath(FilePathsAndSongMetadata,
+			                                                           AudioFromFileAudioConfig.SongFilePath,
+			                                                           AudioFromFileAudioConfig.SongMetadata);
+			if (NeighborFilePath.IsEmpty())
+			{
+				AudioFromFileAudioConfig.SongMetadata = {};
+				AudioFromFileAudioConfig.SongFilePath.Empty();
+			}
+			else
+			{
+				AudioFromFileAudioConfig.SongMetadata = FilePathsAndSongMetadata[NeighborFilePath];
+				if (TryGetMetadata(Manager, NeighborFilePath, AudioFromFileAudioConfig, false))
+				{
+					ComboBox_AudioFromFileSongs->SetSelectedOption(
+						MakeSongPathOptionLabel(AudioFromFileAudioConfig.SongMetadata, NeighborFilePath));
+				}
+			}
 		}
 		UpdateSongInfoWidgets(EAudioFormat::File);
 	}
