@@ -39,7 +39,7 @@ public:
 
 	virtual bool IsStressTest() const { return false; }
 	virtual uint32 GetRequiredDeviceNum() const override { return 1; }
-	virtual FString GetBeautifiedTestName() const override { return "TargetManager"; }
+	virtual FString GetBeautifiedTestName() const override = 0;
 
 	/** Initializes stuff. */
 	virtual bool Init();
