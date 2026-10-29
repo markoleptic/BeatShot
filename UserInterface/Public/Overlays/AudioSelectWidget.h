@@ -182,6 +182,4 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<USaveGamePlayerScore> SaveGamePlayerScore;
-
-	TMap<FString, FSongMetadata> FilePathsAndSongMetadata;
 };

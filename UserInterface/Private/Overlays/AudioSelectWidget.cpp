@@ -193,7 +193,6 @@ void UAudioSelectWidget::NativeConstruct()
 	ComboBox_InAudioDevices->AddOptions(InAudioDeviceList);
 
 	const auto PlayerSettings = LoadPlayerSettings().User;
-	FilePathsAndSongMetadata = PlayerSettings.FilePathsAndSongMetadata;
 	RebuildFileSongOptions(AudioFromFileAudioConfig.SongFilePath);
 
 	RebuildDeviceSongOptions(AudioDeviceAudioConfig.SongMetadata);
@@ -248,7 +247,6 @@ void UAudioSelectWidget::HandleLoadFileButtonClicked(const UBSButton*)
 	{
 		auto PlayerSettings = LoadPlayerSettings().User;
 		PlayerSettings.AddSongMetadata(SongFilePath, AudioFromFileAudioConfig.SongMetadata);
-		FilePathsAndSongMetadata = PlayerSettings.FilePathsAndSongMetadata;
 		SavePlayerSettings(PlayerSettings);
 
 		if (SaveGamePlayerScore->MaybeUpdateSongMetadata(AudioFromFileAudioConfig.SongMetadata))
@@ -277,11 +275,12 @@ void UAudioSelectWidget::HandleAudioFromFileButtonClicked(const UBSButton*)
 	if (ComboBox_AudioFromFileSongs->GetSelectedIndex() == -1)
 	{
 		const auto PlayerSettings = LoadPlayerSettings().User;
-		if (FilePathsAndSongMetadata.Contains(PlayerSettings.LastUsedSongFilePath))
+		const auto& SongsByPath = PlayerSettings.FilePathsAndSongMetadata;
+		if (SongsByPath.Contains(PlayerSettings.LastUsedSongFilePath))
 		{
 			if (TryGetMetadata(Manager, PlayerSettings.LastUsedSongFilePath, AudioFromFileAudioConfig, false))
 			{
-				AudioFromFileAudioConfig.SongMetadata = FilePathsAndSongMetadata[PlayerSettings.LastUsedSongFilePath];
+				AudioFromFileAudioConfig.SongMetadata = SongsByPath[PlayerSettings.LastUsedSongFilePath];
 				ComboBox_AudioFromFileSongs->SetSelectedOption(MakeSongPathOptionLabel(
 					AudioFromFileAudioConfig.SongMetadata, PlayerSettings.LastUsedSongFilePath));
 			}
@@ -380,7 +379,8 @@ void UAudioSelectWidget::OnSelectionChanged_AudioFromFileSongs(const TArray<FStr
 	}
 
 	const FString OptionLabel = ActiveSelections[0];
-	const FString NewSongFilePath = FindSongPathByOptionLabel(FilePathsAndSongMetadata, OptionLabel);
+	const auto PlayerSettings = LoadPlayerSettings().User;
+	const FString NewSongFilePath = FindSongPathByOptionLabel(PlayerSettings.FilePathsAndSongMetadata, OptionLabel);
 	if (!ensureMsgf(!NewSongFilePath.IsEmpty(), TEXT("File option has no backing path: %s"), *OptionLabel))
 	{
 		return;
@@ -388,7 +388,7 @@ void UAudioSelectWidget::OnSelectionChanged_AudioFromFileSongs(const TArray<FStr
 
 	if (TryGetMetadata(Manager, NewSongFilePath, AudioFromFileAudioConfig, false))
 	{
-		AudioFromFileAudioConfig.SongMetadata = FilePathsAndSongMetadata[NewSongFilePath];
+		AudioFromFileAudioConfig.SongMetadata = PlayerSettings.FilePathsAndSongMetadata[NewSongFilePath];
 	}
 	else
 	{
@@ -478,16 +478,16 @@ void UAudioSelectWidget::HandleRemoveButtonClicked()
 	else
 	{
 		PlayerSettings.RemoveSongMetadata(AudioFromFileAudioConfig.SongFilePath);
-		FilePathsAndSongMetadata = PlayerSettings.FilePathsAndSongMetadata;
 		SavePlayerSettings(PlayerSettings);
+		const auto& SongsByPath = PlayerSettings.FilePathsAndSongMetadata;
 
 		const auto RemovedOptionLabel = MakeSongPathOptionLabel(AudioFromFileAudioConfig.SongMetadata,
 		                                                        AudioFromFileAudioConfig.SongFilePath);
 		ComboBox_AudioFromFileSongs->RemoveOption(RemovedOptionLabel);
 
-		if (FilePathsAndSongMetadata.Contains(PlayerSettings.LastUsedSongFilePath))
+		if (SongsByPath.Contains(PlayerSettings.LastUsedSongFilePath))
 		{
-			AudioFromFileAudioConfig.SongMetadata = FilePathsAndSongMetadata[PlayerSettings.LastUsedSongFilePath];
+			AudioFromFileAudioConfig.SongMetadata = SongsByPath[PlayerSettings.LastUsedSongFilePath];
 			if (TryGetMetadata(Manager, PlayerSettings.LastUsedSongFilePath, AudioFromFileAudioConfig, false))
 			{
 				ComboBox_AudioFromFileSongs->SetSelectedOption(
@@ -498,7 +498,7 @@ void UAudioSelectWidget::HandleRemoveButtonClicked()
 		else
 		{
 			// Fall back to the option adjacent (below, else above) to the one just removed, before resetting to empty.
-			const FString NeighborFilePath = FindNeighborSongFilePath(FilePathsAndSongMetadata,
+			const FString NeighborFilePath = FindNeighborSongFilePath(SongsByPath,
 			                                                           AudioFromFileAudioConfig.SongFilePath,
 			                                                           AudioFromFileAudioConfig.SongMetadata);
 			if (NeighborFilePath.IsEmpty())
@@ -508,7 +508,7 @@ void UAudioSelectWidget::HandleRemoveButtonClicked()
 			}
 			else
 			{
-				AudioFromFileAudioConfig.SongMetadata = FilePathsAndSongMetadata[NeighborFilePath];
+				AudioFromFileAudioConfig.SongMetadata = SongsByPath[NeighborFilePath];
 				if (TryGetMetadata(Manager, NeighborFilePath, AudioFromFileAudioConfig, false))
 				{
 					ComboBox_AudioFromFileSongs->SetSelectedOption(
@@ -564,7 +564,6 @@ void UAudioSelectWidget::HandleCommitButtonClicked()
 		PlayerSettings.EditSongMetadata(AudioFromFileAudioConfig.SongFilePath, SongMetadata);
 
 		AudioFromFileAudioConfig.SongMetadata = SongMetadata;
-		FilePathsAndSongMetadata = PlayerSettings.FilePathsAndSongMetadata;
 		SavePlayerSettings(PlayerSettings);
 
 		UpdateSongInfoWidgets(EAudioFormat::File);
