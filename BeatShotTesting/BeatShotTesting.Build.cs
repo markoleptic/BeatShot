@@ -7,8 +7,8 @@ public class BeatShotTesting : ModuleRules
 	public BeatShotTesting(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PublicDependencyModuleNames.AddRange([
-			"Core", "CoreUObject", "Engine", "UnrealEd", "FunctionalTesting", "BeatShot", "BeatShotGlobal",
-			"Json", "JsonUtilities", "UserInterface"
+			"Core", "CoreUObject", "Engine", "SlateCore", "UMG", "UnrealEd", "FunctionalTesting", "BeatShot",
+			"BeatShotGlobal", "Json", "JsonUtilities", "UserInterface"
 		]);
 	}
 }
