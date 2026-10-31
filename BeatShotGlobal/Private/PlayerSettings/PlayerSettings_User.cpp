@@ -90,11 +90,10 @@ bool FPlayerSettings_User::AddAudioDeviceSongMetadata(const FSongMetadata& SongM
 void FPlayerSettings_User::RemoveAudioDeviceSongMetadata(const FSongMetadata& SongMetadata)
 {
 	// Length is user-editable, so it must not break the lookup.
-	RecentAudioDeviceSongMetadata.RemoveAll(
-		[SongMetadata](const FSongMetadata& Current)
-		{
-			return SongMetadata.IsEqualExcludingLength(Current);
-		});
+	RecentAudioDeviceSongMetadata.RemoveAll([SongMetadata](const FSongMetadata& Current)
+	{
+		return SongMetadata.IsEqualExcludingLength(Current);
+	});
 
 	if (SongMetadata.IsEqualExcludingLength(LastUsedAudioDeviceSongMetadata))
 	{

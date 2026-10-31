@@ -13,9 +13,7 @@ FString FormatSongLength(const float LengthSeconds)
 }
 }
 
-FString MakeSongOptionLabel(const FSongMetadata& SongMetadata,
-                            const int32 MaxFieldCount,
-                            const bool bUseFieldPrefixes)
+FString MakeSongOptionLabel(const FSongMetadata& SongMetadata, const int32 MaxFieldCount, const bool bUseFieldPrefixes)
 {
 	FString Label = SongMetadata.Title;
 	if (MaxFieldCount >= 2 && !SongMetadata.Artist.IsEmpty())
@@ -118,7 +116,8 @@ TArray<FString> MakeSongOptionLabels(const TArray<FSongMetadata>& Entries)
 		const FSongOptionLabelSpec LabelSpec = ComputeSongOptionLabelSpec(TitleGroup);
 		for (const int32 Index : TitlePair.Value)
 		{
-			OptionLabels[Index] = MakeSongOptionLabel(Entries[Index], LabelSpec.FieldCount, LabelSpec.bUseFieldPrefixes);
+			OptionLabels[Index] =
+				MakeSongOptionLabel(Entries[Index], LabelSpec.FieldCount, LabelSpec.bUseFieldPrefixes);
 		}
 	}
 	return OptionLabels;
@@ -135,4 +134,109 @@ const FSongMetadata* FindSongByOptionLabel(const TArray<FSongMetadata>& Entries,
 		}
 	}
 	return nullptr;
+}
+
+namespace
+{
+TArray<TPair<FString, FSongMetadata>> ToEntries(const TMap<FString, FSongMetadata>& SongsByPath)
+{
+	TArray<TPair<FString, FSongMetadata>> Entries;
+	Entries.Reserve(SongsByPath.Num());
+	for (const TPair<FString, FSongMetadata>& Current : SongsByPath)
+	{
+		Entries.Emplace(Current);
+	}
+	return Entries;
+}
+
+TArray<FString> PathsOf(const TMap<FString, FSongMetadata>& SongsByPath)
+{
+	TArray<FString> Paths;
+	Paths.Reserve(SongsByPath.Num());
+	for (const TPair<FString, FSongMetadata>& Current : SongsByPath)
+	{
+		Paths.Add(Current.Key);
+	}
+	return Paths;
+}
+
+bool AreLabelsDistinct(const TArray<FString>& Labels)
+{
+	TSet<FString> DistinctLabels;
+	for (const FString& Label : Labels)
+	{
+		DistinctLabels.Add(Label);
+	}
+	return DistinctLabels.Num() == Labels.Num();
+}
+}
+
+TArray<FString> MakeSongPathOptionLabels(const TMap<FString, FSongMetadata>& SongsByPath)
+{
+	const auto Entries = ToEntries(SongsByPath);
+	TArray<FString> OptionLabels;
+	OptionLabels.SetNum(Entries.Num());
+
+	TMap<FString, TArray<int32>> TitleToIndices;
+	for (int32 Index = 0; Index < Entries.Num(); Index++)
+	{
+		TitleToIndices.FindOrAdd(Entries[Index].Value.Title).Add(Index);
+	}
+
+	for (const TPair<FString, TArray<int32>>& TitleToIndicesPair : TitleToIndices)
+	{
+		const TArray<int32>& GroupIndices = TitleToIndicesPair.Value;
+		TArray<FSongMetadata> TitleGroup;
+		for (const int32 Index : GroupIndices)
+		{
+			TitleGroup.Add(Entries[Index].Value);
+		}
+		const FSongOptionLabelSpec LabelSpec = ComputeSongOptionLabelSpec(TitleGroup);
+
+		TArray<FString> GroupLabels;
+		GroupLabels.Reserve(GroupIndices.Num());
+		for (const int32 Index : GroupIndices)
+		{
+			GroupLabels.Add(
+				MakeSongOptionLabel(Entries[Index].Value, LabelSpec.FieldCount, LabelSpec.bUseFieldPrefixes));
+		}
+		if (!AreLabelsDistinct(GroupLabels))
+		{
+			// Fully duplicated metadata under different paths: disambiguate by the shorter identifier first.
+			for (int32 GroupIndex = 0; GroupIndex < GroupIndices.Num(); GroupIndex++)
+			{
+				GroupLabels[GroupIndex] += TEXT(" (") + FPaths::GetBaseFilename(Entries[GroupIndices[GroupIndex]].Key) +
+					TEXT(")");
+			}
+		}
+		if (!AreLabelsDistinct(GroupLabels))
+		{
+			// Same base filename too: the full path is the only remaining disambiguator, and it is unique.
+			for (int32 GroupIndex = 0; GroupIndex < GroupIndices.Num(); GroupIndex++)
+			{
+				GroupLabels[GroupIndex] += TEXT(" (") + Entries[GroupIndices[GroupIndex]].Key + TEXT(")");
+			}
+		}
+		for (int32 GroupIndex = 0; GroupIndex < GroupIndices.Num(); GroupIndex++)
+		{
+			OptionLabels[GroupIndices[GroupIndex]] = GroupLabels[GroupIndex];
+		}
+	}
+	return OptionLabels;
+}
+
+FString GetSongPathOptionLabel(const TMap<FString, FSongMetadata>& SongsByPath, const FString& SongFilePath)
+{
+	const TArray<FString> OptionLabels = MakeSongPathOptionLabels(SongsByPath);
+	const TArray<FString> Paths = PathsOf(SongsByPath);
+	const int32 Index = Paths.Find(SongFilePath);
+	return Index == INDEX_NONE ? FString() : OptionLabels[Index];
+}
+
+FString FindSongPathByOptionLabel(const TMap<FString, FSongMetadata>& SongsByPath, const FString& OptionLabel)
+{
+	const TArray<FString> OptionLabels = MakeSongPathOptionLabels(SongsByPath);
+	const TArray<FString> Paths = PathsOf(SongsByPath);
+	const int32 Index = OptionLabels.Find(OptionLabel);
+	return Index == INDEX_NONE ? FString() : Paths[Index];
 }

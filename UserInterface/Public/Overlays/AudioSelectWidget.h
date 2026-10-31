@@ -94,6 +94,8 @@ protected:
 	UBSComboBoxString* ComboBox_AudioFromFileSongs;
 	UPROPERTY(meta = (BindWidget))
 	UBSComboBoxString* ComboBox_AudioDeviceSongs;
+	UPROPERTY(meta = (BindWidget))
+	UBSComboBoxString* ComboBox_SortingMethod;
 
 	UPROPERTY(meta = (BindWidget))
 	UCheckBox* Checkbox_PlaybackAudio;
@@ -136,6 +138,8 @@ private:
 	                                           ESelectInfo::Type SelectionType);
 	UFUNCTION()
 	void OnSelectionChanged_AudioDeviceSongs(const TArray<FString>& ActiveSelections, ESelectInfo::Type SelectionType);
+	UFUNCTION()
+	void OnSelectionChanged_SortingMethod(const TArray<FString>& ActiveSelections, ESelectInfo::Type SelectionType);
 	UFUNCTION()
 	void OnCheckStateChanged_PlaybackAudio(bool bIsChecked);
 

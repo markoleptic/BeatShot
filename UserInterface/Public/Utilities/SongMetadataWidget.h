@@ -7,6 +7,8 @@
 #include "Utilities/SongMetadata.h"
 #include "SongMetadataWidget.generated.h"
 
+class UTooltipIcon;
+class UHorizontalBox;
 class UTextBlock;
 enum class EAudioFormat : uint8;
 class UBSButton;
@@ -57,7 +59,19 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* ErrorText;
 
-	void Populate(const FSongMetadata& InSongMetadata, EAudioFormat AudioFormat, EMode InMode);
+	UPROPERTY(meta = (BindWidget))
+	UTooltipIcon* QMark_SongLength;
+
+	/** Shows the full file path for file-mode selections; hidden otherwise. */
+	UPROPERTY(meta = (BindWidget))
+	UHorizontalBox* Box_SongFilePath;
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* Text_SongFilePath;
+
+	void Populate(const FSongMetadata& InSongMetadata,
+	              EAudioFormat AudioFormat,
+	              EMode InMode,
+	              const FString& SongFilePath = FString());
 
 	void SetErrorMessage(const FText& ErrorMessage);
 

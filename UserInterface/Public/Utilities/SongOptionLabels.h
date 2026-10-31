@@ -24,9 +24,7 @@ struct FSongOptionLabelSpec
 
 /** Labels one song with up to MaxFieldCount fields; parenthetical parts get a localized field prefix when
  *  bUseFieldPrefixes. */
-FString MakeSongOptionLabel(const FSongMetadata& SongMetadata,
-                            const int32 MaxFieldCount,
-                            const bool bUseFieldPrefixes);
+FString MakeSongOptionLabel(const FSongMetadata& SongMetadata, const int32 MaxFieldCount, const bool bUseFieldPrefixes);
 
 /** Computes the label spec for a group of songs sharing a title. */
 FSongOptionLabelSpec ComputeSongOptionLabelSpec(const TArray<FSongMetadata>& TitleGroup);
@@ -37,3 +35,14 @@ TArray<FString> MakeSongOptionLabels(const TArray<FSongMetadata>& Entries);
 
 /** Finds the entry whose option label matches OptionLabel (see MakeSongOptionLabels), or nullptr if none does. */
 const FSongMetadata* FindSongByOptionLabel(const TArray<FSongMetadata>& Entries, const FString& OptionLabel);
+
+/** Option labels for a file song list: smallest distinguishing label within shared-title groups (see
+ *  ComputeSongOptionLabelSpec); entries with fully duplicated metadata are disambiguated by base filename, then
+ *  full path, so labels stay unique and the box may key on them. Aligned with SongsByPath iteration order. */
+TArray<FString> MakeSongPathOptionLabels(const TMap<FString, FSongMetadata>& SongsByPath);
+
+/** The MakeSongPathOptionLabels label for the given path, or empty if the path isn't among the songs. */
+FString GetSongPathOptionLabel(const TMap<FString, FSongMetadata>& SongsByPath, const FString& SongFilePath);
+
+/** The path whose file list option label matches OptionLabel, or empty if none does. */
+FString FindSongPathByOptionLabel(const TMap<FString, FSongMetadata>& SongsByPath, const FString& OptionLabel);

@@ -4,7 +4,10 @@
 #include "Utilities/SongMetadataWidget.h"
 #include "BSGameModeConfig/AudioConfig.h"
 #include "Components/EditableTextBox.h"
+#include "Components/HorizontalBox.h"
 #include "Components/TextBlock.h"
+#include "Utilities/BSWidgetInterface.h"
+#include "Utilities/TooltipIcon.h"
 #include "Utilities/Buttons/BSButton.h"
 
 namespace
@@ -41,11 +44,14 @@ void USongMetadataWidget::NativeConstruct()
 	Button_Edit->OnBSButtonPressed.AddUObject(this, &ThisClass::HandleEditButtonClicked);
 	Button_Add->OnBSButtonPressed.AddUObject(this, &ThisClass::HandleAddButtonClicked);
 	Button_Commit->OnBSButtonPressed.AddUObject(this, &ThisClass::HandleCommitButtonClicked);
+
+	IBSWidgetInterface::SetupTooltip(QMark_SongLength, IBSWidgetInterface::GetTooltipTextFromKey("AF_SongLength"));
 }
 
 void USongMetadataWidget::Populate(const FSongMetadata& InSongMetadata,
                                    const EAudioFormat AudioFormat,
-                                   const EMode InMode)
+                                   const EMode InMode,
+                                   const FString& SongFilePath)
 {
 	IsPopulating = true;
 	ON_SCOPE_EXIT { IsPopulating = false; };
@@ -55,6 +61,17 @@ void USongMetadataWidget::Populate(const FSongMetadata& InSongMetadata,
 	Value_Album->SetText(FText::FromString(InSongMetadata.Album));
 	Value_Year->SetText(FText::FromString(InSongMetadata.Year));
 	Value_Genre->SetText(FText::FromString(InSongMetadata.Genre));
+
+	const bool bShowFilePath = AudioFormat == EAudioFormat::File && !SongFilePath.IsEmpty();
+	Box_SongFilePath->SetVisibility(bShowFilePath ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
+	if (bShowFilePath)
+	{
+		Text_SongFilePath->SetText(FText::FromString(SongFilePath));
+	}
+
+	QMark_SongLength->SetVisibility(AudioFormat == EAudioFormat::Capture
+	                                ? ESlateVisibility::Visible
+	                                : ESlateVisibility::Collapsed);
 
 	const int32 TotalSeconds = FMath::FloorToInt(InSongMetadata.Length);
 	Value_Minutes->SetText(FText::AsNumber(TotalSeconds / 60, &FormattingOptions));

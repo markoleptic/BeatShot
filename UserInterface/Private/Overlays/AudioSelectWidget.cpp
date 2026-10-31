@@ -53,35 +53,10 @@ bool TryGetMetadata(const TObjectPtr<UAudioAnalyzerManager>& Manager,
 	return true;
 }
 
-FString MakeSongPathOptionLabel(const FSongMetadata& SongMetadata, const FString& SongFilePath)
-{
-	// Full paths are unique, so labels are unique, and the box may key on them.
-	FString Label = SongMetadata.Title.IsEmpty() ? FPaths::GetBaseFilename(SongFilePath) : SongMetadata.Title;
-	if (!SongMetadata.Artist.IsEmpty())
-	{
-		Label += TEXT(" — ") + SongMetadata.Artist;
-	}
-	return Label + TEXT(" (") + SongFilePath + TEXT(")");
-}
-
-FString FindSongPathByOptionLabel(const TMap<FString, FSongMetadata>& FilePathsAndSongMetadata,
-                                  const FString& OptionLabel)
-{
-	for (const TPair<FString, FSongMetadata>& Current : FilePathsAndSongMetadata)
-	{
-		if (MakeSongPathOptionLabel(Current.Value, Current.Key) == OptionLabel)
-		{
-			return Current.Key;
-		}
-	}
-	return FString();
-}
-
 /** Given Songs (which includes the removed entry), returns the index of the option that sorts directly below the
  *  removed option by option-label order, or the one directly above it if it is the last. INDEX_NONE if there is no
  *  neighbor (the removed option was the only one). */
-int32 FindNeighborSongIndex(const TArray<FSongMetadata>& Songs,
-                            const FSongMetadata& RemovedSong)
+int32 FindNeighborSongIndex(const TArray<FSongMetadata>& Songs, const FSongMetadata& RemovedSong)
 {
 	const int32 RemovedIndex = Songs.IndexOfByPredicate([&RemovedSong](const FSongMetadata& Current)
 	{
@@ -107,8 +82,25 @@ int32 FindNeighborSongIndex(const TArray<FSongMetadata>& Songs,
 	{
 		return Current == RemovedIndex;
 	});
-	const int32 NeighborPosition = (RemovedPosition + 1 < SortedIndices.Num()) ? RemovedPosition + 1 : RemovedPosition - 1;
+	const int32 NeighborPosition = (RemovedPosition + 1 < SortedIndices.Num())
+	                               ? RemovedPosition + 1
+	                               : RemovedPosition - 1;
 	return SortedIndices[NeighborPosition];
+}
+
+/** Maps each option label of SongsByPath to its path (see MakeSongPathOptionLabels; labels stay unique). */
+TArray<TPair<FString, FString>> LabeledPathsOf(const TMap<FString, FSongMetadata>& SongsByPath)
+{
+	const TArray<FString> OptionLabels = MakeSongPathOptionLabels(SongsByPath);
+	TArray<TPair<FString, FString>> LabeledPaths;
+	LabeledPaths.Reserve(OptionLabels.Num());
+	int32 PathIndex = 0;
+	for (const TPair<FString, FSongMetadata>& Current : SongsByPath)
+	{
+		LabeledPaths.Emplace(OptionLabels[PathIndex], Current.Key);
+		PathIndex++;
+	}
+	return LabeledPaths;
 }
 
 /** Given the remaining Songs, returns the path of the option that sorts directly below the removed option by
@@ -122,23 +114,23 @@ FString FindNeighborSongFilePath(const TMap<FString, FSongMetadata>& Songs,
 		return FString();
 	}
 
-	const FString RemovedLabel = MakeSongPathOptionLabel(RemovedMetadata, RemovedFilePath);
-	TArray<TPair<FString, FString>> LabeledPaths;
-	for (const TPair<FString, FSongMetadata>& Current : Songs)
-	{
-		LabeledPaths.Emplace(MakeSongPathOptionLabel(Current.Value, Current.Key), Current.Key);
-	}
-	LabeledPaths.Emplace(RemovedLabel, RemovedFilePath);
+	// Labels must be computed in the context that included the removed entry, the one displayed when removing it.
+	TMap<FString, FSongMetadata> SongsWithRemoved = Songs;
+	SongsWithRemoved.Add(RemovedFilePath, RemovedMetadata);
+
+	TArray<TPair<FString, FString>> LabeledPaths = LabeledPathsOf(SongsWithRemoved);
 	LabeledPaths.Sort([](const TPair<FString, FString>& Left, const TPair<FString, FString>& Right)
 	{
 		return Left.Key < Right.Key;
 	});
 
-	const int32 RemovedPosition = LabeledPaths.IndexOfByPredicate([&RemovedLabel](const TPair<FString, FString>& Current)
-	{
-		return Current.Key == RemovedLabel;
-	});
-	const int32 NeighborPosition = (RemovedPosition + 1 < LabeledPaths.Num()) ? RemovedPosition + 1 : RemovedPosition - 1;
+	const FString RemovedLabel = GetSongPathOptionLabel(SongsWithRemoved, RemovedFilePath);
+	const int32 RemovedPosition = LabeledPaths.IndexOfByPredicate(
+		[&RemovedLabel](const TPair<FString, FString>& Current)
+		{
+			return Current.Key == RemovedLabel;
+		});
+	const int32 NeighborPosition = RemovedPosition + 1 < LabeledPaths.Num() ? RemovedPosition + 1 : RemovedPosition - 1;
 	return LabeledPaths[NeighborPosition].Value;
 }
 }
@@ -178,6 +170,8 @@ void UAudioSelectWidget::NativeConstruct()
 		this, &UAudioSelectWidget::OnSelectionChanged_AudioDeviceSongs);
 	ComboBox_AudioFromFileSongs->OnSelectionChanged.AddUniqueDynamic(
 		this, &UAudioSelectWidget::OnSelectionChanged_AudioFromFileSongs);
+	ComboBox_SortingMethod->OnSelectionChanged.AddUniqueDynamic(
+		this, &UAudioSelectWidget::OnSelectionChanged_SortingMethod);
 	Checkbox_PlaybackAudio->OnCheckStateChanged.AddUniqueDynamic(
 		this, &UAudioSelectWidget::OnCheckStateChanged_PlaybackAudio);
 
@@ -193,6 +187,20 @@ void UAudioSelectWidget::NativeConstruct()
 	ComboBox_InAudioDevices->AddOptions(InAudioDeviceList);
 
 	const auto PlayerSettings = LoadPlayerSettings().User;
+
+	const FString SortBySongTitleLabel = GetWidgetTextFromKey("AF_SortBySongTitle").ToString();
+	const FString SortByMostRecentLabel = GetWidgetTextFromKey("AF_SortByMostRecent").ToString();
+	if (!ComboBox_SortingMethod->HasOption(SortBySongTitleLabel))
+	{
+		ComboBox_SortingMethod->AddOption(SortBySongTitleLabel);
+	}
+	if (!ComboBox_SortingMethod->HasOption(SortByMostRecentLabel))
+	{
+		ComboBox_SortingMethod->AddOption(SortByMostRecentLabel);
+	}
+	const bool bSortByMostRecent = PlayerSettings.SongMetadataSortingMethod == ESongMetadataSortingMethod::MostRecent;
+	ComboBox_SortingMethod->SetSelectedOption(bSortByMostRecent ? SortByMostRecentLabel : SortBySongTitleLabel);
+
 	RebuildFileSongOptions(AudioFromFileAudioConfig.SongFilePath);
 
 	RebuildDeviceSongOptions(AudioDeviceAudioConfig.SongMetadata);
@@ -254,13 +262,8 @@ void UAudioSelectWidget::HandleLoadFileButtonClicked(const UBSButton*)
 			SaveGamePlayerScore->SaveToSlot();
 		}
 
-		const auto OptionLabel = MakeSongPathOptionLabel(AudioFromFileAudioConfig.SongMetadata, SongFilePath);
-		if (!ComboBox_AudioFromFileSongs->HasOption(OptionLabel))
-		{
-			ComboBox_AudioFromFileSongs->AddOption(OptionLabel);
-		}
-		ComboBox_AudioFromFileSongs->Sort();
-		ComboBox_AudioFromFileSongs->SetSelectedOption(OptionLabel);
+		// Rebuild rather than AddOption+Sort so the new file lands in the order of the saved sorting method (most recent first, when MostRecent).
+		RebuildFileSongOptions(SongFilePath);
 	}
 	else
 	{
@@ -281,8 +284,8 @@ void UAudioSelectWidget::HandleAudioFromFileButtonClicked(const UBSButton*)
 			if (TryGetMetadata(Manager, PlayerSettings.LastUsedSongFilePath, AudioFromFileAudioConfig, false))
 			{
 				AudioFromFileAudioConfig.SongMetadata = SongsByPath[PlayerSettings.LastUsedSongFilePath];
-				ComboBox_AudioFromFileSongs->SetSelectedOption(MakeSongPathOptionLabel(
-					AudioFromFileAudioConfig.SongMetadata, PlayerSettings.LastUsedSongFilePath));
+				ComboBox_AudioFromFileSongs->SetSelectedOption(
+					GetSongPathOptionLabel(SongsByPath, PlayerSettings.LastUsedSongFilePath));
 			}
 		}
 	}
@@ -422,6 +425,25 @@ void UAudioSelectWidget::OnSelectionChanged_AudioDeviceSongs(const TArray<FStrin
 	UpdateSongInfoWidgets(EAudioFormat::Capture);
 }
 
+void UAudioSelectWidget::OnSelectionChanged_SortingMethod(const TArray<FString>& ActiveSelections,
+                                                          const ESelectInfo::Type SelectionType)
+{
+	if (ActiveSelections.IsEmpty() || SelectionType == ESelectInfo::Type::Direct)
+	{
+		return;
+	}
+
+	const bool bMostRecent = ActiveSelections[0] == GetWidgetTextFromKey("AF_SortByMostRecent").ToString();
+	auto PlayerSettings = LoadPlayerSettings().User;
+	PlayerSettings.SongMetadataSortingMethod = bMostRecent
+	                                           ? ESongMetadataSortingMethod::MostRecent
+	                                           : ESongMetadataSortingMethod::SongTitle;
+	SavePlayerSettings(PlayerSettings);
+
+	RebuildFileSongOptions(AudioFromFileAudioConfig.SongFilePath);
+	RebuildDeviceSongOptions(AudioDeviceAudioConfig.SongMetadata);
+}
+
 void UAudioSelectWidget::OnCheckStateChanged_PlaybackAudio(const bool bIsChecked)
 {
 	AudioDeviceAudioConfig.bPlaybackAudio = bIsChecked;
@@ -481,9 +503,13 @@ void UAudioSelectWidget::HandleRemoveButtonClicked()
 		SavePlayerSettings(PlayerSettings);
 		const auto& SongsByPath = PlayerSettings.FilePathsAndSongMetadata;
 
-		const auto RemovedOptionLabel = MakeSongPathOptionLabel(AudioFromFileAudioConfig.SongMetadata,
-		                                                        AudioFromFileAudioConfig.SongFilePath);
-		ComboBox_AudioFromFileSongs->RemoveOption(RemovedOptionLabel);
+		// Option labels depend on the song set, so compute them in the pre-removal context, the one on display
+		// when the removal happened.
+		TMap<FString, FSongMetadata> SongsWithRemoved = SongsByPath;
+		SongsWithRemoved.Add(AudioFromFileAudioConfig.SongFilePath, AudioFromFileAudioConfig.SongMetadata);
+
+		ComboBox_AudioFromFileSongs->RemoveOption(
+			GetSongPathOptionLabel(SongsWithRemoved, AudioFromFileAudioConfig.SongFilePath));
 
 		if (SongsByPath.Contains(PlayerSettings.LastUsedSongFilePath))
 		{
@@ -491,16 +517,15 @@ void UAudioSelectWidget::HandleRemoveButtonClicked()
 			if (TryGetMetadata(Manager, PlayerSettings.LastUsedSongFilePath, AudioFromFileAudioConfig, false))
 			{
 				ComboBox_AudioFromFileSongs->SetSelectedOption(
-					MakeSongPathOptionLabel(AudioFromFileAudioConfig.SongMetadata,
-					                        PlayerSettings.LastUsedSongFilePath));
+					GetSongPathOptionLabel(SongsWithRemoved, PlayerSettings.LastUsedSongFilePath));
 			}
 		}
 		else
 		{
 			// Fall back to the option adjacent (below, else above) to the one just removed, before resetting to empty.
 			const FString NeighborFilePath = FindNeighborSongFilePath(SongsByPath,
-			                                                           AudioFromFileAudioConfig.SongFilePath,
-			                                                           AudioFromFileAudioConfig.SongMetadata);
+			                                                          AudioFromFileAudioConfig.SongFilePath,
+			                                                          AudioFromFileAudioConfig.SongMetadata);
 			if (NeighborFilePath.IsEmpty())
 			{
 				AudioFromFileAudioConfig.SongMetadata = {};
@@ -512,7 +537,7 @@ void UAudioSelectWidget::HandleRemoveButtonClicked()
 				if (TryGetMetadata(Manager, NeighborFilePath, AudioFromFileAudioConfig, false))
 				{
 					ComboBox_AudioFromFileSongs->SetSelectedOption(
-						MakeSongPathOptionLabel(AudioFromFileAudioConfig.SongMetadata, NeighborFilePath));
+						GetSongPathOptionLabel(SongsWithRemoved, NeighborFilePath));
 				}
 			}
 		}
@@ -573,32 +598,68 @@ void UAudioSelectWidget::HandleCommitButtonClicked()
 void UAudioSelectWidget::RebuildFileSongOptions(const FString& SelectedSongFilePath)
 {
 	const auto PlayerSettings = LoadPlayerSettings().User;
+	const auto& SongsByPath = PlayerSettings.FilePathsAndSongMetadata;
+	const bool bMostRecent = PlayerSettings.SongMetadataSortingMethod == ESongMetadataSortingMethod::MostRecent;
 	ComboBox_AudioFromFileSongs->ClearOptions();
-	for (const TPair<FString, FSongMetadata>& FilePathToMetadata : PlayerSettings.FilePathsAndSongMetadata)
-	{
-		ComboBox_AudioFromFileSongs->AddOption(
-			MakeSongPathOptionLabel(FilePathToMetadata.Value, FilePathToMetadata.Key));
-	}
-	ComboBox_AudioFromFileSongs->Sort();
 
-	const FSongMetadata* FoundMetadata = PlayerSettings.FilePathsAndSongMetadata.Find(SelectedSongFilePath);
-	if (FoundMetadata)
+	// All labels come from the full song set, so every option and the re-selection share one consistent context.
+	const TArray<FString> OptionLabels = MakeSongPathOptionLabels(SongsByPath);
+	TArray<FString> Paths;
+	Paths.Reserve(SongsByPath.Num());
+	for (const TPair<FString, FSongMetadata>& FilePathToMetadata : SongsByPath)
 	{
-		ComboBox_AudioFromFileSongs->SetSelectedOption(MakeSongPathOptionLabel(*FoundMetadata, SelectedSongFilePath));
+		Paths.Add(FilePathToMetadata.Key);
+	}
+
+	if (bMostRecent)
+	{
+		// Recency list is oldest -> newest; display most recent first.
+		for (int32 RecencyIndex = PlayerSettings.RecentFilePaths.Num() - 1; RecencyIndex >= 0; --RecencyIndex)
+		{
+			const int32 PathIndex = Paths.Find(PlayerSettings.RecentFilePaths[RecencyIndex]);
+			if (PathIndex != INDEX_NONE)
+			{
+				ComboBox_AudioFromFileSongs->AddOption(OptionLabels[PathIndex]);
+			}
+		}
+	}
+	else
+	{
+		for (const FString& OptionLabel : OptionLabels)
+		{
+			ComboBox_AudioFromFileSongs->AddOption(OptionLabel);
+		}
+		ComboBox_AudioFromFileSongs->Sort();
+	}
+
+	const int32 SelectedPathIndex = Paths.Find(SelectedSongFilePath);
+	if (SelectedPathIndex != INDEX_NONE)
+	{
+		ComboBox_AudioFromFileSongs->SetSelectedOption(OptionLabels[SelectedPathIndex]);
 	}
 }
 
 void UAudioSelectWidget::RebuildDeviceSongOptions(const FSongMetadata& SelectedSongMetadata)
 {
 	const auto PlayerSettings = LoadPlayerSettings().User;
-	const auto& Entries = PlayerSettings.RecentAudioDeviceSongMetadata;
+	const bool bMostRecent = PlayerSettings.SongMetadataSortingMethod == ESongMetadataSortingMethod::MostRecent;
+
+	// Recency list is oldest -> newest; MostRecent displays it reversed, and the label computation is order-free.
+	TArray<FSongMetadata> Entries = PlayerSettings.RecentAudioDeviceSongMetadata;
+	if (bMostRecent)
+	{
+		Algo::Reverse(Entries);
+	}
 	const TArray<FString> OptionLabels = MakeSongOptionLabels(Entries);
 	ComboBox_AudioDeviceSongs->ClearOptions();
 	for (const FString& OptionLabel : OptionLabels)
 	{
 		ComboBox_AudioDeviceSongs->AddOption(OptionLabel);
 	}
-	ComboBox_AudioDeviceSongs->Sort();
+	if (!bMostRecent)
+	{
+		ComboBox_AudioDeviceSongs->Sort();
+	}
 	const int32 SelectedIndex = Entries.IndexOfByPredicate([&SelectedSongMetadata](const FSongMetadata& Current)
 	{
 		return Current.IsEqualExcludingLength(SelectedSongMetadata);
@@ -634,7 +695,8 @@ void UAudioSelectWidget::UpdateSongInfoWidgets(const EAudioFormat AudioFormat)
 		if (AudioFormat == EAudioFormat::File)
 		{
 			RebuildFileSongOptions(AudioConfig->SongFilePath);
-			SongMetadataWidget->Populate(AudioConfig->SongMetadata, AudioFormat, USongMetadataWidget::EMode::Edit);
+			SongMetadataWidget->Populate(AudioConfig->SongMetadata, AudioFormat, USongMetadataWidget::EMode::Edit,
+			                             AudioConfig->SongFilePath);
 		}
 		else if (AudioFormat == EAudioFormat::Capture)
 		{

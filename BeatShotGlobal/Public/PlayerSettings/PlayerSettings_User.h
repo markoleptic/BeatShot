@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "BSConstants.h"
 #include "InputCoreTypes.h"
+#include "SongMetadataSortingMethod.h"
 #include "BSGameModeConfig/AudioConfig.h"
 #include "UserSettings/EnhancedInputUserSettings.h"
 #include "Utilities/SongMetadata.h"
@@ -54,6 +55,9 @@ struct BEATSHOTGLOBAL_API FPlayerSettings_User
 
 	UPROPERTY(BlueprintReadOnly)
 	bool bPlaybackAudioDuringCapture = false;
+
+	UPROPERTY(BlueprintReadOnly)
+	ESongMetadataSortingMethod SongMetadataSortingMethod = ESongMetadataSortingMethod::SongTitle;
 
 	FPlayerSettings_User() = default;
 
