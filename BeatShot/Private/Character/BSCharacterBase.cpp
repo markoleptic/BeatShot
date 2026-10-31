@@ -1,4 +1,4 @@
-﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 
 #include "Character/BSCharacterBase.h"
@@ -21,6 +21,8 @@
 #include "Player/BSPlayerController.h"
 #include "Player/BSPlayerState.h"
 #include "SaveGames/SaveGamePlayerSettings.h"
+
+DEFINE_LOG_CATEGORY(LogBSCharacterBase);
 
 static TAutoConsoleVariable CVarAutoBHop(
 	TEXT("move.Pogo"), 0, TEXT("If holding spacebar should make the player jump whenever possible.\n"), ECVF_Default);
@@ -260,7 +262,7 @@ void ABSCharacterBase::OnRep_PlayerState()
 	ABSPlayerState* PS = GetPlayerState<ABSPlayerState>();
 	if (PS)
 	{
-		UE_LOG(LogTemp, Display, TEXT("OnRep_PlayerState() called and Player State Exists"));
+		UE_LOG(LogBSCharacterBase, Display, TEXT("OnRep_PlayerState() called and Player State Exists"));
 		// Set the ASC for clients. Server does this in PossessedBy.
 		AbilitySystemComponent = Cast<UBSAbilitySystemComponent>(PS->GetAbilitySystemComponent());
 
@@ -543,7 +545,7 @@ void ABSCharacterBase::AddCharacterInventoryItems()
 {
 	if (GetLocalRole() != ROLE_Authority || !GetInventoryManager() || !GetEquipmentManager())
 	{
-		UE_LOG(LogTemp, Display, TEXT("Something wrong with AddCharacterInventoryItems()"));
+		UE_LOG(LogBSCharacterBase, Display, TEXT("Something wrong with AddCharacterInventoryItems()"));
 		return;
 	}
 
@@ -567,7 +569,7 @@ void ABSCharacterBase::RemoveCharacterAbilities()
 	if (GetLocalRole() != ROLE_Authority || !AbilitySystemComponent.IsValid() || !AbilitySystemComponent->
 	    bCharacterAbilitiesGiven)
 	{
-		UE_LOG(LogTemp, Display, TEXT("Something wrong with RemoveCharacterAbilities()"));
+		UE_LOG(LogBSCharacterBase, Display, TEXT("Something wrong with RemoveCharacterAbilities()"));
 		return;
 	}
 
@@ -579,7 +581,7 @@ void ABSCharacterBase::RemoveCharacterInventoryItems()
 {
 	if (GetLocalRole() != ROLE_Authority || !InventoryManagerComponent || !EquipmentManagerComponent)
 	{
-		UE_LOG(LogTemp, Display, TEXT("Something wrong with RemoveCharacterInventoryItems()"));
+		UE_LOG(LogBSCharacterBase, Display, TEXT("Something wrong with RemoveCharacterInventoryItems()"));
 		return;
 	}
 

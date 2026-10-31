@@ -29,6 +29,8 @@
 #include "System/SteamManager.h"
 #include "Transitions/ScreenFadeWidget.h"
 
+DEFINE_LOG_CATEGORY(LogBSPlayerController);
+
 void ABSPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
@@ -37,12 +39,12 @@ void ABSPlayerController::BeginPlay()
 	{
 		if (IsLocalController())
 		{
-			UE_LOG(LogTemp, Display, TEXT("Local Controller %s: Has Authority: true, %s %s"), *GetNameSafe(this),
+			UE_LOG(LogBSPlayerController, Display, TEXT("Local Controller %s: Has Authority: true, %s %s"), *GetNameSafe(this),
 				*UEnum::GetValueAsString(GetLocalRole()), *UEnum::GetValueAsString(GetRemoteRole()));
 		}
 		else
 		{
-			UE_LOG(LogTemp, Display, TEXT("NotLocal Controller %s: Has Authority: true, %s %s"), *GetNameSafe(this),
+			UE_LOG(LogBSPlayerController, Display, TEXT("NotLocal Controller %s: Has Authority: true, %s %s"), *GetNameSafe(this),
 				*UEnum::GetValueAsString(GetLocalRole()), *UEnum::GetValueAsString(GetRemoteRole()));
 		}
 	}
@@ -50,12 +52,12 @@ void ABSPlayerController::BeginPlay()
 	{
 		if (IsLocalController())
 		{
-			UE_LOG(LogTemp, Display, TEXT("Local Controller %s: Has Authority: false, %s %s"), *GetNameSafe(this),
+			UE_LOG(LogBSPlayerController, Display, TEXT("Local Controller %s: Has Authority: false, %s %s"), *GetNameSafe(this),
 				*UEnum::GetValueAsString(GetLocalRole()), *UEnum::GetValueAsString(GetRemoteRole()));
 		}
 		else
 		{
-			UE_LOG(LogTemp, Display, TEXT("NotLocal Controller %s: Has Authority: false, %s %s"), *GetNameSafe(this),
+			UE_LOG(LogBSPlayerController, Display, TEXT("NotLocal Controller %s: Has Authority: false, %s %s"), *GetNameSafe(this),
 				*UEnum::GetValueAsString(GetLocalRole()), *UEnum::GetValueAsString(GetRemoteRole()));
 		}
 	}*/

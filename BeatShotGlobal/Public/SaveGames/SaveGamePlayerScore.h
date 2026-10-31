@@ -9,6 +9,7 @@
 #include "Score/PlayerScore.h"
 #include "SaveGamePlayerScore.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogSaveGamePlayerScore, Log, All);
 
 UCLASS()
 class BEATSHOTGLOBAL_API USaveGamePlayerScore : public USaveGame

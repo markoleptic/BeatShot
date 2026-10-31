@@ -1,4 +1,4 @@
-﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 
 #include "MenuOptions/MenuOptionWidget.h"
@@ -17,6 +17,7 @@
 #include "Utilities/TooltipIcon.h"
 #include "Utilities/TooltipWidget.h"
 
+DEFINE_LOG_CATEGORY(LogMenuOption);
 
 void UMenuOptionWidget::NativePreConstruct()
 {
@@ -200,7 +201,7 @@ bool UMenuOptionWidget::GetIsLocked() const
 	{
 		return CheckBox_Lock->IsChecked();
 	}
-	UE_LOG(LogTemp, Warning, TEXT("Tried to access a CheckBox_Lock that wasn't found in a MenuOptionWidget."));
+	UE_LOG(LogMenuOption, Warning, TEXT("Tried to access a CheckBox_Lock that wasn't found in a MenuOptionWidget."));
 	return false;
 }
 
@@ -212,7 +213,7 @@ void UMenuOptionWidget::SetIsLocked(const bool bLocked) const
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Tried to access a CheckBox_Lock that wasn't found in a MenuOptionWidget."));
+		UE_LOG(LogMenuOption, Warning, TEXT("Tried to access a CheckBox_Lock that wasn't found in a MenuOptionWidget."));
 	}
 }
 

@@ -1,4 +1,4 @@
-﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 
 #include "RangeActors/TimeOfDayManager.h"
@@ -19,6 +19,8 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "RangeActors/Moon.h"
 #include "RangeActors/SpawnAreaSpotLight.h"
+
+DEFINE_LOG_CATEGORY(LogTimeOfDayManager);
 
 using namespace Constants;
 
@@ -123,7 +125,7 @@ void ATimeOfDayManager::BeginTransitionToDay()
 	if (!SkyLight || !Moon || !DayDirectionalLight || !SkySphereMaterial || !RectLight || !SpawnAreaSpotLight || !
 	    LeftWindowCover || !RightWindowCover)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("One of the Soft References for TimeOfDayManager is invalid."));
+		UE_LOG(LogTimeOfDayManager, Warning, TEXT("One of the Soft References for TimeOfDayManager is invalid."));
 		return;
 	}
 
@@ -135,7 +137,7 @@ void ATimeOfDayManager::BeginTransitionToDay()
 
 void ATimeOfDayManager::UpdateTimeOfDay_Editor()
 {
-	UE_LOG(LogTemp, Warning, TEXT("UpdateTimeOfDay_Editor"));
+	UE_LOG(LogTimeOfDayManager, Warning, TEXT("UpdateTimeOfDay_Editor"));
 	if (SkySphere)
 	{
 		if (!SkySphereMaterial)

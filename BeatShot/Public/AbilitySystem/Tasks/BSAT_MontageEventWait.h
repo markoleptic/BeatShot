@@ -1,4 +1,4 @@
-﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #pragma once
 
@@ -6,6 +6,8 @@
 #include "Abilities/Tasks/AbilityTask.h"
 #include "Animation/AnimMontage.h"
 #include "BSAT_MontageEventWait.generated.h"
+
+DECLARE_LOG_CATEGORY_EXTERN(LogBSAT_MontageEventWait, Log, All);
 
 class UBSAbilitySystemComponent;
 

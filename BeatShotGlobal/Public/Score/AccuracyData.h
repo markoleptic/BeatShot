@@ -1,10 +1,12 @@
-﻿// Copyright 2022-2025 Markoleptic Games, SP. All Rights Reserved.
+// Copyright 2022-2025 Markoleptic Games, SP. All Rights Reserved.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Score/AccuracyRow.h"
 #include "AccuracyData.generated.h"
+
+BEATSHOTGLOBAL_API DECLARE_LOG_CATEGORY_EXTERN(LogAccuracyData, Log, All);
 
 /** Struct only used to save accuracy to database. */
 USTRUCT()
@@ -336,7 +338,7 @@ private:
 
 		for (int i = 0; i < Combined.Num(); i++)
 		{
-			UE_LOG(LogTemp, Display, TEXT("ZIndex: %d YIndex: %d Value: %f"), Combined[i].X, Combined[i].Y,
+			UE_LOG(LogAccuracyData, Display, TEXT("ZIndex: %d YIndex: %d Value: %f"), Combined[i].X, Combined[i].Y,
 			       AccuracyRows[Combined[i].X].Accuracy[Combined[i].Y]);
 			const float Value = AccuracyRows[Combined[i].X].Accuracy[Combined[i].Y];
 			Temp.Add(Value);

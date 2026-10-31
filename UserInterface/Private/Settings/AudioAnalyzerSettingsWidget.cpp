@@ -11,6 +11,8 @@
 #include "Utilities/Buttons/BSButton.h"
 #include "Utilities/ComboBox/BSComboBoxString.h"
 
+DEFINE_LOG_CATEGORY(LogAudioAnalyzerSettings);
+
 void UAudioAnalyzerSettingsWidget::InitPauseMenuChild()
 {
 	Button_SaveAndRestart->SetVisibility(ESlateVisibility::Visible);
@@ -148,7 +150,7 @@ void UAudioAnalyzerSettingsWidget::OnButtonClicked_BSButton(const UBSButton* But
 		SortAndCheckOverlap();
 		if (!OnRestartButtonClicked.ExecuteIfBound())
 		{
-			UE_LOG(LogTemp, Display, TEXT("OnRestartButtonClicked not bound."));
+			UE_LOG(LogAudioAnalyzerSettings, Display, TEXT("OnRestartButtonClicked not bound."));
 		}
 		break;
 	default:

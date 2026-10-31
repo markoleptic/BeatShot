@@ -22,6 +22,8 @@
 #include "Utilities/Buttons/BSButton.h"
 #include "Utilities/ComboBox/BSComboBoxString.h"
 
+DEFINE_LOG_CATEGORY(LogVideoAndSoundSettings);
+
 using namespace Constants;
 
 void UVideoAndSoundSettingsWidget::NativeConstruct()
@@ -335,7 +337,7 @@ void UVideoAndSoundSettingsWidget::OnSelectionChanged_DLSS_EnabledMode(const TAr
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Failed to find DLSS Enabled Mode"));
+		UE_LOG(LogVideoAndSoundSettings, Warning, TEXT("Failed to find DLSS Enabled Mode"));
 	}
 }
 
@@ -355,7 +357,7 @@ void UVideoAndSoundSettingsWidget::OnSelectionChanged_FrameGeneration(const TArr
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Failed to find Frame Generation Enabled Mode"));
+		UE_LOG(LogVideoAndSoundSettings, Warning, TEXT("Failed to find Frame Generation Enabled Mode"));
 	}
 }
 
@@ -377,7 +379,7 @@ void UVideoAndSoundSettingsWidget::OnSelectionChanged_SuperResolution(const TArr
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Failed to find DLSS Mode"));
+		UE_LOG(LogVideoAndSoundSettings, Warning, TEXT("Failed to find DLSS Mode"));
 	}
 }
 
@@ -412,7 +414,7 @@ void UVideoAndSoundSettingsWidget::OnSelectionChanged_NIS_EnabledMode(const TArr
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Failed to find NIS Enabled Mode"));
+		UE_LOG(LogVideoAndSoundSettings, Warning, TEXT("Failed to find NIS Enabled Mode"));
 	}
 }
 
@@ -434,7 +436,7 @@ void UVideoAndSoundSettingsWidget::OnSelectionChanged_NIS_Mode(const TArray<FStr
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Failed to find NIS Mode"));
+		UE_LOG(LogVideoAndSoundSettings, Warning, TEXT("Failed to find NIS Mode"));
 	}
 }
 
@@ -454,7 +456,7 @@ void UVideoAndSoundSettingsWidget::OnSelectionChanged_Reflex(const TArray<FStrin
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Failed to find Reflex Mode"));
+		UE_LOG(LogVideoAndSoundSettings, Warning, TEXT("Failed to find Reflex Mode"));
 	}
 }
 
@@ -474,7 +476,7 @@ void UVideoAndSoundSettingsWidget::OnSelectionChanged_AntiAliasingMethod(
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Failed to find AntiAliasingMethod"));
+		UE_LOG(LogVideoAndSoundSettings, Warning, TEXT("Failed to find AntiAliasingMethod"));
 	}
 }
 

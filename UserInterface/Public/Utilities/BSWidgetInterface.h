@@ -1,4 +1,4 @@
-﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #pragma once
 
@@ -6,6 +6,8 @@
 #include "Components/PanelWidget.h"
 #include "UObject/Interface.h"
 #include "BSWidgetInterface.generated.h"
+
+DECLARE_LOG_CATEGORY_EXTERN(LogBSWidgetInterface, Log, All);
 
 class UBSComboBoxEntry;
 class UBSComboBoxString;

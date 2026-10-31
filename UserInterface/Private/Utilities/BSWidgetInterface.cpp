@@ -1,4 +1,4 @@
-﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 
 #include "Utilities/BSWidgetInterface.h"
@@ -9,6 +9,8 @@
 #include "Utilities/TooltipWidget.h"
 #include "Utilities/ComboBox/BSComboBoxEntry.h"
 #include "Utilities/ComboBox/BSComboBoxString.h"
+
+DEFINE_LOG_CATEGORY(LogBSWidgetInterface);
 
 float IBSWidgetInterface::OnEditableTextBoxChanged(const FText& NewTextValue,
                                                    UEditableTextBox* TextBoxToChange,
@@ -120,11 +122,11 @@ void IBSWidgetInterface::SetupTooltip(UTooltipIcon* TooltipIcon, const FText& To
 {
 	if (!TooltipIcon)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Invalid TooltipIcon."));
+		UE_LOG(LogBSWidgetInterface, Warning, TEXT("Invalid TooltipIcon."));
 	}
 	if (TooltipText.IsEmpty())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Empty Tooltip Text for %s."), *TooltipIcon->GetFullName());
+		UE_LOG(LogBSWidgetInterface, Warning, TEXT("Empty Tooltip Text for %s."), *TooltipIcon->GetFullName());
 	}
 
 	UTooltipWidget* TooltipWidget = GetTooltipWidget();

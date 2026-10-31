@@ -11,6 +11,8 @@
 #include "Utilities/BSWidgetInterface.h"
 #include "AudioSelectWidget.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogAudioSelect, Log, All);
+
 class USongMetadataWidget;
 class USaveGamePlayerScore;
 class UAudioAnalyzerManager;

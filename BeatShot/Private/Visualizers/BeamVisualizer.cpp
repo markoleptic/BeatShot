@@ -4,6 +4,8 @@
 #include "Visualizers/BeamVisualizer.h"
 #include "Visualizers/SimpleBeamLight.h"
 
+DEFINE_LOG_CATEGORY(LogBeamVisualizer);
+
 ABeamVisualizer::ABeamVisualizer()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -70,7 +72,7 @@ void ABeamVisualizer::InitializeVisualizer(const FPlayerSettings_AudioAnalyzer& 
 
 	if (!GetFastDef().VisualizerLightClass)
 	{
-		UE_LOG(LogTemp, Warning,
+		UE_LOG(LogBeamVisualizer, Warning,
 		       TEXT("A class was not provided in the Visualizer Light Class property of a Beam Visualizer's definition"
 		       ));
 		return;

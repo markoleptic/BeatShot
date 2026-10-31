@@ -1,4 +1,4 @@
-﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 
 #include "Target/SpawnAreaManagerComponent.h"
@@ -9,6 +9,9 @@
 #include "Target/Target.h"
 #if !UE_BUILD_SHIPPING
 #include "Target/TargetManager.h"
+
+DEFINE_LOG_CATEGORY(LogSpawnAreaManager);
+
 #endif
 
 void FRectCandidate::MergeSubRectangles()
@@ -1301,7 +1304,7 @@ void USpawnAreaManagerComponent::FindGridBlockUsingLargestRectangle(TSet<USpawnA
 #if !UE_BUILD_SHIPPING
 		if (bPrintDebug_Grid)
 		{
-			UE_LOG(LogTemp, Display, TEXT("Number Of Adjacent Spawn Areas: %d"), Adjacent.Num());
+			UE_LOG(LogSpawnAreaManager, Display, TEXT("Number Of Adjacent Spawn Areas: %d"), Adjacent.Num());
 		}
 #endif
 	}

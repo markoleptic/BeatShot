@@ -11,6 +11,8 @@
 #include "Utilities/Buttons/BSButton.h"
 #include "Utilities/Buttons/MenuButton.h"
 
+DEFINE_LOG_CATEGORY(LogPauseMenu);
+
 void UPauseMenuWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
@@ -56,7 +58,7 @@ void UPauseMenuWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 	{
 		if (!ResumeGame.ExecuteIfBound())
 		{
-			UE_LOG(LogTemp, Display, TEXT("ResumeGame not bound."));
+			UE_LOG(LogPauseMenu, Display, TEXT("ResumeGame not bound."));
 		}
 	}
 	else if (Button == MenuButton_Quit || Button == MenuButton_RestartCurrentMode)

@@ -8,6 +8,8 @@
 #include "Blueprint/UserWidget.h"
 #include "SettingsMenuWidget.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogSettingsMenu, Log, All);
+
 class UInputSettingsWidget;
 class UGameSettingsWidget;
 class UAudioAnalyzerSettingsWidget;

@@ -6,6 +6,8 @@
 #include "SingleRangeInputWidget.h"
 #include "BandThresholdWidget.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogBandThreshold, Log, All);
+
 class UBandThresholdWidget;
 DECLARE_DELEGATE_ThreeParams(FOnThresholdValueCommitted, const UBandThresholdWidget* BandThreshold, const int32 Index,
                              const float NewValue);

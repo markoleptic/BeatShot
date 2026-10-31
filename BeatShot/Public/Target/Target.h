@@ -10,6 +10,8 @@
 #include "GameFramework/Actor.h"
 #include "Target.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogTarget, Log, All);
+
 struct FPlayerSettings_Game;
 class UProjectileMovementComponent;
 class UBSHealthComponent;

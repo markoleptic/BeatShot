@@ -1,4 +1,4 @@
-﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #pragma once
 
@@ -6,6 +6,8 @@
 #include "TargetCommon.h"
 #include "BSGameModeConfig/BSConfig.h"
 #include "SpawnAreaManagerComponent.generated.h"
+
+DECLARE_LOG_CATEGORY_EXTERN(LogSpawnAreaManager, Log, All);
 
 class USpawnArea;
 struct FAccuracyData;

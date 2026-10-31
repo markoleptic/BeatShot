@@ -1,10 +1,12 @@
-﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #include "AbilitySystem/Globals/BSAbilitySet.h"
 #include "ActiveGameplayEffectHandle.h"
 #include "GameplayAbilitySpecHandle.h"
 #include "AbilitySystem/BSAbilitySystemComponent.h"
 #include "AbilitySystem/Abilities/BSGameplayAbility.h"
+
+DEFINE_LOG_CATEGORY(LogBSAbilitySet);
 
 /* ---------------------------- */
 /* -- BS Granted Ability Set -- */
@@ -111,7 +113,7 @@ void UBSAbilitySet::GiveToAbilitySystem(UBSAbilitySystemComponent* ASC,
 
 		if (!IsValid(AbilityToGrant.Ability))
 		{
-			UE_LOG(LogTemp, Error, TEXT("GrantedGameplayAbilities[%d] on ability set [%s] is not valid."), AbilityIndex,
+			UE_LOG(LogBSAbilitySet, Error, TEXT("GrantedGameplayAbilities[%d] on ability set [%s] is not valid."), AbilityIndex,
 			       *GetNameSafe(this));
 			continue;
 		}
@@ -136,7 +138,7 @@ void UBSAbilitySet::GiveToAbilitySystem(UBSAbilitySystemComponent* ASC,
 
 		if (!IsValid(EffectToGrant.GameplayEffect))
 		{
-			UE_LOG(LogTemp, Error, TEXT("GrantedGameplayEffects[%d] on ability set [%s] is not valid"), EffectIndex,
+			UE_LOG(LogBSAbilitySet, Error, TEXT("GrantedGameplayEffects[%d] on ability set [%s] is not valid"), EffectIndex,
 			       *GetNameSafe(this));
 			continue;
 		}
@@ -157,7 +159,7 @@ void UBSAbilitySet::GiveToAbilitySystem(UBSAbilitySystemComponent* ASC,
 
 		if (!IsValid(SetToGrant.AttributeSet))
 		{
-			UE_LOG(LogTemp, Error, TEXT("GrantedAttributes[%d] on ability set [%s] is not valid"), SetIndex,
+			UE_LOG(LogBSAbilitySet, Error, TEXT("GrantedAttributes[%d] on ability set [%s] is not valid"), SetIndex,
 			       *GetNameSafe(this));
 			continue;
 		}

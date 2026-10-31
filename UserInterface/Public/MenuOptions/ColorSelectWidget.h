@@ -1,10 +1,12 @@
-﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "MenuOptionWidget.h"
 #include "ColorSelectWidget.generated.h"
+
+DECLARE_LOG_CATEGORY_EXTERN(LogColorSelect, Log, All);
 
 DECLARE_DELEGATE_OneParam(FOnColorChanged, const FLinearColor& NewColor);
 

@@ -1,4 +1,4 @@
-﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #pragma once
 
@@ -11,6 +11,8 @@
 #include "GameFramework/Character.h"
 #include "Input/BSInputConfig.h"
 #include "BSCharacterBase.generated.h"
+
+DECLARE_LOG_CATEGORY_EXTERN(LogBSCharacterBase, Log, All);
 
 class UBSRecoilComponent;
 class UBSCharacterMovementComponent;

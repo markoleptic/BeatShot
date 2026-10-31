@@ -1,4 +1,4 @@
-﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #include "AbilitySystem/BSAbilitySystemComponent.h"
 #include "AbilitySystem/Abilities/BSGameplayAbility.h"
@@ -6,6 +6,7 @@
 #include "BeatShot/BSGameplayTags.h"
 #include "Character/BSCharacterBase.h"
 
+DEFINE_LOG_CATEGORY(LogBSAbilitySystemComponent);
 
 void UBSAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor)
 {
@@ -48,7 +49,7 @@ void UBSAbilitySystemComponent::CancelAbilitiesByFunc(TShouldCancelAbilityFunc S
 					}
 					else
 					{
-						UE_LOG(LogTemp, Error,
+						UE_LOG(LogBSAbilitySystemComponent, Error,
 						       TEXT("CancelAbilitiesByFunc: Can't cancel ability [%s] because CanBeCanceled is false."),
 						       *BSAbilityInstance->GetName());
 					}
@@ -137,7 +138,7 @@ void UBSAbilitySystemComponent::AddAbilityToActivationGroup(EBSAbilityActivation
 		                             static_cast<uint8>(EBSAbilityActivationGroup::Exclusive_Blocking)];
 	if (!ensure(ExclusiveCount <= 1))
 	{
-		UE_LOG(LogTemp, Error, TEXT("AddAbilityToActivationGroup: Multiple exclusive abilities are running."));
+		UE_LOG(LogBSAbilitySystemComponent, Error, TEXT("AddAbilityToActivationGroup: Multiple exclusive abilities are running."));
 	}
 }
 

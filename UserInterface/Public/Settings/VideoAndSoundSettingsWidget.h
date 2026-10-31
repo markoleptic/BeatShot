@@ -7,6 +7,8 @@
 #include "Utilities/BSSettingCategoryWidget.h"
 #include "VideoAndSoundSettingsWidget.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogVideoAndSoundSettings, Log, All);
+
 class UScalabilitySettingWidget;
 enum class EVideoSettingType : uint8;
 class UVideoSettingOptionWidget;

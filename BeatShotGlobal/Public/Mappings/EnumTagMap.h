@@ -1,4 +1,4 @@
-﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #pragma once
 
@@ -7,6 +7,8 @@
 #include "GameplayTagContainer.h"
 #include "Engine/DataAsset.h"
 #include "EnumTagMap.generated.h"
+
+BEATSHOTGLOBAL_API DECLARE_LOG_CATEGORY_EXTERN(LogEnumTagMap, Log, All);
 
 /** Display name and associated GameplayTags for an enum. */
 USTRUCT(BlueprintType, meta=(ShowOnlyInnerProperties))
@@ -127,7 +129,7 @@ FText UEnumTagMap::FindTextFromEnum(const T& InEnum) const
 		return Found->DisplayText;
 	}
 
-	UE_LOG(LogTemp, Display, TEXT("Didn't find mapping for %d"), static_cast<uint8>(InEnum));
+	UE_LOG(LogEnumTagMap, Display, TEXT("Didn't find mapping for %d"), static_cast<uint8>(InEnum));
 	return FText::GetEmpty();
 }
 

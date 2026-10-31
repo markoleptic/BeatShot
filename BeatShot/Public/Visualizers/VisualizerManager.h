@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "VisualizerManager.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogVisualizerManager, Log, All);
+
 struct FPlayerSettings_AudioAnalyzer;
 struct FPlayerSettings_Game;
 class AVisualizerBase;

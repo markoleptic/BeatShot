@@ -10,6 +10,8 @@
 #include "Styles/MenuOptionStyle.h"
 #include "Utilities/BSWidgetInterface.h"
 
+DEFINE_LOG_CATEGORY(LogBandChannel);
+
 void UBandChannelWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
@@ -80,7 +82,7 @@ void UBandChannelWidget::OnValueCommitted_Min(const FText& NewValue, ETextCommit
 	}
 	if (!OnChannelValueCommitted.ExecuteIfBound(this, Index, NewFloatValue, true))
 	{
-		UE_LOG(LogTemp, Display, TEXT("OnChannelValueCommitted not bound."));
+		UE_LOG(LogBandChannel, Display, TEXT("OnChannelValueCommitted not bound."));
 	}
 }
 
@@ -99,6 +101,6 @@ void UBandChannelWidget::OnValueCommitted_Max(const FText& NewValue, ETextCommit
 	}
 	if (!OnChannelValueCommitted.ExecuteIfBound(this, Index, NewFloatValue, false))
 	{
-		UE_LOG(LogTemp, Display, TEXT("OnChannelValueCommitted not bound."));
+		UE_LOG(LogBandChannel, Display, TEXT("OnChannelValueCommitted not bound."));
 	}
 }

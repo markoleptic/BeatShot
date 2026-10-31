@@ -1,4 +1,4 @@
-﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #pragma once
 
@@ -6,6 +6,8 @@
 #include "Components/ActorComponent.h"
 #include "Net/Serialization/FastArraySerializer.h"
 #include "BSInventoryManagerComponent.generated.h"
+
+DECLARE_LOG_CATEGORY_EXTERN(LogBSInventoryManagerComponent, Log, All);
 
 class UBSEquipmentManagerComponent;
 class UBSEquipmentInstance;

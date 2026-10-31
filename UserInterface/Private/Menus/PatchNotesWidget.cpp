@@ -12,6 +12,9 @@
 #include "Internationalization/StringTableCore.h"
 #include "Styles/PatchNotesStyle.h"
 
+DEFINE_LOG_CATEGORY(LogPatchNotes);
+
+
 void UPatchNotesWidget::InitializeNativeClassData()
 {
 	Super::InitializeNativeClassData();
@@ -27,7 +30,7 @@ void UPatchNotesWidget::InitializeNativeClassData()
 	const UStringTable* StringTable = LoadObject<UStringTable>(nullptr, *StringTablePath);
 	if (StringTable == nullptr)
 	{
-		UE_LOG(LogTemp, Warning,
+		UE_LOG(LogPatchNotes, Warning,
 		       TEXT("PatchNotesWidget: could not load string table at '%s'; the widget will be blank."),
 		       *StringTablePath);
 		return;
@@ -36,7 +39,7 @@ void UPatchNotesWidget::InitializeNativeClassData()
 	CollectPatchNotes(StringTable, StringTablePath, KeyPrefix, DateText, Sections);
 	if (Sections.Num() == 0)
 	{
-		UE_LOG(LogTemp, Warning,
+		UE_LOG(LogPatchNotes, Warning,
 		       TEXT("PatchNotesWidget: no entries found with key prefix '%s' in '%s'; the widget will be blank."),
 		       *KeyPrefix, *StringTablePath);
 		return;

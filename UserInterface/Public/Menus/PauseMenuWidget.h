@@ -7,6 +7,8 @@
 #include "Utilities/GameModeTransitionState.h"
 #include "PauseMenuWidget.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogPauseMenu, Log, All);
+
 class UMenuStyle;
 class UQuitMenuWidget;
 class UVerticalBox;

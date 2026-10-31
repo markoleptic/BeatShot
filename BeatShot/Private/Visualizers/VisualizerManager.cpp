@@ -8,6 +8,8 @@
 #include "Visualizers/StaticCubeVisualizer.h"
 #include "Visualizers/VisualizerBase.h"
 
+DEFINE_LOG_CATEGORY(LogVisualizerManager);
+
 AVisualizerManager::AVisualizerManager() : bUpdateBeamVisualizers(false), bUpdateCubeVisualizers(false)
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -31,7 +33,7 @@ void AVisualizerManager::InitializeVisualizers(const FPlayerSettings_Game& Playe
 			{
 			case EVisualizerLightSpawningMethod::SpawnUsingPositionOffsets:
 				{
-					UE_LOG(LogTemp, Warning, TEXT("Invalid Spawning Method for a Visualizer in LevelVisualizers"));
+					UE_LOG(LogVisualizerManager, Warning, TEXT("Invalid Spawning Method for a Visualizer in LevelVisualizers"));
 					continue;
 				}
 			case EVisualizerLightSpawningMethod::SpawnUsingSpline:

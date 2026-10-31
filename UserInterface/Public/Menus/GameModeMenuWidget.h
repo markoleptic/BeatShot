@@ -11,6 +11,8 @@
 #include "Utilities/GameModeTransitionState.h"
 #include "GameModeMenuWidget.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogGameModeMenu, Log, All);
+
 class UGameModeAndDifficultyStringMap;
 struct FStartWidgetProperties;
 class UBSGameModeValidator;

@@ -8,6 +8,8 @@
 #include "VisualizerBase.h"
 #include "BeamVisualizer.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogBeamVisualizer, Log, All);
+
 /** Light Visualizer that displays beams of light. Controls instances of ASimpleBeamLights. */
 UCLASS()
 class BEATSHOT_API ABeamVisualizer : public AVisualizerBase

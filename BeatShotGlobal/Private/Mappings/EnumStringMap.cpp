@@ -1,7 +1,9 @@
-﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 
 #include "Mappings/EnumStringMap.h"
+
+DEFINE_LOG_CATEGORY(LogEnumStringMap);
 
 FEnumStringPair::FEnumStringPair(const FText& InEnumValue, const uint8 InIndex) : DisplayText(InEnumValue),
 	Index(InIndex)
@@ -96,7 +98,7 @@ FText GetEnumText(const UEnum* InEnum, const int64 InValue)
 	const FText StringTableText = FText::FromStringTable("/Game/StringTables/ST_Enums.ST_Enums", StringTableKey);
 	if (!StringTableText.IsFromStringTable())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Couldn't find string table entry for %s"), *StringTableKey);
+		UE_LOG(LogEnumStringMap, Warning, TEXT("Couldn't find string table entry for %s"), *StringTableKey);
 	}
 	return StringTableText;
 }

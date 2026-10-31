@@ -1,10 +1,12 @@
-﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 
 #include "SaveGames/SaveGameCustomGameMode.h"
 #include "BSGameModeConfig/BSConfig.h"
 #include "Kismet/GameplayStatics.h"
 #include "Utilities/SaveLoadCommon.h"
+
+DEFINE_LOG_CATEGORY(LogSaveGameCustomGameMode);
 
 namespace
 {
@@ -84,7 +86,7 @@ void USaveGameCustomGameMode::Serialize(const FStructuredArchive::FRecord Record
 		{
 			UpgradeCustomGameModes();
 			SaveToSlot();
-			UE_LOG(LogTemp, Warning, TEXT("Upgraded USaveGameCustomGameMode from Version %d to %d"), LastLoadedVersion,
+			UE_LOG(LogSaveGameCustomGameMode, Warning, TEXT("Upgraded USaveGameCustomGameMode from Version %d to %d"), LastLoadedVersion,
 			       Version);
 		}
 	}

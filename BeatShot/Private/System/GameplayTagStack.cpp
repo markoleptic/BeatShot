@@ -1,6 +1,8 @@
-﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #include "System/GameplayTagStack.h"
+
+DEFINE_LOG_CATEGORY(LogGameplayTagStack);
 
 //////////////////////////////////////////////////////////////////////
 // FGameplayTagStack
@@ -17,7 +19,7 @@ void FGameplayTagStackContainer::AddStack(FGameplayTag Tag, int32 StackCount)
 {
 	if (!Tag.IsValid())
 	{
-		UE_LOG(LogTemp, Display, TEXT("Invalid tag trying to remove stack"));
+		UE_LOG(LogGameplayTagStack, Display, TEXT("Invalid tag trying to remove stack"));
 		return;
 	}
 
@@ -45,7 +47,7 @@ void FGameplayTagStackContainer::RemoveStack(const FGameplayTag Tag, const int32
 {
 	if (!Tag.IsValid())
 	{
-		UE_LOG(LogTemp, Display, TEXT("Invalid tag trying to remove stack"));
+		UE_LOG(LogGameplayTagStack, Display, TEXT("Invalid tag trying to remove stack"));
 		return;
 	}
 

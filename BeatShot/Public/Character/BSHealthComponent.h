@@ -8,6 +8,8 @@
 #include "Components/ActorComponent.h"
 #include "BSHealthComponent.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogBSHealthComponent, Log, All);
+
 class UBSAbilitySystemComponent;
 class UBSAttributeSetBase;
 

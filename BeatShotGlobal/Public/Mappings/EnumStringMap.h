@@ -1,10 +1,12 @@
-﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
 #include "EnumStringMap.generated.h"
+
+BEATSHOTGLOBAL_API DECLARE_LOG_CATEGORY_EXTERN(LogEnumStringMap, Log, All);
 
 /** Display name for an enum. */
 USTRUCT(BlueprintType, meta=(ShowOnlyInnerProperties))
@@ -118,7 +120,7 @@ FText UEnumStringMap::FindTextFromEnum(const T& InEnum) const
 		return Found->DisplayText;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("Didn't find mapping for %d"), static_cast<uint8>(InEnum));
+	UE_LOG(LogEnumStringMap, Warning, TEXT("Didn't find mapping for %d"), static_cast<uint8>(InEnum));
 	return FText::GetEmpty();
 }
 

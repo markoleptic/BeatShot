@@ -6,6 +6,8 @@
 #include "GameFramework/SaveGame.h"
 #include "SaveGameCustomGameMode.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogSaveGameCustomGameMode, Log, All);
+
 struct FBSConfig;
 
 UCLASS()

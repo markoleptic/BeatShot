@@ -22,6 +22,7 @@
 #include "Utilities/Buttons/MenuButton.h"
 #include "Windows/WindowsPlatformApplicationMisc.h"
 
+DEFINE_LOG_CATEGORY(LogGameModeMenu);
 
 void UGameModeMenuWidget::NativeConstruct()
 {
@@ -1037,7 +1038,7 @@ void UGameModeMenuWidget::OnGameModeBreakingOptionPresentStateChanged(const bool
 #if !UE_BUILD_SHIPPING
 	const FString From = bGameModeBreakingOptionPresent ? "True" : "False";
 	const FString To = bIsPresent ? "True" : "False";
-	UE_LOG(LogTemp, Display, TEXT("OnGameModeBreakingOption GameModesWidget: %s -> %s"), *From, *To);
+	UE_LOG(LogGameModeMenu, Display, TEXT("OnGameModeBreakingOption GameModesWidget: %s -> %s"), *From, *To);
 #endif
 
 	bGameModeBreakingOptionPresent = bIsPresent;

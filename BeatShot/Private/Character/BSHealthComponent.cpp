@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "Target/Target.h"
 
+DEFINE_LOG_CATEGORY(LogBSHealthComponent);
+
 UBSHealthComponent::UBSHealthComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -46,7 +48,7 @@ void UBSHealthComponent::InitializeWithAbilitySystem(UBSAbilitySystemComponent* 
 
 	if (AbilitySystemComponent)
 	{
-		UE_LOG(LogTemp, Error,
+		UE_LOG(LogBSHealthComponent, Error,
 		       TEXT(
 			       "BSHealthComponent: Health component for owner [%s] has already been initialized with an ability system."
 		       ), *GetNameSafe(Owner));
@@ -56,7 +58,7 @@ void UBSHealthComponent::InitializeWithAbilitySystem(UBSAbilitySystemComponent* 
 	AbilitySystemComponent = InASC;
 	if (!AbilitySystemComponent)
 	{
-		UE_LOG(LogTemp, Error,
+		UE_LOG(LogBSHealthComponent, Error,
 		       TEXT("BSHealthComponent: Cannot initialize health component for owner [%s] with NULL ability system."),
 		       *GetNameSafe(Owner));
 		return;
@@ -65,7 +67,7 @@ void UBSHealthComponent::InitializeWithAbilitySystem(UBSAbilitySystemComponent* 
 	AttributeSetBase = AbilitySystemComponent->GetSet<UBSAttributeSetBase>();
 	if (!AttributeSetBase)
 	{
-		UE_LOG(LogTemp, Error,
+		UE_LOG(LogBSHealthComponent, Error,
 		       TEXT(
 			       "BSHealthComponent: Cannot initialize health component for owner [%s] with NULL health set on the ability system."
 		       ), *GetNameSafe(Owner));

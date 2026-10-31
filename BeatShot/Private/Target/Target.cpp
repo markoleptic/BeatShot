@@ -16,6 +16,7 @@
 #include "Materials/MaterialInterface.h"
 #include "SaveGames/SaveGamePlayerSettings.h"
 
+DEFINE_LOG_CATEGORY(LogTarget);
 
 FTargetDamageEvent::FTargetDamageEvent(const FDamageEventData& InData, const float InTimeAlive, ATarget* InTarget)
 {
@@ -386,7 +387,7 @@ void ATarget::RemoveImmunityEffect()
 void ATarget::OnImmunityBlockGameplayEffect(const FGameplayEffectSpec& /*Spec*/,
                                             const FActiveGameplayEffect* /*Effect*/)
 {
-	UE_LOG(LogTemp, Display, TEXT("Blocked tag"));
+	UE_LOG(LogTarget, Display, TEXT("Blocked tag"));
 }
 
 void ATarget::GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const
@@ -771,7 +772,7 @@ ETargetDamageType ATarget::GetTargetDamageType() const
 	{
 		return TargetDamageType;
 	}
-	UE_LOG(LogTemp, Warning, TEXT("Target DamageType != its immune counterpart."));
+	UE_LOG(LogTarget, Warning, TEXT("Target DamageType != its immune counterpart."));
 	return ETargetDamageType::None;
 }
 

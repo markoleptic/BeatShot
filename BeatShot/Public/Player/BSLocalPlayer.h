@@ -1,10 +1,12 @@
-﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Engine/LocalPlayer.h"
 #include "BSLocalPlayer.generated.h"
+
+DECLARE_LOG_CATEGORY_EXTERN(LogBSLocalPlayer, Log, All);
 
 struct FSwapAudioOutputResult;
 class UBSGameUserSettings;

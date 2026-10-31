@@ -7,6 +7,9 @@
 #include "Internationalization/Text.h"
 #include "PatchNotesWidget.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogPatchNotes, Log, All);
+
+
 class UPatchNotesWidgetStyle;
 class UStringTable;
 class UVerticalBox;

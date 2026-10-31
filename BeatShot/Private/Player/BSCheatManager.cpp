@@ -1,4 +1,4 @@
-﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 
 // ReSharper disable CppMemberFunctionMayBeConst
@@ -19,6 +19,8 @@
 #include "Target/ReinforcementLearningComponent.h"
 #include "Target/SpawnAreaManagerComponent.h"
 #include "Target/TargetManager.h"
+
+DEFINE_LOG_CATEGORY(LogBSCheatManager);
 
 /** Creates a UObject delegate binding a TAutoConsoleVariable to the given object and function. */
 #define BIND_BS_CVAR(Variable, Object, Function) \
@@ -243,7 +245,7 @@ void UBSCheatManager::Cheat_AimBot(IConsoleVariable* Variable)
 		if (AimBotSpecHandle.IsValid())
 		{
 			ASC->ClearAbility(AimBotSpecHandle);
-			UE_LOG(LogTemp, Display, TEXT("AimBot deactivated."));
+			UE_LOG(LogBSCheatManager, Display, TEXT("AimBot deactivated."));
 		}
 		return;
 	}
@@ -253,7 +255,7 @@ void UBSCheatManager::Cheat_AimBot(IConsoleVariable* Variable)
 	{
 		const FGameplayAbilitySpec AbilitySpec(AimBotAbility, 1);
 		AimBotSpecHandle = ASC->GiveAbility(AbilitySpec);
-		UE_LOG(LogTemp, Display, TEXT("AimBot activated."));
+		UE_LOG(LogBSCheatManager, Display, TEXT("AimBot activated."));
 	}
 
 	FGameplayAbilitySpec* Spec = ASC->FindAbilitySpecFromHandle(AimBotSpecHandle);
@@ -287,7 +289,7 @@ void UBSCheatManager::Cheat_AimBot(IConsoleVariable* Variable)
 	}
 	AbilityInstance->SetIgnoreStartLocation(IgnoreStartLocation);
 	ASC->MarkAbilitySpecDirty(*Spec);
-	UE_LOG(LogTemp, Display, TEXT("AimBot modified."));
+	UE_LOG(LogBSCheatManager, Display, TEXT("AimBot modified."));
 }
 
 void UBSCheatManager::ShowDebug(IConsoleVariable* Variable)

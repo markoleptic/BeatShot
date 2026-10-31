@@ -1,4 +1,4 @@
-﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #pragma once
 
@@ -10,6 +10,8 @@
 #include "Net/Serialization/FastArraySerializer.h"
 #include "UObject/UObjectBaseUtility.h"
 #include "BSEquipmentManagerComponent.generated.h"
+
+DECLARE_LOG_CATEGORY_EXTERN(LogBSEquipmentManagerComponent, Log, All);
 
 class UBSAbilitySystemComponent;
 class UBSEquipmentDefinition;

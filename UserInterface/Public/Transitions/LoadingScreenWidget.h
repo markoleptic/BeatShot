@@ -1,10 +1,12 @@
-﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "LoadingScreenWidget.generated.h"
+
+DECLARE_LOG_CATEGORY_EXTERN(LogLoadingScreen, Log, All);
 
 class UImage;
 

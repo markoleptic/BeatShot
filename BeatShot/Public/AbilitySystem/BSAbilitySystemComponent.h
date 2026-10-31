@@ -1,4 +1,4 @@
-﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #pragma once
 
@@ -6,6 +6,8 @@
 #include "AbilitySystemComponent.h"
 #include "Abilities/BSGameplayAbility.h"
 #include "BSAbilitySystemComponent.generated.h"
+
+DECLARE_LOG_CATEGORY_EXTERN(LogBSAbilitySystemComponent, Log, All);
 
 /** Base AbilitySystemComponent in this game. */
 UCLASS()

@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "GameplayTagContainer.h"
 #include "Containers/Array.h"
@@ -12,6 +12,8 @@
 #include "Templates/UnrealTemplate.h"
 #include "UObject/Class.h"
 #include "GameplayTagStack.generated.h"
+
+DECLARE_LOG_CATEGORY_EXTERN(LogGameplayTagStack, Log, All);
 
 struct FGameplayTagStackContainer;
 struct FNetDeltaSerializeInfo;

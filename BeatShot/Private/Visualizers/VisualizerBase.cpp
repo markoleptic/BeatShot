@@ -1,9 +1,11 @@
-﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #include "Visualizers/VisualizerBase.h"
 #include "Components/SplineComponent.h"
 #include "SaveGames/SaveGamePlayerSettings.h"
 #include "Visualizers/BSVisualizerDefinition.h"
+
+DEFINE_LOG_CATEGORY(LogVisualizerBase);
 
 AVisualizerBase::AVisualizerBase()
 {
@@ -172,8 +174,8 @@ void AVisualizerBase::MapAudioAnalyzerChannelsToVisualizerLights(const int32 Num
 			Total++;
 		}
 	}
-	UE_LOG(LogTemp, Display, TEXT("NumVisualizers: %d, NumBandChannels: %d"), NumVisualizers, NumBandChannels);
-	UE_LOG(LogTemp, Display, TEXT("TotalVizualizers in all channels: %d"), Total);
+	UE_LOG(LogVisualizerBase, Display, TEXT("NumVisualizers: %d, NumBandChannels: %d"), NumVisualizers, NumBandChannels);
+	UE_LOG(LogVisualizerBase, Display, TEXT("TotalVizualizers in all channels: %d"), Total);
 }
 
 TArray<int32>& AVisualizerBase::GetLightIndices(const int32 ChannelIndex)

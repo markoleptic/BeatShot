@@ -9,6 +9,8 @@
 #include "Settings/InputSettingsWidget.h"
 #include "Utilities/BSCarouselNavBar.h"
 
+DEFINE_LOG_CATEGORY(LogSettingsMenu);
+
 void USettingsMenuWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
@@ -28,7 +30,7 @@ void USettingsMenuWidget::OnRestartButtonClicked_AudioAnalyzer() const
 {
 	if (!OnRestartButtonClicked.ExecuteIfBound())
 	{
-		UE_LOG(LogTemp, Display, TEXT("OnRestartButtonClicked not bound."));
+		UE_LOG(LogSettingsMenu, Display, TEXT("OnRestartButtonClicked not bound."));
 	}
 }
 

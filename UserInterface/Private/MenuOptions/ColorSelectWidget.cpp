@@ -1,4 +1,4 @@
-﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 
 #include "MenuOptions/ColorSelectWidget.h"
@@ -9,6 +9,8 @@
 #include "Components/TextBlock.h"
 #include "Styles/MenuOptionStyle.h"
 #include "Utilities/BSWidgetInterface.h"
+
+DEFINE_LOG_CATEGORY(LogColorSelect);
 
 void UColorSelectWidget::NativeConstruct()
 {
@@ -124,7 +126,7 @@ void UColorSelectWidget::OnColorAValueChange(const FText& NewValue, ETextCommit:
 	HexValue->SetText(FText::FromString(Color.ToFColor(false).ToHex()));
 	if (!OnColorChanged.ExecuteIfBound(Color))
 	{
-		UE_LOG(LogTemp, Display, TEXT("OnColorChanged not bound."));
+		UE_LOG(LogColorSelect, Display, TEXT("OnColorChanged not bound."));
 	}
 }
 
@@ -137,7 +139,7 @@ void UColorSelectWidget::OnColorRValueChange(const FText& NewValue, ETextCommit:
 	HexValue->SetText(FText::FromString(Color.ToFColor(false).ToHex()));
 	if (!OnColorChanged.ExecuteIfBound(Color))
 	{
-		UE_LOG(LogTemp, Display, TEXT("OnColorChanged not bound."));
+		UE_LOG(LogColorSelect, Display, TEXT("OnColorChanged not bound."));
 	}
 }
 
@@ -150,7 +152,7 @@ void UColorSelectWidget::OnColorGValueChange(const FText& NewValue, ETextCommit:
 	HexValue->SetText(FText::FromString(Color.ToFColor(false).ToHex()));
 	if (!OnColorChanged.ExecuteIfBound(Color))
 	{
-		UE_LOG(LogTemp, Display, TEXT("OnColorChanged not bound."));
+		UE_LOG(LogColorSelect, Display, TEXT("OnColorChanged not bound."));
 	}
 }
 
@@ -163,7 +165,7 @@ void UColorSelectWidget::OnColorBValueChange(const FText& NewValue, ETextCommit:
 	HexValue->SetText(FText::FromString(Color.ToFColor(false).ToHex()));
 	if (!OnColorChanged.ExecuteIfBound(Color))
 	{
-		UE_LOG(LogTemp, Display, TEXT("OnColorChanged not bound."));
+		UE_LOG(LogColorSelect, Display, TEXT("OnColorChanged not bound."));
 	}
 }
 
@@ -186,7 +188,7 @@ void UColorSelectWidget::OnHexValueChange(const FText& NewValue, ETextCommit::Ty
 	ColorPreview->SetColorAndOpacity(Color);
 	if (!OnColorChanged.ExecuteIfBound(Color))
 	{
-		UE_LOG(LogTemp, Display, TEXT("OnColorChanged not bound."));
+		UE_LOG(LogColorSelect, Display, TEXT("OnColorChanged not bound."));
 	}
 }
 
@@ -198,7 +200,7 @@ void UColorSelectWidget::OnColorASliderChange(const float NewValue)
 	HexValue->SetText(FText::FromString(Color.ToFColor(false).ToHex()));
 	if (!OnColorChanged.ExecuteIfBound(Color))
 	{
-		UE_LOG(LogTemp, Display, TEXT("OnColorChanged not bound."));
+		UE_LOG(LogColorSelect, Display, TEXT("OnColorChanged not bound."));
 	}
 }
 
@@ -210,7 +212,7 @@ void UColorSelectWidget::OnColorRSliderChange(const float NewValue)
 	HexValue->SetText(FText::FromString(Color.ToFColor(false).ToHex()));
 	if (!OnColorChanged.ExecuteIfBound(Color))
 	{
-		UE_LOG(LogTemp, Display, TEXT("OnColorChanged not bound."));
+		UE_LOG(LogColorSelect, Display, TEXT("OnColorChanged not bound."));
 	}
 }
 
@@ -222,7 +224,7 @@ void UColorSelectWidget::OnColorGSliderChange(const float NewValue)
 	HexValue->SetText(FText::FromString(Color.ToFColor(false).ToHex()));
 	if (!OnColorChanged.ExecuteIfBound(Color))
 	{
-		UE_LOG(LogTemp, Display, TEXT("OnColorChanged not bound."));
+		UE_LOG(LogColorSelect, Display, TEXT("OnColorChanged not bound."));
 	}
 }
 
@@ -234,6 +236,6 @@ void UColorSelectWidget::OnColorBSliderChange(const float NewValue)
 	HexValue->SetText(FText::FromString(Color.ToFColor(false).ToHex()));
 	if (!OnColorChanged.ExecuteIfBound(Color))
 	{
-		UE_LOG(LogTemp, Display, TEXT("OnColorChanged not bound."));
+		UE_LOG(LogColorSelect, Display, TEXT("OnColorChanged not bound."));
 	}
 }

@@ -1,4 +1,4 @@
-﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #pragma once
 
@@ -9,6 +9,8 @@
 #include "Containers/Array.h"
 #include "Engine/DataAsset.h"
 #include "BSAbilitySet.generated.h"
+
+DECLARE_LOG_CATEGORY_EXTERN(LogBSAbilitySet, Log, All);
 
 class UBSGameplayAbility;
 class UGameplayEffect;

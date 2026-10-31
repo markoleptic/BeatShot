@@ -1,10 +1,12 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "GameplayAbilitySpecHandle.h"
 #include "GameFramework/CheatManager.h"
 #include "HAL/IConsoleManager.h"
 #include "BSCheatManager.generated.h"
+
+DECLARE_LOG_CATEGORY_EXTERN(LogBSCheatManager, Log, All);
 
 class UGameplayAbility;
 

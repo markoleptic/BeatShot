@@ -8,6 +8,8 @@
 #include "Utilities/BSSettingCategoryWidget.h"
 #include "AudioAnalyzerSettingsWidget.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogAudioAnalyzerSettings, Log, All);
+
 class UBandThresholdWidget;
 class UBandChannelWidget;
 class USingleRangeInputWidget;

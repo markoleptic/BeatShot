@@ -1,8 +1,10 @@
-﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 
 #include "Transitions/LoadingScreenWidget.h"
 #include "Animation/WidgetAnimation.h"
+
+DEFINE_LOG_CATEGORY(LogLoadingScreen);
 
 void ULoadingScreenWidget::NativeConstruct()
 {
@@ -17,23 +19,23 @@ void ULoadingScreenWidget::NativeConstruct()
 
 void ULoadingScreenWidget::OnFadeOutFinishedCallback()
 {
-	UE_LOG(LogTemp, Warning, TEXT("OnFadeOutFinishedCallback"));
+	UE_LOG(LogLoadingScreen, Warning, TEXT("OnFadeOutFinishedCallback"));
 	if (OnLoadingScreenFadeOutComplete.IsBound())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("OnLoadingScreenFadeOutComplete is bound"));
+		UE_LOG(LogLoadingScreen, Warning, TEXT("OnLoadingScreenFadeOutComplete is bound"));
 		OnLoadingScreenFadeOutComplete.Execute();
 	}
 }
 
 void ULoadingScreenWidget::OnFadeInFinishedCallback()
 {
-	UE_LOG(LogTemp, Warning, TEXT("OnFadeInFinishedCallback - playing FadeOut"));
+	UE_LOG(LogLoadingScreen, Warning, TEXT("OnFadeInFinishedCallback - playing FadeOut"));
 	FadeOut(LoadingScreenTime);
 }
 
 void ULoadingScreenWidget::FadeIn(const float LoadingScreenWidgetFadeOutTime)
 {
-	UE_LOG(LogTemp, Warning, TEXT("playing FadeIn"));
+	UE_LOG(LogLoadingScreen, Warning, TEXT("playing FadeIn"));
 	PlayAnimationForward(FadeOutAnim, 1 / LoadingScreenWidgetFadeOutTime);
 }
 
@@ -41,10 +43,10 @@ void ULoadingScreenWidget::FadeOut(const float LoadingScreenWidgetFadeOutTime)
 {
 	if (IsAnimationPlaying(FadeInAnim))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("FadeOut binding to fadeinfinished"));
+		UE_LOG(LogLoadingScreen, Warning, TEXT("FadeOut binding to fadeinfinished"));
 		BindToAnimationFinished(FadeInAnim, OnFadeInFinished);
 		return;
 	}
-	UE_LOG(LogTemp, Warning, TEXT("playing FadeOut"));
+	UE_LOG(LogLoadingScreen, Warning, TEXT("playing FadeOut"));
 	PlayAnimationForward(FadeOutAnim, 1 / LoadingScreenWidgetFadeOutTime);
 }

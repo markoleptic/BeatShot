@@ -6,6 +6,8 @@
 #include "Components/TextBlock.h"
 #include "Utilities/BSWidgetInterface.h"
 
+DEFINE_LOG_CATEGORY(LogBandThreshold);
+
 void UBandThresholdWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
@@ -31,6 +33,6 @@ void UBandThresholdWidget::OnSliderTextBoxValueChanged_Threshold(USingleRangeInp
 {
 	if (!OnThresholdValueCommitted.ExecuteIfBound(this, Index, Value))
 	{
-		UE_LOG(LogTemp, Display, TEXT("OnThresholdValueCommitted not bound."));
+		UE_LOG(LogBandThreshold, Display, TEXT("OnThresholdValueCommitted not bound."));
 	}
 }

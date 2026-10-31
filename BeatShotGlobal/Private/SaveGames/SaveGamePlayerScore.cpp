@@ -1,8 +1,10 @@
-﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 
 #include "SaveGames/SaveGamePlayerScore.h"
 #include "Utilities/SaveLoadCommon.h"
+
+DEFINE_LOG_CATEGORY(LogSaveGamePlayerScore);
 
 namespace
 {
@@ -97,7 +99,7 @@ void PrintAccuracy(const FBS_DefiningConfig& InDefiningConfig,
 		GameModeString = InDefiningConfig.CustomGameModeName;
 	}
 
-	UE_LOG(LogTemp, Display, TEXT("Cumulative Accuracy for %s:"), *GameModeString);
+	UE_LOG(LogSaveGamePlayerScore, Display, TEXT("Cumulative Accuracy for %s:"), *GameModeString);
 
 	for (const FAccuracyRow& AccuracyRow : InCommonScoreInfo.AccuracyData.AccuracyRows)
 	{
@@ -123,11 +125,11 @@ void PrintAccuracy(const FBS_DefiningConfig& InDefiningConfig,
 
 			Line += PercentString + "  ";
 		}
-		UE_LOG(LogTemp, Display, TEXT("\t %s"), *Line);
+		UE_LOG(LogSaveGamePlayerScore, Display, TEXT("\t %s"), *Line);
 		Line.Empty();
 	}
 
-	UE_LOG(LogTemp, Display, TEXT("Total Hits: %d Total Spawns: %d"), TotalHits, TotalSpawns);
+	UE_LOG(LogSaveGamePlayerScore, Display, TEXT("Total Hits: %d Total Spawns: %d"), TotalHits, TotalSpawns);
 }
 
 /** Prints full TrainingSamples array to log/console.
@@ -151,7 +153,7 @@ void PrintTrainingSamples(const FBS_DefiningConfig& InDefiningConfig,
 	{
 		GameModeString = InDefiningConfig.CustomGameModeName;
 	}
-	UE_LOG(LogTemp, Display, TEXT("Full TrainingSamples for %s:"), *GameModeString);
+	UE_LOG(LogSaveGamePlayerScore, Display, TEXT("Full TrainingSamples for %s:"), *GameModeString);
 
 	for (int i = 0; i < InCommonScoreInfo.TrainingSamples.Num(); i++)
 	{
@@ -179,12 +181,12 @@ void PrintTrainingSamples(const FBS_DefiningConfig& InDefiningConfig,
 
 		if (i > 1 && (i + 1) % InCommonScoreInfo.NumQTableRows == 0)
 		{
-			UE_LOG(LogTemp, Display, TEXT("\t %s"), *Line);
+			UE_LOG(LogSaveGamePlayerScore, Display, TEXT("\t %s"), *Line);
 			Line.Empty();
 		}
 	}
 
-	UE_LOG(LogTemp, Display, TEXT("Total Training Samples: %lld"), InCommonScoreInfo.TotalTrainingSamples);
+	UE_LOG(LogSaveGamePlayerScore, Display, TEXT("Total Training Samples: %lld"), InCommonScoreInfo.TotalTrainingSamples);
 }
 }
 
@@ -214,7 +216,7 @@ void USaveGamePlayerScore::Serialize(FStructuredArchive::FRecord Record)
 {
 	if (Record.GetArchiveState().IsSaving())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Committing runtime data in USaveGamePlayerScore::Serialize"));
+		UE_LOG(LogSaveGamePlayerScore, Warning, TEXT("Committing runtime data in USaveGamePlayerScore::Serialize"));
 		CommitRuntimeData();
 	}
 
@@ -222,14 +224,14 @@ void USaveGamePlayerScore::Serialize(FStructuredArchive::FRecord Record)
 
 	if (Record.GetArchiveState().IsLoading())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Building runtime data in USaveGamePlayerScore::Serialize"));
+		UE_LOG(LogSaveGamePlayerScore, Warning, TEXT("Building runtime data in USaveGamePlayerScore::Serialize"));
 		BuildRuntimeData();
 		LastLoadedVersion = Version;
 		if (LastLoadedVersion < Constants::PlayerScoreVersion)
 		{
 			UpgradeVersion();
 			SaveToSlot();
-			UE_LOG(LogTemp, Warning, TEXT("Upgraded USaveGamePlayerScore from Version %d to %d"), LastLoadedVersion,
+			UE_LOG(LogSaveGamePlayerScore, Warning, TEXT("Upgraded USaveGamePlayerScore from Version %d to %d"), LastLoadedVersion,
 			       Version);
 		}
 	}
@@ -336,7 +338,7 @@ void USaveGamePlayerScore::AddPlayerScoreInstance(const FPlayerScore& InPlayerSc
 	}
 	else
 	{
-		UE_LOG(LogTemp, Display, TEXT("Existing Score with the same Time found"));
+		UE_LOG(LogSaveGamePlayerScore, Display, TEXT("Existing Score with the same Time found"));
 	}
 }
 
@@ -428,9 +430,9 @@ int32 USaveGamePlayerScore::RemoveCommonScoreInfoAndMatchingPlayerScores(const F
 			OnScoresDeleted.Broadcast();
 		}
 	}
-	UE_LOG(LogTemp, Display, TEXT("%d Common Score Infos removed when removing a custom game mode."),
+	UE_LOG(LogSaveGamePlayerScore, Display, TEXT("%d Common Score Infos removed when removing a custom game mode."),
 	       NumCommonScoreInfosRemoved);
-	UE_LOG(LogTemp, Display, TEXT("%d matching scores removed when removing a custom game mode."), NumScoresRemoved);
+	UE_LOG(LogSaveGamePlayerScore, Display, TEXT("%d matching scores removed when removing a custom game mode."), NumScoresRemoved);
 	return NumScoresRemoved;
 }
 
@@ -463,9 +465,9 @@ int32 USaveGamePlayerScore::RemoveAllCommonScoreInfoAndMatchingPlayerScores()
 			OnScoresDeleted.Broadcast();
 		}
 	}
-	UE_LOG(LogTemp, Display, TEXT("%d Common Score Infos removed when removing a custom game mode."),
+	UE_LOG(LogSaveGamePlayerScore, Display, TEXT("%d Common Score Infos removed when removing a custom game mode."),
 	       NumCommonScoreInfosRemoved);
-	UE_LOG(LogTemp, Display, TEXT("%d matching scores removed when removing a custom game mode."), NumScoresRemoved);
+	UE_LOG(LogSaveGamePlayerScore, Display, TEXT("%d matching scores removed when removing a custom game mode."), NumScoresRemoved);
 	return NumScoresRemoved;
 }
 
@@ -506,7 +508,7 @@ void USaveGamePlayerScore::PrintQTable(const FBS_DefiningConfig& InDefiningConfi
 	{
 		GameModeString = InDefiningConfig.CustomGameModeName;
 	}
-	UE_LOG(LogTemp, Display, TEXT("Full QTable for %s:"), *GameModeString);
+	UE_LOG(LogSaveGamePlayerScore, Display, TEXT("Full QTable for %s:"), *GameModeString);
 
 	FString Line;
 	for (int i = 0; i < InCommonScoreInfo.QTable.Num(); i++)
@@ -527,7 +529,7 @@ void USaveGamePlayerScore::PrintQTable(const FBS_DefiningConfig& InDefiningConfi
 
 		if (i > 1 && (i + 1) % InCommonScoreInfo.NumQTableRows == 0)
 		{
-			UE_LOG(LogTemp, Display, TEXT("\t %s"), *Line);
+			UE_LOG(LogSaveGamePlayerScore, Display, TEXT("\t %s"), *Line);
 			Line.Empty();
 		}
 	}

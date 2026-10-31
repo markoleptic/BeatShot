@@ -1,4 +1,4 @@
-﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 
 #include "Inventory/BSInventoryManagerComponent.h"
@@ -19,6 +19,8 @@
 #include "UObject/Object.h"
 #include "UObject/ObjectPtr.h"
 #include "UObject/UObjectBaseUtility.h"
+
+DEFINE_LOG_CATEGORY(LogBSInventoryManagerComponent);
 
 class FLifetimeProperty;
 struct FReplicationFlags;
@@ -295,7 +297,7 @@ void UBSInventoryManagerComponent::SetActiveSlotIndex_Implementation(int32 NewIn
 				{
 					if (EquippedItem && EquippedItem == Instance /*&& LastRequestedSlotEquipIndex == NewIndex*/)
 					{
-						UE_LOG(LogTemp, Display, TEXT("Unequip Confirm %s"), *GetNameSafe(EquippedItem));
+						UE_LOG(LogBSInventoryManagerComponent, Display, TEXT("Unequip Confirm %s"), *GetNameSafe(EquippedItem));
 						if (UBSEquipmentManagerComponent* EquipmentManager = FindEquipmentManager())
 						{
 							EquipmentManager->UnequipItem(EquippedItem, false);
@@ -309,7 +311,7 @@ void UBSInventoryManagerComponent::SetActiveSlotIndex_Implementation(int32 NewIn
 				});
 			}
 			EquippedItem->OnUnequipped();
-			UE_LOG(LogTemp, Display, TEXT("Unequip Request %s"), *EquippedItem->GetName());
+			UE_LOG(LogBSInventoryManagerComponent, Display, TEXT("Unequip Request %s"), *EquippedItem->GetName());
 		}
 		else
 		{

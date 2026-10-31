@@ -1,6 +1,8 @@
-﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #include "Input/BSInputConfig.h"
+
+DEFINE_LOG_CATEGORY(LogBSInputConfig);
 
 UBSInputConfig::UBSInputConfig()
 {
@@ -19,7 +21,7 @@ const UInputAction* UBSInputConfig::FindNativeInputActionForTag(const FGameplayT
 
 	if (bLogNotFound)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Can't find NativeInputAction for InputTag [%s] on InputConfig [%s]."),
+		UE_LOG(LogBSInputConfig, Error, TEXT("Can't find NativeInputAction for InputTag [%s] on InputConfig [%s]."),
 		       *InputTag.ToString(), *GetNameSafe(this));
 	}
 
@@ -39,7 +41,7 @@ const UInputAction* UBSInputConfig::FindAbilityInputActionForTag(const FGameplay
 
 	if (bLogNotFound)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Can't find AbilityInputAction for InputTag [%s] on InputConfig [%s]."),
+		UE_LOG(LogBSInputConfig, Error, TEXT("Can't find AbilityInputAction for InputTag [%s] on InputConfig [%s]."),
 		       *InputTag.ToString(), *GetNameSafe(this));
 	}
 
@@ -58,7 +60,7 @@ FBSInputAction UBSInputConfig::FindBSInputActionForTag(const FGameplayTag& Input
 
 	if (bLogNotFound)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Can't find BSInputAction for InputTag [%s] on InputConfig [%s]."),
+		UE_LOG(LogBSInputConfig, Error, TEXT("Can't find BSInputAction for InputTag [%s] on InputConfig [%s]."),
 		       *InputTag.ToString(), *GetNameSafe(this));
 	}
 

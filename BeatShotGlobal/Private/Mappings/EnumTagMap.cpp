@@ -1,9 +1,10 @@
-﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 
 #include "Mappings/EnumTagMap.h"
 #include "UObject/ObjectSaveContext.h"
 
+DEFINE_LOG_CATEGORY(LogEnumTagMap);
 
 void FEnumTagPair::AddParentTags(const FGameplayTagContainer& InParentTags)
 {

@@ -9,6 +9,8 @@
 #include "Target/ReinforcementLearningComponent.h"
 #include "BSPlayerController.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogBSPlayerController, Log, All);
+
 struct FPlayerScore;
 class USaveGamePlayerScore;
 class UBSGameUserSettings;

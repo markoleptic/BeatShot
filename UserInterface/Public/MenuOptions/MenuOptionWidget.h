@@ -1,4 +1,4 @@
-﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #pragma once
 
@@ -7,6 +7,8 @@
 #include "Blueprint/UserWidget.h"
 #include "Utilities/TooltipIcon.h"
 #include "MenuOptionWidget.generated.h"
+
+DECLARE_LOG_CATEGORY_EXTERN(LogMenuOption, Log, All);
 
 struct FValidationCheckData;
 class UMenuOptionStyle;

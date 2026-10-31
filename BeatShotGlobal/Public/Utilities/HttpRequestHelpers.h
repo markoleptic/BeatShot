@@ -1,9 +1,11 @@
-﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "HttpRequestHelpers.generated.h"
+
+DECLARE_LOG_CATEGORY_EXTERN(LogHttpRequestHelpers, Log, All);
 
 /** Executed when a response is received from a request. */
 DECLARE_DELEGATE(FOnHttpResponseReceived);

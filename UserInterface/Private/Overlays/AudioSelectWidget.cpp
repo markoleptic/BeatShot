@@ -16,6 +16,8 @@
 #include "Utilities/Buttons/BSButton.h"
 #include "Utilities/ComboBox/BSComboBoxString.h"
 
+DEFINE_LOG_CATEGORY(LogAudioSelect);
+
 namespace
 {
 #define MAX_FILETYPES_STR 4096
@@ -275,7 +277,7 @@ void UAudioSelectWidget::HandleStartButtonClicked(const UBSButton*)
 	                                                 ? AudioFromFileAudioConfig
 	                                                 : AudioDeviceAudioConfig))
 	{
-		UE_LOG(LogTemp, Display, TEXT("OnStartButtonClickedDelegate not bound."));
+		UE_LOG(LogAudioSelect, Display, TEXT("OnStartButtonClickedDelegate not bound."));
 	}
 }
 
@@ -751,7 +753,7 @@ bool UAudioSelectWidget::FileDialogShared(const bool bSave,
 	{
 		// GetOpenFileName/GetSaveFileName changes the CWD on success. Change it back immediately.
 		//FPlatformProcess::SetCurrentWorkingDirectoryToBaseDir();
-		UE_LOG(LogTemp, Display, TEXT("%s"), Filename);
+		UE_LOG(LogAudioSelect, Display, TEXT("%s"), Filename);
 
 		new(OutFilenames) FString(Filename);
 

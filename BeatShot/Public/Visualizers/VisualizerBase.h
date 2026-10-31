@@ -1,4 +1,4 @@
-﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #pragma once
 
@@ -6,6 +6,8 @@
 #include "BSVisualizerDefinition.h"
 #include "GameFramework/Actor.h"
 #include "VisualizerBase.generated.h"
+
+DECLARE_LOG_CATEGORY_EXTERN(LogVisualizerBase, Log, All);
 
 struct FPlayerSettings_AudioAnalyzer;
 class UBSVisualizerDefinition;

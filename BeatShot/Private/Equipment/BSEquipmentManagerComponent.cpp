@@ -1,4 +1,4 @@
-﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 
 #include "Equipment/BSEquipmentManagerComponent.h"
@@ -15,6 +15,8 @@
 #include "UObject/Object.h"
 #include "UObject/ObjectPtr.h"
 #include "UObject/UObjectBaseUtility.h"
+
+DEFINE_LOG_CATEGORY(LogBSEquipmentManagerComponent);
 
 class FLifetimeProperty;
 struct FReplicationFlags;
@@ -53,7 +55,7 @@ UBSEquipmentInstance* FBSEquipmentList::AddEntry(const TSubclassOf<UBSEquipmentD
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("AbilitySystemComponent failed to get in FBSEquipmentList::AddEntry"));
+		UE_LOG(LogBSEquipmentManagerComponent, Warning, TEXT("AbilitySystemComponent failed to get in FBSEquipmentList::AddEntry"));
 	}
 	Result->SpawnEquipmentActors(EquipmentCDO->ActorsToSpawn);
 	MarkItemDirty(NewEntry);

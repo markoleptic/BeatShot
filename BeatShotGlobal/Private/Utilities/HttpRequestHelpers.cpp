@@ -1,4 +1,4 @@
-﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 
 #include "Utilities/HttpRequestHelpers.h"
@@ -6,6 +6,8 @@
 #include "JsonObjectConverter.h"
 #include "Interfaces/IHttpResponse.h"
 #include "SaveGames/SaveGamePlayerScore.h"
+
+DEFINE_LOG_CATEGORY(LogHttpRequestHelpers);
 
 namespace HttpRequestHelpers
 {
@@ -31,7 +33,7 @@ void PostFeedback(const FJsonFeedback InFeedback, TSharedPtr<FBSHttpResponse, ES
 			if (!bConnectedSuccessfully || !Response.IsValid())
 			{
 				FeedbackResponse->HttpStatus = 502;
-				UE_LOG(LogTemp, Warning, TEXT("Failed to connect to send feedback."));
+				UE_LOG(LogHttpRequestHelpers, Warning, TEXT("Failed to connect to send feedback."));
 			}
 			else
 			{
@@ -39,11 +41,11 @@ void PostFeedback(const FJsonFeedback InFeedback, TSharedPtr<FBSHttpResponse, ES
 				if (FeedbackResponse->HttpStatus >= 200 && FeedbackResponse->HttpStatus <= 300)
 				{
 					FeedbackResponse->OK = true;
-					UE_LOG(LogTemp, Warning, TEXT("Successfully sent feedback."));
+					UE_LOG(LogHttpRequestHelpers, Warning, TEXT("Successfully sent feedback."));
 				}
 				else
 				{
-					UE_LOG(LogTemp, Warning, TEXT("Failed to send feedback Http Status: %d"),
+					UE_LOG(LogHttpRequestHelpers, Warning, TEXT("Failed to send feedback Http Status: %d"),
 					       FeedbackResponse->HttpStatus);
 				}
 			}

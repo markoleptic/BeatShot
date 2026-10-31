@@ -1,4 +1,4 @@
-﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #pragma once
 
@@ -7,6 +7,8 @@
 #include "Containers/Array.h"
 #include "Engine/DataAsset.h"
 #include "BSInputConfig.generated.h"
+
+DECLARE_LOG_CATEGORY_EXTERN(LogBSInputConfig, Log, All);
 
 class UPlayerMappableInputConfig;
 class UInputAction;

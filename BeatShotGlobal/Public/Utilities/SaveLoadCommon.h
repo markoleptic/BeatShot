@@ -1,8 +1,10 @@
-﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #pragma once
 
 #include "Kismet/GameplayStatics.h"
+
+BEATSHOTGLOBAL_API DECLARE_LOG_CATEGORY_EXTERN(LogSaveLoadCommon, Log, All);
 
 namespace SaveLoadCommon
 {
@@ -31,7 +33,7 @@ bool SaveToSlot(T* SaveGameClass, const FString& InSlotName, const int32 InSlotI
 {
 	if (UGameplayStatics::SaveGameToSlot(SaveGameClass, InSlotName, InSlotIndex))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Save Succeeded"));
+		UE_LOG(LogSaveLoadCommon, Warning, TEXT("Save Succeeded"));
 		return true;
 	}
 	return false;

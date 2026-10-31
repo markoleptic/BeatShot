@@ -1,9 +1,11 @@
-﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #include "AbilitySystem/Tasks/BSAT_MontageEventWait.h"
 #include "AbilitySystemGlobals.h"
 #include "AbilitySystem/BSAbilitySystemComponent.h"
 #include "GameFramework/Character.h"
+
+DEFINE_LOG_CATEGORY(LogBSAT_MontageEventWait);
 
 UBSAT_MontageEventWait::UBSAT_MontageEventWait()
 {
@@ -61,18 +63,18 @@ void UBSAT_MontageEventWait::Activate()
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("UGDAbilityTask_PlayMontageAndWaitForEvent call to PlayMontage failed!"));
+			UE_LOG(LogBSAT_MontageEventWait, Warning, TEXT("UGDAbilityTask_PlayMontageAndWaitForEvent call to PlayMontage failed!"));
 		}
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning,
+		UE_LOG(LogBSAT_MontageEventWait, Warning,
 		       TEXT("UGDAbilityTask_PlayMontageAndWaitForEvent called on invalid AbilitySystemComponent"));
 	}
 
 	if (!bPlayedMontage)
 	{
-		UE_LOG(LogTemp, Warning,
+		UE_LOG(LogBSAT_MontageEventWait, Warning,
 		       TEXT(
 			       "UGDAbilityTask_PlayMontageAndWaitForEvent called in Ability %s failed to play montage %s; Task Instance Name %s."
 		       ), *Ability->GetName(), *GetNameSafe(MontageToPlay), *InstanceName.ToString());
