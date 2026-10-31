@@ -240,3 +240,78 @@ FString FindSongPathByOptionLabel(const TMap<FString, FSongMetadata>& SongsByPat
 	const int32 Index = OptionLabels.Find(OptionLabel);
 	return Index == INDEX_NONE ? FString() : Paths[Index];
 }
+
+int32 FindNeighborSongIndex(const TArray<FSongMetadata>& Songs, const FSongMetadata& RemovedSong)
+{
+	const int32 RemovedIndex = Songs.IndexOfByPredicate([&RemovedSong](const FSongMetadata& Current)
+	{
+		return Current.IsEqualExcludingLength(RemovedSong);
+	});
+	if (RemovedIndex == INDEX_NONE || Songs.Num() <= 1)
+	{
+		return INDEX_NONE;
+	}
+
+	const TArray<FString> OptionLabels = MakeSongOptionLabels(Songs);
+	TArray<int32> SortedIndices;
+	for (int32 Index = 0; Index < Songs.Num(); Index++)
+	{
+		SortedIndices.Add(Index);
+	}
+	SortedIndices.Sort([&OptionLabels](const int32 Left, const int32 Right)
+	{
+		return OptionLabels[Left] < OptionLabels[Right];
+	});
+
+	const int32 RemovedPosition = SortedIndices.IndexOfByPredicate([&RemovedIndex](const int32 Current)
+	{
+		return Current == RemovedIndex;
+	});
+	const int32 NeighborPosition = (RemovedPosition + 1 < SortedIndices.Num())
+	                               ? RemovedPosition + 1
+	                               : RemovedPosition - 1;
+	return SortedIndices[NeighborPosition];
+}
+
+TArray<TPair<FString, FString>> LabeledPathsOf(const TMap<FString, FSongMetadata>& SongsByPath)
+{
+	const TArray<FString> OptionLabels = MakeSongPathOptionLabels(SongsByPath);
+	TArray<TPair<FString, FString>> LabeledPaths;
+	LabeledPaths.Reserve(OptionLabels.Num());
+	int32 PathIndex = 0;
+	for (const TPair<FString, FSongMetadata>& Current : SongsByPath)
+	{
+		LabeledPaths.Emplace(OptionLabels[PathIndex], Current.Key);
+		PathIndex++;
+	}
+	return LabeledPaths;
+}
+
+FString FindNeighborSongFilePath(const TMap<FString, FSongMetadata>& Songs,
+                                 const FString& RemovedFilePath,
+                                 const FSongMetadata& RemovedMetadata)
+{
+	if (Songs.Num() == 0)
+	{
+		return FString();
+	}
+
+	// Labels must be computed in the context that included the removed entry, the one displayed when removing it.
+	TMap<FString, FSongMetadata> SongsWithRemoved = Songs;
+	SongsWithRemoved.Add(RemovedFilePath, RemovedMetadata);
+
+	TArray<TPair<FString, FString>> LabeledPaths = LabeledPathsOf(SongsWithRemoved);
+	LabeledPaths.Sort([](const TPair<FString, FString>& Left, const TPair<FString, FString>& Right)
+	{
+		return Left.Key < Right.Key;
+	});
+
+	const FString RemovedLabel = GetSongPathOptionLabel(SongsWithRemoved, RemovedFilePath);
+	const int32 RemovedPosition = LabeledPaths.IndexOfByPredicate(
+		[&RemovedLabel](const TPair<FString, FString>& Current)
+		{
+			return Current.Key == RemovedLabel;
+		});
+	const int32 NeighborPosition = RemovedPosition + 1 < LabeledPaths.Num() ? RemovedPosition + 1 : RemovedPosition - 1;
+	return LabeledPaths[NeighborPosition].Value;
+}

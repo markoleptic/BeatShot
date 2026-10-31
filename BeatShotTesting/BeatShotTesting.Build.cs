@@ -8,7 +8,7 @@ public class BeatShotTesting : ModuleRules
 	{
 		PublicDependencyModuleNames.AddRange([
 			"Core", "CoreUObject", "Engine", "UnrealEd", "FunctionalTesting", "BeatShot", "BeatShotGlobal",
-			"Json", "JsonUtilities"
+			"Json", "JsonUtilities", "UserInterface"
 		]);
 	}
 }
