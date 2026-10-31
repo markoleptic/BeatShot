@@ -35,7 +35,6 @@ FString GetPrefixText(const TCHAR* InKey)
 }
 }
 
-class FSongOptionLabelsMakeSongOptionLabelTest;
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSongOptionLabelsMakeSongOptionLabelTest,
                                  TEXT("BeatShot.SongOptionLabels.MakeSongOptionLabel"),
                                  EAutomationTestFlags::CommandletContext | EAutomationTestFlags::EditorContext |
@@ -86,7 +85,6 @@ bool FSongOptionLabelsMakeSongOptionLabelTest::RunTest(const FString& Parameters
 	return true;
 }
 
-class FSongOptionLabelsComputeSongOptionLabelSpecTest;
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSongOptionLabelsComputeSongOptionLabelSpecTest,
                                  TEXT("BeatShot.SongOptionLabels.ComputeSongOptionLabelSpec"),
                                  EAutomationTestFlags::CommandletContext | EAutomationTestFlags::EditorContext |
@@ -193,7 +191,6 @@ bool FSongOptionLabelsComputeSongOptionLabelSpecTest::RunTest(const FString& Par
 	return true;
 }
 
-class FSongOptionLabelsMakeSongOptionLabelsTest;
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSongOptionLabelsMakeSongOptionLabelsTest,
                                  TEXT("BeatShot.SongOptionLabels.MakeSongOptionLabels"),
                                  EAutomationTestFlags::CommandletContext | EAutomationTestFlags::EditorContext |
@@ -256,7 +253,6 @@ bool FSongOptionLabelsMakeSongOptionLabelsTest::RunTest(const FString& Parameter
 	return true;
 }
 
-class FSongOptionLabelsFindSongByOptionLabelTest;
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSongOptionLabelsFindSongByOptionLabelTest,
                                  TEXT("BeatShot.SongOptionLabels.FindSongByOptionLabel"),
                                  EAutomationTestFlags::CommandletContext | EAutomationTestFlags::EditorContext |
@@ -278,7 +274,6 @@ bool FSongOptionLabelsFindSongByOptionLabelTest::RunTest(const FString& Paramete
 	return true;
 }
 
-class FSongOptionLabelsMakeSongPathOptionLabelsTest;
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSongOptionLabelsMakeSongPathOptionLabelsTest,
                                  TEXT("BeatShot.SongOptionLabels.MakeSongPathOptionLabels"),
                                  EAutomationTestFlags::CommandletContext | EAutomationTestFlags::EditorContext |
@@ -344,7 +339,6 @@ bool FSongOptionLabelsMakeSongPathOptionLabelsTest::RunTest(const FString& Param
 	return true;
 }
 
-class FSongOptionLabelsGetSongPathOptionLabelTest;
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSongOptionLabelsGetSongPathOptionLabelTest,
                                  TEXT("BeatShot.SongOptionLabels.GetSongPathOptionLabel"),
                                  EAutomationTestFlags::CommandletContext | EAutomationTestFlags::EditorContext |
@@ -376,7 +370,6 @@ bool FSongOptionLabelsGetSongPathOptionLabelTest::RunTest(const FString& Paramet
 	return true;
 }
 
-class FSongOptionLabelsFindSongPathByOptionLabelTest;
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSongOptionLabelsFindSongPathByOptionLabelTest,
                                  TEXT("BeatShot.SongOptionLabels.FindSongPathByOptionLabel"),
                                  EAutomationTestFlags::CommandletContext | EAutomationTestFlags::EditorContext |
@@ -405,7 +398,6 @@ bool FSongOptionLabelsFindSongPathByOptionLabelTest::RunTest(const FString& Para
 	return true;
 }
 
-class FSongOptionLabelsFindNeighborSongIndexTest;
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSongOptionLabelsFindNeighborSongIndexTest,
                                  TEXT("BeatShot.SongOptionLabels.FindNeighborSongIndex"),
                                  EAutomationTestFlags::CommandletContext | EAutomationTestFlags::EditorContext |
@@ -433,7 +425,6 @@ bool FSongOptionLabelsFindNeighborSongIndexTest::RunTest(const FString& Paramete
 	return true;
 }
 
-class FSongOptionLabelsLabeledPathsOfTest;
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSongOptionLabelsLabeledPathsOfTest, TEXT("BeatShot.SongOptionLabels.LabeledPathsOf"),
                                  EAutomationTestFlags::CommandletContext | EAutomationTestFlags::EditorContext |
                                  EAutomationTestFlags::EngineFilter)
@@ -468,7 +459,6 @@ bool FSongOptionLabelsLabeledPathsOfTest::RunTest(const FString& Parameters)
 	return true;
 }
 
-class FSongOptionLabelsFindNeighborSongFilePathTest;
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSongOptionLabelsFindNeighborSongFilePathTest,
                                  TEXT("BeatShot.SongOptionLabels.FindNeighborSongFilePath"),
                                  EAutomationTestFlags::CommandletContext | EAutomationTestFlags::EditorContext |

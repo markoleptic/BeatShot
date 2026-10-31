@@ -17,7 +17,6 @@ FSongMetadata MakeSong(const TCHAR* InTitle, float InLength = 100.f)
 }
 }
 
-class FPlayerSettingsUserAddSongMetadataTest;
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FPlayerSettingsUserAddSongMetadataTest,
                                  TEXT("BeatShot.PlayerSettingsUser.AddSongMetadata"),
                                  EAutomationTestFlags::CommandletContext | EAutomationTestFlags::EditorContext |
@@ -40,7 +39,6 @@ bool FPlayerSettingsUserAddSongMetadataTest::RunTest(const FString& Parameters)
 	return true;
 }
 
-class FPlayerSettingsUserRemoveSongMetadataTest;
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FPlayerSettingsUserRemoveSongMetadataTest,
                                  TEXT("BeatShot.PlayerSettingsUser.RemoveSongMetadata"),
                                  EAutomationTestFlags::CommandletContext | EAutomationTestFlags::EditorContext |
@@ -82,7 +80,6 @@ bool FPlayerSettingsUserRemoveSongMetadataTest::RunTest(const FString& Parameter
 	return true;
 }
 
-class FPlayerSettingsUserEditSongMetadataTest;
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FPlayerSettingsUserEditSongMetadataTest,
                                  TEXT("BeatShot.PlayerSettingsUser.EditSongMetadata"),
                                  EAutomationTestFlags::CommandletContext | EAutomationTestFlags::EditorContext |
@@ -106,7 +103,6 @@ bool FPlayerSettingsUserEditSongMetadataTest::RunTest(const FString& Parameters)
 	return true;
 }
 
-class FPlayerSettingsUserAddAudioDeviceSongMetadataTest;
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FPlayerSettingsUserAddAudioDeviceSongMetadataTest,
                                  TEXT("BeatShot.PlayerSettingsUser.AddAudioDeviceSongMetadata"),
                                  EAutomationTestFlags::CommandletContext | EAutomationTestFlags::EditorContext |
@@ -129,7 +125,6 @@ bool FPlayerSettingsUserAddAudioDeviceSongMetadataTest::RunTest(const FString& P
 	return true;
 }
 
-class FPlayerSettingsUserRemoveAudioDeviceSongMetadataTest;
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FPlayerSettingsUserRemoveAudioDeviceSongMetadataTest,
                                  TEXT("BeatShot.PlayerSettingsUser.RemoveAudioDeviceSongMetadata"),
                                  EAutomationTestFlags::CommandletContext | EAutomationTestFlags::EditorContext |
@@ -152,7 +147,6 @@ bool FPlayerSettingsUserRemoveAudioDeviceSongMetadataTest::RunTest(const FString
 	return true;
 }
 
-class FPlayerSettingsUserEditAudioDeviceSongMetadataTest;
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FPlayerSettingsUserEditAudioDeviceSongMetadataTest,
                                  TEXT("BeatShot.PlayerSettingsUser.EditAudioDeviceSongMetadata"),
                                  EAutomationTestFlags::CommandletContext | EAutomationTestFlags::EditorContext |
@@ -199,7 +193,6 @@ bool FPlayerSettingsUserEditAudioDeviceSongMetadataTest::RunTest(const FString& 
 	return true;
 }
 
-class FPlayerSettingsUserMarkFileSongUsedTest;
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FPlayerSettingsUserMarkFileSongUsedTest,
                                  TEXT("BeatShot.PlayerSettingsUser.MarkFileSongUsed"),
                                  EAutomationTestFlags::CommandletContext | EAutomationTestFlags::EditorContext |
@@ -229,7 +222,6 @@ bool FPlayerSettingsUserMarkFileSongUsedTest::RunTest(const FString& Parameters)
 	return true;
 }
 
-class FPlayerSettingsUserMarkCaptureSongUsedTest;
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FPlayerSettingsUserMarkCaptureSongUsedTest,
                                  TEXT("BeatShot.PlayerSettingsUser.MarkCaptureSongUsed"),
                                  EAutomationTestFlags::CommandletContext | EAutomationTestFlags::EditorContext |
