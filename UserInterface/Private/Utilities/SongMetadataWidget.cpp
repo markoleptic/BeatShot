@@ -1,4 +1,4 @@
-﻿// Copyright 2022-2026 Markoleptic Games, SP. All Rights Reserved.
+// Copyright 2022-2026 Markoleptic Games, SP. All Rights Reserved.
 
 
 #include "Utilities/SongMetadataWidget.h"

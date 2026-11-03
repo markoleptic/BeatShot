@@ -1,4 +1,4 @@
-﻿// Copyright 2022-2025 Markoleptic Games, SP. All Rights Reserved.
+// Copyright 2022-2025 Markoleptic Games, SP. All Rights Reserved.
 
 #pragma once
 
