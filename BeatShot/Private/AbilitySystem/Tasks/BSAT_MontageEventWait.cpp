@@ -63,7 +63,8 @@ void UBSAT_MontageEventWait::Activate()
 		}
 		else
 		{
-			UE_LOG(LogBSAT_MontageEventWait, Warning, TEXT("UGDAbilityTask_PlayMontageAndWaitForEvent call to PlayMontage failed!"));
+			UE_LOG(LogBSAT_MontageEventWait, Warning,
+			       TEXT("UGDAbilityTask_PlayMontageAndWaitForEvent call to PlayMontage failed!"));
 		}
 	}
 	else

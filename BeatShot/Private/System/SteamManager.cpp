@@ -311,8 +311,7 @@ void USteamManager::UpdateStat(const char* StatAPIName, T Value)
 	switch (FoundSteamStat->StatType)
 	{
 	case Stat_Int: UE_LOG(LogSteamManager, Warning, TEXT("Updated Stat %s Old Value: %d New Value: %d"),
-	                      *FString(FoundSteamStat->APIName), FoundSteamStat->IntValue - Value,
-	                      FoundSteamStat->IntValue);
+	                      *FString(FoundSteamStat->APIName), FoundSteamStat->IntValue - Value, FoundSteamStat->IntValue)		;
 		break;
 	case Stat_Float:
 	case Stat_AvgRate: UE_LOG(LogSteamManager, Warning, TEXT("Updated Stat %s Old Value: %.2f New Value: %.2f"),

@@ -86,8 +86,8 @@ void USaveGameCustomGameMode::Serialize(const FStructuredArchive::FRecord Record
 		{
 			UpgradeCustomGameModes();
 			SaveToSlot();
-			UE_LOG(LogSaveGameCustomGameMode, Warning, TEXT("Upgraded USaveGameCustomGameMode from Version %d to %d"), LastLoadedVersion,
-			       Version);
+			UE_LOG(LogSaveGameCustomGameMode, Warning, TEXT("Upgraded USaveGameCustomGameMode from Version %d to %d"),
+			       LastLoadedVersion, Version);
 		}
 	}
 }

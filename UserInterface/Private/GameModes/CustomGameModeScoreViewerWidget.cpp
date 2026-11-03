@@ -111,8 +111,8 @@ void UCustomGameModeScoreViewerWidget::OnDateChanged(const FDateTime& Start, con
 
 FSongMetadata UCustomGameModeScoreViewerWidget::GetSelectedSong() const
 {
-	if (const FSongMetadata* SelectedSong =
-	    FindSongByOptionLabel(SongOptionEntries, SongComboBoxWidget->ComboBox->GetSelectedOption()))
+	if (const FSongMetadata* SelectedSong = FindSongByOptionLabel(SongOptionEntries,
+	                                                              SongComboBoxWidget->ComboBox->GetSelectedOption()))
 	{
 		return *SelectedSong;
 	}
@@ -130,8 +130,8 @@ void UCustomGameModeScoreViewerWidget::FilterActiveScores(const FString& Current
 	const bool SetDates = MinDate == FDateTime::MaxValue() && MaxDate == FDateTime::MinValue();
 
 	SongOptionEntries.Reset();
-	if (const TMap<FSongMetadata, TArray<TSharedPtr<FPlayerScore>>>* PlayerScoreBySong =
-	    PlayerScoreByGameModeAndSong.Find(CurrentCustomGameModeName))
+	if (const TMap<FSongMetadata, TArray<TSharedPtr<FPlayerScore>>>* PlayerScoreBySong = PlayerScoreByGameModeAndSong.
+		Find(CurrentCustomGameModeName))
 	{
 		for (const auto& [Song, PlayerScores] : *PlayerScoreBySong)
 		{
@@ -145,16 +145,15 @@ void UCustomGameModeScoreViewerWidget::FilterActiveScores(const FString& Current
 	{
 		// Option labels are unique, so selecting by label is unambiguous after sorting.
 		TArray<FString> SongOptionLabels = MakeSongOptionLabels(SongOptionEntries);
-		const int32 RequestedSongIndex = SongOptionEntries.IndexOfByPredicate(
-			[&CurrentSong](const FSongMetadata& Song)
-			{
-				return Song == CurrentSong;
-			});
+		const int32 RequestedSongIndex = SongOptionEntries.IndexOfByPredicate([&CurrentSong](const FSongMetadata& Song)
+		{
+			return Song == CurrentSong;
+		});
 		// Keep the requested song if it is one of the options, otherwise the first alphabetically sorted option.
 		SongOptionLabels.Sort();
 		const FString SelectedOptionLabel = RequestedSongIndex == INDEX_NONE
-	                                    ? SongOptionLabels[0]
-	                                    : SongOptionLabels[RequestedSongIndex];
+		                                    ? SongOptionLabels[0]
+		                                    : SongOptionLabels[RequestedSongIndex];
 		if (const FSongMetadata* SelectedSong = FindSongByOptionLabel(SongOptionEntries, SelectedOptionLabel))
 		{
 			CurrentSongOverride = *SelectedSong;
@@ -168,8 +167,7 @@ void UCustomGameModeScoreViewerWidget::FilterActiveScores(const FString& Current
 	{
 		if (SetDates)
 		{
-			for (const auto& PlayerScore : PlayerScoreByGameModeAndSong[CurrentCustomGameModeName][
-				     CurrentSongOverride])
+			for (const auto& PlayerScore : PlayerScoreByGameModeAndSong[CurrentCustomGameModeName][CurrentSongOverride])
 			{
 				const auto LocalDateDate = PlayerScore->LocalDateTime.GetDate();
 				MinDate = FMath::Min(MinDate, LocalDateDate);

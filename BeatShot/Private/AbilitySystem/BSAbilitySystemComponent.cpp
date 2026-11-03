@@ -138,7 +138,8 @@ void UBSAbilitySystemComponent::AddAbilityToActivationGroup(EBSAbilityActivation
 		                             static_cast<uint8>(EBSAbilityActivationGroup::Exclusive_Blocking)];
 	if (!ensure(ExclusiveCount <= 1))
 	{
-		UE_LOG(LogBSAbilitySystemComponent, Error, TEXT("AddAbilityToActivationGroup: Multiple exclusive abilities are running."));
+		UE_LOG(LogBSAbilitySystemComponent, Error,
+		       TEXT("AddAbilityToActivationGroup: Multiple exclusive abilities are running."));
 	}
 }
 

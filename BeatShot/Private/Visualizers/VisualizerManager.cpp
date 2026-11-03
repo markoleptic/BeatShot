@@ -33,7 +33,8 @@ void AVisualizerManager::InitializeVisualizers(const FPlayerSettings_Game& Playe
 			{
 			case EVisualizerLightSpawningMethod::SpawnUsingPositionOffsets:
 				{
-					UE_LOG(LogVisualizerManager, Warning, TEXT("Invalid Spawning Method for a Visualizer in LevelVisualizers"));
+					UE_LOG(LogVisualizerManager, Warning,
+					       TEXT("Invalid Spawning Method for a Visualizer in LevelVisualizers"));
 					continue;
 				}
 			case EVisualizerLightSpawningMethod::SpawnUsingSpline:

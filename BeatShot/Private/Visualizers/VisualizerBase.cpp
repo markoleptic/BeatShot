@@ -174,7 +174,8 @@ void AVisualizerBase::MapAudioAnalyzerChannelsToVisualizerLights(const int32 Num
 			Total++;
 		}
 	}
-	UE_LOG(LogVisualizerBase, Display, TEXT("NumVisualizers: %d, NumBandChannels: %d"), NumVisualizers, NumBandChannels);
+	UE_LOG(LogVisualizerBase, Display, TEXT("NumVisualizers: %d, NumBandChannels: %d"), NumVisualizers,
+	       NumBandChannels);
 	UE_LOG(LogVisualizerBase, Display, TEXT("TotalVizualizers in all channels: %d"), Total);
 }
 

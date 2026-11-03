@@ -55,7 +55,8 @@ UBSEquipmentInstance* FBSEquipmentList::AddEntry(const TSubclassOf<UBSEquipmentD
 	}
 	else
 	{
-		UE_LOG(LogBSEquipmentManagerComponent, Warning, TEXT("AbilitySystemComponent failed to get in FBSEquipmentList::AddEntry"));
+		UE_LOG(LogBSEquipmentManagerComponent, Warning,
+		       TEXT("AbilitySystemComponent failed to get in FBSEquipmentList::AddEntry"));
 	}
 	Result->SpawnEquipmentActors(EquipmentCDO->ActorsToSpawn);
 	MarkItemDirty(NewEntry);

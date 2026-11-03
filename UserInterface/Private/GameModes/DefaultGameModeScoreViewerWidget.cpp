@@ -155,8 +155,8 @@ void UDefaultGameModeScoreViewerWidget::OnDateChanged(const FDateTime& Start, co
 
 FSongMetadata UDefaultGameModeScoreViewerWidget::GetSelectedSong() const
 {
-	if (const FSongMetadata* SelectedSong =
-	    FindSongByOptionLabel(SongOptionEntries, SongComboBoxWidget->ComboBox->GetSelectedOption()))
+	if (const FSongMetadata* SelectedSong = FindSongByOptionLabel(SongOptionEntries,
+	                                                              SongComboBoxWidget->ComboBox->GetSelectedOption()))
 	{
 		return *SelectedSong;
 	}
@@ -176,7 +176,7 @@ void UDefaultGameModeScoreViewerWidget::FilterActiveScores(const EBaseGameMode C
 
 	SongOptionEntries.Reset();
 	if (const TMap<FSongMetadata, TMap<EGameModeDifficulty, TArray<TSharedPtr<FPlayerScore>>>>* PlayerScoreBySong =
-	    PlayerScoreByGameModeSongAndDifficulty.Find(CurrentBaseGameMode))
+		PlayerScoreByGameModeSongAndDifficulty.Find(CurrentBaseGameMode))
 	{
 		for (const auto& [Song, PlayerScoresByDifficulty] : *PlayerScoreBySong)
 		{
@@ -190,16 +190,15 @@ void UDefaultGameModeScoreViewerWidget::FilterActiveScores(const EBaseGameMode C
 	{
 		// Option labels are unique, so selecting by label is unambiguous after sorting.
 		TArray<FString> SongOptionLabels = MakeSongOptionLabels(SongOptionEntries);
-		const int32 RequestedSongIndex = SongOptionEntries.IndexOfByPredicate(
-			[&CurrentSong](const FSongMetadata& Song)
-			{
-				return Song == CurrentSong;
-			});
+		const int32 RequestedSongIndex = SongOptionEntries.IndexOfByPredicate([&CurrentSong](const FSongMetadata& Song)
+		{
+			return Song == CurrentSong;
+		});
 		// Keep the requested song if it is one of the options, otherwise the first alphabetically sorted option.
 		SongOptionLabels.Sort();
 		const FString SelectedOptionLabel = RequestedSongIndex == INDEX_NONE
-	                                    ? SongOptionLabels[0]
-	                                    : SongOptionLabels[RequestedSongIndex];
+		                                    ? SongOptionLabels[0]
+		                                    : SongOptionLabels[RequestedSongIndex];
 		if (const FSongMetadata* SelectedSong = FindSongByOptionLabel(SongOptionEntries, SelectedOptionLabel))
 		{
 			CurrentSongOverride = *SelectedSong;
@@ -238,8 +237,8 @@ void UDefaultGameModeScoreViewerWidget::FilterActiveScores(const EBaseGameMode C
 		                                                                    ToString());
 	DifficultyComboBoxWidget->ComboBox->SetSelectedIndex(FMath::Max(DifficultyOptionIndex, 0));
 
-	if (CurrentBaseGameMode != EBaseGameMode::None && CurrentSongOverride.IsValid() && CurrentDifficultyOverride
-	    != EGameModeDifficulty::None)
+	if (CurrentBaseGameMode != EBaseGameMode::None && CurrentSongOverride.IsValid() && CurrentDifficultyOverride !=
+	    EGameModeDifficulty::None)
 	{
 		if (SetDates)
 		{

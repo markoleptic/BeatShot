@@ -213,7 +213,8 @@ void UMenuOptionWidget::SetIsLocked(const bool bLocked) const
 	}
 	else
 	{
-		UE_LOG(LogMenuOption, Warning, TEXT("Tried to access a CheckBox_Lock that wasn't found in a MenuOptionWidget."));
+		UE_LOG(LogMenuOption, Warning,
+		       TEXT("Tried to access a CheckBox_Lock that wasn't found in a MenuOptionWidget."));
 	}
 }
 

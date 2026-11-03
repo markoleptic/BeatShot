@@ -24,7 +24,9 @@ struct FSongOptionLabelSpec
 
 /** Labels one song with up to MaxFieldCount fields; parenthetical parts get a localized field prefix when
  *  bUseFieldPrefixes. */
-USERINTERFACE_API FString MakeSongOptionLabel(const FSongMetadata& SongMetadata, const int32 MaxFieldCount, const bool bUseFieldPrefixes);
+USERINTERFACE_API FString MakeSongOptionLabel(const FSongMetadata& SongMetadata,
+                                              const int32 MaxFieldCount,
+                                              const bool bUseFieldPrefixes);
 
 /** Computes the label spec for a group of songs sharing a title. */
 USERINTERFACE_API FSongOptionLabelSpec ComputeSongOptionLabelSpec(const TArray<FSongMetadata>& TitleGroup);
@@ -34,7 +36,8 @@ USERINTERFACE_API FSongOptionLabelSpec ComputeSongOptionLabelSpec(const TArray<F
 USERINTERFACE_API TArray<FString> MakeSongOptionLabels(const TArray<FSongMetadata>& Entries);
 
 /** Finds the entry whose option label matches OptionLabel (see MakeSongOptionLabels), or nullptr if none does. */
-USERINTERFACE_API const FSongMetadata* FindSongByOptionLabel(const TArray<FSongMetadata>& Entries, const FString& OptionLabel);
+USERINTERFACE_API const FSongMetadata* FindSongByOptionLabel(const TArray<FSongMetadata>& Entries,
+                                                             const FString& OptionLabel);
 
 /** Option labels for a file song list: smallest distinguishing label within shared-title groups (see
  *  ComputeSongOptionLabelSpec); entries with fully duplicated metadata are disambiguated by base filename (without
@@ -43,10 +46,12 @@ USERINTERFACE_API const FSongMetadata* FindSongByOptionLabel(const TArray<FSongM
 USERINTERFACE_API TArray<FString> MakeSongPathOptionLabels(const TMap<FString, FSongMetadata>& SongsByPath);
 
 /** The MakeSongPathOptionLabels label for the given path, or empty if the path isn't among the songs. */
-USERINTERFACE_API FString GetSongPathOptionLabel(const TMap<FString, FSongMetadata>& SongsByPath, const FString& SongFilePath);
+USERINTERFACE_API FString GetSongPathOptionLabel(const TMap<FString, FSongMetadata>& SongsByPath,
+                                                 const FString& SongFilePath);
 
 /** The path whose file list option label matches OptionLabel, or empty if none does. */
-USERINTERFACE_API FString FindSongPathByOptionLabel(const TMap<FString, FSongMetadata>& SongsByPath, const FString& OptionLabel);
+USERINTERFACE_API FString FindSongPathByOptionLabel(const TMap<FString, FSongMetadata>& SongsByPath,
+                                                    const FString& OptionLabel);
 
 /** Given Songs (which includes the removed entry), returns the index of the option that sorts directly below the
  *  removed option by option-label order, or the one directly above it if it is the last. INDEX_NONE if there is no

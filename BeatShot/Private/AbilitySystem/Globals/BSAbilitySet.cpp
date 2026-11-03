@@ -113,8 +113,8 @@ void UBSAbilitySet::GiveToAbilitySystem(UBSAbilitySystemComponent* ASC,
 
 		if (!IsValid(AbilityToGrant.Ability))
 		{
-			UE_LOG(LogBSAbilitySet, Error, TEXT("GrantedGameplayAbilities[%d] on ability set [%s] is not valid."), AbilityIndex,
-			       *GetNameSafe(this));
+			UE_LOG(LogBSAbilitySet, Error, TEXT("GrantedGameplayAbilities[%d] on ability set [%s] is not valid."),
+			       AbilityIndex, *GetNameSafe(this));
 			continue;
 		}
 
@@ -138,8 +138,8 @@ void UBSAbilitySet::GiveToAbilitySystem(UBSAbilitySystemComponent* ASC,
 
 		if (!IsValid(EffectToGrant.GameplayEffect))
 		{
-			UE_LOG(LogBSAbilitySet, Error, TEXT("GrantedGameplayEffects[%d] on ability set [%s] is not valid"), EffectIndex,
-			       *GetNameSafe(this));
+			UE_LOG(LogBSAbilitySet, Error, TEXT("GrantedGameplayEffects[%d] on ability set [%s] is not valid"),
+			       EffectIndex, *GetNameSafe(this));
 			continue;
 		}
 

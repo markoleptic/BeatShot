@@ -646,13 +646,13 @@ int32 ATargetManager::HandleTargetActivation() const
 		{
 			if (NumToActivateCheck < NumAvailableToActivate)
 			{
-				UE_LOG(LogTargetManager, Display, TEXT("NumToActivateCheck < NumAvailableToActivate %d %d"), NumToActivateCheck,
-				       NumAvailableToActivate);
+				UE_LOG(LogTargetManager, Display, TEXT("NumToActivateCheck < NumAvailableToActivate %d %d"),
+				       NumToActivateCheck, NumAvailableToActivate);
 			}
 			else
 			{
-				UE_LOG(LogTargetManager, Display, TEXT("NumToActivateCheck > NumAvailableToActivate %d %d"), NumToActivateCheck,
-				       NumAvailableToActivate);
+				UE_LOG(LogTargetManager, Display, TEXT("NumToActivateCheck > NumAvailableToActivate %d %d"),
+				       NumToActivateCheck, NumAvailableToActivate);
 			}
 		}
 	}

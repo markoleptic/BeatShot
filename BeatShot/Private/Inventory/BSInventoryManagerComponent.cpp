@@ -297,7 +297,8 @@ void UBSInventoryManagerComponent::SetActiveSlotIndex_Implementation(int32 NewIn
 				{
 					if (EquippedItem && EquippedItem == Instance /*&& LastRequestedSlotEquipIndex == NewIndex*/)
 					{
-						UE_LOG(LogBSInventoryManagerComponent, Display, TEXT("Unequip Confirm %s"), *GetNameSafe(EquippedItem));
+						UE_LOG(LogBSInventoryManagerComponent, Display, TEXT("Unequip Confirm %s"),
+						       *GetNameSafe(EquippedItem));
 						if (UBSEquipmentManagerComponent* EquipmentManager = FindEquipmentManager())
 						{
 							EquipmentManager->UnequipItem(EquippedItem, false);
