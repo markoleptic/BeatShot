@@ -727,19 +727,11 @@ struct BEATSHOTGLOBAL_API FBS_TargetConfig
 		{
 			return false;
 		}
-		if (!FMath::IsNearlyEqual(ConsecutiveChargeScaleMultiplier, Other.ConsecutiveChargeScaleMultiplier))
-		{
-			return false;
-		}
 		if (!FMath::IsNearlyEqual(MaxHealth, Other.MaxHealth))
 		{
 			return false;
 		}
 		if (!FMath::IsNearlyEqual(MinSpawnedTargetScale, Other.MinSpawnedTargetScale))
-		{
-			return false;
-		}
-		if (!FMath::IsNearlyEqual(MaxSpawnedTargetScale, Other.MaxSpawnedTargetScale))
 		{
 			return false;
 		}
@@ -827,6 +819,7 @@ struct BEATSHOTGLOBAL_API FBS_TargetConfig
 		{
 			return false;
 		}
+		// Note: the color fields (and bUseSeparateOutlineColor) are intentionally not compared — stylistic only.
 		return true;
 	}
 };

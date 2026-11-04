@@ -402,8 +402,8 @@ TArray<float> UReinforcementLearningComponent::GetTArray_FromNdArray_QTableAvg()
 
 TArray<float> UReinforcementLearningComponent::GetTArray_FromNdArray_QTableMax() const
 {
-	nc::NdArray<float> QTableMin = nc::max(GetQTable(), nc::Axis::ROW).astype<float>();
-	const nc::NdArray<float> Reshaped = QTableMin.reshape(5, 5);
+	nc::NdArray<float> QTableMax = nc::max(GetQTable(), nc::Axis::ROW).astype<float>();
+	const nc::NdArray<float> Reshaped = QTableMax.reshape(5, 5);
 	const nc::NdArray<float> Flipped = nc::flipud<float>(Reshaped);
 	return GetTArrayFromNdArray<float>(Flipped);
 }

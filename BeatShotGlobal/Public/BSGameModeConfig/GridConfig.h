@@ -49,10 +49,6 @@ struct BEATSHOTGLOBAL_API FBS_GridConfig
 		{
 			return false;
 		}
-		if (NumHorizontalGridTargets != Other.NumHorizontalGridTargets)
-		{
-			return false;
-		}
 		if (NumGridTargetsVisibleAtOnce != Other.NumGridTargetsVisibleAtOnce)
 		{
 			return false;

@@ -1929,37 +1929,6 @@ TSet<FFactor> USpawnAreaManagerComponent::FindBestFittingFactors(const int32 Num
 	return BestFactors;
 }
 
-constexpr bool USpawnAreaManagerComponent::IsPrime(const int32 Number)
-{
-	if (Number <= 1)
-	{
-		return false;
-	}
-	if (Number == 2 || Number == 3)
-	{
-		return true;
-	}
-	if (Number % 2 == 0 || Number % 3 == 0)
-	{
-		return false;
-	}
-
-	// All prime numbers > 3 can be expressed by 6k ± 1, where k is a positive integer
-	int i = 5;
-
-	while (i * i <= Number)
-	{
-		// Check divisibility from (5, sqrt(number)), or by an integer that is 2 greater
-		if (Number % i == 0 || Number % (i + 2) == 0)
-		{
-			return false;
-		}
-		i += 6;
-	}
-
-	return true;
-}
-
 FAccuracyData USpawnAreaManagerComponent::GetLocationAccuracy()
 {
 	TArray<int32> TotalSpawns;

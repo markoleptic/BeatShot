@@ -46,7 +46,6 @@ ATargetManager::ATargetManager()
 	StaticExtrema = FExtrema();
 	StaticExtents = FVector();
 	SpawnAreaDimensions = FIntVector3();
-	CurrentStreak = 0;
 	DynamicLookUpValue_TargetScale = 0;
 	DynamicLookUpValue_SpawnAreaScale = 0;
 	ManagedTargets = TMap<FGuid, ATarget*>();
@@ -205,7 +204,6 @@ void ATargetManager::Clear()
 	StaticExtrema = FExtrema();
 	StaticExtents = FVector();
 	SpawnAreaDimensions = FIntVector3();
-	CurrentStreak = 0;
 	DynamicLookUpValue_TargetScale = 0;
 	DynamicLookUpValue_SpawnAreaScale = 0;
 	TotalPossibleDamage = 0.f;

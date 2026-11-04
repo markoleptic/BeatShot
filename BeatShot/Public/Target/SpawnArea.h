@@ -112,7 +112,7 @@ public:
 	/** Sets the width for all SpawnAreas. */
 	static void SetWidth(const int32 InWidth) { Width = InWidth; }
 
-	/** Sets the width for all SpawnAreas. */
+	/** Sets the height for all SpawnAreas. */
 	static void SetHeight(const int32 InHeight) { Height = InHeight; }
 
 	/** Sets the total number of horizontal SpawnAreas for all SpawnAreas. */

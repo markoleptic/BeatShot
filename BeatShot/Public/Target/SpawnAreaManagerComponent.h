@@ -837,14 +837,14 @@ protected:
 	 */
 	static FFactor FindLargestFactors(const int32 Number);
 
-	/** Tries to find pairs of factors for a number that fit within the two constraints. Initially tries
-	 *  FindLargestFactors and falls back to FindAllFactors if it returned invalid. It then iterates through all
-	 *  factors that meet the constraints, and chooses the ones with the smallest difference between factors.
+	/** Tries to find pairs of factors for a number that fit within the two constraints. It filters all factors
+	 *  of the number down to those that meet the constraints, and keeps the ones with the smallest difference
+	 *  between factors. Returns an empty set if no factor pair fits within both constraints.
 	 *
 	 *  @param Number the number to find factors for
 	 *  @param Constraint1 the first constraint
 	 *  @param Constraint2 the second constraint
-	 *  @return a set of factors that best fit the given constraints
+	 *  @return a set of factors that best fit the given constraints (possibly empty)
 	 */
 	static TSet<FFactor> FindBestFittingFactors(const int32 Number, const int32 Constraint1, const int32 Constraint2);
 
@@ -853,7 +853,36 @@ protected:
 	 * 	@param Number the number in question
 	 *  @return whether the number is prime
 	 */
-	static constexpr bool IsPrime(const int32 Number);
+	static constexpr bool IsPrime(const int32 Number)
+	{
+		if (Number <= 1)
+		{
+			return false;
+		}
+		if (Number == 2 || Number == 3)
+		{
+			return true;
+		}
+		if (Number % 2 == 0 || Number % 3 == 0)
+		{
+			return false;
+		}
+
+		// All prime numbers > 3 can be expressed by 6k ± 1, where k is a positive integer
+		int i = 5;
+
+		while (i * i <= Number)
+		{
+			// Check divisibility from (5, sqrt(number)), or by an integer that is 2 greater
+			if (Number % i == 0 || Number % (i + 2) == 0)
+			{
+				return false;
+			}
+			i += 6;
+		}
+
+		return true;
+	}
 
 	/** Calculates the Manhattan distance between to indices given the number of columns.
 	 *
