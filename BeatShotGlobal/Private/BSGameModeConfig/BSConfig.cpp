@@ -131,7 +131,11 @@ FString FBSConfig::EncodeToString() const
 		const TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&JsonString);
 		FJsonSerializer::Serialize(JsonObject.ToSharedRef(), Writer);
 	}
-	return JsonString;
+	if (!JsonString.IsEmpty())
+	{
+		return FBase64::Encode(JsonString);
+	}
+	return FString();
 }
 
 bool FBSConfig::DecodeFromString(const FString& EncodedString, FBSConfig& OutConfig, FText* OutFailReason)
