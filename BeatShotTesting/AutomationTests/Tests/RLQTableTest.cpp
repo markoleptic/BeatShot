@@ -77,6 +77,21 @@ bool HasSingleSample(const TArray<int32>& Values)
 	}
 	return Count == 1;
 }
+
+/** Returns the number of non-zero values in the array. */
+template<typename T>
+int32 CountNonZero(const TArray<T>& Values)
+{
+	int32 Count = 0;
+	for (const T& Current : Values)
+	{
+		if (Current != 0)
+		{
+			Count++;
+		}
+	}
+	return Count;
+}
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FRLQTableInitTest,
@@ -143,5 +158,127 @@ bool FRLQTableRewardMissTest::RunTest(const FString& Parameters)
 	UTEST_EQUAL("total training samples", static_cast<int32>(Agent->GetTotalTrainingSamples()), 1);
 
 	DestroyAgent(Agent);
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FRLQTableSerializationRoundTripTest,
+                                 TEXT("BeatShot.RLQTable.SerializationRoundTrip"),
+                                 EAutomationTestFlags::CommandletContext | EAutomationTestFlags::EditorContext |
+                                 EAutomationTestFlags::EngineFilter)
+bool FRLQTableSerializationRoundTripTest::RunTest(const FString& Parameters)
+{
+	// Learn two distinct cells (a hit at (2,5) and a miss at (3,7)), persist through FCommonScoreInfo,
+	// then reload into a fresh agent and assert the exact table state round-trips.
+	UReinforcementLearningComponent* Agent = CreateInitializedAgent();
+
+	Agent->AddToActiveTargetPairs(2, 5);
+	Agent->SetActiveTargetPairReward(5, true);       // hit  -> QTable(2,5) = -1, 1 sample
+	Agent->AddToActiveTargetPairs(3, 7);
+	Agent->SetActiveTargetPairReward(7, false);      // miss -> QTable(3,7) = +1, 1 sample
+
+	// Persist the live table via the same production method used when saving a score, then discard the source agent.
+	FCommonScoreInfo SavedInfo;
+	SavedInfo.UpdateQTable(Agent->GetTArray_FromNdArray_QTable(),
+	                      Agent->GetNumQTableRows(),
+	                      Agent->GetNumQTableColumns(),
+	                      Agent->GetTArray_FromNdArray_TrainingSamples(),
+	                      static_cast<int32>(Agent->GetTotalTrainingSamples()));
+	DestroyAgent(Agent);
+
+	FBS_AIConfig AIConfig;
+	AIConfig.Alpha = 1.f;
+	AIConfig.Gamma = 0.f;
+	AIConfig.Epsilon = 0.f;
+	FRLAgentParams NewParams(AIConfig, SavedInfo, FIntVector3(0, 5, 5));
+	UReinforcementLearningComponent* Reloaded = NewObject<UReinforcementLearningComponent>(GetTransientPackage());
+	Reloaded->AddToRoot();
+	Reloaded->Init(NewParams);
+
+	const nc::NdArray<float> ReloadedQTable = Reloaded->GetQTable();
+
+	UTEST_EQUAL("rows preserved", Reloaded->GetNumQTableRows(), 25);
+	UTEST_EQUAL("cols preserved", Reloaded->GetNumQTableColumns(), 25);
+	UTEST_EQUAL("size preserved", static_cast<int32>(ReloadedQTable.size()), 625);
+	UTEST_EQUAL("re-loaded QTable(2,5) matches", ReloadedQTable(2, 5), -1.f);
+	UTEST_EQUAL("re-loaded QTable(3,7) matches", ReloadedQTable(3, 7), 1.f);
+	UTEST_EQUAL("re-loaded QTable(0,0) zero", ReloadedQTable(0, 0), 0.f);
+	UTEST_EQUAL("exactly two non-zero re-loaded training samples", CountNonZero(Reloaded->GetTArray_FromNdArray_TrainingSamples()), 2);
+	UTEST_EQUAL("re-loaded total training samples", static_cast<int32>(Reloaded->GetTotalTrainingSamples()), 2);
+
+	DestroyAgent(Reloaded);
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FRLQTableChooseLearnedActionTest,
+                                 TEXT("BeatShot.RLQTable.ChoosesLearnedAction"),
+                                 EAutomationTestFlags::CommandletContext | EAutomationTestFlags::EditorContext |
+                                 EAutomationTestFlags::EngineFilter)
+bool FRLQTableChooseLearnedActionTest::RunTest(const FString& Parameters)
+{
+	// BeatShot is a deliberate-weakness trainer: the RL agent should prefer next-spawns that produced a MISS
+	// (higher Q-value, Reward = +1) over the ones that produced a HIT (lower Q-value, Reward = -1). Learn two
+	// competing outcomes from the same previous spawn, then in exploit mode (Epsilon = 0) assert the chooser
+	// returns the miss cell.
+	FBS_AIConfig AIConfig;
+	AIConfig.Alpha = 1.f;
+	AIConfig.Gamma = 0.f;
+	AIConfig.Epsilon = 0.f;
+	AIConfig.ReinforcementLearningMode = EReinforcementLearningMode::Exploration;
+	FRLAgentParams Params(AIConfig, FCommonScoreInfo(), FIntVector3(0, 5, 5)); // identity: spawn i -> QTable cell i
+
+	UReinforcementLearningComponent* Agent = NewObject<UReinforcementLearningComponent>(GetTransientPackage());
+	Agent->AddToRoot();
+	Agent->Init(Params);
+
+	// Two next-spawns from the same previous state: 5 was a hit, 6 was a miss.
+	Agent->AddToActiveTargetPairs(2, 5);   // hit  -> QTable(2,5) = -1 (lower)
+	Agent->SetActiveTargetPairReward(5, true);
+	Agent->AddToActiveTargetPairs(2, 6);   // miss -> QTable(2,6) = +1 (higher)
+	Agent->SetActiveTargetPairReward(6, false);
+
+	const TArray<int32> Candidates = { 5, 6 };
+	const int32 Chose = Agent->ChooseNextActionIndex(2, Candidates);
+
+	UTEST_EQUAL("exploit chooser prefers the miss (higher Q-value) cell", Chose, 6);
+
+	DestroyAgent(Agent);
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FRLQTableSerializationSizeGuardTest,
+                                 TEXT("BeatShot.RLQTable.SerializationSizeGuard"),
+                                 EAutomationTestFlags::CommandletContext | EAutomationTestFlags::EditorContext |
+                                 EAutomationTestFlags::EngineFilter)
+bool FRLQTableSerializationSizeGuardTest::RunTest(const FString& Parameters)
+{
+	// Simulate the "valid-shape but empty-array" save that Clear() can produce: NumQTableRows/Columns claim 25x25
+	// but the underlying arrays have 0 elements. Init must resolve to a clean zero 25x25 (no corruption),
+	// while TotalTrainingSamples still carries over unconditionally (documenting the asymmetry).
+	FCommonScoreInfo MalformedInfo;
+	MalformedInfo.QTable.Empty();
+	MalformedInfo.TrainingSamples.Empty();
+	MalformedInfo.NumQTableRows = 25;
+	MalformedInfo.NumQTableColumns = 25;
+	MalformedInfo.TotalTrainingSamples = 7;
+
+	FBS_AIConfig AIConfig;
+	AIConfig.Alpha = 1.f;
+	AIConfig.Gamma = 0.f;
+	AIConfig.Epsilon = 0.f;
+	FRLAgentParams NewParams(AIConfig, MalformedInfo, FIntVector3(0, 5, 5));
+	UReinforcementLearningComponent* Reloaded = NewObject<UReinforcementLearningComponent>(GetTransientPackage());
+	Reloaded->AddToRoot();
+	Reloaded->Init(NewParams);
+
+	const nc::NdArray<float> ReloadedQTable = Reloaded->GetQTable();
+
+	UTEST_EQUAL("rows still 25", Reloaded->GetNumQTableRows(), 25);
+	UTEST_EQUAL("cols still 25", Reloaded->GetNumQTableColumns(), 25);
+	UTEST_EQUAL("size resolved to 625", static_cast<int32>(ReloadedQTable.size()), 625);
+	UTEST_TRUE("QTable resolved to clean zeros", AreAllZero(Reloaded->GetTArray_FromNdArray_QTable()));
+	UTEST_TRUE("TrainingSamples resolved to clean zeros", AreAllZero(Reloaded->GetTArray_FromNdArray_TrainingSamples()));
+	UTEST_EQUAL("total training samples carried over", static_cast<int32>(Reloaded->GetTotalTrainingSamples()), 7);
+
+	DestroyAgent(Reloaded);
 	return true;
 }
