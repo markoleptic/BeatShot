@@ -1,6 +1,7 @@
 // Copyright 2022-2026 Markoleptic Games, SP. All Rights Reserved.
 
 #include "CoreMinimal.h"
+#include "BSTestAssertions.h"
 #include "../TestBase/TargetManagerTestWithWorld.h"
 #include "SaveGames/SaveGamePlayerScore.h"
 #include "SaveGames/SaveGamePlayerSettings.h"
@@ -49,7 +50,7 @@ bool FTestFlagCache::RunTest(const FString& Parameters)
 
 	const FIntVector3 SpawnAreaSize = Manager->GetSpawnAreaSize();
 	const int32 NumSpawnAreas = SpawnAreaSize.Y * SpawnAreaSize.Z;
-	UTEST_TRUE("at least one spawn area", NumSpawnAreas > 0);
+	BS_TEST_TRUE("at least one spawn area", NumSpawnAreas > 0);
 
 	const int32 BaseManaged = Manager->GetNumManaged();
 	const int32 BaseActivated = Manager->GetNumActivated();
@@ -78,7 +79,7 @@ bool FTestFlagCache::RunTest(const FString& Parameters)
 	{
 		// Init pre-managed every area (upfront spawning mode): no fresh Guid can be added, so pick an existing
 		// managed target that has not been activated yet.
-		UTEST_TRUE("all spawn areas pre-managed by Init", BaseManaged == NumSpawnAreas);
+		BS_TEST_TRUE("all spawn areas pre-managed by Init", BaseManaged == NumSpawnAreas);
 
 		ExpectedManaged = BaseManaged;
 		ExpectedDeactivated = BaseDeactivated;
@@ -96,36 +97,36 @@ bool FTestFlagCache::RunTest(const FString& Parameters)
 		}
 	}
 
-	UTEST_TRUE("found a managed, unactivated area", ManagedIndex != INDEX_NONE);
+	BS_TEST_TRUE("found a managed, unactivated area", ManagedIndex != INDEX_NONE);
 
-	UTEST_EQUAL("managed count as expected", Manager->GetNumManaged(), ExpectedManaged);
-	UTEST_EQUAL("guid resolves to the selected index", Manager->GetSpawnAreaIndex(ManagedGuid), ManagedIndex);
-	UTEST_EQUAL("unknown guid resolves to none", Manager->GetSpawnAreaIndex(FGuid::NewGuid()), -1);
-	UTEST_EQUAL("deactivated count as expected", Manager->GetNumDeactivated(), ExpectedDeactivated);
+	BS_TEST_EQUAL("managed count as expected", Manager->GetNumManaged(), ExpectedManaged);
+	BS_TEST_EQUAL("guid resolves to the selected index", Manager->GetSpawnAreaIndex(ManagedGuid), ManagedIndex);
+	BS_TEST_EQUAL("unknown guid resolves to none", Manager->GetSpawnAreaIndex(FGuid::NewGuid()), -1);
+	BS_TEST_EQUAL("deactivated count as expected", Manager->GetNumDeactivated(), ExpectedDeactivated);
 
 	// Activating an unknown Guid is rejected without cache side effects.
 	const FGuid UnknownGuid = FGuid::NewGuid();
 	Manager->FlagSpawnAreaAsActivated(UnknownGuid, FVector(1.f));
-	UTEST_EQUAL("unknown guid activation is a no-op", Manager->GetNumActivated(), BaseActivated);
+	BS_TEST_EQUAL("unknown guid activation is a no-op", Manager->GetNumActivated(), BaseActivated);
 
 	Manager->FlagSpawnAreaAsActivated(ManagedGuid, FVector(1.f));
 
-	UTEST_EQUAL("activated count increases by one", Manager->GetNumActivated(), BaseActivated + 1);
-	UTEST_EQUAL("deactivated count decreases by one", Manager->GetNumDeactivated(), ExpectedDeactivated - 1);
-	UTEST_EQUAL("most recent area is the activated one", Manager->GetMostRecentSpawnAreaIndex(), ManagedIndex);
+	BS_TEST_EQUAL("activated count increases by one", Manager->GetNumActivated(), BaseActivated + 1);
+	BS_TEST_EQUAL("deactivated count decreases by one", Manager->GetNumDeactivated(), ExpectedDeactivated - 1);
+	BS_TEST_EQUAL("most recent area is the activated one", Manager->GetMostRecentSpawnAreaIndex(), ManagedIndex);
 
 	// A second activation of the same area is rejected; the cache is unchanged.
 	Manager->FlagSpawnAreaAsActivated(ManagedGuid, FVector(2.f));
-	UTEST_EQUAL("re-activation rejected, activated unchanged", Manager->GetNumActivated(), BaseActivated + 1);
+	BS_TEST_EQUAL("re-activation rejected, activated unchanged", Manager->GetNumActivated(), BaseActivated + 1);
 
 	// Clear empties every cache and invalidates the Guid.
 	TargetManager->Clear();
 
-	UTEST_EQUAL("managed count cleared", Manager->GetNumManaged(), 0);
-	UTEST_EQUAL("activated count cleared", Manager->GetNumActivated(), 0);
-	UTEST_EQUAL("deactivated count cleared", Manager->GetNumDeactivated(), 0);
-	UTEST_EQUAL("guid no longer resolves", Manager->GetSpawnAreaIndex(ManagedGuid), -1);
-	UTEST_EQUAL("most recent area reset", Manager->GetMostRecentSpawnAreaIndex(), -1);
+	BS_TEST_EQUAL("managed count cleared", Manager->GetNumManaged(), 0);
+	BS_TEST_EQUAL("activated count cleared", Manager->GetNumActivated(), 0);
+	BS_TEST_EQUAL("deactivated count cleared", Manager->GetNumDeactivated(), 0);
+	BS_TEST_EQUAL("guid no longer resolves", Manager->GetSpawnAreaIndex(ManagedGuid), -1);
+	BS_TEST_EQUAL("most recent area reset", Manager->GetMostRecentSpawnAreaIndex(), -1);
 
 	CleanUpWorld();
 

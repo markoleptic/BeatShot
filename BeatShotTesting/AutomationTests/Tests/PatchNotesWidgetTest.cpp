@@ -8,6 +8,7 @@
 #include "Internationalization/StringTable.h"
 #include "Menus/PatchNotesWidget.h"
 #include "Misc/AutomationTest.h"
+#include "BSTestAssertions.h"
 #include "Styles/PatchNotesStyle.h"
 
 namespace
@@ -23,32 +24,32 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FPatchNotesWidgetCollectPatchNotesTest,
 bool FPatchNotesWidgetCollectPatchNotesTest::RunTest(const FString& Parameters)
 {
 	const UStringTable* StringTable = LoadObject<UStringTable>(nullptr, PatchNotesTablePath);
-	UTEST_NOT_NULL("string table loads", StringTable);
+	BS_TEST_REQUIRE("string table loads", StringTable != nullptr);
 
 	FText DateText;
 	TArray<UPatchNotesWidget::FPatchNotesSection> Sections;
 	UPatchNotesWidget::CollectPatchNotes(StringTable, PatchNotesTablePath, TEXT("080_"), DateText, Sections);
 
-	UTEST_EQUAL("three sections", Sections.Num(), 3);
-	UTEST_TRUE("release date parsed", DateText.ToString() == TEXT("September 20, 2026"));
+	BS_TEST_REQUIRE("three sections", Sections.Num() == 3);
+	BS_TEST_TRUE("release date parsed", DateText.ToString() == TEXT("September 20, 2026"));
 
-	UTEST_TRUE("section 1 title", Sections[0].Title.ToString() == TEXT("In Game Performance Statistics"));
-	UTEST_TRUE("section 2 title", Sections[1].Title.ToString() == TEXT("General"));
-	UTEST_TRUE("section 3 title", Sections[2].Title.ToString() == TEXT("Bug Fixes"));
+	BS_TEST_TRUE("section 1 title", Sections[0].Title.ToString() == TEXT("In Game Performance Statistics"));
+	BS_TEST_TRUE("section 2 title", Sections[1].Title.ToString() == TEXT("General"));
+	BS_TEST_TRUE("section 3 title", Sections[2].Title.ToString() == TEXT("Bug Fixes"));
 
-	UTEST_EQUAL("section 1 bullets", Sections[0].Bullets.Num(), 5);
-	UTEST_EQUAL("section 2 bullets", Sections[1].Bullets.Num(), 3);
-	UTEST_EQUAL("section 3 bullets", Sections[2].Bullets.Num(), 2);
+	BS_TEST_EQUAL("section 1 bullets", Sections[0].Bullets.Num(), 5);
+	BS_TEST_REQUIRE("section 2 bullets", Sections[1].Bullets.Num() == 3);
+	BS_TEST_EQUAL("section 3 bullets", Sections[2].Bullets.Num(), 2);
 
 	// Only section 2's third bullet has a (single) sub-bullet.
-	UTEST_EQUAL("section 2 bullet 3 sub-bullets", Sections[1].Bullets[2].SubBulletTexts.Num(), 1);
-	UTEST_TRUE("section 2 bullet 3 sub-bullet text",
+	BS_TEST_REQUIRE("section 2 bullet 3 sub-bullets", Sections[1].Bullets[2].SubBulletTexts.Num() == 1);
+	BS_TEST_TRUE("section 2 bullet 3 sub-bullet text",
 	           Sections[1].Bullets[2].SubBulletTexts[0].ToString().StartsWith(TEXT("Existing custom game mode names")));
 	for (int32 BulletIndex = 0; BulletIndex < 3; ++BulletIndex)
 	{
 		if (BulletIndex != 2)
 		{
-			UTEST_EQUAL(FString::Printf(TEXT("section 2 bullet %d sub-bullets"), BulletIndex + 1),
+			BS_TEST_EQUAL(FString::Printf(TEXT("section 2 bullet %d sub-bullets"), BulletIndex + 1),
 			            Sections[1].Bullets[BulletIndex].SubBulletTexts.Num(), 0);
 		}
 	}
@@ -56,12 +57,12 @@ bool FPatchNotesWidgetCollectPatchNotesTest::RunTest(const FString& Parameters)
 	// Section 1 and 3 bullets have no sub-bullets.
 	for (int32 BulletIndex = 0; BulletIndex < Sections[0].Bullets.Num(); ++BulletIndex)
 	{
-		UTEST_EQUAL(FString::Printf(TEXT("section 1 bullet %d sub-bullets"), BulletIndex + 1),
+		BS_TEST_EQUAL(FString::Printf(TEXT("section 1 bullet %d sub-bullets"), BulletIndex + 1),
 		            Sections[0].Bullets[BulletIndex].SubBulletTexts.Num(), 0);
 	}
 	for (int32 BulletIndex = 0; BulletIndex < Sections[2].Bullets.Num(); ++BulletIndex)
 	{
-		UTEST_EQUAL(FString::Printf(TEXT("section 3 bullet %d sub-bullets"), BulletIndex + 1),
+		BS_TEST_EQUAL(FString::Printf(TEXT("section 3 bullet %d sub-bullets"), BulletIndex + 1),
 		            Sections[2].Bullets[BulletIndex].SubBulletTexts.Num(), 0);
 	}
 
@@ -88,7 +89,7 @@ bool FPatchNotesWidgetBuildTreeTest::RunTest(const FString& Parameters)
 	Widget->StyleAsset = Style;
 	Widget->Initialize();
 
-	UTEST_NOT_NULL("root widget exists", Widget->GetRootWidget());
+	BS_TEST_REQUIRE("root widget exists", (Widget->GetRootWidget()) != nullptr);
 
 	int32 TextBlockCount = 0;
 	int32 IconCount = 0;
@@ -111,10 +112,10 @@ bool FPatchNotesWidgetBuildTreeTest::RunTest(const FString& Parameters)
 
 	// 2 (header) + 3 (section titles) + 11 (bullets + sub-bullets) = 16 text blocks,
 	// 3 (section title icons) + 11 (bullet icons) = 14 icons.
-	UTEST_EQUAL("16 text blocks", TextBlockCount, 16);
-	UTEST_EQUAL("14 icons", IconCount, 14);
-	UTEST_TRUE("version text present", FoundVersionText);
-	UTEST_TRUE("date text present", FoundDateText);
+	BS_TEST_EQUAL("16 text blocks", TextBlockCount, 16);
+	BS_TEST_EQUAL("14 icons", IconCount, 14);
+	BS_TEST_TRUE("version text present", FoundVersionText);
+	BS_TEST_TRUE("date text present", FoundDateText);
 
 	return true;
 }

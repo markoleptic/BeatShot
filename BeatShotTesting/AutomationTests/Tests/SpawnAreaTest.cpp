@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Misc/AutomationTest.h"
+#include "BSTestAssertions.h"
 #include "Target/SpawnArea.h"
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSpawnAreaFindIndexTypeTest,
@@ -13,33 +14,33 @@ bool FSpawnAreaFindIndexTypeTest::RunTest(const FString& Parameters)
 	const int32 Size = 16;
 	const int32 Width = 4;
 
-	UTEST_TRUE("idx 0 → BottomLeftCorner", USpawnArea::FindIndexType(0, Size, Width) ==
+	BS_TEST_TRUE("idx 0 → BottomLeftCorner", USpawnArea::FindIndexType(0, Size, Width) ==
 	                                        EGridIndexType::BottomLeftCorner);
-	UTEST_TRUE("idx 1 → Bottom", USpawnArea::FindIndexType(1, Size, Width) == EGridIndexType::Bottom);
-	UTEST_TRUE("idx 2 → Bottom", USpawnArea::FindIndexType(2, Size, Width) == EGridIndexType::Bottom);
-	UTEST_TRUE("idx 3 → BottomRightCorner", USpawnArea::FindIndexType(3, Size, Width) ==
+	BS_TEST_TRUE("idx 1 → Bottom", USpawnArea::FindIndexType(1, Size, Width) == EGridIndexType::Bottom);
+	BS_TEST_TRUE("idx 2 → Bottom", USpawnArea::FindIndexType(2, Size, Width) == EGridIndexType::Bottom);
+	BS_TEST_TRUE("idx 3 → BottomRightCorner", USpawnArea::FindIndexType(3, Size, Width) ==
 	                                        EGridIndexType::BottomRightCorner);
-	UTEST_TRUE("idx 4 → Left", USpawnArea::FindIndexType(4, Size, Width) == EGridIndexType::Left);
-	UTEST_TRUE("idx 5 → Middle", USpawnArea::FindIndexType(5, Size, Width) == EGridIndexType::Middle);
-	UTEST_TRUE("idx 6 → Middle", USpawnArea::FindIndexType(6, Size, Width) == EGridIndexType::Middle);
-	UTEST_TRUE("idx 7 → Right", USpawnArea::FindIndexType(7, Size, Width) == EGridIndexType::Right);
-	UTEST_TRUE("idx 8 → Left", USpawnArea::FindIndexType(8, Size, Width) == EGridIndexType::Left);
-	UTEST_TRUE("idx 9 → Middle", USpawnArea::FindIndexType(9, Size, Width) == EGridIndexType::Middle);
-	UTEST_TRUE("idx 10 → Middle", USpawnArea::FindIndexType(10, Size, Width) == EGridIndexType::Middle);
-	UTEST_TRUE("idx 11 → Right", USpawnArea::FindIndexType(11, Size, Width) == EGridIndexType::Right);
-	UTEST_TRUE("idx 12 → TopLeftCorner", USpawnArea::FindIndexType(12, Size, Width) ==
+	BS_TEST_TRUE("idx 4 → Left", USpawnArea::FindIndexType(4, Size, Width) == EGridIndexType::Left);
+	BS_TEST_TRUE("idx 5 → Middle", USpawnArea::FindIndexType(5, Size, Width) == EGridIndexType::Middle);
+	BS_TEST_TRUE("idx 6 → Middle", USpawnArea::FindIndexType(6, Size, Width) == EGridIndexType::Middle);
+	BS_TEST_TRUE("idx 7 → Right", USpawnArea::FindIndexType(7, Size, Width) == EGridIndexType::Right);
+	BS_TEST_TRUE("idx 8 → Left", USpawnArea::FindIndexType(8, Size, Width) == EGridIndexType::Left);
+	BS_TEST_TRUE("idx 9 → Middle", USpawnArea::FindIndexType(9, Size, Width) == EGridIndexType::Middle);
+	BS_TEST_TRUE("idx 10 → Middle", USpawnArea::FindIndexType(10, Size, Width) == EGridIndexType::Middle);
+	BS_TEST_TRUE("idx 11 → Right", USpawnArea::FindIndexType(11, Size, Width) == EGridIndexType::Right);
+	BS_TEST_TRUE("idx 12 → TopLeftCorner", USpawnArea::FindIndexType(12, Size, Width) ==
 	                                      EGridIndexType::TopLeftCorner);
-	UTEST_TRUE("idx 13 → Top", USpawnArea::FindIndexType(13, Size, Width) == EGridIndexType::Top);
-	UTEST_TRUE("idx 14 → Top", USpawnArea::FindIndexType(14, Size, Width) == EGridIndexType::Top);
-	UTEST_TRUE("idx 15 → TopRightCorner", USpawnArea::FindIndexType(15, Size, Width) ==
+	BS_TEST_TRUE("idx 13 → Top", USpawnArea::FindIndexType(13, Size, Width) == EGridIndexType::Top);
+	BS_TEST_TRUE("idx 14 → Top", USpawnArea::FindIndexType(14, Size, Width) == EGridIndexType::Top);
+	BS_TEST_TRUE("idx 15 → TopRightCorner", USpawnArea::FindIndexType(15, Size, Width) ==
 	                                       EGridIndexType::TopRightCorner);
 
 	const int32 RowSize = 5;
-	UTEST_TRUE("single row: idx 0 → SingleRowLeft",
+	BS_TEST_TRUE("single row: idx 0 → SingleRowLeft",
 	           USpawnArea::FindIndexType(0, RowSize, RowSize) == EGridIndexType::SingleRowLeft);
-	UTEST_TRUE("single row: idx 2 → SingleRowMiddle",
+	BS_TEST_TRUE("single row: idx 2 → SingleRowMiddle",
 	           USpawnArea::FindIndexType(2, RowSize, RowSize) == EGridIndexType::SingleRowMiddle);
-	UTEST_TRUE("single row: idx 4 → SingleRowRight",
+	BS_TEST_TRUE("single row: idx 4 → SingleRowRight",
 	           USpawnArea::FindIndexType(4, RowSize, RowSize) == EGridIndexType::SingleRowRight);
 
 	return true;
@@ -62,8 +63,8 @@ bool FSpawnAreaCreateAdjacentIndicesTest::RunTest(const FString& Parameters)
 
 	const TMap<EAdjacentDirection, int32> Middle = USpawnArea::CreateAdjacentIndices(EGridIndexType::Middle, 6,
 	                                                                                  Width);
-	UTEST_EQUAL("Middle has 8 neighbors", Middle.Num(), 8);
-	UTEST_TRUE("Middle neighbors",
+	BS_TEST_EQUAL("Middle has 8 neighbors", Middle.Num(), 8);
+	BS_TEST_TRUE("Middle neighbors",
 	           Has(Middle, EAdjacentDirection::UpLeft, 9) && Has(Middle, EAdjacentDirection::Up, 10) &&
 	           Has(Middle, EAdjacentDirection::UpRight, 11) && Has(Middle, EAdjacentDirection::Right, 7) &&
 	           Has(Middle, EAdjacentDirection::DownRight, 3) && Has(Middle, EAdjacentDirection::Down, 2) &&
@@ -71,76 +72,76 @@ bool FSpawnAreaCreateAdjacentIndicesTest::RunTest(const FString& Parameters)
 
 	const TMap<EAdjacentDirection, int32> TopLeft = USpawnArea::CreateAdjacentIndices(EGridIndexType::TopLeftCorner,
 	                                                                                   12, Width);
-	UTEST_EQUAL("TopLeftCorner has 3 neighbors", TopLeft.Num(), 3);
-	UTEST_TRUE("TopLeftCorner neighbors",
+	BS_TEST_EQUAL("TopLeftCorner has 3 neighbors", TopLeft.Num(), 3);
+	BS_TEST_TRUE("TopLeftCorner neighbors",
 	           Has(TopLeft, EAdjacentDirection::Right, 13) && Has(TopLeft, EAdjacentDirection::Down, 8) &&
 	           Has(TopLeft, EAdjacentDirection::DownRight, 9));
 
 	const TMap<EAdjacentDirection, int32> TopRight = USpawnArea::CreateAdjacentIndices(
 		EGridIndexType::TopRightCorner, 15, Width);
-	UTEST_EQUAL("TopRightCorner has 3 neighbors", TopRight.Num(), 3);
-	UTEST_TRUE("TopRightCorner neighbors",
+	BS_TEST_EQUAL("TopRightCorner has 3 neighbors", TopRight.Num(), 3);
+	BS_TEST_TRUE("TopRightCorner neighbors",
 	           Has(TopRight, EAdjacentDirection::Left, 14) && Has(TopRight, EAdjacentDirection::Down, 11) &&
 	           Has(TopRight, EAdjacentDirection::DownLeft, 10));
 
 	const TMap<EAdjacentDirection, int32> BottomLeft = USpawnArea::CreateAdjacentIndices(
 		EGridIndexType::BottomLeftCorner, 0, Width);
-	UTEST_EQUAL("BottomLeftCorner has 3 neighbors", BottomLeft.Num(), 3);
-	UTEST_TRUE("BottomLeftCorner neighbors",
+	BS_TEST_EQUAL("BottomLeftCorner has 3 neighbors", BottomLeft.Num(), 3);
+	BS_TEST_TRUE("BottomLeftCorner neighbors",
 	           Has(BottomLeft, EAdjacentDirection::Right, 1) && Has(BottomLeft, EAdjacentDirection::Up, 4) &&
 	           Has(BottomLeft, EAdjacentDirection::UpRight, 5));
 
 	const TMap<EAdjacentDirection, int32> BottomRight = USpawnArea::CreateAdjacentIndices(
 		EGridIndexType::BottomRightCorner, 3, Width);
-	UTEST_EQUAL("BottomRightCorner has 3 neighbors", BottomRight.Num(), 3);
-	UTEST_TRUE("BottomRightCorner neighbors",
+	BS_TEST_EQUAL("BottomRightCorner has 3 neighbors", BottomRight.Num(), 3);
+	BS_TEST_TRUE("BottomRightCorner neighbors",
 	           Has(BottomRight, EAdjacentDirection::Left, 2) && Has(BottomRight, EAdjacentDirection::Up, 7) &&
 	           Has(BottomRight, EAdjacentDirection::UpLeft, 6));
 
 	const TMap<EAdjacentDirection, int32> Top = USpawnArea::CreateAdjacentIndices(EGridIndexType::Top, 13, Width);
-	UTEST_EQUAL("Top has 5 neighbors", Top.Num(), 5);
-	UTEST_TRUE("Top neighbors",
+	BS_TEST_EQUAL("Top has 5 neighbors", Top.Num(), 5);
+	BS_TEST_TRUE("Top neighbors",
 	           Has(Top, EAdjacentDirection::Left, 12) && Has(Top, EAdjacentDirection::Right, 14) &&
 	           Has(Top, EAdjacentDirection::DownRight, 10) && Has(Top, EAdjacentDirection::Down, 9) &&
 	           Has(Top, EAdjacentDirection::DownLeft, 8));
 
 	const TMap<EAdjacentDirection, int32> Right = USpawnArea::CreateAdjacentIndices(EGridIndexType::Right, 7,
 	                                                                                 Width);
-	UTEST_EQUAL("Right has 5 neighbors", Right.Num(), 5);
-	UTEST_TRUE("Right neighbors",
+	BS_TEST_EQUAL("Right has 5 neighbors", Right.Num(), 5);
+	BS_TEST_TRUE("Right neighbors",
 	           Has(Right, EAdjacentDirection::UpLeft, 10) && Has(Right, EAdjacentDirection::Up, 11) &&
 	           Has(Right, EAdjacentDirection::Left, 6) && Has(Right, EAdjacentDirection::Down, 3) &&
 	           Has(Right, EAdjacentDirection::DownLeft, 2));
 
 	const TMap<EAdjacentDirection, int32> Bottom = USpawnArea::CreateAdjacentIndices(EGridIndexType::Bottom, 1,
 	                                                                                  Width);
-	UTEST_EQUAL("Bottom has 5 neighbors", Bottom.Num(), 5);
-	UTEST_TRUE("Bottom neighbors",
+	BS_TEST_EQUAL("Bottom has 5 neighbors", Bottom.Num(), 5);
+	BS_TEST_TRUE("Bottom neighbors",
 	           Has(Bottom, EAdjacentDirection::UpLeft, 4) && Has(Bottom, EAdjacentDirection::Up, 5) &&
 	           Has(Bottom, EAdjacentDirection::UpRight, 6) && Has(Bottom, EAdjacentDirection::Right, 2) &&
 	           Has(Bottom, EAdjacentDirection::Left, 0));
 
 	const TMap<EAdjacentDirection, int32> Left = USpawnArea::CreateAdjacentIndices(EGridIndexType::Left, 8, Width);
-	UTEST_EQUAL("Left has 5 neighbors", Left.Num(), 5);
-	UTEST_TRUE("Left neighbors",
+	BS_TEST_EQUAL("Left has 5 neighbors", Left.Num(), 5);
+	BS_TEST_TRUE("Left neighbors",
 	           Has(Left, EAdjacentDirection::Up, 12) && Has(Left, EAdjacentDirection::UpRight, 13) &&
 	           Has(Left, EAdjacentDirection::Right, 9) && Has(Left, EAdjacentDirection::DownRight, 5) &&
 	           Has(Left, EAdjacentDirection::Down, 4));
 
 	const TMap<EAdjacentDirection, int32> SingleRowLeft = USpawnArea::CreateAdjacentIndices(
 		EGridIndexType::SingleRowLeft, 0, 5);
-	UTEST_EQUAL("SingleRowLeft has 1 neighbor", SingleRowLeft.Num(), 1);
-	UTEST_TRUE("SingleRowLeft neighbor", Has(SingleRowLeft, EAdjacentDirection::Right, 1));
+	BS_TEST_EQUAL("SingleRowLeft has 1 neighbor", SingleRowLeft.Num(), 1);
+	BS_TEST_TRUE("SingleRowLeft neighbor", Has(SingleRowLeft, EAdjacentDirection::Right, 1));
 
 	const TMap<EAdjacentDirection, int32> SingleRowRight = USpawnArea::CreateAdjacentIndices(
 		EGridIndexType::SingleRowRight, 4, 5);
-	UTEST_EQUAL("SingleRowRight has 1 neighbor", SingleRowRight.Num(), 1);
-	UTEST_TRUE("SingleRowRight neighbor", Has(SingleRowRight, EAdjacentDirection::Left, 3));
+	BS_TEST_EQUAL("SingleRowRight has 1 neighbor", SingleRowRight.Num(), 1);
+	BS_TEST_TRUE("SingleRowRight neighbor", Has(SingleRowRight, EAdjacentDirection::Left, 3));
 
 	const TMap<EAdjacentDirection, int32> SingleRowMiddle = USpawnArea::CreateAdjacentIndices(
 		EGridIndexType::SingleRowMiddle, 2, 5);
-	UTEST_EQUAL("SingleRowMiddle has 2 neighbors", SingleRowMiddle.Num(), 2);
-	UTEST_TRUE("SingleRowMiddle neighbors",
+	BS_TEST_EQUAL("SingleRowMiddle has 2 neighbors", SingleRowMiddle.Num(), 2);
+	BS_TEST_TRUE("SingleRowMiddle neighbors",
 	           Has(SingleRowMiddle, EAdjacentDirection::Left, 1) &&
 	           Has(SingleRowMiddle, EAdjacentDirection::Right, 3));
 
@@ -158,20 +159,20 @@ bool FSpawnAreaCalcTraceRadiusTest::RunTest(const FString& Parameters)
 	USpawnArea::SetHeight(10);
 
 	const float ExpectedRadius_1 = ceil(1.0f * 50.f / 5.f) * 5.f * FMath::Sqrt(2.f) * 2.f;
-	UTEST_TRUE("scale 1 snaps to 50 and doubles",
+	BS_TEST_TRUE("scale 1 snaps to 50 and doubles",
 	           FMath::IsNearlyEqual(USpawnArea::CalcTraceRadius(FVector(1.f, 1.f, 1.f)), ExpectedRadius_1));
 
 	// 0.45 * 50 / 5 = 4.5 → ceil → 5 → 25 (exercises the snapping)
 	const float ExpectedRadius_45 = ceil(0.45f * 50.f / 5.f) * 5.f * FMath::Sqrt(2.f) * 2.f;
-	UTEST_TRUE("scale 0.45 ceils up",
+	BS_TEST_TRUE("scale 0.45 ceils up",
 	           FMath::IsNearlyEqual(USpawnArea::CalcTraceRadius(FVector(0.45f, 0.45f, 0.45f)), ExpectedRadius_45));
 
 	const float ExpectedRadius_8 = ceil(0.8f * 50.f / 5.f) * 5.f * FMath::Sqrt(2.f) * 2.f;
-	UTEST_TRUE("scale 0.8", FMath::IsNearlyEqual(USpawnArea::CalcTraceRadius(FVector(0.8f, 0.8f, 0.8f)),
+	BS_TEST_TRUE("scale 0.8", FMath::IsNearlyEqual(USpawnArea::CalcTraceRadius(FVector(0.8f, 0.8f, 0.8f)),
 	                                             ExpectedRadius_8));
 
 	const float ExpectedRadius_2 = ceil(2.0f * 50.f / 5.f) * 5.f * FMath::Sqrt(2.f) * 2.f;
-	UTEST_TRUE("scale 2", FMath::IsNearlyEqual(USpawnArea::CalcTraceRadius(FVector(2.f, 2.f, 2.f)),
+	BS_TEST_TRUE("scale 2", FMath::IsNearlyEqual(USpawnArea::CalcTraceRadius(FVector(2.f, 2.f, 2.f)),
 	                                           ExpectedRadius_2));
 
 	return true;
@@ -203,7 +204,7 @@ bool FSpawnAreaGenerateRandomOffsetTest::RunTest(const FString& Parameters)
 			break;
 		}
 	}
-	UTEST_TRUE("all offsets are within the corner set", bAllValid);
+	BS_TEST_TRUE("all offsets are within the corner set", bAllValid);
 
 	return true;
 }
@@ -222,35 +223,35 @@ bool FSpawnAreaInitAndIncrementTest::RunTest(const FString& Parameters)
 	USpawnArea* SpawnArea = NewObject<USpawnArea>(GetTransientPackage());
 	SpawnArea->Init(6, FVector(0.f, 6.f, 2.f));
 
-	UTEST_EQUAL("index stored", SpawnArea->GetIndex(), 6);
-	UTEST_TRUE("index type is Middle", SpawnArea->GetIndexType() == EGridIndexType::Middle);
-	UTEST_EQUAL("8 adjacent indices", SpawnArea->GetAdjacentIndices().Num(), 8);
-	UTEST_TRUE("bottom left vertex", SpawnArea->GetBottomLeftVertex() == FVector(0.f, 6.f, 2.f));
-	UTEST_TRUE("center point", SpawnArea->GetCenterPoint() == FVector(0.f, 11.f, 12.f));
+	BS_TEST_EQUAL("index stored", SpawnArea->GetIndex(), 6);
+	BS_TEST_TRUE("index type is Middle", SpawnArea->GetIndexType() == EGridIndexType::Middle);
+	BS_TEST_EQUAL("8 adjacent indices", SpawnArea->GetAdjacentIndices().Num(), 8);
+	BS_TEST_TRUE("bottom left vertex", SpawnArea->GetBottomLeftVertex() == FVector(0.f, 6.f, 2.f));
+	BS_TEST_TRUE("center point", SpawnArea->GetCenterPoint() == FVector(0.f, 11.f, 12.f));
 
-	UTEST_EQUAL("initial spawns is INDEX_NONE", SpawnArea->GetTotalSpawns(), INDEX_NONE);
-	UTEST_EQUAL("initial hits is 0", SpawnArea->GetTotalHits(), 0);
-	UTEST_EQUAL("initial tracking damage possible is INDEX_NONE", SpawnArea->GetTotalTrackingDamagePossible(),
+	BS_TEST_EQUAL("initial spawns is INDEX_NONE", SpawnArea->GetTotalSpawns(), INDEX_NONE);
+	BS_TEST_EQUAL("initial hits is 0", SpawnArea->GetTotalHits(), 0);
+	BS_TEST_EQUAL("initial tracking damage possible is INDEX_NONE", SpawnArea->GetTotalTrackingDamagePossible(),
 	            INDEX_NONE);
-	UTEST_EQUAL("initial tracking damage is 0", SpawnArea->GetTotalTrackingDamage(), 0);
+	BS_TEST_EQUAL("initial tracking damage is 0", SpawnArea->GetTotalTrackingDamage(), 0);
 
 	SpawnArea->IncrementTotalSpawns();
-	UTEST_EQUAL("first spawn counts 1 (INDEX_NONE special case)", SpawnArea->GetTotalSpawns(), 1);
+	BS_TEST_EQUAL("first spawn counts 1 (INDEX_NONE special case)", SpawnArea->GetTotalSpawns(), 1);
 	SpawnArea->IncrementTotalSpawns();
-	UTEST_EQUAL("second spawn counts 2", SpawnArea->GetTotalSpawns(), 2);
+	BS_TEST_EQUAL("second spawn counts 2", SpawnArea->GetTotalSpawns(), 2);
 
 	SpawnArea->IncrementTotalHits();
-	UTEST_EQUAL("first hit", SpawnArea->GetTotalHits(), 1);
+	BS_TEST_EQUAL("first hit", SpawnArea->GetTotalHits(), 1);
 	SpawnArea->IncrementTotalHits();
-	UTEST_EQUAL("second hit", SpawnArea->GetTotalHits(), 2);
+	BS_TEST_EQUAL("second hit", SpawnArea->GetTotalHits(), 2);
 
 	SpawnArea->IncrementTotalTrackingDamagePossible();
-	UTEST_EQUAL("first damage possible (INDEX_NONE special case)", SpawnArea->GetTotalTrackingDamagePossible(), 1);
+	BS_TEST_EQUAL("first damage possible (INDEX_NONE special case)", SpawnArea->GetTotalTrackingDamagePossible(), 1);
 	SpawnArea->IncrementTotalTrackingDamagePossible();
-	UTEST_EQUAL("second damage possible", SpawnArea->GetTotalTrackingDamagePossible(), 2);
+	BS_TEST_EQUAL("second damage possible", SpawnArea->GetTotalTrackingDamagePossible(), 2);
 
 	SpawnArea->IncrementTotalTrackingDamage();
-	UTEST_EQUAL("first damage", SpawnArea->GetTotalTrackingDamage(), 1);
+	BS_TEST_EQUAL("first damage", SpawnArea->GetTotalTrackingDamage(), 1);
 
 	return true;
 }

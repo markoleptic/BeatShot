@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Misc/AutomationTest.h"
+#include "BSTestAssertions.h"
 #include "BSGameModeConfig/AIConfig.h"
 #include "Score/CommonScoreInfo.h"
 #include "Target/ReinforcementLearningComponent.h"
@@ -104,13 +105,13 @@ bool FRLQTableInitTest::RunTest(const FString& Parameters)
 
 	const nc::NdArray<float> QTable = Agent->GetQTable();
 
-	UTEST_EQUAL("num rows", Agent->GetNumQTableRows(), 25);
-	UTEST_EQUAL("num columns", Agent->GetNumQTableColumns(), 25);
-	UTEST_EQUAL("row length", Agent->GetQTableRowLength(), 25);
-	UTEST_EQUAL("table size", (int32)QTable.size(), 625);
-	UTEST_TRUE("QTable starts all zero", AreAllZero(Agent->GetTArray_FromNdArray_QTable()));
-	UTEST_TRUE("training samples start all zero", AreAllZero(Agent->GetTArray_FromNdArray_TrainingSamples()));
-	UTEST_EQUAL("total training samples", static_cast<int32>(Agent->GetTotalTrainingSamples()), 0);
+	BS_TEST_EQUAL("num rows", Agent->GetNumQTableRows(), 25);
+	BS_TEST_EQUAL("num columns", Agent->GetNumQTableColumns(), 25);
+	BS_TEST_EQUAL("row length", Agent->GetQTableRowLength(), 25);
+	BS_TEST_EQUAL("table size", (int32)QTable.size(), 625);
+	BS_TEST_TRUE("QTable starts all zero", AreAllZero(Agent->GetTArray_FromNdArray_QTable()));
+	BS_TEST_TRUE("training samples start all zero", AreAllZero(Agent->GetTArray_FromNdArray_TrainingSamples()));
+	BS_TEST_EQUAL("total training samples", static_cast<int32>(Agent->GetTotalTrainingSamples()), 0);
 
 	DestroyAgent(Agent);
 	return true;
@@ -130,10 +131,10 @@ bool FRLQTableRewardHitTest::RunTest(const FString& Parameters)
 
 	const nc::NdArray<float> QTable = Agent->GetQTable();
 
-	UTEST_EQUAL("hit reward written at (2, 5)", QTable(2, 5), -1.f);
-	UTEST_TRUE("hit reward is the only non-zero cell", HasSingleValue(Agent->GetTArray_FromNdArray_QTable(), -1.f));
-	UTEST_TRUE("exactly one training sample recorded", HasSingleSample(Agent->GetTArray_FromNdArray_TrainingSamples()));
-	UTEST_EQUAL("total training samples", static_cast<int32>(Agent->GetTotalTrainingSamples()), 1);
+	BS_TEST_EQUAL("hit reward written at (2, 5)", QTable(2, 5), -1.f);
+	BS_TEST_TRUE("hit reward is the only non-zero cell", HasSingleValue(Agent->GetTArray_FromNdArray_QTable(), -1.f));
+	BS_TEST_TRUE("exactly one training sample recorded", HasSingleSample(Agent->GetTArray_FromNdArray_TrainingSamples()));
+	BS_TEST_EQUAL("total training samples", static_cast<int32>(Agent->GetTotalTrainingSamples()), 1);
 
 	DestroyAgent(Agent);
 	return true;
@@ -152,10 +153,10 @@ bool FRLQTableRewardMissTest::RunTest(const FString& Parameters)
 
 	const nc::NdArray<float> QTable = Agent->GetQTable();
 
-	UTEST_EQUAL("miss reward written at (3, 7)", QTable(3, 7), 1.f);
-	UTEST_TRUE("miss reward is the only non-zero cell", HasSingleValue(Agent->GetTArray_FromNdArray_QTable(), 1.f));
-	UTEST_TRUE("exactly one training sample recorded", HasSingleSample(Agent->GetTArray_FromNdArray_TrainingSamples()));
-	UTEST_EQUAL("total training samples", static_cast<int32>(Agent->GetTotalTrainingSamples()), 1);
+	BS_TEST_EQUAL("miss reward written at (3, 7)", QTable(3, 7), 1.f);
+	BS_TEST_TRUE("miss reward is the only non-zero cell", HasSingleValue(Agent->GetTArray_FromNdArray_QTable(), 1.f));
+	BS_TEST_TRUE("exactly one training sample recorded", HasSingleSample(Agent->GetTArray_FromNdArray_TrainingSamples()));
+	BS_TEST_EQUAL("total training samples", static_cast<int32>(Agent->GetTotalTrainingSamples()), 1);
 
 	DestroyAgent(Agent);
 	return true;
@@ -196,14 +197,14 @@ bool FRLQTableSerializationRoundTripTest::RunTest(const FString& Parameters)
 
 	const nc::NdArray<float> ReloadedQTable = Reloaded->GetQTable();
 
-	UTEST_EQUAL("rows preserved", Reloaded->GetNumQTableRows(), 25);
-	UTEST_EQUAL("cols preserved", Reloaded->GetNumQTableColumns(), 25);
-	UTEST_EQUAL("size preserved", static_cast<int32>(ReloadedQTable.size()), 625);
-	UTEST_EQUAL("re-loaded QTable(2,5) matches", ReloadedQTable(2, 5), -1.f);
-	UTEST_EQUAL("re-loaded QTable(3,7) matches", ReloadedQTable(3, 7), 1.f);
-	UTEST_EQUAL("re-loaded QTable(0,0) zero", ReloadedQTable(0, 0), 0.f);
-	UTEST_EQUAL("exactly two non-zero re-loaded training samples", CountNonZero(Reloaded->GetTArray_FromNdArray_TrainingSamples()), 2);
-	UTEST_EQUAL("re-loaded total training samples", static_cast<int32>(Reloaded->GetTotalTrainingSamples()), 2);
+	BS_TEST_REQUIRE("rows preserved", Reloaded->GetNumQTableRows() == 25);
+	BS_TEST_REQUIRE("cols preserved", Reloaded->GetNumQTableColumns() == 25);
+	BS_TEST_REQUIRE("size preserved", static_cast<int32>(ReloadedQTable.size()) == 625);
+	BS_TEST_EQUAL("re-loaded QTable(2,5) matches", ReloadedQTable(2, 5), -1.f);
+	BS_TEST_EQUAL("re-loaded QTable(3,7) matches", ReloadedQTable(3, 7), 1.f);
+	BS_TEST_EQUAL("re-loaded QTable(0,0) zero", ReloadedQTable(0, 0), 0.f);
+	BS_TEST_EQUAL("exactly two non-zero re-loaded training samples", CountNonZero(Reloaded->GetTArray_FromNdArray_TrainingSamples()), 2);
+	BS_TEST_EQUAL("re-loaded total training samples", static_cast<int32>(Reloaded->GetTotalTrainingSamples()), 2);
 
 	DestroyAgent(Reloaded);
 	return true;
@@ -239,7 +240,7 @@ bool FRLQTableChooseLearnedActionTest::RunTest(const FString& Parameters)
 	const TArray<int32> Candidates = { 5, 6 };
 	const int32 Chose = Agent->ChooseNextActionIndex(2, Candidates);
 
-	UTEST_EQUAL("exploit chooser prefers the miss (higher Q-value) cell", Chose, 6);
+	BS_TEST_EQUAL("exploit chooser prefers the miss (higher Q-value) cell", Chose, 6);
 
 	DestroyAgent(Agent);
 	return true;
@@ -272,12 +273,12 @@ bool FRLQTableSerializationSizeGuardTest::RunTest(const FString& Parameters)
 
 	const nc::NdArray<float> ReloadedQTable = Reloaded->GetQTable();
 
-	UTEST_EQUAL("rows still 25", Reloaded->GetNumQTableRows(), 25);
-	UTEST_EQUAL("cols still 25", Reloaded->GetNumQTableColumns(), 25);
-	UTEST_EQUAL("size resolved to 625", static_cast<int32>(ReloadedQTable.size()), 625);
-	UTEST_TRUE("QTable resolved to clean zeros", AreAllZero(Reloaded->GetTArray_FromNdArray_QTable()));
-	UTEST_TRUE("TrainingSamples resolved to clean zeros", AreAllZero(Reloaded->GetTArray_FromNdArray_TrainingSamples()));
-	UTEST_EQUAL("total training samples carried over", static_cast<int32>(Reloaded->GetTotalTrainingSamples()), 7);
+	BS_TEST_EQUAL("rows still 25", Reloaded->GetNumQTableRows(), 25);
+	BS_TEST_EQUAL("cols still 25", Reloaded->GetNumQTableColumns(), 25);
+	BS_TEST_EQUAL("size resolved to 625", static_cast<int32>(ReloadedQTable.size()), 625);
+	BS_TEST_TRUE("QTable resolved to clean zeros", AreAllZero(Reloaded->GetTArray_FromNdArray_QTable()));
+	BS_TEST_TRUE("TrainingSamples resolved to clean zeros", AreAllZero(Reloaded->GetTArray_FromNdArray_TrainingSamples()));
+	BS_TEST_EQUAL("total training samples carried over", static_cast<int32>(Reloaded->GetTotalTrainingSamples()), 7);
 
 	DestroyAgent(Reloaded);
 	return true;
