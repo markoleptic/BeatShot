@@ -36,6 +36,37 @@ enum class EGameModeCategory : uint8
 	Preview
 };
 
+/** Stable, unique identification of a validation check: the rule's property combination plus the side owning it. */
+enum class EValidationCheckId : uint8
+{
+	/** Not assigned to any validation check. */
+	None,
+
+	SpawnEveryOtherTargetInCenter_BatchSpawning,
+	BatchSpawning_SpawnEveryOtherTargetInCenter,
+	SpawnEveryOtherTargetInCenter_AllowSpawnWithoutActivation,
+	AllowSpawnWithoutActivation_SpawnEveryOtherTargetInCenter,
+	ChangeVelocity_MTDNone_MTDM,
+	ChangeDirection_MTDNone_MTDM,
+	ChangeVelocity_MTDNone_SpawnResponses,
+	ChangeDirection_MTDNone_SpawnResponses,
+	ChangeVelocity_MTDNone_ActivationResponses,
+	ChangeDirection_MTDNone_ActivationResponses,
+	ChangeVelocity_MTDNone_DeactivationResponses,
+	ChangeDirection_MTDNone_DeactivationResponses,
+	ZeroForwardDistance_ForwardOnly_MTDM,
+	ZeroForwardDistance_ForwardOnly_BoxBoundsX,
+	Grid_NumHorizontalTargets,
+	Grid_NumVerticalTargets,
+	Grid_HorizontalSpacing,
+	Grid_VerticalSpacing,
+	Grid_MaxSpawnedTargetScale,
+	HeadshotHeightOnly_ReinforcementLearning_Policy,
+	HeadshotHeightOnly_ReinforcementLearning_EnableRL,
+	Tracking_ReinforcementLearning_EnableRL,
+	Tracking_ReinforcementLearning_TargetDamageType,
+};
+
 
 /** Specific data associated with a FValidationCheck. */
 USTRUCT()
@@ -98,7 +129,9 @@ struct BEATSHOTGLOBAL_API FValidationCheck
 
 	FValidationCheck();
 
-	explicit FValidationCheck(uint32 InOwningPropertyHash, EGameModeWarningType GameModeWarningType);
+	explicit FValidationCheck(uint32 InOwningPropertyHash,
+	                          EGameModeWarningType GameModeWarningType,
+	                          EValidationCheckId InCheckId);
 
 	void AddData(const FString& InStringTableKey,
 	             const FString& InDynamicStringTableKey,
@@ -106,6 +139,9 @@ struct BEATSHOTGLOBAL_API FValidationCheck
 	             bool InCalculatedValuesAreIntegers);
 
 	FValidationCheckData ValidationCheckData;
+
+	/** Stable unique identification of this validation check within the full validation surface. */
+	EValidationCheckId CheckId;
 
 	/** The prerequisite must return true in order for the validation check to be executed, otherwise validation is
 	 *  skipped and marked as passing. */
@@ -356,6 +392,9 @@ public:
 
 	/** @return All validation properties. */
 	FValidationPropertySet& GetValidationProperties() const;
+
+	/** @return All validation checks, sorted by check id for a stable order. */
+	TArray<FValidationCheckPtr> GetValidationChecks() const;
 
 private:
 	class FPrivate;

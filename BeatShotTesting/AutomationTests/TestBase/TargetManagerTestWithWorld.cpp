@@ -123,6 +123,15 @@ TMap<FGuid, ATarget*> FTargetManagerTestWithWorld::GetManagedTargets() const
 	return TMap<FGuid, ATarget*>();
 }
 
+UReinforcementLearningComponent* FTargetManagerTestWithWorld::GetRLComponent() const
+{
+	if (TargetManager)
+	{
+		return TargetManager->RLComponent;
+	}
+	return nullptr;
+}
+
 void FTargetManagerTestWithWorld::TickWorld(float Time)
 {
 	while (Time > 0.f)

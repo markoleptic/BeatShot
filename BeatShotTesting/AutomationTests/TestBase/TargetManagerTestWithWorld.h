@@ -7,6 +7,8 @@
 #include "BSGameModeConfig/BSGameModeDataAsset.h"
 #include "Misc/AutomationTest.h"
 
+class UReinforcementLearningComponent;
+
 /** Base class for unit tests dealing with the TargetManager, with a world. */
 class FTargetManagerTestWithWorld : public FTargetManagerTestBase
 {
@@ -58,6 +60,10 @@ protected:
 
 	/** Returns the ManagedTargets map. */
 	TMap<FGuid, ATarget*> GetManagedTargets() const;
+
+	/** Returns the reinforcement learning component. FTargetManagerTestWithWorld is a friend of ATargetManager
+	 *  so this can reach the protected RLComponent. */
+	UReinforcementLearningComponent* GetRLComponent() const;
 
 	/** Pointer to the Target Manager. */
 	ATargetManager* TargetManager;
