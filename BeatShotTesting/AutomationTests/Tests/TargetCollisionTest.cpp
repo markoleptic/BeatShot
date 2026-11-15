@@ -21,7 +21,7 @@ public:
 	virtual EAutomationTestFlags GetTestFlags() const override
 	{
 		return (EAutomationTestFlags::CommandletContext | EAutomationTestFlags::EditorContext |
-		        EAutomationTestFlags_HighPriorityAndAbove | EAutomationTestFlags::EngineFilter) & ~
+		        EAutomationTestFlags_HighPriorityAndAbove | EAutomationTestFlags::StressFilter) & ~
 		       EAutomationTestFlags::SmokeFilter;
 	}
 
